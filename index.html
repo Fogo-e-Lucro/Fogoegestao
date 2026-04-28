@@ -107,7 +107,7 @@ body {
 }
 
 .main-tab {
-  padding: 8px 20px;
+  padding: 8px 16px;
   border-radius: var(--r2);
   border: none;
   background: transparent;
@@ -118,6 +118,7 @@ body {
   display: flex; align-items: center; gap: 6px;
   transition: color var(--t) var(--ease), background var(--t) var(--ease), box-shadow var(--t) var(--ease);
   position: relative;
+  white-space: nowrap;
 }
 .main-tab::after {
   content: '';
@@ -131,6 +132,26 @@ body {
 .main-tab.active { color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent2)); box-shadow: 0 2px 14px rgba(124,58,237,.38); }
 .main-tab.active::after { opacity: 0; }
 .main-tab:hover:not(.active) { background: var(--card2); color: var(--text); }
+/* Ferramentas dropdown */
+.main-tab-more { position:relative; }
+.main-tab-more-menu {
+  display: none;
+  position: absolute; top: calc(100% + 8px); right: 0;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 6px; min-width: 180px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.25);
+  z-index: 200; flex-direction: column; gap: 2px;
+}
+.main-tab-more-menu.open { display: flex; }
+.main-tab-more-item {
+  padding: 9px 14px; border-radius: 8px; border: none;
+  background: transparent; color: var(--text2);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: var(--font); display: flex; align-items: center; gap: 8px;
+  text-align: left; width: 100%; transition: background .12s;
+}
+.main-tab-more-item:hover { background: var(--bg2); color: var(--text1); }
+.main-tab-more-item.active { color: var(--accent); background: rgba(99,102,241,.08); }
 
 /* ── CONTENT & PANELS ────────────────────────────────── */
 .app-content { width:100%; margin:0; padding:24px 32px; }
@@ -1441,6 +1462,75 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .gmb-chart-wrap { height:160px; position:relative; }
 /* Reviews */
 .gmb-reviews-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px 24px; margin-bottom:16px; }
+/* ── Pré-análise ── */
+.gmb-preanalise-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px 24px; margin-bottom:20px; }
+.gmb-preanalise-header { margin-bottom:14px; }
+.gmb-preanalise-title { font-size:15px; font-weight:700; color:var(--text1); }
+.gmb-preanalise-sub { font-size:12px; color:var(--text3); margin-top:2px; }
+.gmb-preanalise-search { display:flex; gap:8px; }
+.gmb-preanalise-input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text1); font-size:13px; font-family:var(--font); outline:none; transition:border-color .15s; }
+.gmb-preanalise-input:focus { border-color:var(--accent); }
+.gmb-preanalise-input::placeholder { color:var(--text3); }
+.gmb-preanalise-btn { display:flex; align-items:center; gap:6px; padding:10px 18px; border-radius:10px; background:var(--accent); border:none; color:#fff; font-size:13px; font-weight:700; cursor:pointer; font-family:var(--font); white-space:nowrap; transition:filter .15s; }
+.gmb-preanalise-btn:hover { filter:brightness(1.1); }
+.gmb-pre-result { margin-top:16px; border-top:1px solid var(--border); padding-top:16px; }
+.gmb-pre-top { display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; }
+.gmb-pre-photo { width:80px; height:80px; border-radius:10px; object-fit:cover; flex-shrink:0; background:var(--bg2); }
+.gmb-pre-photo-placeholder { width:80px; height:80px; border-radius:10px; background:var(--bg2); display:flex; align-items:center; justify-content:center; font-size:32px; flex-shrink:0; }
+.gmb-pre-info { flex:1; min-width:200px; }
+.gmb-pre-name { font-size:17px; font-weight:800; color:var(--text1); margin-bottom:4px; }
+.gmb-pre-cat { font-size:12px; color:var(--accent); font-weight:600; margin-bottom:6px; }
+.gmb-pre-addr { font-size:12px; color:var(--text3); margin-bottom:8px; }
+.gmb-pre-rating { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.gmb-pre-stars { font-size:13px; font-weight:700; color:var(--text1); }
+.gmb-pre-reviews { font-size:12px; color:var(--text3); }
+.gmb-pre-badges { display:flex; gap:6px; flex-wrap:wrap; }
+.gmb-pre-badge { padding:3px 10px; border-radius:50px; font-size:11px; font-weight:600; background:var(--bg2); color:var(--text2); border:1px solid var(--border); }
+.gmb-pre-badge.open { background:rgba(34,197,94,.1); color:#22c55e; border-color:rgba(34,197,94,.3); }
+.gmb-pre-badge.closed { background:rgba(239,68,68,.1); color:#ef4444; border-color:rgba(239,68,68,.3); }
+.gmb-pre-kpis { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; margin-top:14px; }
+.gmb-pre-kpi { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center; }
+.gmb-pre-kpi-val { font-size:20px; font-weight:800; color:var(--text1); }
+.gmb-pre-kpi-lbl { font-size:10px; color:var(--text3); margin-top:2px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
+.gmb-pre-actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+.gmb-pre-action-btn { padding:8px 16px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; font-family:var(--font); display:flex; align-items:center; gap:6px; transition:all .15s; text-decoration:none; }
+.gmb-pre-action-btn:hover { border-color:var(--accent); color:var(--accent); }
+.gmb-pre-notfound { text-align:center; padding:20px; color:var(--text3); font-size:13px; }
+/* ── Ranking Grid ── */
+.gmb-rank-section { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px 24px; margin-bottom:16px; }
+.gmb-rank-header { margin-bottom:14px; }
+.gmb-rank-title { font-size:15px; font-weight:700; color:var(--text1); }
+.gmb-rank-sub { font-size:12px; color:var(--text3); margin-top:2px; }
+.gmb-rank-toolbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:var(--bg); border:1px solid var(--border); border-radius:50px; padding:6px 14px; margin-bottom:16px; }
+.gmb-rank-keyword-wrap { display:flex; align-items:center; gap:6px; flex:1; min-width:180px; }
+.gmb-rank-quote { font-size:18px; color:var(--text3); line-height:1; }
+.gmb-rank-keyword { flex:1; background:transparent; border:none; outline:none; font-size:13px; color:var(--text1); font-family:var(--font); }
+.gmb-rank-keyword::placeholder { color:var(--text3); }
+.gmb-rank-btn { padding:7px 18px; border-radius:50px; background:var(--accent); border:none; color:#fff; font-size:12px; font-weight:700; cursor:pointer; font-family:var(--font); white-space:nowrap; }
+.gmb-rank-btn:hover { filter:brightness(1.1); }
+.gmb-rank-sep { width:1px; height:20px; background:var(--border); flex-shrink:0; }
+.gmb-rank-slider { flex:1; min-width:80px; max-width:160px; accent-color:var(--accent); height:4px; cursor:pointer; }
+.gmb-rank-pill { display:flex; align-items:center; gap:5px; padding:5px 12px; border-radius:50px; background:var(--bg2); border:1px solid var(--border); font-size:12px; color:var(--text2); font-weight:600; cursor:pointer; white-space:nowrap; transition:all .15s; user-select:none; }
+.gmb-rank-pill:hover { border-color:var(--accent); color:var(--accent); }
+.gmb-rank-chevron { font-size:10px; opacity:.7; }
+.gmb-rank-map-wrap { position:relative; width:100%; height:460px; border-radius:12px; overflow:hidden; border:1px solid var(--border); margin-bottom:14px; background:var(--bg2); }
+.gmb-rank-map { width:100%; height:100%; }
+.gmb-rank-canvas { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
+.gmb-rank-loading { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; background:rgba(0,0,0,.5); backdrop-filter:blur(4px); border-radius:12px; }
+.gmb-rank-spinner { width:36px; height:36px; border:3px solid rgba(255,255,255,.2); border-top-color:#fff; border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+#gmbRankLoadingText { font-size:13px; color:#fff; font-weight:600; }
+.gmb-rank-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
+.gmb-rank-kpi { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center; }
+.gmb-rank-kpi-val { font-size:22px; font-weight:800; color:var(--text1); }
+.gmb-rank-kpi-lbl { font-size:11px; color:var(--text3); margin-top:2px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
+.gmb-rank-history-title { font-size:13px; font-weight:700; color:var(--text1); margin-bottom:8px; }
+.gmb-rank-history-list { display:flex; flex-direction:column; gap:6px; }
+.gmb-rank-hist-item { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--bg); border:1px solid var(--border); border-radius:8px; cursor:pointer; transition:border-color .15s; }
+.gmb-rank-hist-item:hover { border-color:var(--accent); }
+.gmb-rank-hist-kw { flex:1; font-size:13px; font-weight:600; color:var(--text1); }
+.gmb-rank-hist-meta { font-size:11px; color:var(--text3); }
+.gmb-rank-hist-avg { padding:3px 10px; border-radius:50px; font-size:12px; font-weight:700; color:#fff; }
 /* Posts card */
 .gmb-posts-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px 24px; margin-bottom:16px; }
 .gmb-posts-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
@@ -3321,12 +3411,20 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   <div style="display:flex;align-items:center;gap:10px;">
     <div class="sync-dot syncing" id="syncStatus" title="Conectando..."></div>
     <div class="main-tabs">
-      <button class="main-tab active" id="tabEntrada" onclick="switchTab('entrada',this)">✏️ Entrada</button>
-      <button class="main-tab" id="tabVisualizar" onclick="switchTab('visualizar',this)">📊 Visualizar</button>
-      <button class="main-tab" id="tabSocial" onclick="switchTab('social',this)">📱 Social</button>
-      <button class="main-tab" id="tabGmb" onclick="switchTab('gmb',this)">📍 Google</button>
-      <button class="main-tab" id="tabMetricas" onclick="switchTab('metricas',this)">📊 Métricas</button>
-      <button class="main-tab" id="tabProjetos" onclick="switchTab('projetos',this)">🗂️ Projetos</button>
+      <button class="main-tab" id="tabProjetos" onclick="switchTab('projetos',this)">🎯 Gestão Central</button>
+      <!-- Ferramentas dropdown (todas as outras abas) -->
+      <div class="main-tab-more" id="tabMoreWrap">
+        <button class="main-tab" id="tabMoreBtn" onclick="toggleTabMoreMenu(event)">
+          ⊞ Ferramentas <span style="font-size:10px;opacity:.7;">▾</span>
+        </button>
+        <div class="main-tab-more-menu" id="tabMoreMenu">
+          <button class="main-tab-more-item" id="tabEntrada" onclick="switchTab('entrada',this);closeTabMoreMenu()">✏️ Criar Post</button>
+          <button class="main-tab-more-item" id="tabVisualizar" onclick="switchTab('visualizar',this);closeTabMoreMenu()">📅 Calendário Social Media</button>
+          <button class="main-tab-more-item" id="tabSocial" onclick="switchTab('social',this);closeTabMoreMenu()">🚀 Publipost</button>
+          <button class="main-tab-more-item" id="tabGmb" onclick="switchTab('gmb',this);closeTabMoreMenu()">📍 Google</button>
+          <button class="main-tab-more-item" id="tabMetricas" onclick="switchTab('metricas',this);closeTabMoreMenu()">📊 Métricas</button>
+        </div>
+      </div>
     </div>
     <div class="app-presence" id="appPresence" style="display:none;" title="Quem está online"></div>
     <div class="user-chip" id="userChip" style="display:none" onclick="signOutUser()" title="Sair">
@@ -3396,6 +3494,30 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
         <div class="app-settings-action-row">
           <a href="https://developers.facebook.com/tools/accesstoken/" target="_blank" class="app-settings-link">Gerar token (Graph API Explorer) →</a>
           <span class="app-settings-hint" id="cfgMetaTokenStatus"></span>
+        </div>
+      </div>
+
+      <div class="app-settings-section">
+        <div class="app-settings-row-label">📍 Google Places API <span class="app-settings-hint">para a pré-análise de qualquer perfil público no Google Maps (28k buscas grátis/mês).</span></div>
+        <div class="app-settings-row">
+          <input type="password" class="app-settings-input" id="cfgGooglePlaces" placeholder="AIza...">
+          <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('cfgGooglePlaces',this)">👁</button>
+          <button class="app-settings-btn" onclick="appSettingsSave('google_places','cfgGooglePlaces')">Salvar</button>
+        </div>
+        <div class="app-settings-action-row">
+          <a href="https://console.cloud.google.com/apis/library/places-backend.googleapis.com" target="_blank" class="app-settings-link">Ativar Places API →</a>
+        </div>
+      </div>
+
+      <div class="app-settings-section">
+        <div class="app-settings-row-label">🗺️ DataForSEO <span class="app-settings-hint">grid de posicionamento no Google Maps. Pay-as-you-go: ~R$ 0,003/ponto. Grade 11×11 = ~R$ 0,35 por scan.</span></div>
+        <div class="app-settings-row">
+          <input type="password" class="app-settings-input" id="cfgDataForSEO" placeholder="login:senha (credencial DataForSEO)">
+          <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('cfgDataForSEO',this)">👁</button>
+          <button class="app-settings-btn" onclick="appSettingsSave('dataforseo','cfgDataForSEO')">Salvar</button>
+        </div>
+        <div class="app-settings-action-row">
+          <a href="https://app.dataforseo.com/api-dashboard" target="_blank" class="app-settings-link">Criar conta DataForSEO (pay-as-you-go) →</a>
         </div>
       </div>
     </div>
@@ -3549,11 +3671,6 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 <div class="color-popover" id="colorPopover">
   <div class="color-popover-title">Tema do App</div>
   <div class="color-swatches" id="colorSwatches"></div>
-  <div class="ai-key-section">
-    <div class="ai-key-label">✨ Claude API Key</div>
-    <input type="password" class="ai-key-input" id="claudeApiKey" placeholder="sk-ant-..." oninput="saveClaudeKey(this.value)">
-    <div class="ai-key-saved" id="claudeKeySaved">✓ Salvo</div>
-  </div>
 </div>
 
 <!-- MODAL: Configuração de IA -->
@@ -3680,7 +3797,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
 <div class="app-content" style="position:relative;">
 
   <!-- ═══ ABA ENTRADA ═══════════════════════════════════ -->
-  <div class="tab-panel active" id="tab-entrada">
+  <div class="tab-panel" id="tab-entrada">
 
     <div class="restaurant-sticky" data-reveal style="flex-direction:column;align-items:stretch;">
       <label style="margin-bottom:8px;">🍽️ Restaurante:</label>
@@ -4161,6 +4278,28 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
   <div class="tab-panel" id="tab-gmb">
     <div class="gmb-wrap">
 
+      <!-- Pré-análise pública -->
+      <div class="gmb-preanalise-card">
+        <div class="gmb-preanalise-header">
+          <div>
+            <div class="gmb-preanalise-title">🔍 Pré-análise de Negócio</div>
+            <div class="gmb-preanalise-sub">Analise qualquer perfil público no Google sem precisar conectar conta</div>
+          </div>
+        </div>
+        <div class="gmb-preanalise-search">
+          <input class="gmb-preanalise-input" id="gmbPreInput" placeholder="Ex: Pizzaria Bella Napoli, São Paulo" onkeydown="if(event.key==='Enter')gmbPreAnalise()">
+          <button class="gmb-preanalise-btn" onclick="gmbPreAnalise()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            Analisar
+          </button>
+        </div>
+        <div id="gmbPreLoading" style="display:none;text-align:center;padding:20px;color:var(--text3);font-size:13px;">
+          <div class="gmb-rank-spinner" style="margin:0 auto 10px;width:24px;height:24px;border-width:2px;"></div>
+          Buscando informações...
+        </div>
+        <div id="gmbPreResult" style="display:none"></div>
+      </div>
+
       <!-- Connect bar -->
       <div class="gmb-connect-bar">
         <div class="gmb-connect-icon">📍</div>
@@ -4282,6 +4421,59 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             </div>
           </div>
           <div id="gmbReviewsList"><div class="gmb-empty">Selecione um perfil para ver as avaliações</div></div>
+        </div>
+
+        <!-- ── Ranking Grid ── -->
+        <div class="gmb-rank-section">
+          <div class="gmb-rank-header">
+            <div class="gmb-rank-title">🗺️ Grid de Posicionamento</div>
+            <div class="gmb-rank-sub">Veja em quais posições seu negócio aparece ao redor do endereço</div>
+          </div>
+
+          <!-- Toolbar -->
+          <div class="gmb-rank-toolbar">
+            <div class="gmb-rank-keyword-wrap">
+              <span class="gmb-rank-quote">"</span>
+              <input class="gmb-rank-keyword" id="gmbRankKeyword" placeholder="Palavra-Chave" />
+              <button class="gmb-rank-btn" onclick="gmbRankScan()">Analisar</button>
+            </div>
+            <div class="gmb-rank-sep"></div>
+            <input type="range" class="gmb-rank-slider" id="gmbRankGridSlider" min="3" max="21" step="2" value="11" oninput="gmbRankSliderUpdate(this.value)">
+            <div class="gmb-rank-sep"></div>
+            <div class="gmb-rank-pill" onclick="gmbRankCycleKm(this)">
+              <span>📍</span><span id="gmbRankKmLabel">2 km</span><span class="gmb-rank-chevron">⌄</span>
+            </div>
+            <div class="gmb-rank-pill" onclick="gmbRankCycleGrid(this)">
+              <span>⊞</span><span id="gmbRankGridLabel">Grade 11×11</span><span class="gmb-rank-chevron">⌄</span>
+            </div>
+            <div class="gmb-rank-pill" onclick="gmbRankCycleAccuracy(this)">
+              <span>🎯</span><span id="gmbRankAccLabel">Médio</span><span class="gmb-rank-chevron">⌄</span>
+            </div>
+          </div>
+
+          <!-- Map + Grid overlay -->
+          <div class="gmb-rank-map-wrap" id="gmbRankMapWrap">
+            <div id="gmbRankMap" class="gmb-rank-map"></div>
+            <canvas id="gmbRankCanvas" class="gmb-rank-canvas"></canvas>
+            <div id="gmbRankLoading" class="gmb-rank-loading" style="display:none">
+              <div class="gmb-rank-spinner"></div>
+              <div id="gmbRankLoadingText">Analisando posições...</div>
+            </div>
+          </div>
+
+          <!-- KPIs do scan -->
+          <div class="gmb-rank-kpis" id="gmbRankKpis" style="display:none">
+            <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkAvg">—</div><div class="gmb-rank-kpi-lbl">Posição média</div></div>
+            <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkTop3">—</div><div class="gmb-rank-kpi-lbl">Top 3</div></div>
+            <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkTop10">—</div><div class="gmb-rank-kpi-lbl">Top 10</div></div>
+            <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkOut">—</div><div class="gmb-rank-kpi-lbl">Não rankeou</div></div>
+          </div>
+
+          <!-- Histórico -->
+          <div class="gmb-rank-history" id="gmbRankHistory" style="display:none">
+            <div class="gmb-rank-history-title">📈 Histórico de scans</div>
+            <div id="gmbRankHistoryList" class="gmb-rank-history-list"></div>
+          </div>
         </div>
       </div>
 
@@ -4413,7 +4605,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
   </div><!-- /tab-metricas -->
 
   <!-- ══ PROJETOS ══════════════════════════════════════ -->
-  <div class="tab-panel" id="tab-projetos">
+  <div class="tab-panel active" id="tab-projetos">
     <div class="pj-wrap">
       <div class="pj-notif-panel" id="pjNotifPanel"></div>
       <!-- Sidebar -->
@@ -4715,12 +4907,35 @@ let _syncTimer = null;
    Em produção, sincronizar via Firestore coleção 'pj_permissions'. */
 const ALL_TABS = ['entrada','visualizar','acesso','social','gmb','metricas','projetos'];
 const TAB_LABELS = {
-  entrada:'✏️ Entrada', visualizar:'📊 Visualizar', acesso:'🔑 Acesso',
-  social:'📱 Social', gmb:'📍 Google', metricas:'📊 Métricas', projetos:'🗂️ Projetos'
+  entrada:'✏️ Criar Post', visualizar:'📅 Calendário Social Media', acesso:'🔑 Acesso',
+  social:'🚀 Publipost', gmb:'📍 Google', metricas:'📊 Métricas', projetos:'🎯 Gestão Central'
 };
 let _permissions = {};
 try { _permissions = JSON.parse(localStorage.getItem('pj_permissions')||'{}') || {}; } catch(e){ _permissions = {}; }
-function savePermissions() { try { localStorage.setItem('pj_permissions', JSON.stringify(_permissions)); } catch(e){} }
+let _permissionsUnsub = null;
+async function savePermissions() {
+  try { localStorage.setItem('pj_permissions', JSON.stringify(_permissions)); } catch(e){}
+  // Sync to Firestore so other users (and the affected member's device) see the rules
+  try {
+    if (typeof _db !== 'undefined' && _db) {
+      await _db.collection('config').doc('permissions').set({ map: _permissions, updatedAt: Date.now() }, { merge: false });
+    }
+  } catch(e) { console.warn('savePermissions cloud failed:', e); }
+}
+function _setupPermissionsListener() {
+  if (typeof _db === 'undefined' || !_db) return;
+  if (_permissionsUnsub) { try { _permissionsUnsub(); } catch(_) {} }
+  _permissionsUnsub = _db.collection('config').doc('permissions').onSnapshot(snap => {
+    if (!snap.exists) return;
+    const data = snap.data() || {};
+    if (data.map && typeof data.map === 'object') {
+      _permissions = data.map;
+      try { localStorage.setItem('pj_permissions', JSON.stringify(_permissions)); } catch(e){}
+      try { applyTabVisibility(); } catch(_) {}
+      try { if (typeof renderMemberList === 'function') renderMemberList(); } catch(_) {}
+    }
+  }, ()=>{});
+}
 function getCurrentEmail() { return _auth?.currentUser?.email || _currentUser?.email || ''; }
 function userIsAdmin() {
   const email = getCurrentEmail();
@@ -5404,11 +5619,19 @@ function permsToggleAll(kind, on) {
   const sel = kind === 'tab' ? '[data-perm-tab]' : '[data-perm-space]';
   document.querySelectorAll('#permsCard ' + sel).forEach(c => { c.checked = on; });
 }
-function savePermsModal() {
+async function savePermsModal() {
   if (!_permsEditing) return;
   const tabs = [...document.querySelectorAll('#permsCard [data-perm-tab]:checked')].map(c => c.dataset.permTab);
   const spaces = [...document.querySelectorAll('#permsCard [data-perm-space]:checked')].map(c => c.dataset.permSpace);
-  setUserPerms(_permsEditing, { tabs, spaces });
+  const email = _permsEditing;
+  setUserPerms(email, { tabs, spaces });
+  // Persist tabs/spaces back into the member's own app_members doc so loadAcessoList reads fresh values
+  try {
+    if (typeof _db !== 'undefined' && _db) {
+      const docId = btoa(email).replace(/[^a-zA-Z0-9]/g,'_');
+      await _db.collection('app_members').doc(docId).set({ tabs, spaces }, { merge: true });
+    }
+  } catch(e) { console.warn('savePermsModal cloud failed:', e); }
   closePermsModal();
   if (typeof loadAcessoList === 'function') loadAcessoList();
   if (typeof showToast === 'function') showToast('Permissões salvas.', 'ok');
@@ -5781,6 +6004,12 @@ if (_DEV_BYPASS) {
     }
     const shareCard = document.getElementById('spShareCard');
     if (shareCard) shareCard.style.display = '';
+    // Abre em Projetos por padrão
+    setTimeout(() => {
+      if (typeof switchTab === 'function') {
+        switchTab('projetos', document.getElementById('tabProjetos'));
+      }
+    }, 50);
   }, 0);
 }
 
@@ -5826,6 +6055,8 @@ _auth.onAuthStateChanged(async user => {
     if (slCard) slCard.style.display = '';
     renderShareLinks();
   }
+  // Setup realtime permissions listener (syncs admin's perms changes to all devices)
+  _setupPermissionsListener();
   // Apply permission visibility on tabs
   applyTabVisibility();
   // Load cloud data
@@ -5837,30 +6068,87 @@ function setSyncStatus(s) {
   if (el) { el.className = 'sync-dot ' + s; el.title = {syncing:'Sincronizando…',ok:'Salvo na nuvem ✓',err:'Erro ao sincronizar'}[s]||''; }
 }
 
-// Track posts the user explicitly deleted in this session, so we can sync the deletion
-// without clobbering posts other users may have added.
+// Track posts/clients the user explicitly deleted in this session, so we can sync the deletion
+// without clobbering data other users may have added.
 let _deletedPostIds = new Set();
+let _deletedClientIds = new Set();
+// Generate a stable client ID
+function _newClientId() { return 'c_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8); }
+// Ensure every in-memory client has an ID (for legacy entries created before refactor)
+function _ensureClientIds() {
+  let mutated = false;
+  Object.entries(clients).forEach(([name, v]) => {
+    if (!v || typeof v !== 'object') { clients[name] = { id: _newClientId(), name }; mutated = true; return; }
+    if (!v.id) { v.id = _newClientId(); mutated = true; }
+    if (!v.name) { v.name = name; mutated = true; }
+  });
+  if (mutated) { try { localStorage.setItem('roteiros_clients', JSON.stringify(clients)); } catch(_) {} }
+}
 async function _pushToCloud() {
   setSyncStatus('syncing');
   try {
+    _ensureClientIds();
     const batch = _db.batch();
     // Upsert all current posts (no full-collection wipe — preserves other users' additions)
     posts.forEach(post => {
       const { imagens, _localOnly, ...postData } = post;
       batch.set(_db.collection('posts').doc(post.id), postData);
     });
-    // Apply explicit deletions only
+    // Apply explicit post deletions only
     _deletedPostIds.forEach(id => {
       batch.delete(_db.collection('posts').doc(id));
     });
     _deletedPostIds.clear();
-    // Client colors (logos stay local — too large for Firestore)
-    const colorMap = {};
-    Object.entries(clients).forEach(([k,v]) => { if (v?.color) colorMap[k] = { color: v.color }; });
-    batch.set(_db.collection('config').doc('clients'), colorMap);
+    // Clients → coleção `clients` (uma doc por cliente). Resolve limite de 1MB.
+    // Skip logos > 700KB para caber no doc.
+    Object.values(clients).forEach(c => {
+      if (!c || !c.id) return;
+      const data = { id: c.id, name: c.name || '' };
+      if (c.color) data.color = c.color;
+      if (c.logo && typeof c.logo === 'string' && c.logo.length < 700 * 1024) data.logo = c.logo;
+      ['phone','instagram','notes','segment','priority','address','website','email'].forEach(f => {
+        if (c[f] != null && c[f] !== '') data[f] = c[f];
+      });
+      data.createdAt = c.createdAt || Date.now();
+      data.updatedAt = Date.now();
+      if (c.createdBy) data.createdBy = c.createdBy;
+      batch.set(_db.collection('clients').doc(c.id), data);
+    });
+    // Apply deletions
+    _deletedClientIds.forEach(id => {
+      batch.delete(_db.collection('clients').doc(id));
+    });
+    _deletedClientIds.clear();
     await batch.commit();
     setSyncStatus('ok');
   } catch(e) { console.warn('Firestore push error:', e); setSyncStatus('err'); }
+}
+
+// Migração: doc legado `config/clients` → coleção `clients`. Roda 1x.
+async function _migrateLegacyClientsDoc() {
+  try {
+    const flag = localStorage.getItem('clients_migrated_v1');
+    if (flag === '1') return;
+    const legacy = await _db.collection('config').doc('clients').get();
+    if (!legacy.exists) { localStorage.setItem('clients_migrated_v1','1'); return; }
+    const data = legacy.data() || {};
+    const batch = _db.batch();
+    let count = 0;
+    Object.entries(data).forEach(([k, v]) => {
+      if (!k || k.startsWith('__deleted__')) return;
+      // Sai cedo se já existe na nova coleção (idempotente)
+      const id = (v && v.id) || _newClientId();
+      const entry = { id, name: k };
+      if (v?.color) entry.color = v.color;
+      if (v?.logo) entry.logo = v.logo;
+      entry.createdAt = Date.now();
+      entry.updatedAt = Date.now();
+      batch.set(_db.collection('clients').doc(id), entry, { merge: true });
+      count++;
+    });
+    if (count) await batch.commit();
+    localStorage.setItem('clients_migrated_v1','1');
+  } catch(e) { console.warn('Migration warning:', e); }
 }
 
 function schedulePush() {
@@ -5889,17 +6177,25 @@ async function loadFromCloud() {
       setSyncStatus('ok');
       try { renderAll(); } catch(_) {}
     }, e => { console.warn('Posts listener error:', e); setSyncStatus('err'); });
-    // ── Realtime listener: client colors ──
+    // ── Realtime listener: clients (coleção `clients`, uma doc por cliente) ──
     if (_clientsUnsub) { try { _clientsUnsub(); } catch(_) {} }
-    _clientsUnsub = _db.collection('config').doc('clients').onSnapshot(cSnap => {
-      if (!cSnap.exists) return;
-      Object.entries(cSnap.data()).forEach(([k,v]) => {
-        if (!clients[k]) clients[k] = {};
-        if (v?.color) clients[k].color = v.color;
+    // Migra doc legado uma vez (assíncrono — listener pega o resultado)
+    _migrateLegacyClientsDoc();
+    _clientsUnsub = _db.collection('clients').onSnapshot(snap => {
+      const cloudClients = {};
+      snap.docs.forEach(d => {
+        const data = d.data() || {};
+        const name = data.name || d.id;
+        cloudClients[name] = { ...data, id: data.id || d.id, name };
       });
+      // Preserva logos grandes só locais (não cabem no Firestore)
+      Object.entries(clients).forEach(([k, v]) => {
+        if (cloudClients[k] && v?.logo && !cloudClients[k].logo) cloudClients[k].logo = v.logo;
+      });
+      clients = cloudClients;
       try { localStorage.setItem('roteiros_clients', JSON.stringify(clients)); } catch(_) {}
-      try { renderRestaurantChips(); renderCalendar(); } catch(_) {}
-    }, ()=>{});
+      try { renderRestaurantChips(); renderCalendar(); populateRestauranteSelect(document.getElementById('restaurante')?.value || ''); } catch(_) {}
+    }, e => { console.warn('Clients listener error:', e); });
   } catch(e) { console.warn('Firestore load failed, using localStorage:', e); setSyncStatus('err'); }
 }
 
@@ -6003,13 +6299,48 @@ function confirmarNovoRestaurante() {
   const name = input.value.trim();
   if (!name) { input.focus(); return; }
   if (!clients[name]) {
-    clients[name] = {};
+    clients[name] = {
+      id: _newClientId(),
+      name,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      createdBy: getCurrentEmail() || null
+    };
     saveClients();
   }
   populateRestauranteSelect(name);
   const wrap = document.getElementById('novoRestauranteWrap');
   if (wrap) wrap.style.display = 'none';
   showToast('success','✅','Cliente cadastrado');
+}
+
+// Renomeia cliente em batch: cliente + todos os posts referenciando o nome antigo.
+async function renameClient(oldName, newName) {
+  newName = (newName||'').trim();
+  if (!oldName || !newName || oldName === newName) return false;
+  if (!clients[oldName]) return false;
+  if (clients[newName]) {
+    showToast('warn','⚠️','Já existe um cliente com esse nome.');
+    return false;
+  }
+  const c = clients[oldName];
+  c.name = newName;
+  c.updatedAt = Date.now();
+  clients[newName] = c;
+  delete clients[oldName];
+  posts.forEach(p => { if (p.restaurante === oldName) p.restaurante = newName; });
+  if (activeRestaurante === oldName) activeRestaurante = newName;
+  saveClients(); savePosts();
+  try { renderAll(); } catch(_) {}
+  showToast('success','✏️',`Cliente renomeado para "${newName}"`);
+  return true;
+}
+
+// Atualiza campos opcionais (instagram, telefone, notas, etc.)
+function updateClientFields(name, fields) {
+  if (!clients[name]) return;
+  Object.assign(clients[name], fields, { updatedAt: Date.now() });
+  saveClients();
 }
 
 function renderRestaurantChips() {
@@ -6145,7 +6476,7 @@ function duplicatePost(id) {
   if (!orig) return;
   const clone = { ...orig, id: uuid(), dataPublicacao: '', horario: null, status: 'rascunho', criadoEm: Date.now() };
   editingId = null;
-  switchTab('entrada', document.getElementById('tabEntrada'));
+  switchTab('projetos', document.getElementById('tabProjetos'));
   setTimeout(() => {
     document.getElementById('restaurante').value = clone.restaurante;
     populateRestauranteSelect(clone.restaurante);
@@ -6333,7 +6664,20 @@ function observeCards(grid) {
 /* ═══════════════════════════════════════════════════════
    TABS
 ═══════════════════════════════════════════════════════ */
+/* ── Dropdown "Ferramentas" ── */
+function toggleTabMoreMenu(e) {
+  e.stopPropagation();
+  document.getElementById('tabMoreMenu').classList.toggle('open');
+}
+function closeTabMoreMenu() {
+  document.getElementById('tabMoreMenu')?.classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  if (!document.getElementById('tabMoreWrap')?.contains(e.target)) closeTabMoreMenu();
+});
+
 function switchTab(tab, btn) {
+  closeTabMoreMenu();
   // Bloqueio de permissão: não-admin só pode entrar em abas autorizadas
   if (!userCanSeeTab(tab) && tab !== 'acesso') {
     if (typeof showToast === 'function') showToast('Você não tem acesso a essa aba.', 'warn');
@@ -6343,11 +6687,20 @@ function switchTab(tab, btn) {
     return;
   }
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.main-tab,.main-tab-more-item').forEach(t => t.classList.remove('active'));
   const panel = document.getElementById('tab-' + tab);
   panel.classList.add('active');
-  if (btn) btn.classList.add('active');
-  else document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+  // Abas no dropdown: marca o item E destaca o botão "Ferramentas"
+  const inMore = ['entrada','gmb','metricas','visualizar','social'].includes(tab);
+  if (inMore) {
+    document.getElementById('tabMoreBtn')?.classList.add('active');
+    if (btn) btn.classList.add('active');
+  } else if (btn) {
+    btn.classList.add('active');
+  } else {
+    const tabEl = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+    if (tabEl) tabEl.classList.add('active');
+  }
   document.body.dataset.activeTab = tab;
 
   // Reveal imediato dos elementos da aba que acabou de ficar ativa
@@ -6581,6 +6934,8 @@ function openAppSettings() {
   fill('cfgClaude', cfg.claude);
   fill('cfgImgbb', cfg.imagebb || localStorage.getItem('imgbbKey') || '');
   fill('cfgMetaToken', cfg.meta_token || localStorage.getItem('metaAccessToken') || '');
+  fill('cfgGooglePlaces', cfg.google_places);
+  fill('cfgDataForSEO', cfg.dataforseo);
   fill('cfgUazapiUrl', cfg.uazapi_url);
   fill('cfgUazapiInstance', cfg.uazapi_instance);
   fill('cfgUazapiToken', cfg.uazapi_token);
@@ -6956,7 +7311,7 @@ function editPost(id) {
   const post = posts.find(p=>p.id===id);
   if (!post) return;
   editingId = id;
-  switchTab('entrada', document.getElementById('tabEntrada'));
+  switchTab('projetos', document.getElementById('tabProjetos'));
   setTimeout(()=>{
     document.getElementById('restaurante').value      = post.restaurante;
     populateRestauranteSelect(post.restaurante);
@@ -7014,6 +7369,7 @@ function deleteClient(name) {
   const savedClientData = clients[name] ? { ...clients[name] } : null;
   clientPosts.forEach(p => _deletedPostIds.add(p.id));
   posts = posts.filter(p => p.restaurante !== name);
+  if (savedClientData?.id) _deletedClientIds.add(savedClientData.id);
   delete clients[name];
   if (activeRestaurante === name) activeRestaurante = null;
   savePosts(); saveClients(); renderAll();
@@ -7033,6 +7389,8 @@ function undoDeleteClient() {
   if (!window._undoClient) return;
   clearTimeout(window._undoClientTimer);
   posts = [...posts, ...window._undoClient.posts];
+  window._undoClient.posts.forEach(p => _deletedPostIds.delete(p.id));
+  if (window._undoClient.clientData?.id) _deletedClientIds.delete(window._undoClient.clientData.id);
   if (window._undoClient.clientData) { clients[window._undoClient.name] = window._undoClient.clientData; saveClients(); }
   savePosts(); renderAll(); window._undoClient = null;
   document.getElementById('undoClientToast')?.remove();
@@ -11280,6 +11638,422 @@ function mtrUpdateCustomMetric(id, value) {
   if (cm) { cm.value = value; localStorage.setItem('mtrCustomMetrics', JSON.stringify(mtrCustomMetrics)); }
 }
 
+/* ─── Ranking Grid ─────────────────────────────────────── */
+const GMB_RANK_KM_OPTIONS  = [0.5, 1, 1.5, 2, 3, 5, 8];
+const GMB_RANK_GRID_OPTIONS = [3, 5, 7, 9, 11, 13, 15, 17, 21];
+const GMB_RANK_ACC_OPTIONS  = ['Rápido','Médio','Preciso'];
+let _gmbRankState = {
+  km: 2, grid: 11, acc: 'Médio',
+  map: null, markers: [],
+  scanning: false, lastResult: null
+};
+
+function gmbRankSliderUpdate(val) {
+  const size = GMB_RANK_GRID_OPTIONS[Math.round((val - 3) / (21 - 3) * (GMB_RANK_GRID_OPTIONS.length - 1))];
+  _gmbRankState.grid = size;
+  document.getElementById('gmbRankGridLabel').textContent = `Grade ${size}×${size}`;
+}
+function gmbRankCycleKm(el) {
+  const opts = GMB_RANK_KM_OPTIONS;
+  const cur = opts.indexOf(_gmbRankState.km);
+  _gmbRankState.km = opts[(cur + 1) % opts.length];
+  document.getElementById('gmbRankKmLabel').textContent = `${_gmbRankState.km} km`;
+}
+function gmbRankCycleGrid(el) {
+  const opts = GMB_RANK_GRID_OPTIONS;
+  const cur = opts.indexOf(_gmbRankState.grid);
+  _gmbRankState.grid = opts[(cur + 1) % opts.length];
+  document.getElementById('gmbRankGridLabel').textContent = `Grade ${_gmbRankState.grid}×${_gmbRankState.grid}`;
+  const slider = document.getElementById('gmbRankGridSlider');
+  if (slider) slider.value = _gmbRankState.grid;
+}
+function gmbRankCycleAccuracy(el) {
+  const opts = GMB_RANK_ACC_OPTIONS;
+  const cur = opts.indexOf(_gmbRankState.acc);
+  _gmbRankState.acc = opts[(cur + 1) % opts.length];
+  document.getElementById('gmbRankAccLabel').textContent = _gmbRankState.acc;
+}
+
+// Gera pontos lat/lng em grade ao redor do ponto central
+function gmbRankGridPoints(centerLat, centerLng, gridSize, kmSpacing) {
+  const half = Math.floor(gridSize / 2);
+  const dLat = kmSpacing / 111; // ~111km por grau
+  const dLng = kmSpacing / (111 * Math.cos(centerLat * Math.PI / 180));
+  const pts = [];
+  for (let row = -half; row <= half; row++) {
+    for (let col = -half; col <= half; col++) {
+      pts.push({ lat: centerLat + row * dLat, lng: centerLng + col * dLng, row, col });
+    }
+  }
+  return pts;
+}
+
+// Cor do círculo baseado na posição
+function gmbRankColor(pos) {
+  if (!pos || pos < 1) return '#6b7280';   // cinza: não rankeou
+  if (pos <= 3)  return '#22c55e';          // verde: top 3
+  if (pos <= 7)  return '#eab308';          // amarelo: 4-7
+  if (pos <= 12) return '#f97316';          // laranja: 8-12
+  return '#ef4444';                          // vermelho: 13+
+}
+
+// Inicializa o mapa do Google Maps no container
+/* ─── Pré-análise pública ─────────────────────────────── */
+async function gmbPreAnalise() {
+  const query = document.getElementById('gmbPreInput')?.value?.trim();
+  if (!query) { showToast('warn','⚠️','Digite o nome do negócio.'); return; }
+  const key = getApiKey('google_places');
+  if (!key) { showToast('warn','⚠️','Configure a Google Places API Key nas Configurações.'); return; }
+  const loadEl = document.getElementById('gmbPreLoading');
+  const resultEl = document.getElementById('gmbPreResult');
+  loadEl.style.display = 'block';
+  resultEl.style.display = 'none';
+  resultEl.innerHTML = '';
+  try {
+    // Text Search (Places API New)
+    const searchRes = await fetch(`https://places.googleapis.com/v1/places:searchText`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': key,
+        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.primaryTypeDisplayName,places.regularOpeningHours,places.websiteUri,places.nationalPhoneNumber,places.photos,places.googleMapsUri,places.businessStatus'
+      },
+      body: JSON.stringify({ textQuery: query, languageCode: 'pt-BR', maxResultCount: 1 })
+    });
+    if (searchRes.status === 429 || searchRes.status === 403) { gmbShowBillingAlert('google'); throw new Error('Cota da Google Places excedida.'); }
+    const searchJson = await searchRes.json();
+    const place = searchJson?.places?.[0];
+    if (!place) {
+      resultEl.innerHTML = `<div class="gmb-pre-notfound">😕 Nenhum negócio encontrado para "<b>${escHtml(query)}</b>".<br>Tente ser mais específico, ex: "Pizzaria Bella Napoli São Paulo".</div>`;
+      resultEl.style.display = '';
+      return;
+    }
+    // Monta card de resultado
+    const name = place.displayName?.text || query;
+    const addr = place.formattedAddress || '—';
+    const rating = place.rating ? place.rating.toFixed(1) : '—';
+    const reviews = place.userRatingCount ? place.userRatingCount.toLocaleString('pt-BR') : '—';
+    const cat = place.primaryTypeDisplayName?.text || '';
+    const isOpen = place.regularOpeningHours?.openNow;
+    const openBadge = isOpen === true ? '<span class="gmb-pre-badge open">Aberto agora</span>' : isOpen === false ? '<span class="gmb-pre-badge closed">Fechado agora</span>' : '';
+    const phone = place.nationalPhoneNumber || '';
+    const website = place.websiteUri || '';
+    const mapsUrl = place.googleMapsUri || `https://www.google.com/maps/search/${encodeURIComponent(name)}`;
+    // Foto
+    let photoHtml = `<div class="gmb-pre-photo-placeholder">🏪</div>`;
+    if (place.photos?.[0]?.name) {
+      const photoRef = place.photos[0].name;
+      const photoUrl = `https://places.googleapis.com/v1/${photoRef}/media?maxHeightPx=200&maxWidthPx=200&key=${key}`;
+      photoHtml = `<img class="gmb-pre-photo" src="${photoUrl}" onerror="this.outerHTML='<div class=\\'gmb-pre-photo-placeholder\\'>🏪</div>'" alt="${escHtml(name)}">`;
+    }
+    // Stars
+    const starsHtml = rating !== '—' ? '⭐'.repeat(Math.round(parseFloat(rating))) : '';
+    resultEl.innerHTML = `
+      <div class="gmb-pre-result">
+        <div class="gmb-pre-top">
+          ${photoHtml}
+          <div class="gmb-pre-info">
+            <div class="gmb-pre-name">${escHtml(name)}</div>
+            ${cat ? `<div class="gmb-pre-cat">${escHtml(cat)}</div>` : ''}
+            <div class="gmb-pre-addr">📍 ${escHtml(addr)}</div>
+            <div class="gmb-pre-rating">
+              <span class="gmb-pre-stars">${starsHtml} ${rating}</span>
+              <span class="gmb-pre-reviews">(${reviews} avaliações)</span>
+            </div>
+            <div class="gmb-pre-badges">
+              ${openBadge}
+              ${phone ? `<span class="gmb-pre-badge">📞 ${escHtml(phone)}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="gmb-pre-kpis">
+          <div class="gmb-pre-kpi"><div class="gmb-pre-kpi-val">${rating}</div><div class="gmb-pre-kpi-lbl">Nota</div></div>
+          <div class="gmb-pre-kpi"><div class="gmb-pre-kpi-val">${reviews}</div><div class="gmb-pre-kpi-lbl">Avaliações</div></div>
+          <div class="gmb-pre-kpi"><div class="gmb-pre-kpi-val">${place.photos?.length || 0}</div><div class="gmb-pre-kpi-lbl">Fotos</div></div>
+          <div class="gmb-pre-kpi"><div class="gmb-pre-kpi-val">${isOpen === true ? '✅' : isOpen === false ? '❌' : '—'}</div><div class="gmb-pre-kpi-lbl">Status</div></div>
+        </div>
+        <div class="gmb-pre-actions">
+          <a class="gmb-pre-action-btn" href="${mapsUrl}" target="_blank">🗺️ Ver no Google Maps</a>
+          ${website ? `<a class="gmb-pre-action-btn" href="${escHtml(website)}" target="_blank">🌐 Site</a>` : ''}
+          <button class="gmb-pre-action-btn" onclick="gmbPreToGrid('${escHtml(name)}','${escHtml(addr)}')">📍 Analisar no Grid</button>
+        </div>
+      </div>`;
+    resultEl.style.display = '';
+  } catch(e) {
+    showToast('error','❌', e.message || 'Erro ao buscar negócio.');
+    console.error(e);
+  } finally {
+    loadEl.style.display = 'none';
+  }
+}
+
+// Botão "Analisar no Grid" na pré-análise — preenche o grid e faz scroll
+function gmbPreToGrid(name, addr) {
+  // Preenche a palavra-chave com o tipo do negócio
+  const kw = document.getElementById('gmbRankKeyword');
+  if (kw && !kw.value) kw.value = name.split(' ')[0];
+  // Scroll até o grid
+  const gridSection = document.querySelector('.gmb-rank-section');
+  if (gridSection) gridSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showToast('success','📍','Preencha a palavra-chave e clique em Analisar no grid abaixo.');
+}
+
+// Mostra aviso de crédito/faturamento esgotado com botão de recarga
+function gmbShowBillingAlert(service) {
+  const existing = document.getElementById('gmbBillingAlert');
+  if (existing) return;
+  const el = document.createElement('div');
+  el.id = 'gmbBillingAlert';
+  el.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:#1e1e2e;border:1px solid #f97316;border-radius:14px;padding:16px 20px;
+    display:flex;align-items:center;gap:14px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.4);
+    max-width:460px;width:90%;`;
+  const billingUrl = service === 'dataforseo'
+    ? 'https://app.dataforseo.com/billing'
+    : 'https://console.cloud.google.com/billing';
+  el.innerHTML = `
+    <div style="font-size:28px;flex-shrink:0">💳</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">Créditos insuficientes</div>
+      <div style="font-size:12px;color:#9ca3af;">Seu saldo em <b style="color:#f97316">${service === 'dataforseo' ? 'DataForSEO' : 'Google Cloud'}</b> acabou. Recarregue para continuar.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+      <a href="${billingUrl}" target="_blank" style="padding:7px 14px;border-radius:8px;background:#f97316;color:#fff;font-size:12px;font-weight:700;text-decoration:none;text-align:center;white-space:nowrap;">Recarregar →</a>
+      <button onclick="document.getElementById('gmbBillingAlert')?.remove()" style="padding:5px 14px;border-radius:8px;background:transparent;border:1px solid #374151;color:#9ca3af;font-size:11px;cursor:pointer;">Fechar</button>
+    </div>`;
+  document.body.appendChild(el);
+  // Remove automaticamente após 30s
+  setTimeout(() => el.remove(), 30000);
+}
+
+async function gmbRankInitMap(centerLat, centerLng) {
+  const key = getApiKey('google_places');
+  if (!key) {
+    showToast('warn','⚠️','Adicione a Google Maps API Key nas Configurações.');
+    return false;
+  }
+  if (!window.google?.maps) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = `https://maps.googleapis.com/maps/api/js?key=${key}`;
+      s.onload = res;
+      s.onerror = () => { gmbShowBillingAlert('google'); rej(new Error('Erro ao carregar Google Maps. Verifique seus créditos.')); };
+      document.head.appendChild(s);
+    });
+  }
+  const el = document.getElementById('gmbRankMap');
+  _gmbRankState.map = new google.maps.Map(el, {
+    center: { lat: centerLat, lng: centerLng },
+    zoom: gmbRankZoomForKm(_gmbRankState.km, _gmbRankState.grid),
+    disableDefaultUI: true, gestureHandling: 'greedy',
+    styles: [{ featureType:'all', elementType:'labels.icon', stylers:[{visibility:'off'}] }]
+  });
+  return true;
+}
+
+function gmbRankZoomForKm(km, grid) {
+  const totalKm = km * (grid - 1);
+  if (totalKm <= 2)  return 15;
+  if (totalKm <= 5)  return 14;
+  if (totalKm <= 10) return 13;
+  if (totalKm <= 20) return 12;
+  return 11;
+}
+
+// Chama DataForSEO para um ponto e retorna a posição do negócio
+async function gmbRankFetchPos(keyword, businessName, lat, lng) {
+  const key = getApiKey('dataforseo');
+  if (!key) return null;
+  try {
+    const auth = btoa(`${key}:`);
+    const body = JSON.stringify([{
+      keyword,
+      location_coordinate: `${lat.toFixed(6)},${lng.toFixed(6)},9km`,
+      language_code: 'pt',
+      device: 'desktop',
+      depth: 20
+    }]);
+    const res = await fetch('https://api.dataforseo.com/v3/serp/google/maps/live/advanced', {
+      method: 'POST',
+      headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/json' },
+      body
+    });
+    // Detecta billing insuficiente (status 402 ou código de erro DataForSEO)
+    if (res.status === 402 || res.status === 403) {
+      gmbShowBillingAlert('dataforseo');
+      throw new Error('Créditos DataForSEO esgotados.');
+    }
+    const json = await res.json();
+    const statusCode = json?.tasks?.[0]?.status_code;
+    if (statusCode === 40006 || statusCode === 40015) { // insufficient funds / suspended
+      gmbShowBillingAlert('dataforseo');
+      throw new Error('Créditos DataForSEO insuficientes. Recarregue para continuar.');
+    }
+    const items = json?.tasks?.[0]?.result?.[0]?.items || [];
+    const bn = (businessName || '').toLowerCase();
+    const found = items.find(it =>
+      it.type === 'maps_search' && (it.title || '').toLowerCase().includes(bn.split(' ')[0].toLowerCase())
+    );
+    return found ? found.rank_absolute : 20;
+  } catch(e) { return null; }
+}
+
+async function gmbRankScan() {
+  if (_gmbRankState.scanning) return;
+  const keyword = document.getElementById('gmbRankKeyword')?.value?.trim();
+  if (!keyword) { showToast('warn','⚠️','Digite uma palavra-chave.'); return; }
+  const loc = _gmbCurrentLoc;
+  if (!loc) { showToast('warn','⚠️','Selecione um perfil GMB primeiro.'); return; }
+
+  // Geocode the business address to get lat/lng
+  const placesKey = getApiKey('google_places');
+  const dfKey = getApiKey('dataforseo');
+  if (!placesKey) { showToast('warn','⚠️','Configure a Google Places API Key nas Configurações.'); return; }
+  if (!dfKey) { showToast('warn','⚠️','Configure a DataForSEO API Key nas Configurações.'); return; }
+
+  _gmbRankState.scanning = true;
+  const loadEl = document.getElementById('gmbRankLoading');
+  const loadTxt = document.getElementById('gmbRankLoadingText');
+  loadEl.style.display = 'flex';
+
+  try {
+    // Obter lat/lng do endereço do perfil (ou usar mock se demo)
+    let centerLat, centerLng;
+    if (_gmbDemoMode && loc._demoLat) {
+      centerLat = loc._demoLat; centerLng = loc._demoLng;
+    } else {
+      const addr = loc.storefrontAddress
+        ? [loc.storefrontAddress.addressLines?.[0], loc.storefrontAddress.locality, loc.storefrontAddress.administrativeArea].filter(Boolean).join(', ')
+        : loc.title || '';
+      const geoRes = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addr)}&key=${placesKey}`);
+      const geoJson = await geoRes.json();
+      // Detecta erros de billing/cota
+      if (geoJson?.status === 'REQUEST_DENIED' || geoJson?.status === 'OVER_DAILY_LIMIT' || geoJson?.status === 'OVER_QUERY_LIMIT') {
+        gmbShowBillingAlert('google');
+        throw new Error('Créditos Google esgotados. Recarregue para continuar.');
+      }
+      const pos = geoJson?.results?.[0]?.geometry?.location;
+      if (!pos) throw new Error('Não foi possível localizar o endereço no Google Maps.');
+      centerLat = pos.lat; centerLng = pos.lng;
+    }
+
+    // Inicializar mapa
+    await gmbRankInitMap(centerLat, centerLng);
+
+    // Gerar grid de pontos
+    const pts = gmbRankGridPoints(centerLat, centerLng, _gmbRankState.grid, _gmbRankState.km);
+    const total = pts.length;
+    const results = [];
+
+    // Para cada ponto, buscar posição (em paralelo em lotes de 5)
+    const biz = loc.title || loc.name || '';
+    const BATCH = _gmbRankState.acc === 'Rápido' ? 10 : _gmbRankState.acc === 'Médio' ? 5 : 3;
+    for (let i = 0; i < pts.length; i += BATCH) {
+      const batch = pts.slice(i, i + BATCH);
+      loadTxt.textContent = `Analisando ${Math.min(i + BATCH, total)} de ${total} pontos...`;
+      const batchRes = _gmbDemoMode
+        ? batch.map(p => ({ ...p, pos: gmbRankDemoPos(p.row, p.col, _gmbRankState.grid) }))
+        : await Promise.all(batch.map(async p => ({ ...p, pos: await gmbRankFetchPos(keyword, biz, p.lat, p.lng) })));
+      results.push(...batchRes);
+    }
+
+    _gmbRankState.lastResult = { keyword, biz, pts: results, grid: _gmbRankState.grid, km: _gmbRankState.km, ts: Date.now() };
+    gmbRankDrawCircles(results, centerLat, centerLng);
+    gmbRankShowKpis(results);
+    gmbRankSaveHistory(_gmbRankState.lastResult);
+  } catch(e) {
+    showToast('error','❌', e.message || 'Erro ao escanear.');
+    console.error(e);
+  } finally {
+    _gmbRankState.scanning = false;
+    loadEl.style.display = 'none';
+  }
+}
+
+// Demo: posição simulada (mais alta no centro)
+function gmbRankDemoPos(row, col, grid) {
+  const half = Math.floor(grid / 2);
+  const dist = Math.sqrt(row * row + col * col) / half;
+  const base = Math.round(dist * 12) + 1 + Math.round(Math.random() * 3 - 1.5);
+  return Math.max(1, Math.min(20, base));
+}
+
+// Desenha círculos coloridos sobre o mapa usando marcadores personalizados
+function gmbRankDrawCircles(results, centerLat, centerLng) {
+  if (!_gmbRankState.map || !window.google?.maps) return;
+  // Remove marcadores antigos
+  _gmbRankState.markers.forEach(m => m.setMap(null));
+  _gmbRankState.markers = [];
+
+  results.forEach(pt => {
+    const color = gmbRankColor(pt.pos);
+    const label = pt.pos && pt.pos <= 20 ? String(pt.pos) : '—';
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44">
+        <circle cx="22" cy="22" r="20" fill="${color}" opacity="0.92"/>
+        <text x="22" y="27" text-anchor="middle" font-size="${label.length > 1 ? '13' : '15'}"
+          font-weight="700" font-family="Inter,sans-serif" fill="white">${label}</text>
+      </svg>`;
+    const marker = new google.maps.Marker({
+      position: { lat: pt.lat, lng: pt.lng },
+      map: _gmbRankState.map,
+      icon: { url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg), scaledSize: new google.maps.Size(44, 44), anchor: new google.maps.Point(22, 22) },
+      title: `Posição: ${label}`
+    });
+    _gmbRankState.markers.push(marker);
+  });
+}
+
+function gmbRankShowKpis(results) {
+  const valid = results.filter(r => r.pos && r.pos > 0 && r.pos <= 20);
+  const out = results.filter(r => !r.pos || r.pos > 20).length;
+  const avg = valid.length ? (valid.reduce((s, r) => s + r.pos, 0) / valid.length).toFixed(1) : '—';
+  const top3  = valid.filter(r => r.pos <= 3).length;
+  const top10 = valid.filter(r => r.pos <= 10).length;
+  const pct = n => valid.length ? Math.round(n / results.length * 100) + '%' : '—';
+  document.getElementById('grkAvg').textContent  = avg;
+  document.getElementById('grkTop3').textContent  = pct(top3);
+  document.getElementById('grkTop10').textContent = pct(top10);
+  document.getElementById('grkOut').textContent   = out;
+  document.getElementById('gmbRankKpis').style.display = '';
+}
+
+async function gmbRankSaveHistory(result) {
+  if (!_db || !_auth?.currentUser || !_gmbCurrentLoc) return;
+  try {
+    const locId = (_gmbCurrentLoc.name || _gmbCurrentLoc.title || 'demo').replace(/\//g,'_');
+    await _db.collection('gmb_rank_history').add({
+      locId, keyword: result.keyword,
+      grid: result.grid, km: result.km,
+      avgPos: parseFloat((result.pts.filter(p=>p.pos&&p.pos<=20).reduce((s,p)=>s+p.pos,0) / (result.pts.filter(p=>p.pos&&p.pos<=20).length||1)).toFixed(1)),
+      ts: result.ts,
+      uid: _auth.currentUser.uid
+    });
+    gmbRankLoadHistory();
+  } catch(e) {}
+}
+
+async function gmbRankLoadHistory() {
+  if (!_db || !_gmbCurrentLoc) return;
+  try {
+    const locId = (_gmbCurrentLoc.name || _gmbCurrentLoc.title || 'demo').replace(/\//g,'_');
+    const snap = await _db.collection('gmb_rank_history').where('locId','==',locId).orderBy('ts','desc').limit(10).get();
+    const items = snap.docs.map(d => d.data());
+    if (!items.length) return;
+    const listEl = document.getElementById('gmbRankHistoryList');
+    listEl.innerHTML = items.map(h => {
+      const color = h.avgPos <= 3 ? '#22c55e' : h.avgPos <= 7 ? '#eab308' : h.avgPos <= 12 ? '#f97316' : '#ef4444';
+      const date = new Date(h.ts).toLocaleDateString('pt-BR');
+      return `<div class="gmb-rank-hist-item">
+        <div class="gmb-rank-hist-kw">"${escHtml(h.keyword)}"</div>
+        <div class="gmb-rank-hist-meta">${h.grid}×${h.grid} · ${h.km}km · ${date}</div>
+        <div class="gmb-rank-hist-avg" style="background:${color}">${h.avgPos}</div>
+      </div>`;
+    }).join('');
+    document.getElementById('gmbRankHistory').style.display = '';
+  } catch(e) {}
+}
+
 /* ─── Google Meu Negócio (GMB) ───────────────────────── */
 let _gmbToken = localStorage.getItem('gmbToken') || null;
 let _gmbAccounts = [];
@@ -11589,6 +12363,8 @@ async function gmbLoadLocation() {
   gmbRenderCharts();
   gmbRenderReviews();
   if (!_gmbDemoMode) gmbSaveHistory();
+  // Carrega histórico de scans de ranking
+  gmbRankLoadHistory();
 }
 
 function gmbCalcScore(loc, reviews) {
