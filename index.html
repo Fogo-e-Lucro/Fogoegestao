@@ -1496,8 +1496,65 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .gmb-pre-action-btn { padding:8px 16px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; font-family:var(--font); display:flex; align-items:center; gap:6px; transition:all .15s; text-decoration:none; }
 .gmb-pre-action-btn:hover { border-color:var(--accent); color:var(--accent); }
 .gmb-pre-notfound { text-align:center; padding:20px; color:var(--text3); font-size:13px; }
+.gmb-health-wrap { display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap; margin:16px 0; padding:16px; background:var(--bg); border-radius:12px; border:1px solid var(--border); }
+.gmb-health-score-circle { position:relative; flex-shrink:0; display:flex; flex-direction:column; align-items:center; }
+.gmb-health-score-circle svg { display:block; }
+.gmb-health-score-num { position:absolute; top:50%; left:50%; transform:translate(-50%,-60%); font-size:28px; font-weight:900; color:var(--text1); }
+.gmb-health-score-lbl { position:absolute; top:50%; left:50%; transform:translate(-50%,20%); font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.5px; white-space:nowrap; }
+.gmb-health-categories { flex:1; min-width:180px; display:flex; flex-direction:column; gap:8px; }
+.gmb-health-cat { display:flex; align-items:center; gap:8px; }
+.gmb-health-cat-icon { font-size:14px; width:20px; text-align:center; flex-shrink:0; }
+.gmb-health-cat-name { font-size:12px; color:var(--text2); flex:1; }
+.gmb-health-cat-pts { font-size:12px; font-weight:700; color:var(--text1); width:40px; text-align:right; flex-shrink:0; }
+.gmb-health-cat-bar { width:100%; height:5px; background:var(--border); border-radius:3px; margin-top:2px; overflow:hidden; }
+.gmb-health-cat-bar-fill { height:100%; border-radius:3px; transition:width .4s; }
+.gmb-health-title { font-size:13px; font-weight:700; color:var(--text1); margin-bottom:10px; }
+.gmb-health-checklist { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.gmb-health-check { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; background:var(--bg); border:1px solid var(--border); font-size:12px; color:var(--text2); }
+.gmb-health-check.ok { border-color:rgba(34,197,94,.3); background:rgba(34,197,94,.05); }
+.gmb-health-check.warn { border-color:rgba(245,158,11,.3); background:rgba(245,158,11,.05); }
+.gmb-health-check.bad { border-color:rgba(239,68,68,.3); background:rgba(239,68,68,.05); }
+.gmb-health-check-icon { font-size:14px; flex-shrink:0; }
+.gmb-health-check-text { flex:1; }
+.gmb-health-check-pts { font-size:11px; font-weight:700; color:var(--text3); white-space:nowrap; }
+/* Lista de resultados da pré-análise */
+.gmb-pre-list { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+.gmb-pre-list-header { font-size:11px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+.gmb-pre-list-item { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:12px; border:1px solid var(--border); background:var(--bg); cursor:pointer; transition:all .15s; }
+.gmb-pre-list-item:hover { border-color:var(--accent); background:var(--bg2); }
+.gmb-pre-list-item.selected { border-color:var(--accent); background:rgba(99,102,241,.07); }
+.gmb-pre-list-thumb { width:44px; height:44px; border-radius:8px; object-fit:cover; flex-shrink:0; background:var(--bg2); }
+.gmb-pre-list-thumb-ph { width:44px; height:44px; border-radius:8px; background:var(--bg2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.gmb-pre-list-body { flex:1; min-width:0; }
+.gmb-pre-list-name { font-size:13px; font-weight:700; color:var(--text1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gmb-pre-list-loc { font-size:11px; color:var(--text3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gmb-pre-list-cat { font-size:11px; color:var(--accent); font-weight:600; margin-top:1px; }
+.gmb-pre-list-right { display:flex; flex-direction:column; align-items:flex-end; gap:3px; flex-shrink:0; }
+.gmb-pre-list-rating { font-size:13px; font-weight:800; color:var(--text1); }
+.gmb-pre-list-reviews { font-size:10px; color:var(--text3); }
+.gmb-pre-list-open { font-size:10px; font-weight:700; padding:2px 7px; border-radius:50px; }
+.gmb-pre-list-open.open { background:rgba(34,197,94,.12); color:#22c55e; }
+.gmb-pre-list-open.closed { background:rgba(239,68,68,.1); color:#ef4444; }
+/* Detalhe expandido */
+.gmb-pre-detail { margin-top:14px; border:1px solid var(--border); border-radius:14px; padding:16px; background:var(--bg); }
+.gmb-pre-detail-back { font-size:12px; color:var(--text3); cursor:pointer; margin-bottom:12px; display:inline-flex; align-items:center; gap:4px; }
+.gmb-pre-detail-back:hover { color:var(--accent); }
 /* ── Ranking Grid ── */
 .gmb-rank-section { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px 24px; margin-bottom:16px; }
+.gmb-rank-biz-row { margin-bottom:14px; }
+.gmb-rank-biz-wrap { display:flex; align-items:center; gap:10px; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 14px; }
+.gmb-rank-biz-dropdown { border-top:1px solid var(--border); border-radius:0 0 10px 10px; overflow:hidden; }
+.gmb-rank-biz-option { display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; transition:background .1s; }
+.gmb-rank-biz-option:hover, .gmb-rank-biz-option.focused { background:var(--bg2); }
+.gmb-rank-biz-option-icon { font-size:14px; flex-shrink:0; color:var(--text3); }
+.gmb-rank-biz-option-body { flex:1; min-width:0; }
+.gmb-rank-biz-option-name { font-size:13px; font-weight:700; color:var(--text1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gmb-rank-biz-option-addr { font-size:11px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+.gmb-rank-biz-loading { padding:12px 14px; font-size:12px; color:var(--text3); text-align:center; }
+.gmb-rank-biz-input { flex:1; background:transparent; border:none; outline:none; color:var(--text1); font-size:13px; font-family:var(--font); }
+.gmb-rank-biz-input::placeholder { color:var(--text3); }
+.gmb-rank-biz-btn { padding:6px 14px; border-radius:8px; background:var(--accent); color:#fff; border:none; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; font-family:var(--font); transition:opacity .15s; }
+.gmb-rank-biz-btn:hover { opacity:.85; }
 .gmb-rank-header { margin-bottom:14px; }
 .gmb-rank-title { font-size:15px; font-weight:700; color:var(--text1); }
 .gmb-rank-sub { font-size:12px; color:var(--text3); margin-top:2px; }
@@ -1951,6 +2008,23 @@ body[data-active-tab="metricas"] .rest-bar { display:none; }
 .mtr-kpi[data-source="ad"] .spk-line { stroke:#3b82f6; }
 .mtr-kpi[data-source="ad"] .spk-area { fill:rgba(59,130,246,.16); }
 .mtr-kpi-spark-empty { position:absolute;bottom:8px;left:14px;right:14px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text3);font-style:italic;opacity:.5; }
+
+/* 2b) LOCATION MAP CARD */
+.mtr-loc-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px 24px; margin-bottom:16px; }
+.mtr-loc-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+.mtr-loc-title { font-size:15px; font-weight:800; color:var(--text1); }
+.mtr-loc-sub { font-size:12px; color:var(--text3); margin-top:2px; }
+.mtr-loc-view-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all .15s; font-family:var(--font); }
+.mtr-loc-view-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+.mtr-loc-map { width:100%; height:420px; border-radius:12px; border:1px solid var(--border); background:var(--bg2); }
+.mtr-loc-list { display:flex; flex-direction:column; gap:8px; }
+.mtr-loc-item { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--bg); }
+.mtr-loc-item-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.mtr-loc-item-name { font-size:13px; font-weight:700; color:var(--text1); }
+.mtr-loc-item-addr { font-size:11px; color:var(--text3); margin-top:1px; }
+.mtr-loc-item-actions { margin-left:auto; display:flex; gap:6px; }
+.mtr-loc-item-btn { padding:4px 10px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--text2); font-size:11px; cursor:pointer; font-family:var(--font); }
+.mtr-loc-item-btn:hover { border-color:var(--accent); color:var(--accent); }
 
 /* 3) PRESENTATION MODE */
 .mtr-present-btn { padding:8px 12px;background:var(--card);border:1px solid var(--border);color:var(--text1);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s; }
@@ -4290,7 +4364,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           <input class="gmb-preanalise-input" id="gmbPreInput" placeholder="Ex: Pizzaria Bella Napoli, São Paulo" onkeydown="if(event.key==='Enter')gmbPreAnalise()">
           <button class="gmb-preanalise-btn" onclick="gmbPreAnalise()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            Analisar
+            Pesquisar
           </button>
         </div>
         <div id="gmbPreLoading" style="display:none;text-align:center;padding:20px;color:var(--text3);font-size:13px;">
@@ -4423,58 +4497,6 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           <div id="gmbReviewsList"><div class="gmb-empty">Selecione um perfil para ver as avaliações</div></div>
         </div>
 
-        <!-- ── Ranking Grid ── -->
-        <div class="gmb-rank-section">
-          <div class="gmb-rank-header">
-            <div class="gmb-rank-title">🗺️ Grid de Posicionamento</div>
-            <div class="gmb-rank-sub">Veja em quais posições seu negócio aparece ao redor do endereço</div>
-          </div>
-
-          <!-- Toolbar -->
-          <div class="gmb-rank-toolbar">
-            <div class="gmb-rank-keyword-wrap">
-              <span class="gmb-rank-quote">"</span>
-              <input class="gmb-rank-keyword" id="gmbRankKeyword" placeholder="Palavra-Chave" />
-              <button class="gmb-rank-btn" onclick="gmbRankScan()">Analisar</button>
-            </div>
-            <div class="gmb-rank-sep"></div>
-            <input type="range" class="gmb-rank-slider" id="gmbRankGridSlider" min="3" max="21" step="2" value="11" oninput="gmbRankSliderUpdate(this.value)">
-            <div class="gmb-rank-sep"></div>
-            <div class="gmb-rank-pill" onclick="gmbRankCycleKm(this)">
-              <span>📍</span><span id="gmbRankKmLabel">2 km</span><span class="gmb-rank-chevron">⌄</span>
-            </div>
-            <div class="gmb-rank-pill" onclick="gmbRankCycleGrid(this)">
-              <span>⊞</span><span id="gmbRankGridLabel">Grade 11×11</span><span class="gmb-rank-chevron">⌄</span>
-            </div>
-            <div class="gmb-rank-pill" onclick="gmbRankCycleAccuracy(this)">
-              <span>🎯</span><span id="gmbRankAccLabel">Médio</span><span class="gmb-rank-chevron">⌄</span>
-            </div>
-          </div>
-
-          <!-- Map + Grid overlay -->
-          <div class="gmb-rank-map-wrap" id="gmbRankMapWrap">
-            <div id="gmbRankMap" class="gmb-rank-map"></div>
-            <canvas id="gmbRankCanvas" class="gmb-rank-canvas"></canvas>
-            <div id="gmbRankLoading" class="gmb-rank-loading" style="display:none">
-              <div class="gmb-rank-spinner"></div>
-              <div id="gmbRankLoadingText">Analisando posições...</div>
-            </div>
-          </div>
-
-          <!-- KPIs do scan -->
-          <div class="gmb-rank-kpis" id="gmbRankKpis" style="display:none">
-            <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkAvg">—</div><div class="gmb-rank-kpi-lbl">Posição média</div></div>
-            <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkTop3">—</div><div class="gmb-rank-kpi-lbl">Top 3</div></div>
-            <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkTop10">—</div><div class="gmb-rank-kpi-lbl">Top 10</div></div>
-            <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkOut">—</div><div class="gmb-rank-kpi-lbl">Não rankeou</div></div>
-          </div>
-
-          <!-- Histórico -->
-          <div class="gmb-rank-history" id="gmbRankHistory" style="display:none">
-            <div class="gmb-rank-history-title">📈 Histórico de scans</div>
-            <div id="gmbRankHistoryList" class="gmb-rank-history-list"></div>
-          </div>
-        </div>
       </div>
 
       <!-- Empty state -->
@@ -4482,6 +4504,75 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
         <div style="font-size:48px;margin-bottom:12px;">📍</div>
         <div style="font-size:15px;font-weight:700;color:var(--text1);margin-bottom:6px;">Conecte sua conta Google</div>
         <div style="font-size:13px;">Clique em "Conectar com Google" acima para gerenciar seus perfis</div>
+      </div>
+
+      <!-- ── Ranking Grid (sempre visível, independente de conta GMB) ── -->
+      <div class="gmb-rank-section">
+        <div class="gmb-rank-header">
+          <div class="gmb-rank-title">🗺️ Grid de Posicionamento</div>
+          <div class="gmb-rank-sub">Veja em quais posições seu negócio aparece ao redor do endereço</div>
+        </div>
+
+        <!-- Campo de busca do negócio com autocomplete -->
+        <div class="gmb-rank-biz-row" id="gmbRankBizRow">
+          <div class="gmb-rank-biz-wrap" style="position:relative;flex-direction:column;align-items:stretch;gap:0;padding:0;">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;">
+              <span style="font-size:16px;flex-shrink:0">📍</span>
+              <input class="gmb-rank-biz-input" id="gmbRankBizInput"
+                placeholder="Digite o nome do negócio..."
+                oninput="gmbRankBizAutocomplete(this.value)"
+                onkeydown="gmbRankBizKeydown(event)"
+                autocomplete="off" />
+              <button class="gmb-rank-biz-btn" id="gmbRankBizBtn" onclick="gmbRankSetBiz()">Usar este endereço</button>
+            </div>
+            <div id="gmbRankBizDropdown" class="gmb-rank-biz-dropdown" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="gmb-rank-toolbar">
+          <div class="gmb-rank-keyword-wrap">
+            <span class="gmb-rank-quote">"</span>
+            <input class="gmb-rank-keyword" id="gmbRankKeyword" placeholder="Palavra-Chave" />
+            <button class="gmb-rank-btn" onclick="gmbRankScan()">Analisar</button>
+          </div>
+          <div class="gmb-rank-sep"></div>
+          <input type="range" class="gmb-rank-slider" id="gmbRankGridSlider" min="3" max="21" step="2" value="11" oninput="gmbRankSliderUpdate(this.value)">
+          <div class="gmb-rank-sep"></div>
+          <div class="gmb-rank-pill" onclick="gmbRankCycleKm(this)">
+            <span>📍</span><span id="gmbRankKmLabel">2 km</span><span class="gmb-rank-chevron">⌄</span>
+          </div>
+          <div class="gmb-rank-pill" onclick="gmbRankCycleGrid(this)">
+            <span>⊞</span><span id="gmbRankGridLabel">Grade 11×11</span><span class="gmb-rank-chevron">⌄</span>
+          </div>
+          <div class="gmb-rank-pill" onclick="gmbRankCycleAccuracy(this)">
+            <span>🎯</span><span id="gmbRankAccLabel">Médio</span><span class="gmb-rank-chevron">⌄</span>
+          </div>
+        </div>
+
+        <!-- Map + Grid overlay -->
+        <div class="gmb-rank-map-wrap" id="gmbRankMapWrap">
+          <div id="gmbRankMap" class="gmb-rank-map"></div>
+          <canvas id="gmbRankCanvas" class="gmb-rank-canvas"></canvas>
+          <div id="gmbRankLoading" class="gmb-rank-loading" style="display:none">
+            <div class="gmb-rank-spinner"></div>
+            <div id="gmbRankLoadingText">Analisando posições...</div>
+          </div>
+        </div>
+
+        <!-- KPIs do scan -->
+        <div class="gmb-rank-kpis" id="gmbRankKpis" style="display:none">
+          <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkAvg">—</div><div class="gmb-rank-kpi-lbl">Posição média</div></div>
+          <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkTop3">—</div><div class="gmb-rank-kpi-lbl">Top 3</div></div>
+          <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkTop10">—</div><div class="gmb-rank-kpi-lbl">Top 10</div></div>
+          <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkOut">—</div><div class="gmb-rank-kpi-lbl">Não rankeou</div></div>
+        </div>
+
+        <!-- Histórico -->
+        <div class="gmb-rank-history" id="gmbRankHistory" style="display:none">
+          <div class="gmb-rank-history-title">📈 Histórico de scans</div>
+          <div id="gmbRankHistoryList" class="gmb-rank-history-list"></div>
+        </div>
       </div>
 
     </div>
@@ -4557,6 +4648,28 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
 
       <div id="mtrBody">
         <div class="mtr-empty">Selecione uma conta para ver as métricas.</div>
+      </div>
+
+      <!-- Localização dos Clientes -->
+      <div class="mtr-loc-card" id="mtrLocCard">
+        <div class="mtr-loc-header">
+          <div>
+            <div class="mtr-loc-title">📍 Localização dos Clientes</div>
+            <div class="mtr-loc-sub">Visualize todos os seus clientes no mapa</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="mtr-loc-view-btn active" id="mtrLocBtnMap" onclick="mtrLocSetView('map',this)">🗺️ Mapa</button>
+            <button class="mtr-loc-view-btn" id="mtrLocBtnList" onclick="mtrLocSetView('list',this)">📋 Lista</button>
+          </div>
+        </div>
+        <!-- Map view -->
+        <div id="mtrLocMapView">
+          <div id="mtrClientsMap" class="mtr-loc-map"></div>
+        </div>
+        <!-- List view -->
+        <div id="mtrLocListView" style="display:none">
+          <div id="mtrLocList" class="mtr-loc-list"></div>
+        </div>
       </div>
 
     </div>
@@ -6733,6 +6846,8 @@ function switchTab(tab, btn) {
     }
     // Populate GMB selector
     if (typeof mtrPopulateGmbSelect === 'function') mtrPopulateGmbSelect();
+    // Render client location map
+    setTimeout(() => mtrLocRenderMap(), 300);
   }
   if (tab === 'social') {
     const savedToken = getSpToken ? getSpToken() : null;
@@ -11699,6 +11814,9 @@ function gmbRankColor(pos) {
 
 // Inicializa o mapa do Google Maps no container
 /* ─── Pré-análise pública ─────────────────────────────── */
+// Cache dos resultados da última pesquisa
+let _gmbPrePlaces = [];
+
 async function gmbPreAnalise() {
   const query = document.getElementById('gmbPreInput')?.value?.trim();
   if (!query) { showToast('warn','⚠️','Digite o nome do negócio.'); return; }
@@ -11709,46 +11827,202 @@ async function gmbPreAnalise() {
   loadEl.style.display = 'block';
   resultEl.style.display = 'none';
   resultEl.innerHTML = '';
+  _gmbPrePlaces = [];
   try {
-    // Text Search (Places API New)
     const searchRes = await fetch(`https://places.googleapis.com/v1/places:searchText`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': key,
-        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.primaryTypeDisplayName,places.regularOpeningHours,places.websiteUri,places.nationalPhoneNumber,places.photos,places.googleMapsUri,places.businessStatus'
+        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.primaryTypeDisplayName,places.regularOpeningHours,places.websiteUri,places.nationalPhoneNumber,places.photos,places.googleMapsUri,places.businessStatus,places.addressComponents,places.location,places.editorialSummary,places.currentOpeningHours,places.internationalPhoneNumber,places.priceLevel,places.servesBeer,places.servesWine,places.servesBrunch,places.servesLunch,places.servesDinner,places.servesVegetarianFood,places.takeout,places.delivery,places.dineIn,places.reservable,places.wheelchairAccessibleEntrance'
       },
-      body: JSON.stringify({ textQuery: query, languageCode: 'pt-BR', maxResultCount: 1 })
+      body: JSON.stringify({ textQuery: query, languageCode: 'pt-BR', maxResultCount: 10 })
     });
     if (searchRes.status === 429 || searchRes.status === 403) { gmbShowBillingAlert('google'); throw new Error('Cota da Google Places excedida.'); }
     const searchJson = await searchRes.json();
-    const place = searchJson?.places?.[0];
-    if (!place) {
-      resultEl.innerHTML = `<div class="gmb-pre-notfound">😕 Nenhum negócio encontrado para "<b>${escHtml(query)}</b>".<br>Tente ser mais específico, ex: "Pizzaria Bella Napoli São Paulo".</div>`;
+    const places = searchJson?.places || [];
+    if (!places.length) {
+      resultEl.innerHTML = `<div class="gmb-pre-notfound">😕 Nenhum resultado para "<b>${escHtml(query)}</b>".<br>Tente incluir a cidade, ex: "Pizzaria Bella Napoli São Paulo".</div>`;
       resultEl.style.display = '';
       return;
     }
-    // Monta card de resultado
-    const name = place.displayName?.text || query;
-    const addr = place.formattedAddress || '—';
-    const rating = place.rating ? place.rating.toFixed(1) : '—';
-    const reviews = place.userRatingCount ? place.userRatingCount.toLocaleString('pt-BR') : '—';
-    const cat = place.primaryTypeDisplayName?.text || '';
-    const isOpen = place.regularOpeningHours?.openNow;
-    const openBadge = isOpen === true ? '<span class="gmb-pre-badge open">Aberto agora</span>' : isOpen === false ? '<span class="gmb-pre-badge closed">Fechado agora</span>' : '';
-    const phone = place.nationalPhoneNumber || '';
-    const website = place.websiteUri || '';
-    const mapsUrl = place.googleMapsUri || `https://www.google.com/maps/search/${encodeURIComponent(name)}`;
-    // Foto
-    let photoHtml = `<div class="gmb-pre-photo-placeholder">🏪</div>`;
-    if (place.photos?.[0]?.name) {
-      const photoRef = place.photos[0].name;
-      const photoUrl = `https://places.googleapis.com/v1/${photoRef}/media?maxHeightPx=200&maxWidthPx=200&key=${key}`;
-      photoHtml = `<img class="gmb-pre-photo" src="${photoUrl}" onerror="this.outerHTML='<div class=\\'gmb-pre-photo-placeholder\\'>🏪</div>'" alt="${escHtml(name)}">`;
-    }
-    // Stars
-    const starsHtml = rating !== '—' ? '⭐'.repeat(Math.round(parseFloat(rating))) : '';
+    _gmbPrePlaces = places;
+    // Monta lista
+    const listItems = places.map((p, i) => {
+      const name = p.displayName?.text || '—';
+      const addr = p.formattedAddress || '—';
+      // Extrai cidade e estado dos addressComponents
+      let city = '', state = '';
+      (p.addressComponents || []).forEach(c => {
+        if (c.types?.includes('administrative_area_level_2')) city = c.longText || c.shortText || '';
+        if (c.types?.includes('administrative_area_level_1')) state = c.shortText || c.longText || '';
+      });
+      const loc = [city, state].filter(Boolean).join(' · ') || addr.split(',').slice(-2).map(s=>s.trim()).join(', ');
+      const cat = p.primaryTypeDisplayName?.text || '';
+      const rating = p.rating ? p.rating.toFixed(1) : '—';
+      const reviews = p.userRatingCount ? p.userRatingCount.toLocaleString('pt-BR') : '0';
+      const isOpen = p.regularOpeningHours?.openNow;
+      const openBadge = isOpen === true
+        ? `<span class="gmb-pre-list-open open">Aberto</span>`
+        : isOpen === false ? `<span class="gmb-pre-list-open closed">Fechado</span>` : '';
+      let thumbHtml = `<div class="gmb-pre-list-thumb-ph">🏪</div>`;
+      if (p.photos?.[0]?.name) {
+        const photoUrl = `https://places.googleapis.com/v1/${p.photos[0].name}/media?maxHeightPx=88&maxWidthPx=88&key=${key}`;
+        thumbHtml = `<img class="gmb-pre-list-thumb" src="${photoUrl}" onerror="this.outerHTML='<div class=\\'gmb-pre-list-thumb-ph\\'>🏪</div>'" alt="">`;
+      }
+      return `
+        <div class="gmb-pre-list-item" onclick="gmbPreShowDetail(${i})">
+          ${thumbHtml}
+          <div class="gmb-pre-list-body">
+            <div class="gmb-pre-list-name">${escHtml(name)}</div>
+            ${cat ? `<div class="gmb-pre-list-cat">${escHtml(cat)}</div>` : ''}
+            <div class="gmb-pre-list-loc">📍 ${escHtml(loc || addr)}</div>
+          </div>
+          <div class="gmb-pre-list-right">
+            ${rating !== '—' ? `<div class="gmb-pre-list-rating">⭐ ${rating}</div>` : '<div class="gmb-pre-list-rating">—</div>'}
+            <div class="gmb-pre-list-reviews">${reviews} avaliações</div>
+            ${openBadge}
+          </div>
+        </div>`;
+    }).join('');
+
     resultEl.innerHTML = `
+      <div class="gmb-pre-list">
+        <div class="gmb-pre-list-header">${places.length} resultado${places.length > 1 ? 's' : ''} encontrado${places.length > 1 ? 's' : ''} — clique para analisar</div>
+        ${listItems}
+      </div>`;
+    resultEl.style.display = '';
+  } catch(e) {
+    showToast('error','❌', e.message || 'Erro ao buscar negócio.');
+    console.error(e);
+  } finally {
+    loadEl.style.display = 'none';
+  }
+}
+
+// Exibe detalhe completo de um resultado da lista
+function gmbPreShowDetail(idx) {
+  const key = getApiKey('google_places');
+  const place = _gmbPrePlaces[idx];
+  if (!place) return;
+  const resultEl = document.getElementById('gmbPreResult');
+  // Marca item selecionado na lista
+  resultEl.querySelectorAll('.gmb-pre-list-item').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+  // Remove detalhe anterior se existir
+  resultEl.querySelector('.gmb-pre-detail')?.remove();
+
+  const name = place.displayName?.text || '—';
+  const addr = place.formattedAddress || '—';
+  const rating = place.rating ? place.rating.toFixed(1) : '—';
+  const reviews = place.userRatingCount ? place.userRatingCount.toLocaleString('pt-BR') : '—';
+  const cat = place.primaryTypeDisplayName?.text || '';
+  const isOpen = place.regularOpeningHours?.openNow;
+  const phone = place.nationalPhoneNumber || '';
+  const website = place.websiteUri || '';
+  const mapsUrl = place.googleMapsUri || `https://www.google.com/maps/search/${encodeURIComponent(name)}`;
+
+  // Extrai cidade, estado, país
+  let city = '', state = '', country = '';
+  (place.addressComponents || []).forEach(c => {
+    if (c.types?.includes('administrative_area_level_2')) city = c.longText || c.shortText || '';
+    if (c.types?.includes('administrative_area_level_1')) state = c.longText || '';
+    if (c.types?.includes('country')) country = c.longText || '';
+  });
+  const locFull = [city, state, country].filter(Boolean).join(', ');
+
+  const openBadge = isOpen === true
+    ? '<span class="gmb-pre-badge open">🟢 Aberto agora</span>'
+    : isOpen === false ? '<span class="gmb-pre-badge closed">🔴 Fechado agora</span>' : '';
+
+  let photoHtml = `<div class="gmb-pre-photo-placeholder">🏪</div>`;
+  if (place.photos?.[0]?.name && key) {
+    const photoUrl = `https://places.googleapis.com/v1/${place.photos[0].name}/media?maxHeightPx=200&maxWidthPx=200&key=${key}`;
+    photoHtml = `<img class="gmb-pre-photo" src="${photoUrl}" onerror="this.outerHTML='<div class=\\'gmb-pre-photo-placeholder\\'>🏪</div>'" alt="${escHtml(name)}">`;
+  }
+  const starsHtml = rating !== '—' ? '⭐'.repeat(Math.min(5, Math.round(parseFloat(rating)))) : '';
+
+  // ── Health Score Calculation ──────────────────────────────
+  const ratingNum = place.rating || 0;
+  const reviewCount = place.userRatingCount || 0;
+  const photoCount = place.photos?.length || 0;
+  const hasHours = !!(place.regularOpeningHours?.periods?.length || place.currentOpeningHours?.periods?.length);
+  const hasPhone = !!place.nationalPhoneNumber;
+  const hasWebsite = !!place.websiteUri;
+  const hasCat = !!(place.primaryTypeDisplayName?.text || place.types?.length);
+  const hasDesc = !!place.editorialSummary?.text;
+  const isOperational = place.businessStatus === 'OPERATIONAL';
+  const attrs = ['delivery','takeout','dineIn','reservable','wheelchairAccessibleEntrance'];
+  const attrPts = Math.min(3, attrs.reduce((s, a) => s + (place[a] === true ? 1 : 0), 0));
+
+  // Sub-scores
+  const scoreRating = ratingNum >= 4.5 ? 20 : ratingNum >= 4.0 ? 15 : ratingNum >= 3.5 ? 10 : ratingNum >= 3.0 ? 5 : ratingNum > 0 ? 2 : 0;
+  const scoreReviews = reviewCount >= 500 ? 15 : reviewCount >= 200 ? 12 : reviewCount >= 100 ? 10 : reviewCount >= 50 ? 7 : reviewCount >= 20 ? 4 : reviewCount >= 5 ? 2 : 0;
+  const scorePhotos = photoCount >= 50 ? 15 : photoCount >= 20 ? 12 : photoCount >= 10 ? 8 : photoCount >= 5 ? 5 : photoCount >= 1 ? 2 : 0;
+  const scoreHours = hasHours ? 10 : 0;
+  const scorePhone = hasPhone ? 8 : 0;
+  const scoreWebsite = hasWebsite ? 8 : 0;
+  const scoreCat = hasCat ? 6 : 0;
+  const scoreDesc = hasDesc ? 10 : 0;
+  const scoreStatus = isOperational ? 5 : 0;
+  const totalScore = scoreRating + scoreReviews + scorePhotos + scoreHours + scorePhone + scoreWebsite + scoreCat + scoreDesc + scoreStatus + attrPts;
+
+  const scoreColor = totalScore >= 80 ? '#22c55e' : totalScore >= 60 ? '#f59e0b' : totalScore >= 40 ? '#f97316' : '#ef4444';
+  const scoreGrade = totalScore >= 80 ? 'Excelente' : totalScore >= 60 ? 'Bom' : totalScore >= 40 ? 'Regular' : 'Crítico';
+  const strokeOffset = Math.round(314 * (1 - totalScore / 100));
+
+  const catRows = [
+    { icon:'⭐', name:'Avaliação (nota)', pts:scoreRating, max:20 },
+    { icon:'💬', name:'Volume de reviews', pts:scoreReviews, max:15 },
+    { icon:'📸', name:'Fotos', pts:scorePhotos, max:15 },
+    { icon:'🕐', name:'Horários', pts:scoreHours, max:10 },
+    { icon:'📝', name:'Descrição', pts:scoreDesc, max:10 },
+    { icon:'📞', name:'Telefone', pts:scorePhone, max:8 },
+    { icon:'🌐', name:'Site', pts:scoreWebsite, max:8 },
+    { icon:'🏷️', name:'Categoria', pts:scoreCat, max:6 },
+    { icon:'✅', name:'Status ativo', pts:scoreStatus, max:5 },
+    { icon:'🔧', name:'Atributos', pts:attrPts, max:3 },
+  ];
+
+  const catHtml = catRows.map(r => {
+    const pct = Math.round((r.pts / r.max) * 100);
+    const barColor = pct >= 80 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#ef4444';
+    return `<div>
+      <div class="gmb-health-cat">
+        <span class="gmb-health-cat-icon">${r.icon}</span>
+        <span class="gmb-health-cat-name">${r.name}</span>
+        <span class="gmb-health-cat-pts">${r.pts}/${r.max}</span>
+      </div>
+      <div class="gmb-health-cat-bar"><div class="gmb-health-cat-bar-fill" style="width:${pct}%;background:${barColor};"></div></div>
+    </div>`;
+  }).join('');
+
+  // Checklist
+  const checks = [
+    { icon:'⭐', text:'Nota ≥ 4.0', status: ratingNum >= 4.0 ? 'ok' : ratingNum > 0 ? 'warn' : 'bad', pts: `${scoreRating}/20` },
+    { icon:'💬', text:`Volume de avaliações (${reviewCount})`, status: reviewCount >= 100 ? 'ok' : reviewCount >= 20 ? 'warn' : 'bad', pts: `${scoreReviews}/15` },
+    { icon:'📸', text:`Fotos suficientes (${photoCount} — mín. 10)`, status: photoCount >= 10 ? 'ok' : photoCount >= 5 ? 'warn' : 'bad', pts: `${scorePhotos}/15` },
+    { icon:'🕐', text:'Horário cadastrado', status: hasHours ? 'ok' : 'bad', pts: `${scoreHours}/10` },
+    { icon:'📝', text:'Descrição do negócio', status: hasDesc ? 'ok' : 'bad', pts: `${scoreDesc}/10` },
+    { icon:'📞', text:'Telefone cadastrado', status: hasPhone ? 'ok' : 'bad', pts: `${scorePhone}/8` },
+    { icon:'🌐', text:'Site vinculado', status: hasWebsite ? 'ok' : 'bad', pts: `${scoreWebsite}/8` },
+    { icon:'🏷️', text:'Categoria definida', status: hasCat ? 'ok' : 'bad', pts: `${scoreCat}/6` },
+    { icon:'✅', text:'Status ativo (OPERATIONAL)', status: isOperational ? 'ok' : 'warn', pts: `${scoreStatus}/5` },
+    { icon:'🔧', text:'Atributos/serviços configurados', status: attrPts >= 2 ? 'ok' : attrPts >= 1 ? 'warn' : 'bad', pts: `${attrPts}/3` },
+  ];
+  const checklistHtml = checks.map(c => {
+    const statusIcon = c.status === 'ok' ? '✅' : c.status === 'warn' ? '⚠️' : '❌';
+    return `<div class="gmb-health-check ${c.status}">
+      <span class="gmb-health-check-icon">${c.icon}</span>
+      <span class="gmb-health-check-text">${statusIcon} ${c.text}</span>
+      <span class="gmb-health-check-pts">${c.pts}</span>
+    </div>`;
+  }).join('');
+
+  const detailHtml = `
+    <div class="gmb-pre-detail">
+      <div class="gmb-pre-detail-back" onclick="document.querySelector('.gmb-pre-detail').remove();document.querySelectorAll('.gmb-pre-list-item').forEach(e=>e.classList.remove('selected'))">← Voltar à lista</div>
       <div class="gmb-pre-result">
         <div class="gmb-pre-top">
           ${photoHtml}
@@ -11756,6 +12030,7 @@ async function gmbPreAnalise() {
             <div class="gmb-pre-name">${escHtml(name)}</div>
             ${cat ? `<div class="gmb-pre-cat">${escHtml(cat)}</div>` : ''}
             <div class="gmb-pre-addr">📍 ${escHtml(addr)}</div>
+            ${locFull ? `<div class="gmb-pre-addr" style="margin-top:2px;">🏙️ ${escHtml(locFull)}</div>` : ''}
             <div class="gmb-pre-rating">
               <span class="gmb-pre-stars">${starsHtml} ${rating}</span>
               <span class="gmb-pre-reviews">(${reviews} avaliações)</span>
@@ -11772,30 +12047,428 @@ async function gmbPreAnalise() {
           <div class="gmb-pre-kpi"><div class="gmb-pre-kpi-val">${place.photos?.length || 0}</div><div class="gmb-pre-kpi-lbl">Fotos</div></div>
           <div class="gmb-pre-kpi"><div class="gmb-pre-kpi-val">${isOpen === true ? '✅' : isOpen === false ? '❌' : '—'}</div><div class="gmb-pre-kpi-lbl">Status</div></div>
         </div>
+        <!-- Health Score -->
+        <div class="gmb-health-title">🏥 Health Score do Perfil</div>
+        <div class="gmb-health-wrap">
+          <div class="gmb-health-score-circle">
+            <svg viewBox="0 0 120 120" width="120" height="120">
+              <circle cx="60" cy="60" r="50" fill="none" stroke="var(--border)" stroke-width="10"/>
+              <circle cx="60" cy="60" r="50" fill="none" stroke="${scoreColor}" stroke-width="10"
+                stroke-dasharray="314" stroke-dashoffset="${strokeOffset}"
+                stroke-linecap="round" transform="rotate(-90 60 60)"/>
+            </svg>
+            <div class="gmb-health-score-num" style="color:${scoreColor}">${totalScore}</div>
+            <div class="gmb-health-score-lbl">${scoreGrade}</div>
+          </div>
+          <div class="gmb-health-categories">
+            ${catHtml}
+          </div>
+        </div>
+        <div class="gmb-health-checklist">
+          ${checklistHtml}
+        </div>
         <div class="gmb-pre-actions">
-          <a class="gmb-pre-action-btn" href="${mapsUrl}" target="_blank">🗺️ Ver no Google Maps</a>
+          <a class="gmb-pre-action-btn" href="${mapsUrl}" target="_blank">🗺️ Ver no Maps</a>
           ${website ? `<a class="gmb-pre-action-btn" href="${escHtml(website)}" target="_blank">🌐 Site</a>` : ''}
-          <button class="gmb-pre-action-btn" onclick="gmbPreToGrid('${escHtml(name)}','${escHtml(addr)}')">📍 Analisar no Grid</button>
+          <button class="gmb-pre-action-btn" style="background:var(--accent);color:#fff;border-color:var(--accent);" onclick="gmbPreToGrid(${idx})">📍 Analisar no Grid</button>
+        </div>
+      </div>
+    </div>`;
+
+  resultEl.insertAdjacentHTML('beforeend', detailHtml);
+  resultEl.querySelector('.gmb-pre-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Autocomplete do campo de negócio no grid
+let _gmbBizDebounce = null;
+let _gmbBizResults = [];
+let _gmbBizFocusIdx = -1;
+
+function gmbRankBizAutocomplete(val) {
+  clearTimeout(_gmbBizDebounce);
+  const drop = document.getElementById('gmbRankBizDropdown');
+  if (!val || val.length < 2) { drop.style.display = 'none'; drop.innerHTML = ''; return; }
+  drop.style.display = '';
+  drop.innerHTML = '<div class="gmb-rank-biz-loading">🔍 Buscando...</div>';
+  _gmbBizDebounce = setTimeout(() => _gmbBizFetch(val), 400);
+}
+
+async function _gmbBizFetch(query) {
+  const key = getApiKey('google_places');
+  const drop = document.getElementById('gmbRankBizDropdown');
+  if (!key || !drop) return;
+  try {
+    const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': key,
+        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.addressComponents,places.primaryTypeDisplayName'
+      },
+      body: JSON.stringify({ textQuery: query, languageCode: 'pt-BR', maxResultCount: 6 })
+    });
+    const json = await res.json();
+    _gmbBizResults = json?.places || [];
+    _gmbBizFocusIdx = -1;
+    if (!_gmbBizResults.length) {
+      drop.innerHTML = '<div class="gmb-rank-biz-loading">😕 Nenhum resultado encontrado</div>';
+      return;
+    }
+    drop.innerHTML = _gmbBizResults.map((p, i) => {
+      const name = p.displayName?.text || '';
+      const addr = p.formattedAddress || '';
+      const cat = p.primaryTypeDisplayName?.text || '';
+      return `<div class="gmb-rank-biz-option" data-idx="${i}" onmousedown="gmbRankBizSelect(${i})">
+        <span class="gmb-rank-biz-option-icon">📍</span>
+        <div class="gmb-rank-biz-option-body">
+          <div class="gmb-rank-biz-option-name">${escHtml(name)}</div>
+          <div class="gmb-rank-biz-option-addr">${cat ? escHtml(cat) + ' · ' : ''}${escHtml(addr)}</div>
         </div>
       </div>`;
-    resultEl.style.display = '';
+    }).join('');
   } catch(e) {
-    showToast('error','❌', e.message || 'Erro ao buscar negócio.');
-    console.error(e);
-  } finally {
-    loadEl.style.display = 'none';
+    drop.innerHTML = '<div class="gmb-rank-biz-loading">❌ Erro ao buscar</div>';
   }
 }
 
-// Botão "Analisar no Grid" na pré-análise — preenche o grid e faz scroll
-function gmbPreToGrid(name, addr) {
-  // Preenche a palavra-chave com o tipo do negócio
+function gmbRankBizKeydown(e) {
+  const drop = document.getElementById('gmbRankBizDropdown');
+  const opts = drop?.querySelectorAll('.gmb-rank-biz-option') || [];
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    _gmbBizFocusIdx = Math.min(_gmbBizFocusIdx + 1, opts.length - 1);
+    opts.forEach((o, i) => o.classList.toggle('focused', i === _gmbBizFocusIdx));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    _gmbBizFocusIdx = Math.max(_gmbBizFocusIdx - 1, 0);
+    opts.forEach((o, i) => o.classList.toggle('focused', i === _gmbBizFocusIdx));
+  } else if (e.key === 'Enter') {
+    if (_gmbBizFocusIdx >= 0 && _gmbBizResults[_gmbBizFocusIdx]) {
+      gmbRankBizSelect(_gmbBizFocusIdx);
+    } else {
+      gmbRankSetBiz();
+    }
+  } else if (e.key === 'Escape') {
+    drop.style.display = 'none';
+  }
+}
+
+async function gmbRankBizSelect(idx) {
+  const place = _gmbBizResults[idx];
+  if (!place) return;
+  const name = place.displayName?.text || '';
+  const addr = place.formattedAddress || '';
+  // Preenche o input
+  const input = document.getElementById('gmbRankBizInput');
+  if (input) input.value = name + (addr ? ' · ' + addr.split(',').slice(0,2).join(',') : '');
+  // Fecha dropdown
+  const drop = document.getElementById('gmbRankBizDropdown');
+  if (drop) { drop.style.display = 'none'; drop.innerHTML = ''; }
+  // Extrai cidade/estado
+  let city = '', state = '', street = '';
+  (place.addressComponents || []).forEach(c => {
+    if (c.types?.includes('route')) street = c.longText || '';
+    if (c.types?.includes('administrative_area_level_2')) city = c.longText || '';
+    if (c.types?.includes('administrative_area_level_1')) state = c.shortText || '';
+  });
+  // Define _gmbCurrentLoc
+  _gmbCurrentLoc = {
+    title: name, name: 'manual_' + Date.now(),
+    storefrontAddress: { addressLines: [street || addr.split(',')[0]], locality: city, administrativeArea: state },
+    _preLat: place.location?.latitude || null,
+    _preLng: place.location?.longitude || null,
+    _fromPreAnalise: true
+  };
+  // Exibe indicador
+  let indicator = document.getElementById('gmbRankPreIndicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = 'gmbRankPreIndicator';
+    indicator.style.cssText = `display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);margin-bottom:12px;font-size:13px;color:var(--text1);`;
+    const toolbar = document.querySelector('.gmb-rank-toolbar');
+    toolbar?.parentNode?.insertBefore(indicator, toolbar);
+  }
+  indicator.innerHTML = `<span style="font-size:16px">📍</span><div><b>${escHtml(name)}</b><div style="font-size:11px;color:var(--text3);margin-top:1px;">${escHtml(addr)}</div></div>`;
+  // Preenche keyword
   const kw = document.getElementById('gmbRankKeyword');
   if (kw && !kw.value) kw.value = name.split(' ')[0];
+  // Inicializa mapa
+  if (_gmbCurrentLoc._preLat && _gmbCurrentLoc._preLng) {
+    await gmbRankInitMap(_gmbCurrentLoc._preLat, _gmbCurrentLoc._preLng);
+    if (_gmbRankState.map && window.google?.maps) {
+      google.maps.event.trigger(_gmbRankState.map, 'resize');
+      _gmbRankState.map.setCenter({ lat: _gmbCurrentLoc._preLat, lng: _gmbCurrentLoc._preLng });
+    }
+  }
+}
+
+// Fecha dropdown ao clicar fora
+document.addEventListener('click', e => {
+  if (!e.target.closest('#gmbRankBizRow')) {
+    const drop = document.getElementById('gmbRankBizDropdown');
+    if (drop) drop.style.display = 'none';
+  }
+});
+
+// Geocoda o endereço digitado no campo do grid e inicializa o mapa
+async function gmbRankSetBiz() {
+  const query = document.getElementById('gmbRankBizInput')?.value?.trim();
+  if (!query) { showToast('warn','⚠️','Digite o nome ou endereço do negócio.'); return; }
+  const key = getApiKey('google_places');
+  if (!key) { showToast('warn','⚠️','Configure a Google Places API Key nas Configurações.'); return; }
+
+  const btn = document.querySelector('.gmb-rank-biz-btn');
+  if (btn) { btn.textContent = 'Buscando...'; btn.disabled = true; }
+
+  try {
+    // Busca o negócio pela Places API
+    const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': key,
+        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.addressComponents'
+      },
+      body: JSON.stringify({ textQuery: query, languageCode: 'pt-BR', maxResultCount: 1 })
+    });
+    const json = await res.json();
+    const place = json?.places?.[0];
+    if (!place) { showToast('warn','⚠️','Negócio não encontrado. Tente um endereço mais específico.'); return; }
+
+    const name = place.displayName?.text || query;
+    const addr = place.formattedAddress || '';
+    let city = '', state = '';
+    (place.addressComponents || []).forEach(c => {
+      if (c.types?.includes('administrative_area_level_2')) city = c.longText || '';
+      if (c.types?.includes('administrative_area_level_1')) state = c.shortText || '';
+    });
+
+    _gmbCurrentLoc = {
+      title: name,
+      name: 'manual_' + Date.now(),
+      storefrontAddress: { addressLines: [addr.split(',')[0]], locality: city, administrativeArea: state },
+      _preLat: place.location?.latitude || null,
+      _preLng: place.location?.longitude || null,
+      _fromPreAnalise: true
+    };
+
+    // Mostra indicador e preenche keyword se vazio
+    let indicator = document.getElementById('gmbRankPreIndicator');
+    if (!indicator) {
+      indicator = document.createElement('div');
+      indicator.id = 'gmbRankPreIndicator';
+      indicator.style.cssText = `display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);margin-bottom:12px;font-size:13px;color:var(--text1);`;
+      const toolbar = document.querySelector('.gmb-rank-toolbar');
+      toolbar?.parentNode?.insertBefore(indicator, toolbar);
+    }
+    indicator.innerHTML = `<span style="font-size:16px">📍</span><div><b>${escHtml(name)}</b><div style="font-size:11px;color:var(--text3);margin-top:1px;">${escHtml(addr)}</div></div>`;
+
+    const kw = document.getElementById('gmbRankKeyword');
+    if (kw && !kw.value) kw.value = name.split(' ')[0];
+
+    // Inicializa o mapa
+    if (_gmbCurrentLoc._preLat && _gmbCurrentLoc._preLng) {
+      await gmbRankInitMap(_gmbCurrentLoc._preLat, _gmbCurrentLoc._preLng);
+      if (_gmbRankState.map && window.google?.maps) {
+        google.maps.event.trigger(_gmbRankState.map, 'resize');
+        _gmbRankState.map.setCenter({ lat: _gmbCurrentLoc._preLat, lng: _gmbCurrentLoc._preLng });
+      }
+    }
+
+    showToast('success','✅',`"${name}" definido. Agora clique em Analisar.`);
+  } catch(e) {
+    showToast('error','❌', 'Erro ao buscar negócio: ' + e.message);
+  } finally {
+    if (btn) { btn.textContent = 'Usar este endereço'; btn.disabled = false; }
+  }
+}
+
+// Botão "Analisar no Grid" na pré-análise — configura _gmbCurrentLoc com dados da pré-análise
+function gmbPreToGrid(idx) {
+  const place = _gmbPrePlaces[idx];
+  if (!place) return;
+
+  const name = place.displayName?.text || '';
+  const addr = place.formattedAddress || '';
+
+  // Extrai cidade e estado dos addressComponents
+  let street = '', city = '', state = '';
+  (place.addressComponents || []).forEach(c => {
+    if (c.types?.includes('route')) street = c.longText || '';
+    if (c.types?.includes('administrative_area_level_2')) city = c.longText || c.shortText || '';
+    if (c.types?.includes('administrative_area_level_1')) state = c.shortText || c.longText || '';
+  });
+
+  // Monta _gmbCurrentLoc sintético a partir da pré-análise
+  _gmbCurrentLoc = {
+    title: name,
+    name: 'preanalise_' + (place.id || Date.now()),
+    storefrontAddress: {
+      addressLines: [street || addr.split(',')[0]],
+      locality: city,
+      administrativeArea: state
+    },
+    // Lat/lng da API Places (evita chamada de geocoding)
+    _preLat: place.location?.latitude || null,
+    _preLng: place.location?.longitude || null,
+    _fromPreAnalise: true
+  };
+
+  // Preenche o campo manual com o endereço e esconde (já foi via pré-análise)
+  const bizInput = document.getElementById('gmbRankBizInput');
+  if (bizInput) bizInput.value = name + (addr ? ', ' + addr.split(',').slice(0,2).join(',') : '');
+
+  // Preenche a palavra-chave com o nome do negócio se vazio
+  const kw = document.getElementById('gmbRankKeyword');
+  if (kw && !kw.value) kw.value = name;
+
+  // Exibe indicador no grid de qual negócio está sendo analisado
+  let indicator = document.getElementById('gmbRankPreIndicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = 'gmbRankPreIndicator';
+    indicator.style.cssText = `display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);margin-bottom:12px;font-size:13px;color:var(--text1);`;
+    const toolbar = document.querySelector('.gmb-rank-toolbar');
+    toolbar?.parentNode?.insertBefore(indicator, toolbar);
+  }
+  indicator.innerHTML = `<span style="font-size:16px">📍</span><div><b>${escHtml(name)}</b><div style="font-size:11px;color:var(--text3);margin-top:1px;">${escHtml(addr)}</div></div>`;
+
   // Scroll até o grid
   const gridSection = document.querySelector('.gmb-rank-section');
   if (gridSection) gridSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  showToast('success','📍','Preencha a palavra-chave e clique em Analisar no grid abaixo.');
+
+  // Inicializa o mapa após scroll terminar (300ms) para garantir que o elemento está visível
+  if (_gmbCurrentLoc._preLat && _gmbCurrentLoc._preLng) {
+    setTimeout(async () => {
+      await gmbRankInitMap(_gmbCurrentLoc._preLat, _gmbCurrentLoc._preLng);
+      // Força o Maps a recalcular o tamanho do container
+      if (_gmbRankState.map && window.google?.maps) {
+        google.maps.event.trigger(_gmbRankState.map, 'resize');
+        _gmbRankState.map.setCenter({ lat: _gmbCurrentLoc._preLat, lng: _gmbCurrentLoc._preLng });
+      }
+    }, 400);
+  }
+
+  showToast('success','📍',`"${name}" carregado. Digite a palavra-chave e clique em Analisar.`);
+}
+
+// ── Métricas: Mapa de Clientes ──────────────────────────────
+let _mtrLocMap = null;
+let _mtrLocMarkers = [];
+
+function mtrLocSetView(view, btn) {
+  document.querySelectorAll('.mtr-loc-view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('mtrLocMapView').style.display = view === 'map' ? '' : 'none';
+  document.getElementById('mtrLocListView').style.display = view === 'list' ? '' : 'none';
+  if (view === 'map' && _mtrLocMap && window.google?.maps) {
+    google.maps.event.trigger(_mtrLocMap, 'resize');
+  }
+}
+
+async function mtrLocRenderMap() {
+  const key = getApiKey('google_places');
+  if (!key) return;
+
+  // Collect clients with addresses
+  const withAddr = Object.values(clients || {}).filter(c => c && c.address && c.address.trim());
+
+  // Render list view
+  const listEl = document.getElementById('mtrLocList');
+  if (listEl) {
+    if (!withAddr.length) {
+      listEl.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">Nenhum cliente com endereço cadastrado.<br>Adicione o endereço nos dados do cliente.</div>`;
+    } else {
+      listEl.innerHTML = withAddr.map((c, i) => {
+        const color = c.color || '#6366f1';
+        return `<div class="mtr-loc-item">
+          <div class="mtr-loc-item-dot" style="background:${color}"></div>
+          <div>
+            <div class="mtr-loc-item-name">${escHtml(c.name||'')}</div>
+            <div class="mtr-loc-item-addr">📍 ${escHtml(c.address)}</div>
+          </div>
+          <div class="mtr-loc-item-actions">
+            <button class="mtr-loc-item-btn" onclick="window.open('https://www.google.com/maps/search/${encodeURIComponent((c.address||'')+'+'+(c.name||''))}','_blank')">Ver no Maps</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  if (!withAddr.length) return;
+
+  // Load Google Maps JS if needed
+  if (!window.google?.maps) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = `https://maps.googleapis.com/maps/api/js?key=${key}`;
+      s.onload = res;
+      s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  // Init map centered on Brazil
+  const mapEl = document.getElementById('mtrClientsMap');
+  if (!mapEl) return;
+
+  _mtrLocMap = new google.maps.Map(mapEl, {
+    center: { lat: -14.235, lng: -51.925 },
+    zoom: 4,
+    disableDefaultUI: false,
+    zoomControl: true,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: true
+  });
+
+  // Geocode each client address and add marker
+  const bounds = new google.maps.LatLngBounds();
+  _mtrLocMarkers.forEach(m => m.setMap(null));
+  _mtrLocMarkers = [];
+
+  for (const c of withAddr) {
+    try {
+      const geoRes = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(c.address)}&key=${key}`);
+      const geoJson = await geoRes.json();
+      const pos = geoJson?.results?.[0]?.geometry?.location;
+      if (!pos) continue;
+
+      const marker = new google.maps.Marker({
+        position: pos,
+        map: _mtrLocMap,
+        title: c.name || '',
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 10,
+          fillColor: c.color || '#6366f1',
+          fillOpacity: 1,
+          strokeColor: '#fff',
+          strokeWeight: 2
+        }
+      });
+
+      const infoWindow = new google.maps.InfoWindow({
+        content: `<div style="font-family:sans-serif;min-width:160px;">
+          <div style="font-weight:700;font-size:13px;margin-bottom:4px;">${c.name||''}</div>
+          <div style="font-size:11px;color:#666;">${c.address||''}</div>
+          ${c.phone ? `<div style="font-size:11px;margin-top:4px;">📞 ${c.phone}</div>` : ''}
+        </div>`
+      });
+
+      marker.addListener('click', () => {
+        infoWindow.open(_mtrLocMap, marker);
+      });
+
+      _mtrLocMarkers.push(marker);
+      bounds.extend(pos);
+    } catch(e) { /* skip */ }
+  }
+
+  if (_mtrLocMarkers.length > 0) {
+    _mtrLocMap.fitBounds(bounds);
+    if (_mtrLocMarkers.length === 1) _mtrLocMap.setZoom(15);
+  }
 }
 
 // Mostra aviso de crédito/faturamento esgotado com botão de recarga
@@ -11891,11 +12564,20 @@ async function gmbRankFetchPos(keyword, businessName, lat, lng) {
     }
     const items = json?.tasks?.[0]?.result?.[0]?.items || [];
     const bn = (businessName || '').toLowerCase();
-    const found = items.find(it =>
-      it.type === 'maps_search' && (it.title || '').toLowerCase().includes(bn.split(' ')[0].toLowerCase())
+    const mapItems = items.filter(it => it.type === 'maps_search');
+    const found = mapItems.find(it =>
+      (it.title || '').toLowerCase().includes(bn.split(' ')[0].toLowerCase())
     );
-    return found ? found.rank_absolute : 20;
-  } catch(e) { return null; }
+    // Retorna posição + top 5 nomes para o popup de clique
+    const top5 = mapItems.slice(0, 5).map(it => ({
+      pos: it.rank_absolute,
+      name: it.title || '—',
+      rating: it.rating?.value || null,
+      reviews: it.rating?.votes_count || null,
+      isTarget: (it.title || '').toLowerCase().includes(bn.split(' ')[0].toLowerCase())
+    }));
+    return { pos: found ? found.rank_absolute : 20, top5 };
+  } catch(e) { return { pos: null, top5: [] }; }
 }
 
 async function gmbRankScan() {
@@ -11917,10 +12599,13 @@ async function gmbRankScan() {
   loadEl.style.display = 'flex';
 
   try {
-    // Obter lat/lng do endereço do perfil (ou usar mock se demo)
+    // Obter lat/lng do endereço do perfil (ou usar mock se demo, ou usar coords da pré-análise)
     let centerLat, centerLng;
     if (_gmbDemoMode && loc._demoLat) {
       centerLat = loc._demoLat; centerLng = loc._demoLng;
+    } else if (loc._preLat && loc._preLng) {
+      // Lat/lng já disponível da pré-análise (Places API) — sem geocoding extra
+      centerLat = loc._preLat; centerLng = loc._preLng;
     } else {
       const addr = loc.storefrontAddress
         ? [loc.storefrontAddress.addressLines?.[0], loc.storefrontAddress.locality, loc.storefrontAddress.administrativeArea].filter(Boolean).join(', ')
@@ -11952,8 +12637,11 @@ async function gmbRankScan() {
       const batch = pts.slice(i, i + BATCH);
       loadTxt.textContent = `Analisando ${Math.min(i + BATCH, total)} de ${total} pontos...`;
       const batchRes = _gmbDemoMode
-        ? batch.map(p => ({ ...p, pos: gmbRankDemoPos(p.row, p.col, _gmbRankState.grid) }))
-        : await Promise.all(batch.map(async p => ({ ...p, pos: await gmbRankFetchPos(keyword, biz, p.lat, p.lng) })));
+        ? batch.map(p => ({ ...p, pos: gmbRankDemoPos(p.row, p.col, _gmbRankState.grid), top5: [] }))
+        : await Promise.all(batch.map(async p => {
+            const r = await gmbRankFetchPos(keyword, biz, p.lat, p.lng);
+            return { ...p, pos: r?.pos ?? null, top5: r?.top5 ?? [] };
+          }));
       results.push(...batchRes);
     }
 
@@ -11985,6 +12673,8 @@ function gmbRankDrawCircles(results, centerLat, centerLng) {
   _gmbRankState.markers.forEach(m => m.setMap(null));
   _gmbRankState.markers = [];
 
+  let openInfoWindow = null;
+
   results.forEach(pt => {
     const color = gmbRankColor(pt.pos);
     const label = pt.pos && pt.pos <= 20 ? String(pt.pos) : '—';
@@ -12000,6 +12690,37 @@ function gmbRankDrawCircles(results, centerLat, centerLng) {
       icon: { url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg), scaledSize: new google.maps.Size(44, 44), anchor: new google.maps.Point(22, 22) },
       title: `Posição: ${label}`
     });
+
+    // InfoWindow com top negócios ao clicar
+    marker.addListener('click', () => {
+      if (openInfoWindow) openInfoWindow.close();
+      const top5 = pt.top5 || [];
+      const rows = top5.length
+        ? top5.map(b => {
+            const highlight = b.isTarget ? 'background:#fffbeb;font-weight:700;' : '';
+            const star = b.rating ? ` ⭐${b.rating}` : '';
+            const rev = b.reviews ? ` (${b.reviews})` : '';
+            return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #f0f0f0;${highlight}">
+              <div style="width:20px;height:20px;border-radius:50%;background:${b.isTarget ? color : '#e5e7eb'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${b.isTarget ? '#fff' : '#555'};flex-shrink:0;">${b.pos}</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:12px;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">${b.name}</div>
+                ${star || rev ? `<div style="font-size:10px;color:#888;">${star}${rev}</div>` : ''}
+              </div>
+            </div>`;
+          }).join('')
+        : `<div style="font-size:12px;color:#888;padding:6px 0;">Sem dados para este ponto</div>`;
+
+      const infoWindow = new google.maps.InfoWindow({
+        content: `<div style="font-family:Inter,sans-serif;padding:4px;min-width:220px;">
+          <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#111;">📍 Top negócios neste ponto</div>
+          ${rows}
+          <div style="font-size:10px;color:#aaa;margin-top:6px;">Posição do seu negócio: <b style="color:${color}">${label}</b></div>
+        </div>`
+      });
+      infoWindow.open(_gmbRankState.map, marker);
+      openInfoWindow = infoWindow;
+    });
+
     _gmbRankState.markers.push(marker);
   });
 }
