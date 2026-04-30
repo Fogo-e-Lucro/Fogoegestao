@@ -6531,8 +6531,13 @@ function importData(e) {
    RESTAURANT FILTER
 ═══════════════════════════════════════════════════════ */
 function getRestaurants() {
-  // Fonte primária: Base de Dados (Firestore clientes_base)
-  const fromBD = (_bdClientes||[]).map(c => c.nome).filter(Boolean);
+  // Fonte primária: Base de Dados (Firestore clientes_base) — guarda contra TDZ
+  let fromBD = [];
+  try {
+    if (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes)) {
+      fromBD = _bdClientes.map(c => c.nome).filter(Boolean);
+    }
+  } catch(e) { fromBD = []; }
   // Fallback: posts e clients antigos (compatibilidade)
   const fromPosts = posts.map(p => p.restaurante).filter(Boolean);
   const fromClients = Object.keys(clients);
@@ -6575,7 +6580,12 @@ function onRestauranteSelectChange() {
     if (wrap) wrap.style.display = 'none';
     if (input) input.value = sel.value;
     // Puxar dados do cliente da Base de Dados automaticamente
-    const bdCliente = (_bdClientes||[]).find(c => c.nome === sel.value);
+    let bdCliente = null;
+    try {
+      if (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes)) {
+        bdCliente = _bdClientes.find(c => c.nome === sel.value);
+      }
+    } catch(e) {}
     if (bdCliente && typeof onBdClienteSelected === 'function') onBdClienteSelected(bdCliente);
   }
 }
