@@ -12538,7 +12538,7 @@ async function gmbRankFetchPos(keyword, businessName, lat, lng) {
   const key = getApiKey('dataforseo');
   if (!key) return null;
   try {
-    const auth = btoa(`${key}:`);
+    const auth = btoa(key);
     const body = JSON.stringify([{
       keyword,
       location_coordinate: `${lat.toFixed(6)},${lng.toFixed(6)},9km`,
