@@ -15307,7 +15307,12 @@ function pjAvatarHtml(key) {
   const initials = (m?.name||m?.email||String(k)||'?').charAt(0).toUpperCase();
   const colors = ['#6366f1','#8b5cf6','#ec4899','#f97316','#22c55e','#3b82f6'];
   const color = colors[String(k).charCodeAt(0)%colors.length];
-  return `<div class="pj-avatar" style="background:${color}" title="${m?.name||m?.email||k}">${initials}</div>`;
+  const title = m?.name||m?.email||k;
+  // Usa foto se disponível, senão inicial colorida
+  if (m?.photoUrl) {
+    return `<div class="pj-avatar" style="background:${color};background-image:url('${m.photoUrl.replace(/'/g,"\\'") }');background-size:cover;background-position:center;" title="${title}"></div>`;
+  }
+  return `<div class="pj-avatar" style="background:${color}" title="${title}">${initials}</div>`;
 }
 
 // ── Task Quick Create ───────────────────────────────────
