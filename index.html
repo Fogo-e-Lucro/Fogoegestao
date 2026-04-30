@@ -3503,6 +3503,9 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .bd-section-body { padding:14px 16px; display:none; }
 .bd-section.open .bd-section-body { display:block; }
 .bd-section.open .bd-section-toggle { transform:rotate(90deg); }
+.bd-sec-hide-btn { opacity: .35; transition: opacity .15s, background .15s; }
+.bd-section-head:hover .bd-sec-hide-btn { opacity: 1; }
+.bd-sec-hide-btn:hover { background: rgba(239,68,68,.15) !important; color: #ef4444 !important; }
 
 .bd-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
 .bd-grid-1 { grid-template-columns:1fr; }
@@ -18304,15 +18307,77 @@ function bdRenderDetail(id) {
       ${_bdSectionNotas(c)}
       ${_bdSectionVisual(c)}
       ${_bdSectionCustomFields(c)}
+      ${_bdRenderHiddenFooter()}
     </div>
   `;
 }
 
+// Slug estável a partir do título (remove emoji + acentos + caracteres especiais)
+function _bdSecId(title) {
+  return String(title||'')
+    .replace(/[\u{1F300}-\u{1FAFF}\u{1F000}-\u{1F2FF}\u2600-\u27BF\uFE0F]/gu, '') // remove emojis
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // remove acentos
+    .toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+}
+
+// Estado de seções ocultadas pelo usuário (persistido em localStorage)
+function _bdGetHiddenSections() {
+  try { return JSON.parse(localStorage.getItem('bd_hidden_sections') || '[]'); } catch(e) { return []; }
+}
+function _bdSetHiddenSections(arr) {
+  try { localStorage.setItem('bd_hidden_sections', JSON.stringify(arr||[])); } catch(e) {}
+}
+window.bdHideSection = function(secId, secName) {
+  if (!confirm(`Ocultar a seção "${secName}"?\n\nVocê pode restaurar depois clicando em "Seções ocultas" no rodapé da ficha.`)) return;
+  const h = new Set(_bdGetHiddenSections()); h.add(secId);
+  _bdSetHiddenSections([...h]);
+  if (_bdSelectedId) bdRenderDetail(_bdSelectedId);
+};
+window.bdRestoreSection = function(secId) {
+  const h = new Set(_bdGetHiddenSections()); h.delete(secId);
+  _bdSetHiddenSections([...h]);
+  if (_bdSelectedId) bdRenderDetail(_bdSelectedId);
+};
+window.bdRestoreAllSections = function() {
+  if (!confirm('Restaurar todas as seções ocultas?')) return;
+  _bdSetHiddenSections([]);
+  if (_bdSelectedId) bdRenderDetail(_bdSelectedId);
+};
+
 function _bdSec(title, body, opts={}) {
   const open = opts.open ? 'open' : '';
-  return `<div class="bd-section ${open}"><div class="bd-section-head" onclick="this.parentElement.classList.toggle('open')">
-    <div class="bd-section-title">${title}</div><div class="bd-section-toggle">▶</div>
-  </div><div class="bd-section-body">${body}</div></div>`;
+  const secId = opts.id || _bdSecId(title);
+  // Se a seção está oculta, não renderiza
+  if (_bdGetHiddenSections().includes(secId)) return '';
+  const safeName = String(title).replace(/'/g,"\\'");
+  return `<div class="bd-section ${open}" data-sec-id="${secId}">
+    <div class="bd-section-head" onclick="if(event.target.closest('.bd-sec-hide-btn'))return; this.parentElement.classList.toggle('open')">
+      <div class="bd-section-title">${title}</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="bd-sec-hide-btn" title="Ocultar esta seção" onclick="event.stopPropagation();bdHideSection('${secId}','${safeName}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px;border-radius:6px;line-height:1;">🗑️</button>
+        <div class="bd-section-toggle">▶</div>
+      </div>
+    </div>
+    <div class="bd-section-body">${body}</div>
+  </div>`;
+}
+
+// Bloco de "Seções ocultas" mostrado no rodapé pra restaurar
+function _bdRenderHiddenFooter() {
+  const hidden = _bdGetHiddenSections();
+  if (!hidden.length) return '';
+  const items = hidden.map(id => `
+    <button onclick="bdRestoreSection('${id}')" style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:5px 12px;cursor:pointer;font-size:12px;color:var(--text2);display:inline-flex;align-items:center;gap:6px;">
+      ↩️ ${_bdEsc(id)}
+    </button>
+  `).join('');
+  return `<div style="margin-top:18px;padding:14px;border:1px dashed var(--border);border-radius:10px;background:var(--bg2);">
+    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+      <span>📦 Seções ocultas (${hidden.length})</span>
+      <button onclick="bdRestoreAllSections()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:11px;font-weight:600;">Restaurar todas</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">${items}</div>
+  </div>`;
 }
 
 function _bdInput(c, field, label, opts={}) {
