@@ -1860,6 +1860,22 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 
 .mtr-kpi-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-bottom:20px; }
 .mtr-kpi { background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 16px;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s; }
+/* Delete button on KPI card */
+.mtr-kpi-del { position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);color:#ef4444;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s,transform .15s,background .15s;z-index:5; }
+.mtr-kpi:hover .mtr-kpi-del { opacity:1; }
+.mtr-kpi-del:hover { background:#ef4444;color:#fff;transform:scale(1.1); }
+/* "+" add KPI card at end of grid */
+.mtr-kpi-add { background:transparent;border:2px dashed var(--border);border-radius:14px;padding:18px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);transition:all .2s;min-height:120px;font-family:inherit; }
+.mtr-kpi-add:hover { border-color:var(--accent);color:var(--accent);background:var(--accentGlow);transform:translateY(-2px); }
+.mtr-kpi-add-icon { font-size:28px;font-weight:300;line-height:1;margin-bottom:6px; }
+.mtr-kpi-add-label { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em; }
+/* Source tabs (IG / Ads) */
+.mtr-source-tabs { display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:0; }
+.mtr-source-tab { background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text2);padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;font-family:inherit;margin-bottom:-1px; }
+.mtr-source-tab:hover { color:var(--text1); }
+.mtr-source-tab.active { color:var(--accent);border-bottom-color:var(--accent); }
+.mtr-source-tab-count { font-size:10px;background:var(--bg2);color:var(--text2);padding:2px 7px;border-radius:10px;font-weight:700; }
+.mtr-source-tab.active .mtr-source-tab-count { background:var(--accentGlow);color:var(--accent); }
 .mtr-kpi:hover { transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.12); }
 .mtr-kpi-icon { font-size:20px;margin-bottom:8px; }
 .mtr-kpi-label { font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px; }
@@ -9545,6 +9561,7 @@ let mtrSharedSnapshotId = null;    // se carregado em modo compartilhado
 let mtrIsSharedView = false;
 let mtrShowPct = false;            // toggle % variação vs valor absoluto
 let mtrCustomMetrics = JSON.parse(localStorage.getItem('mtrCustomMetrics') || '[]'); // [{id,label,value}]
+let mtrSourceTab = localStorage.getItem('mtrSourceTab') || 'ig'; // 'ig' | 'ad' — qual aba está ativa quando ambas estão disponíveis
 
 /* Catálogo completo de métricas disponíveis */
 const MTR_CATALOG = [
@@ -10121,8 +10138,17 @@ function mtrGetValue(id, igData, adsData) {
 }
 
 function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, warnings, campaigns, health) {
-  // Monta KPIs com sparkline
-  const cards = mtrUserKpis.map(id => {
+  // Determina quais fontes estão disponíveis com base no que o usuário selecionou
+  const hasIg = !!mtrCurrentAcc;
+  const hasAd = !!mtrCurrentAdAcc;
+  const showTabs = hasIg && hasAd;
+  // Se só uma fonte está disponível, força a aba para essa fonte
+  let activeTab = mtrSourceTab;
+  if (hasIg && !hasAd) activeTab = 'ig';
+  if (!hasIg && hasAd) activeTab = 'ad';
+
+  // Helper: monta o HTML de um card KPI
+  const buildKpiCard = (id) => {
     const m = MTR_CATALOG.find(x => x.id === id);
     if (!m) return '';
     const cv = mtrGetValue(id, igCurr, adsData);
@@ -10132,7 +10158,6 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
     const spark = series && series.length >= 2
       ? `<div class="mtr-kpi-spark">${mtrSparkSvg(series)}</div>`
       : (m.noCompare ? '' : `<div class="mtr-kpi-spark-empty">série diária indisponível</div>`);
-    // Modo % variação: mostra o delta em grande em vez do valor absoluto
     const pctD = (cv !== null && pv !== null && pv !== 0) ? ((cv - pv) / Math.abs(pv) * 100) : null;
     const mainVal = mtrShowPct && pctD !== null
       ? `<div class="mtr-kpi-value" style="color:${pctD>=0?(m.invert?'#ef4444':'#22c55e'):(m.invert?'#22c55e':'#ef4444')}">${pctD>=0?'+':''}${pctD.toFixed(1)}%</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">${mtrFmtValue(m, cv)}</div>`
@@ -10145,6 +10170,7 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
            ondragleave="mtrKpiCardDragLeave(event)"
            ondrop="mtrKpiCardDrop(event,'${id}')"
            onclick="mtrOpenKpiModal('${id}')" style="cursor:pointer;" title="Clique para detalhes, arraste para outro card para trocar de posição, ou arraste para o funil">
+        <button class="mtr-kpi-del" onclick="event.stopPropagation();mtrRemoveKpi('${id}')" title="Remover este card">✕</button>
         <div class="mtr-kpi-icon">${m.icon}</div>
         <div class="mtr-kpi-label">${m.label}</div>
         ${mainVal}
@@ -10152,17 +10178,49 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
         ${spark}
         <div class="mtr-kpi-bar"></div>
       </div>`;
-  }).join('');
+  };
 
-  // Métricas personalizadas
-  const customCards = mtrCustomMetrics.map(cm => `
+  // Botão "+" para adicionar nova métrica (abre o sidebar de personalização)
+  const addCardHtml = `
+    <button class="mtr-kpi-add" onclick="mtrOpenSidebar()" title="Adicionar nova métrica">
+      <div class="mtr-kpi-add-icon">+</div>
+      <div class="mtr-kpi-add-label">Adicionar métrica</div>
+    </button>`;
+
+  // Filtra os IDs visíveis com base na aba ativa (e sempre filtra fontes não-conectadas)
+  const filterByTab = (id) => {
+    const m = MTR_CATALOG.find(x => x.id === id);
+    if (!m) return false;
+    // GMB: sempre exibido (não tem aba dedicada — vai junto com a aba IG ou quando não há tabs)
+    if (m.source === 'gmb') return showTabs ? activeTab === 'ig' : true;
+    if (showTabs) return m.source === activeTab;
+    if (hasIg && !hasAd) return m.source === 'ig';
+    if (!hasIg && hasAd) return m.source === 'ad';
+    return true;
+  };
+
+  const visibleKpis = mtrUserKpis.filter(filterByTab);
+  const cards = visibleKpis.map(buildKpiCard).join('');
+
+  // Métricas personalizadas (só aparecem na aba IG ou quando não há tabs)
+  const showCustom = !showTabs || activeTab === 'ig';
+  const customCards = showCustom ? mtrCustomMetrics.map(cm => `
     <div class="mtr-kpi" style="cursor:default;">
+      <button class="mtr-kpi-del" onclick="event.stopPropagation();mtrDeleteCustomMetric('${cm.id}')" title="Remover">✕</button>
       <div class="mtr-kpi-icon">📌</div>
       <div class="mtr-kpi-label">${escHtml(cm.label)}</div>
       <div class="mtr-kpi-value">${escHtml(String(cm.value))}</div>
       <div style="font-size:10px;color:var(--text3);margin-top:4px;">Manual</div>
-      <button onclick="event.stopPropagation();mtrDeleteCustomMetric('${cm.id}')" style="margin-top:6px;background:none;border:1px solid var(--border);color:var(--text3);border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;">✕ Remover</button>
-    </div>`).join('');
+    </div>`).join('') : '';
+
+  // Tabs de fonte (só quando ambos IG e Ads estão conectados)
+  const igCount = mtrUserKpis.filter(id => { const m = MTR_CATALOG.find(x=>x.id===id); return m && m.source==='ig'; }).length;
+  const adCount = mtrUserKpis.filter(id => { const m = MTR_CATALOG.find(x=>x.id===id); return m && m.source==='ad'; }).length;
+  const sourceTabsHtml = showTabs ? `
+    <div class="mtr-source-tabs">
+      <button class="mtr-source-tab ${activeTab==='ig'?'active':''}" onclick="mtrSwitchSourceTab('ig')">📷 Instagram <span class="mtr-source-tab-count">${igCount}</span></button>
+      <button class="mtr-source-tab ${activeTab==='ad'?'active':''}" onclick="mtrSwitchSourceTab('ad')">📢 Meta Ads <span class="mtr-source-tab-count">${adCount}</span></button>
+    </div>` : '';
 
   const adAcctLabel = mtrCurrentAdAcc ? mtrCurrentAdAcc.name : '';
 
@@ -10288,7 +10346,8 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
     ${notesHtml}
     <div class="mtr-section">
       <div class="mtr-section-title">📊 Visão geral &nbsp;<span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">@${mtrCurrentAcc.igUsername} ${adAcctLabel ? '· '+adAcctLabel : ''} ${filteredCamp ? '· campanha: '+escHtml(filteredCamp.name) : ''} · ${curr.since} → ${curr.until}</span></div>
-      ${cards || customCards ? `<div class="mtr-kpi-grid">${cards}${customCards}</div>` : '<div class="mtr-empty" style="padding:20px;">Nenhuma métrica selecionada. Clique em ⚙️ Personalizar para escolher.</div>'}
+      ${sourceTabsHtml}
+      <div class="mtr-kpi-grid">${cards}${customCards}${addCardHtml}</div>
     </div>
 
     ${funnelHtml}
@@ -10406,6 +10465,33 @@ function mtrToggleMetric(id, on) {
   if (on && !mtrUserKpis.includes(id)) mtrUserKpis.push(id);
   if (!on) mtrUserKpis = mtrUserKpis.filter(x => x !== id);
   mtrRenderSidebar();
+}
+
+/* Remove um KPI direto do dashboard via botão ✕ no card */
+function mtrRemoveKpi(id) {
+  const m = MTR_CATALOG.find(x => x.id === id);
+  const label = m ? m.label : id;
+  if (!confirm(`Remover "${label}" do painel?\n\nVocê pode adicioná-lo de volta clicando em "+ Adicionar métrica" ou em ⚙️ Personalizar.`)) return;
+  mtrUserKpis = mtrUserKpis.filter(x => x !== id);
+  mtrSaveUserKpis();
+  if (mtrLastSnapshot) {
+    // Re-renderiza usando o snapshot já carregado (sem re-fetch)
+    const s = mtrLastSnapshot;
+    renderMetrics(s.igCurr, s.igPrev, s.adsData, s.adsPrev, s.curr, s.prev, s.compare, s.warnings, s.campaigns, s.health);
+  } else if (mtrCurrentAcc) {
+    loadMetrics();
+  }
+}
+
+/* Alterna entre as abas de fonte (Instagram / Meta Ads) quando ambas estão disponíveis */
+function mtrSwitchSourceTab(src) {
+  if (src !== 'ig' && src !== 'ad') return;
+  mtrSourceTab = src;
+  localStorage.setItem('mtrSourceTab', src);
+  if (mtrLastSnapshot) {
+    const s = mtrLastSnapshot;
+    renderMetrics(s.igCurr, s.igPrev, s.adsData, s.adsPrev, s.curr, s.prev, s.compare, s.warnings, s.campaigns, s.health);
+  }
 }
 
 let mtrDragId = null;
