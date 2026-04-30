@@ -3431,16 +3431,16 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 }
 
 /* ============== BASE DE DADOS (CLIENTES) ============== */
-#tab-base { padding:0; overflow:hidden; }
-.bd-wrap { display:flex; height:calc(100vh - 64px); background:var(--bg); }
-.bd-sidebar { width:300px; min-width:300px; border-right:1px solid var(--border); background:var(--card); display:flex; flex-direction:column; }
-.bd-search-wrap { padding:14px 12px 8px; border-bottom:1px solid var(--border); }
+#tab-base { padding:0; overflow:hidden; display:flex; flex-direction:column; }
+.bd-wrap { display:flex; flex:1; min-height:0; height:calc(100vh - 64px); background:var(--bg); overflow:hidden; }
+.bd-sidebar { width:300px; min-width:300px; border-right:1px solid var(--border); background:var(--card); display:flex; flex-direction:column; height:100%; overflow:hidden; }
+.bd-search-wrap { padding:14px 12px 8px; border-bottom:1px solid var(--border); flex-shrink:0; }
 .bd-search-input { width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg2); color:var(--text); font-size:13px; outline:none; }
 .bd-search-input:focus { border-color:var(--accent); }
-.bd-list-actions { padding:10px 12px; border-bottom:1px solid var(--border); }
+.bd-list-actions { padding:10px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
 .bd-add-btn { width:100%; padding:9px; border:none; border-radius:8px; background:linear-gradient(90deg,#a855f7,#6366f1); color:#fff; font-size:13px; font-weight:600; cursor:pointer; }
 .bd-add-btn:hover { opacity:.9; }
-.bd-list { flex:1; overflow-y:auto; padding:6px 0; }
+.bd-list { flex:1; overflow-y:auto; padding:6px 0; min-height:0; }
 .bd-list-item { display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer; border-left:3px solid transparent; transition:background .15s; }
 .bd-list-item:hover { background:var(--bg2); }
 .bd-list-item.active { background:var(--bg3); border-left-color:var(--accent); }
@@ -3450,7 +3450,7 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .bd-list-sub { font-size:11px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .bd-list-empty { padding:24px 12px; text-align:center; color:var(--text3); font-size:12px; }
 
-.bd-main { flex:1; overflow-y:auto; padding:0; }
+.bd-main { flex:1; overflow-y:auto; padding:0; min-height:0; min-width:0; }
 .bd-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text3); font-size:14px; gap:14px; text-align:center; }
 
 .bd-header { background:linear-gradient(135deg,var(--bd-color,#6366f1) 0%,rgba(0,0,0,.2) 100%); padding:24px; color:#fff; position:relative; }
@@ -3588,7 +3588,6 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   <div style="display:flex;align-items:center;gap:10px;">
     <div class="sync-dot syncing" id="syncStatus" title="Conectando..."></div>
     <div class="main-tabs">
-      <button class="main-tab" id="tabBase" onclick="switchTab('base',this)">📚 Base de Dados</button>
       <button class="main-tab" id="tabProjetos" onclick="switchTab('projetos',this)">🎯 Gestão Central</button>
       <!-- Ferramentas dropdown (todas as outras abas) -->
       <div class="main-tab-more" id="tabMoreWrap">
@@ -3604,6 +3603,9 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
         </div>
       </div>
     </div>
+    <button class="theme-picker-btn" id="bdIconBtn" onclick="switchTab('base',document.getElementById('bdIconBtn'))" title="Base de Clientes" style="position:relative;">
+      🏢
+    </button>
     <div class="app-presence" id="appPresence" style="display:none;" title="Quem está online"></div>
     <div class="user-chip" id="userChip" style="display:none" onclick="signOutUser()" title="Sair">
       <div class="user-avatar-placeholder" id="userAvatar">?</div>
@@ -6529,31 +6531,30 @@ function importData(e) {
    RESTAURANT FILTER
 ═══════════════════════════════════════════════════════ */
 function getRestaurants() {
+  // Fonte primária: Base de Dados (Firestore clientes_base)
+  const fromBD = (_bdClientes||[]).map(c => c.nome).filter(Boolean);
+  // Fallback: posts e clients antigos (compatibilidade)
   const fromPosts = posts.map(p => p.restaurante).filter(Boolean);
   const fromClients = Object.keys(clients);
-  return [...new Set([...fromPosts, ...fromClients])].sort();
+  return [...new Set([...fromBD, ...fromPosts, ...fromClients])].sort();
 }
 
 function populateRestauranteSelect(selectedValue) {
   const sel = document.getElementById('restauranteSelect');
   if (!sel) return;
   const rests = getRestaurants();
-  const current = selectedValue !== undefined ? selectedValue : document.getElementById('restaurante').value;
+  const current = selectedValue !== undefined ? selectedValue : document.getElementById('restaurante')?.value || '';
   sel.innerHTML = `<option value="">Selecione um restaurante...</option>` +
     rests.map(r => `<option value="${r}"${r === current ? ' selected' : ''}>${r}</option>`).join('') +
-    `<option value="__novo__"${current && !rests.includes(current) ? ' selected' : ''}>➕ Novo restaurante...</option>`;
+    `<option value="__bd__" style="color:var(--accent);font-weight:600;">🏢 Gerenciar clientes...</option>`;
   const wrap = document.getElementById('novoRestauranteWrap');
   const input = document.getElementById('restaurante');
-  if (current && !rests.includes(current) && current !== '__novo__') {
-    sel.value = '__novo__';
-    if (wrap) wrap.style.display = 'block';
-    input.value = current;
-  } else if (current && rests.includes(current)) {
+  if (current && rests.includes(current)) {
     if (wrap) wrap.style.display = 'none';
-    input.value = current;
+    if (input) input.value = current;
   } else {
     if (wrap) wrap.style.display = 'none';
-    input.value = '';
+    if (input) input.value = '';
   }
 }
 
@@ -6561,13 +6562,30 @@ function onRestauranteSelectChange() {
   const sel = document.getElementById('restauranteSelect');
   const wrap = document.getElementById('novoRestauranteWrap');
   const input = document.getElementById('restaurante');
-  if (sel.value === '__novo__') {
-    wrap.style.display = 'block';
-    input.value = '';
-    input.focus();
+  if (sel.value === '__bd__') {
+    // Redireciona pra Base de Dados
+    sel.value = '';
+    if (wrap) wrap.style.display = 'none';
+    switchTab('base', document.getElementById('bdIconBtn'));
+    if (typeof showToast === 'function') showToast('ok','🏢','Gerencie seus clientes na Base de Dados.');
+  } else if (sel.value === '__novo__') {
+    if (wrap) wrap.style.display = 'block';
+    if (input) { input.value = ''; input.focus(); }
   } else {
-    wrap.style.display = 'none';
-    input.value = sel.value;
+    if (wrap) wrap.style.display = 'none';
+    if (input) input.value = sel.value;
+    // Puxar dados do cliente da Base de Dados automaticamente
+    const bdCliente = (_bdClientes||[]).find(c => c.nome === sel.value);
+    if (bdCliente && typeof onBdClienteSelected === 'function') onBdClienteSelected(bdCliente);
+  }
+}
+
+// Callback chamado quando cliente da BD é selecionado num dropdown de restaurante
+function onBdClienteSelected(c) {
+  // Preenche campos do formulário de post com dados da BD, se disponíveis
+  const hashEl = document.getElementById('hashtags');
+  if (hashEl && !hashEl.value && (c.hashtags||[]).length) {
+    hashEl.value = c.hashtags.join(' ');
   }
 }
 
@@ -18138,6 +18156,7 @@ function bdRenderDetail(id) {
             <button class="bd-action-btn primary" onclick='bdAIBrief(${JSON.stringify(c).replace(/'/g,"&#39;")})'>✨ Copiar contexto pra IA</button>
             <button class="bd-action-btn" onclick='bdOpenAll(${JSON.stringify(c).replace(/'/g,"&#39;")})'>🔗 Abrir tudo</button>
             ${waLink?`<a class="bd-action-btn" href="${waLink}" target="_blank" style="text-decoration:none;">💬 WhatsApp</a>`:''}
+            <button class="bd-action-btn" onclick="bdOpenFieldsConfig()" title="Configurar campos da ficha">⚙️ Campos</button>
             <button class="bd-action-btn" onclick="bdDelete('${c.id}')" style="margin-left:auto;">🗑️ Excluir</button>
           </div>
         </div>
@@ -18165,6 +18184,7 @@ function bdRenderDetail(id) {
       ${_bdSectionAvisos(c)}
       ${_bdSectionNotas(c)}
       ${_bdSectionVisual(c)}
+      ${_bdSectionCustomFields(c)}
     </div>
   `;
 }
@@ -18583,12 +18603,22 @@ function _bdSectionNotas(c) {
 function _bdSectionVisual(c) {
   const swatches = BD_PALETA.map(col => {
     const active = (c.cor === col) ? 'active' : '';
-    return `<div class="bd-color-swatch ${active}" style="background:${col};" onclick="bdSaveField('${c.id}','cor','${col}')"></div>`;
+    return `<div class="bd-color-swatch ${active}" style="background:${col};" onclick="bdSaveField('${c.id}','cor','${col}')" title="${col}"></div>`;
   }).join('');
+  const currentCor = c.cor || '#6366f1';
   return _bdSec('🎨 Identificação visual', `
     <div class="bd-field-label">Cor de identificação</div>
-    <div class="bd-color-picker">${swatches}</div>
-    <div style="font-size:11px;color:var(--text3);margin-top:8px;">A cor é usada no avatar e em referências futuras.</div>
+    <div class="bd-color-picker" style="margin-bottom:10px;">${swatches}</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <div style="width:32px;height:32px;border-radius:50%;background:${currentCor};border:2px solid var(--border);"></div>
+        <span style="font-size:12px;color:var(--text2);">Ou escolha qualquer cor:</span>
+        <input type="color" value="${currentCor}" onchange="bdSaveField('${c.id}','cor',this.value);this.previousElementSibling.previousElementSibling.style.background=this.value;"
+          style="width:40px;height:32px;border:none;background:none;cursor:pointer;border-radius:6px;">
+      </label>
+      <span style="font-size:12px;color:var(--text3);">Atual: <b>${currentCor}</b></span>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px;">A cor aparece no avatar do cliente em todo o app.</div>
   `);
 }
 
@@ -18613,13 +18643,320 @@ window.bdUploadPhoto = async function(id, input) {
   } catch(e) { alert('Erro: '+e.message); }
 };
 
+// ── Campos customizáveis (schema dinâmico) ──────────────────────────
+// Schema salvo em Firestore: config/clientes_schema → { fields: [{id,label,type,section,order}] }
+// Tipos: text | textarea | link | checkbox | image | list | date | number | select | phone
+let _bdSchema = [];       // [{id, label, type, section, order, options?}]
+let _bdSchemaUnsub = null;
+
+const BD_TIPOS = [
+  { value:'text',     icon:'📝', label:'Texto curto' },
+  { value:'textarea', icon:'📄', label:'Texto longo' },
+  { value:'link',     icon:'🔗', label:'Link / URL' },
+  { value:'checkbox', icon:'☑️', label:'Caixa de marcar (Sim/Não)' },
+  { value:'checkboxes',icon:'☑️☑️', label:'Múltiplas caixas de marcar' },
+  { value:'image',    icon:'🖼️', label:'Imagem (upload)' },
+  { value:'list',     icon:'📋', label:'Lista de itens' },
+  { value:'date',     icon:'📅', label:'Data' },
+  { value:'number',   icon:'🔢', label:'Número' },
+  { value:'phone',    icon:'📞', label:'Telefone / WhatsApp' },
+  { value:'select',   icon:'🔽', label:'Seleção (dropdown)' },
+];
+
+async function bdSchemaInit() {
+  const db = _bdDb(); if (!db) return;
+  if (_bdSchemaUnsub) return;
+  _bdSchemaUnsub = db.collection('config').doc('clientes_schema').onSnapshot(snap => {
+    const d = snap.data();
+    _bdSchema = (d?.fields || []).sort((a,b) => (a.order||0)-(b.order||0));
+    if (_bdSelectedId) bdRenderDetail(_bdSelectedId);
+  }, () => {});
+}
+
+async function bdSchemaSave(fields) {
+  const db = _bdDb(); if (!db) return;
+  await db.collection('config').doc('clientes_schema').set({ fields }, { merge: true });
+}
+
+// ── Modal de configuração de campos ─────────────────────────────────
+window.bdOpenFieldsConfig = function() {
+  let modal = document.getElementById('bdFieldsModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'bdFieldsModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;display:flex;align-items:center;justify-content:center;';
+    modal.onclick = e => { if (e.target === modal) modal.remove(); };
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = `
+    <div style="background:var(--card);border-radius:14px;width:600px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4);">
+      <div style="padding:20px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--text);">⚙️ Configurar campos da ficha</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:3px;">Adicione, remova ou reordene campos. Aplica para todos os clientes.</div>
+        </div>
+        <button onclick="document.getElementById('bdFieldsModal').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2);">✕</button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:16px 22px;" id="bdFieldsList"></div>
+      <div style="padding:14px 22px;border-top:1px solid var(--border);">
+        <button onclick="bdAddFieldPrompt()" style="width:100%;padding:11px;background:linear-gradient(90deg,#a855f7,#6366f1);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">＋ Adicionar novo campo</button>
+      </div>
+    </div>`;
+  bdRenderFieldsList();
+};
+
+function bdRenderFieldsList() {
+  const el = document.getElementById('bdFieldsList');
+  if (!el) return;
+  if (_bdSchema.length === 0) {
+    el.innerHTML = `<div style="text-align:center;color:var(--text3);padding:24px;font-size:13px;">Nenhum campo extra criado ainda.<br>Clique em "＋ Adicionar novo campo".</div>`;
+    return;
+  }
+  el.innerHTML = _bdSchema.map((f,i) => {
+    const tipo = BD_TIPOS.find(t => t.value === f.type) || BD_TIPOS[0];
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border-radius:8px;margin-bottom:8px;">
+      <span style="font-size:18px;">${tipo.icon}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);">${_bdEsc(f.label)}</div>
+        <div style="font-size:11px;color:var(--text3);">${tipo.label}${f.section?' · '+f.section:''}</div>
+      </div>
+      <button onclick="bdFieldMoveUp(${i})" title="Subir" style="background:none;border:1px solid var(--border);border-radius:5px;padding:3px 7px;cursor:pointer;color:var(--text2);">↑</button>
+      <button onclick="bdFieldMoveDown(${i})" title="Descer" style="background:none;border:1px solid var(--border);border-radius:5px;padding:3px 7px;cursor:pointer;color:var(--text2);">↓</button>
+      <button onclick="bdFieldDelete(${i})" title="Excluir" style="background:none;border:1px solid var(--border);border-radius:5px;padding:3px 7px;cursor:pointer;color:#ef4444;">🗑️</button>
+    </div>`;
+  }).join('');
+}
+
+window.bdFieldMoveUp = function(i) {
+  if (i === 0) return;
+  const f = [..._bdSchema]; [f[i-1],f[i]] = [f[i],f[i-1]];
+  f.forEach((x,j) => x.order = j);
+  bdSchemaSave(f).then(() => bdRenderFieldsList());
+};
+window.bdFieldMoveDown = function(i) {
+  if (i >= _bdSchema.length-1) return;
+  const f = [..._bdSchema]; [f[i],f[i+1]] = [f[i+1],f[i]];
+  f.forEach((x,j) => x.order = j);
+  bdSchemaSave(f).then(() => bdRenderFieldsList());
+};
+window.bdFieldDelete = function(i) {
+  const f = _bdSchema[i];
+  if (!confirm(`Excluir o campo "${f.label}"? Os dados preenchidos em todos os clientes serão perdidos.`)) return;
+  const arr = _bdSchema.filter((_,j) => j!==i);
+  arr.forEach((x,j) => x.order = j);
+  bdSchemaSave(arr);
+};
+
+window.bdAddFieldPrompt = function() {
+  const modal = document.getElementById('bdFieldsModal');
+  if (!modal) return;
+  modal.querySelector('div').innerHTML = `
+    <div style="padding:20px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:16px;font-weight:700;color:var(--text);">＋ Novo campo</div>
+      <button onclick="bdOpenFieldsConfig()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2);">✕</button>
+    </div>
+    <div style="padding:20px 22px;flex:1;overflow-y:auto;">
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">NOME DO CAMPO</div>
+        <input id="bdNewFieldLabel" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:14px;" placeholder="Ex: Responsável pelo salão, Data de inauguração...">
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">TIPO DE CAMPO</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          ${BD_TIPOS.map(t => `
+            <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:2px solid var(--border);border-radius:8px;cursor:pointer;background:var(--bg2);" class="bd-tipo-opt">
+              <input type="radio" name="bdNewFieldType" value="${t.value}" style="display:none;" onchange="document.querySelectorAll('.bd-tipo-opt').forEach(x=>x.style.borderColor='var(--border)');this.closest('.bd-tipo-opt').style.borderColor='var(--accent)'">
+              <span style="font-size:20px;">${t.icon}</span>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--text);">${t.label}</div>
+              </div>
+            </label>`).join('')}
+        </div>
+      </div>
+      <div id="bdNewFieldOptions" style="margin-bottom:16px;display:none;">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">OPÇÕES (uma por linha)</div>
+        <textarea id="bdNewFieldOpts" style="width:100%;height:80px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:13px;" placeholder="Opção 1&#10;Opção 2&#10;Opção 3"></textarea>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">SEÇÃO (opcional — agrupa campos visualmente)</div>
+        <input id="bdNewFieldSection" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:14px;" placeholder="Ex: Informações extras, Dados internos...">
+      </div>
+    </div>
+    <div style="padding:14px 22px;border-top:1px solid var(--border);">
+      <button onclick="bdAddFieldConfirm()" style="width:100%;padding:11px;background:linear-gradient(90deg,#a855f7,#6366f1);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">✓ Criar campo</button>
+    </div>`;
+  // Mostrar/ocultar opções pra tipo select/checkboxes
+  modal.querySelectorAll('input[name="bdNewFieldType"]').forEach(r => {
+    r.addEventListener('change', () => {
+      const opts = document.getElementById('bdNewFieldOptions');
+      if (opts) opts.style.display = (r.value==='select'||r.value==='checkboxes') ? 'block' : 'none';
+    });
+  });
+};
+
+window.bdAddFieldConfirm = function() {
+  const label = document.getElementById('bdNewFieldLabel')?.value?.trim();
+  const typeEl = document.querySelector('input[name="bdNewFieldType"]:checked');
+  if (!label) { alert('Digite o nome do campo.'); return; }
+  if (!typeEl) { alert('Selecione o tipo do campo.'); return; }
+  const type = typeEl.value;
+  const section = document.getElementById('bdNewFieldSection')?.value?.trim() || 'Campos extras';
+  const optsRaw = document.getElementById('bdNewFieldOpts')?.value || '';
+  const options = optsRaw.split('\n').map(s=>s.trim()).filter(Boolean);
+  const id = 'cf_' + Date.now();
+  const newField = { id, label, type, section, order: _bdSchema.length, ...(options.length ? {options} : {}) };
+  bdSchemaSave([..._bdSchema, newField]).then(() => bdOpenFieldsConfig());
+};
+
+// ── Renderização dos campos customizados na ficha ───────────────────
+function _bdSectionCustomFields(c) {
+  if (_bdSchema.length === 0) return '';
+  // Agrupar por seção
+  const sections = {};
+  _bdSchema.forEach(f => {
+    const sec = f.section || 'Campos extras';
+    if (!sections[sec]) sections[sec] = [];
+    sections[sec].push(f);
+  });
+  return Object.entries(sections).map(([secName, fields]) => {
+    const body = `<div class="bd-grid" style="row-gap:14px;">${fields.map(f => _bdRenderCustomField(c, f)).join('')}</div>`;
+    return _bdSec(`🔧 ${secName}`, body);
+  }).join('');
+}
+
+function _bdRenderCustomField(c, f) {
+  const val = (c.customFields || {})[f.id];
+  const save = `bdSaveCustomField('${c.id}','${f.id}',this.value)`;
+  const saveCheck = `bdSaveCustomField('${c.id}','${f.id}',this.checked)`;
+  switch (f.type) {
+    case 'text':
+    case 'phone':
+      return `<div class="bd-field"><div class="bd-field-label">${_bdEsc(f.label)}</div>
+        <div class="bd-field-value">
+          <input class="bd-field-input" type="${f.type==='phone'?'tel':'text'}" value="${_bdEsc(val||'')}" onchange="${save}" placeholder="${_bdEsc(f.label)}">
+          ${_bdCopyHtml(val||'')}
+          ${f.type==='phone'&&val?`<a href="https://wa.me/55${(val||'').replace(/\D/g,'')}" target="_blank" class="bd-copy-btn" title="WhatsApp">💬</a>`:''}
+        </div></div>`;
+    case 'textarea':
+      return `<div class="bd-field" style="grid-column:1/-1;"><div class="bd-field-label">${_bdEsc(f.label)}</div>
+        <div class="bd-field-value"><textarea class="bd-field-textarea" onchange="${save}">${_bdEsc(val||'')}</textarea>${_bdCopyHtml(val||'')}</div></div>`;
+    case 'link':
+      return `<div class="bd-field"><div class="bd-field-label">${_bdEsc(f.label)}</div>
+        <div class="bd-field-value">
+          <input class="bd-field-input" type="url" value="${_bdEsc(val||'')}" onchange="${save}" placeholder="https://">
+          ${val?`<a href="${_bdEsc(val)}" target="_blank" class="bd-copy-btn" title="Abrir">↗</a>`:''}
+          ${_bdCopyHtml(val||'')}
+        </div></div>`;
+    case 'checkbox':
+      return `<div class="bd-field"><div class="bd-field-label">${_bdEsc(f.label)}</div>
+        <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text);">
+          <input type="checkbox" ${val?'checked':''} onchange="${saveCheck}"> ${val?'Sim':'Não'}
+        </label></div>`;
+    case 'checkboxes': {
+      const vals = Array.isArray(val)?val:[];
+      const opts = (f.options||[]).map(opt =>
+        `<label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+          <input type="checkbox" ${vals.includes(opt)?'checked':''} onchange="bdSaveCustomCheckboxes('${c.id}','${f.id}','${_bdEsc(opt)}',this.checked)"> ${_bdEsc(opt)}
+        </label>`).join('');
+      return `<div class="bd-field" style="grid-column:1/-1;"><div class="bd-field-label">${_bdEsc(f.label)}</div>
+        <div class="bd-checkbox-group">${opts}</div></div>`;
+    }
+    case 'image': {
+      const imgStyle = val ? `background-image:url('${val.replace(/'/g,"\\'")}');background-size:cover;background-position:center;` : '';
+      return `<div class="bd-field"><div class="bd-field-label">${_bdEsc(f.label)}</div>
+        <label style="display:block;width:120px;height:80px;border-radius:8px;border:2px dashed var(--border);cursor:pointer;overflow:hidden;${imgStyle}${!val?'display:flex;align-items:center;justify-content:center;':''}">
+          ${!val?`<span style="font-size:24px;">🖼️</span>`:''}
+          <input type="file" accept="image/*" style="display:none;" onchange="bdUploadCustomImage('${c.id}','${f.id}',this)">
+        </label>
+        ${val?`<button onclick="bdSaveCustomField('${c.id}','${f.id}','')" style="font-size:10px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:none;cursor:pointer;color:var(--text2);margin-top:4px;">✕ Remover</button>`:''}
+        </div>`;
+    }
+    case 'list': {
+      const items = Array.isArray(val)?val:[];
+      const rows = items.map((v,i)=>`<div class="bd-list-item-row">
+        <input value="${_bdEsc(v)}" onchange="bdCustomListUpd('${c.id}','${f.id}',${i},this.value)" style="flex:1;">
+        ${_bdCopyHtml(v)}
+        <button onclick="bdCustomListDel('${c.id}','${f.id}',${i})">✕</button>
+      </div>`).join('');
+      return `<div class="bd-field" style="grid-column:1/-1;"><div class="bd-field-label">${_bdEsc(f.label)}</div>
+        <div class="bd-list-items">${rows}<button class="bd-add-row-btn" onclick="bdCustomListAdd('${c.id}','${f.id}')">＋ adicionar</button></div></div>`;
+    }
+    case 'date':
+      return `<div class="bd-field"><div class="bd-field-label">${_bdEsc(f.label)}</div>
+        <div class="bd-field-value">
+          <input class="bd-field-input" type="date" value="${_bdEsc(val||'')}" onchange="${save}">
+          ${_bdCopyHtml(val||'')}
+        </div></div>`;
+    case 'number':
+      return `<div class="bd-field"><div class="bd-field-label">${_bdEsc(f.label)}</div>
+        <div class="bd-field-value">
+          <input class="bd-field-input" type="number" value="${_bdEsc(val||'')}" onchange="${save}">
+          ${_bdCopyHtml(val||'')}
+        </div></div>`;
+    case 'select': {
+      const opts2 = (f.options||[]).map(o => `<option value="${_bdEsc(o)}" ${val===o?'selected':''}>${_bdEsc(o)}</option>`).join('');
+      return `<div class="bd-field"><div class="bd-field-label">${_bdEsc(f.label)}</div>
+        <div class="bd-field-value">
+          <select class="bd-field-input" onchange="${save}"><option value="">-- selecionar --</option>${opts2}</select>
+        </div></div>`;
+    }
+    default:
+      return '';
+  }
+}
+
+// Salvar campo customizado
+window.bdSaveCustomField = function(clienteId, fieldId, value) {
+  const c = _bdClientes.find(x => x.id===clienteId); if (!c) return;
+  const cf = {...(c.customFields||{}), [fieldId]: value};
+  bdSaveField(clienteId, 'customFields', cf);
+};
+window.bdSaveCustomCheckboxes = function(clienteId, fieldId, option, checked) {
+  const c = _bdClientes.find(x => x.id===clienteId); if (!c) return;
+  let arr = [...((c.customFields||{})[fieldId]||[])];
+  if (checked) { if (!arr.includes(option)) arr.push(option); }
+  else arr = arr.filter(x=>x!==option);
+  window.bdSaveCustomField(clienteId, fieldId, arr);
+};
+window.bdCustomListUpd = (cid, fid, i, val) => {
+  const c = _bdClientes.find(x=>x.id===cid); if (!c) return;
+  const arr = [...((c.customFields||{})[fid]||[])]; arr[i]=val;
+  window.bdSaveCustomField(cid, fid, arr);
+};
+window.bdCustomListAdd = (cid, fid) => {
+  const v = prompt('Adicionar:'); if (v===null) return;
+  const c = _bdClientes.find(x=>x.id===cid); if (!c) return;
+  const arr = [...((c.customFields||{})[fid]||[]), v];
+  window.bdSaveCustomField(cid, fid, arr);
+};
+window.bdCustomListDel = (cid, fid, i) => {
+  const c = _bdClientes.find(x=>x.id===cid); if (!c) return;
+  const arr = [...((c.customFields||{})[fid]||[])]; arr.splice(i,1);
+  window.bdSaveCustomField(cid, fid, arr);
+};
+window.bdUploadCustomImage = async function(cid, fid, input) {
+  const file = input.files?.[0]; if (!file) return;
+  const imgbbKey = (typeof getApiKey==='function'?getApiKey('imgbb'):null)||(typeof getSpImgbbKey==='function'?getSpImgbbKey():null);
+  if (!imgbbKey) {
+    const reader = new FileReader();
+    reader.onload = () => window.bdSaveCustomField(cid, fid, reader.result);
+    reader.readAsDataURL(file); return;
+  }
+  const fd = new FormData(); fd.append('image', file);
+  try {
+    const r = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`,{method:'POST',body:fd});
+    const j = await r.json();
+    if (j?.data?.url) window.bdSaveCustomField(cid, fid, j.data.url);
+  } catch(e) { alert('Erro upload: '+e.message); }
+};
+
 // Hook na switchTab
 (function bdHookSwitch(){
   const orig = window.switchTab;
   if (typeof orig !== 'function') return;
   window.switchTab = function(tab, btn) {
     const r = orig.apply(this, arguments);
-    if (tab === 'base') { setTimeout(bdInit, 100); }
+    if (tab === 'base') { setTimeout(() => { bdInit(); bdSchemaInit(); }, 100); }
     return r;
   };
 })();
