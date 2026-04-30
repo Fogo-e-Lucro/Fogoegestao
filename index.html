@@ -3634,8 +3634,8 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
       <div class="user-avatar-placeholder" id="userAvatar">?</div>
       <span class="user-name" id="userName">Usuário</span>
     </div>
-    <button class="theme-picker-btn" id="themePickerBtn" onclick="toggleThemePicker()" title="Tema do app">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="13.5" r="2.5"/><circle cx="8.5" cy="18.5" r="2.5"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" opacity=".3"/></svg>
+    <button class="theme-picker-btn" id="themePickerBtn" onclick="toggleNightMode()" title="Modo noturno">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
   </button>
   <button class="theme-picker-btn app-uazapi-status" id="appUazapiStatusBtn" onclick="openAppSettings(); setTimeout(()=>appSettingsTab('integ'),50);" title="Status WhatsApp (uazapi)" style="display:none;">
     <span class="app-uazapi-dot" id="appUazapiDot"></span>
@@ -3870,10 +3870,6 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 <!-- Permissions modal (global, fora do modal de config) -->
 <div class="perms-overlay" id="permsOverlay" onclick="if(event.target===this)closePermsModal()">
   <div class="perms-card" id="permsCard"></div>
-</div>
-<div class="color-popover" id="colorPopover">
-  <div class="color-popover-title">Tema do App</div>
-  <div class="color-swatches" id="colorSwatches"></div>
 </div>
 
 <!-- MODAL: Configuração de IA -->
@@ -5018,31 +5014,16 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
 /* ═══════════════════════════════════════════════════════
    APP THEMES
 ═══════════════════════════════════════════════════════ */
+// Apenas 2 temas: claro (padrão) e modo noturno
 const APP_THEMES = [
-  { name:'Violeta',
-    bg:'#0b0b14',bg2:'#13131f',bg3:'#1a1a2e',card:'#181826',card2:'#20203a',border:'#252542',
-    accent:'#7c3aed',accent2:'#a855f7',accent3:'#c084fc',accentGlow:'rgba(124,58,237,.16)',
-    text:'#f1f5f9',text2:'#94a3b8',text3:'#4e5a70' },
-  { name:'Meia-Noite',
-    bg:'#06080f',bg2:'#0d1120',bg3:'#111828',card:'#0f1525',card2:'#162030',border:'#1e2d42',
-    accent:'#3b82f6',accent2:'#60a5fa',accent3:'#93c5fd',accentGlow:'rgba(59,130,246,.16)',
-    text:'#f0f4f8',text2:'#8da4be',text3:'#3d5570' },
-  { name:'Floresta',
-    bg:'#060d08',bg2:'#0c160f',bg3:'#111e14',card:'#0e1a12',card2:'#142218',border:'#1c2f20',
-    accent:'#059669',accent2:'#10b981',accent3:'#34d399',accentGlow:'rgba(5,150,105,.16)',
-    text:'#f0f4f1',text2:'#8ab49a',text3:'#3d6048' },
-  { name:'Âmbar',
-    bg:'#0d0a05',bg2:'#16100a',bg3:'#1e180f',card:'#181208',card2:'#201a10',border:'#2e2010',
-    accent:'#d97706',accent2:'#f59e0b',accent3:'#fbbf24',accentGlow:'rgba(217,119,6,.16)',
-    text:'#f5f0e8',text2:'#b8a882',text3:'#6b5a3a' },
-  { name:'Ardósia',
-    bg:'#0d1117',bg2:'#161c26',bg3:'#1c2430',card:'#181f2c',card2:'#202938',border:'#2a3545',
-    accent:'#e07a5f',accent2:'#f08a6f',accent3:'#f8a896',accentGlow:'rgba(224,122,95,.16)',
-    text:'#f2ede8',text2:'#9a8f88',text3:'#5a5050' },
-  { name:'Bruma',
+  { name:'Claro',
     bg:'#f7f8fa',bg2:'#edf0f4',bg3:'#e2e6ec',card:'#ffffff',card2:'#f5f7fa',border:'#d8dde6',
     accent:'#4f46e5',accent2:'#6366f1',accent3:'#818cf8',accentGlow:'rgba(79,70,229,.14)',
     text:'#1a1d23',text2:'#5a6272',text3:'#9ca3af' },
+  { name:'Modo Noturno',
+    bg:'#0b0b14',bg2:'#13131f',bg3:'#1a1a2e',card:'#181826',card2:'#20203a',border:'#252542',
+    accent:'#7c3aed',accent2:'#a855f7',accent3:'#c084fc',accentGlow:'rgba(124,58,237,.16)',
+    text:'#f1f5f9',text2:'#94a3b8',text3:'#4e5a70' },
 ];
 let activeAppTheme = 0;
 function applyAppTheme(idx) {
@@ -5068,24 +5049,21 @@ function applyAppTheme(idx) {
   document.querySelectorAll('input,textarea').forEach(el => el.style.colorScheme = isLight ? 'light' : 'dark');
   activeAppTheme = idx;
   localStorage.setItem('app_theme_idx', idx);
-  document.querySelectorAll('.color-swatch').forEach((s,i)=>s.classList.toggle('active',i===idx));
-}
-function renderColorSwatches() {
-  document.getElementById('colorSwatches').innerHTML = APP_THEMES.map((t,i)=>
-    `<div class="color-swatch${i===activeAppTheme?' active':''}" style="background:linear-gradient(135deg,${t.bg} 40%,${t.accent});" title="${t.name}" onclick="applyAppTheme(${i});"></div>`
-  ).join('');
-}
-let _themePopoverOpen = false;
-function toggleThemePicker() {
-  _themePopoverOpen = !_themePopoverOpen;
-  document.getElementById('colorPopover').classList.toggle('open', _themePopoverOpen);
-}
-document.addEventListener('click', function(e){
-  if(_themePopoverOpen && !e.target.closest('#colorPopover') && !e.target.closest('#themePickerBtn')){
-    _themePopoverOpen = false;
-    document.getElementById('colorPopover').classList.remove('open');
+  // Atualiza ícone do botão de tema (sol no modo noturno → clica pra voltar pro claro; lua no claro → clica pra entrar no noturno)
+  const btn = document.getElementById('themePickerBtn');
+  if (btn) {
+    const isNight = idx === 1;
+    btn.title = isNight ? 'Modo claro' : 'Modo noturno';
+    btn.innerHTML = isNight
+      // Ícone SOL (mostrado quando estamos no modo noturno — clique volta pro claro)
+      ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`
+      // Ícone LUA (mostrado no claro — clique entra no modo noturno)
+      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
   }
-});
+}
+function toggleNightMode() {
+  applyAppTheme(activeAppTheme === 1 ? 0 : 1);
+}
 
 /* ═══════════════════════════════════════════════════════
    HELPERS — localStorage seguro
@@ -8805,11 +8783,11 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')window.close
   const savedKey = getClaudeKey();
   if (savedKey) { const ki = document.getElementById('claudeApiKey'); if (ki) ki.value = savedKey; }
 
-  // Restore app theme
-  const savedThemeIdx = parseInt(localStorage.getItem('app_theme_idx') || '0');
+  // Tema do app: claro por padrão; só usa noturno se o usuário ativou explicitamente
+  let savedThemeIdx = parseInt(localStorage.getItem('app_theme_idx') || '0');
+  if (savedThemeIdx !== 0 && savedThemeIdx !== 1) savedThemeIdx = 0;
   activeAppTheme = savedThemeIdx;
   applyAppTheme(savedThemeIdx);
-  renderColorSwatches();
 
   // Firestore load happens after auth (in onAuthStateChanged)
 })();
