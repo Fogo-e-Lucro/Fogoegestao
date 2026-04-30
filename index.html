@@ -3429,6 +3429,108 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .pj-modal-left { padding:14px; }
   .pj-fields-grid { grid-template-columns:1fr; }
 }
+
+/* ============== BASE DE DADOS (CLIENTES) ============== */
+#tab-base { padding:0; overflow:hidden; }
+.bd-wrap { display:flex; height:calc(100vh - 64px); background:var(--bg); }
+.bd-sidebar { width:300px; min-width:300px; border-right:1px solid var(--border); background:var(--card); display:flex; flex-direction:column; }
+.bd-search-wrap { padding:14px 12px 8px; border-bottom:1px solid var(--border); }
+.bd-search-input { width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg2); color:var(--text); font-size:13px; outline:none; }
+.bd-search-input:focus { border-color:var(--accent); }
+.bd-list-actions { padding:10px 12px; border-bottom:1px solid var(--border); }
+.bd-add-btn { width:100%; padding:9px; border:none; border-radius:8px; background:linear-gradient(90deg,#a855f7,#6366f1); color:#fff; font-size:13px; font-weight:600; cursor:pointer; }
+.bd-add-btn:hover { opacity:.9; }
+.bd-list { flex:1; overflow-y:auto; padding:6px 0; }
+.bd-list-item { display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer; border-left:3px solid transparent; transition:background .15s; }
+.bd-list-item:hover { background:var(--bg2); }
+.bd-list-item.active { background:var(--bg3); border-left-color:var(--accent); }
+.bd-list-avatar { width:36px; height:36px; border-radius:50%; flex-shrink:0; background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:14px; }
+.bd-list-info { flex:1; min-width:0; }
+.bd-list-name { font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bd-list-sub { font-size:11px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bd-list-empty { padding:24px 12px; text-align:center; color:var(--text3); font-size:12px; }
+
+.bd-main { flex:1; overflow-y:auto; padding:0; }
+.bd-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text3); font-size:14px; gap:14px; text-align:center; }
+
+.bd-header { background:linear-gradient(135deg,var(--bd-color,#6366f1) 0%,rgba(0,0,0,.2) 100%); padding:24px; color:#fff; position:relative; }
+.bd-header-inner { display:flex; align-items:center; gap:18px; }
+.bd-cliente-avatar { width:80px; height:80px; border-radius:50%; background-size:cover; background-position:center; background-color:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:700; border:3px solid rgba(255,255,255,.3); flex-shrink:0; }
+.bd-cliente-name { font-size:24px; font-weight:700; }
+.bd-cliente-meta { font-size:13px; opacity:.85; margin-top:4px; }
+.bd-header-actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+.bd-action-btn { padding:7px 12px; border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.15); color:#fff; border-radius:7px; font-size:12px; cursor:pointer; font-weight:600; backdrop-filter:blur(10px); }
+.bd-action-btn:hover { background:rgba(255,255,255,.28); }
+.bd-action-btn.primary { background:#fff; color:#1a1a2e; }
+
+.bd-health-bar { position:absolute; top:14px; right:18px; background:rgba(0,0,0,.4); padding:6px 12px; border-radius:20px; font-size:11px; color:#fff; display:flex; align-items:center; gap:8px; }
+.bd-health-bar-fill { width:60px; height:5px; background:rgba(255,255,255,.3); border-radius:3px; overflow:hidden; }
+.bd-health-bar-fill > div { height:100%; background:#22c55e; transition:width .3s; }
+
+.bd-pin-note { background:linear-gradient(90deg,#fef3c7,#fde68a); color:#92400e; padding:12px 18px; font-size:13px; font-weight:500; border-bottom:1px solid #f59e0b; display:flex; align-items:center; gap:10px; }
+.bd-pin-note button { background:transparent; border:none; cursor:pointer; color:#92400e; font-size:14px; opacity:.6; }
+.bd-pin-note button:hover { opacity:1; }
+
+.bd-content { padding:18px 24px; max-width:1100px; }
+.bd-section { background:var(--card); border:1px solid var(--border); border-radius:10px; margin-bottom:14px; overflow:hidden; }
+.bd-section-head { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; cursor:pointer; user-select:none; background:var(--bg2); border-bottom:1px solid var(--border); }
+.bd-section-head:hover { background:var(--bg3); }
+.bd-section-title { font-size:13px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:8px; }
+.bd-section-toggle { font-size:11px; color:var(--text3); }
+.bd-section-body { padding:14px 16px; display:none; }
+.bd-section.open .bd-section-body { display:block; }
+.bd-section.open .bd-section-toggle { transform:rotate(90deg); }
+
+.bd-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+.bd-grid-1 { grid-template-columns:1fr; }
+.bd-field { display:flex; flex-direction:column; gap:4px; }
+.bd-field-label { font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:var(--text2); font-weight:600; }
+.bd-field-value { display:flex; align-items:center; gap:6px; }
+.bd-field-input { flex:1; padding:7px 10px; border:1px solid var(--border); border-radius:6px; background:var(--bg2); color:var(--text); font-size:13px; }
+.bd-field-input:focus { outline:none; border-color:var(--accent); }
+.bd-field-textarea { flex:1; padding:7px 10px; border:1px solid var(--border); border-radius:6px; background:var(--bg2); color:var(--text); font-size:13px; min-height:60px; resize:vertical; font-family:inherit; }
+.bd-copy-btn { padding:6px 8px; border:1px solid var(--border); background:var(--bg2); border-radius:6px; cursor:pointer; font-size:11px; color:var(--text2); flex-shrink:0; transition:all .15s; }
+.bd-copy-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+.bd-copy-btn.ok { background:#22c55e; color:#fff; border-color:#22c55e; }
+
+.bd-list-items { display:flex; flex-direction:column; gap:6px; }
+.bd-list-item-row { display:flex; gap:6px; align-items:center; }
+.bd-list-item-row input { flex:1; padding:6px 8px; border:1px solid var(--border); border-radius:5px; background:var(--bg2); color:var(--text); font-size:12px; }
+.bd-list-item-row button { padding:5px 8px; border:none; background:var(--bg3); color:var(--text2); border-radius:5px; cursor:pointer; font-size:11px; }
+.bd-list-item-row button:hover { background:#ef4444; color:#fff; }
+.bd-add-row-btn { padding:5px 10px; border:1px dashed var(--border); background:transparent; color:var(--text2); border-radius:5px; cursor:pointer; font-size:11px; align-self:flex-start; }
+.bd-add-row-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+.bd-color-picker { display:flex; gap:6px; flex-wrap:wrap; }
+.bd-color-swatch { width:28px; height:28px; border-radius:50%; cursor:pointer; border:2px solid transparent; }
+.bd-color-swatch.active { border-color:var(--text); box-shadow:0 0 0 2px var(--bg); }
+
+.bd-tag { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; background:var(--bg3); border-radius:12px; font-size:11px; color:var(--text); margin-right:4px; margin-bottom:4px; }
+.bd-tag-x { cursor:pointer; opacity:.5; }
+.bd-tag-x:hover { opacity:1; color:#ef4444; }
+
+.bd-aprendizado { padding:8px 10px; background:var(--bg2); border-left:3px solid var(--accent); border-radius:0 5px 5px 0; font-size:12px; color:var(--text); margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+.bd-aprendizado-text { flex:1; }
+.bd-aprendizado-date { font-size:10px; color:var(--text3); }
+.bd-aprendizado-x { cursor:pointer; opacity:.4; }
+.bd-aprendizado-x:hover { opacity:1; color:#ef4444; }
+
+.bd-aviso { padding:8px 10px; background:rgba(99,102,241,.08); border:1px solid rgba(99,102,241,.3); border-radius:6px; font-size:12px; color:var(--text); margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+.bd-aviso.due { background:rgba(239,68,68,.1); border-color:rgba(239,68,68,.4); }
+.bd-aviso-text { flex:1; }
+
+.bd-photo-upload { width:80px; height:80px; border-radius:50%; border:2px dashed var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; background-size:cover; background-position:center; flex-shrink:0; }
+.bd-photo-upload:hover { border-color:var(--accent); }
+.bd-photo-upload input { display:none; }
+
+.bd-checkbox-group { display:flex; flex-wrap:wrap; gap:10px; }
+.bd-checkbox-group label { display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--text); cursor:pointer; }
+
+@media (max-width:900px) {
+  .bd-wrap { flex-direction:column; height:auto; }
+  .bd-sidebar { width:100%; min-width:0; max-height:280px; }
+  .bd-grid { grid-template-columns:1fr; }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -3486,6 +3588,7 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   <div style="display:flex;align-items:center;gap:10px;">
     <div class="sync-dot syncing" id="syncStatus" title="Conectando..."></div>
     <div class="main-tabs">
+      <button class="main-tab" id="tabBase" onclick="switchTab('base',this)">📚 Base de Dados</button>
       <button class="main-tab" id="tabProjetos" onclick="switchTab('projetos',this)">🎯 Gestão Central</button>
       <!-- Ferramentas dropdown (todas as outras abas) -->
       <div class="main-tab-more" id="tabMoreWrap">
@@ -4780,6 +4883,29 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
     </div>
   </div><!-- /tab-projetos -->
 
+  <!-- ============== ABA BASE DE DADOS (CLIENTES) ============== -->
+  <div class="tab-panel" id="tab-base">
+    <div class="bd-wrap">
+      <!-- Sidebar: busca + lista -->
+      <div class="bd-sidebar">
+        <div class="bd-search-wrap">
+          <input type="text" class="bd-search-input" id="bdSearchInput" placeholder="🔍 Buscar nome, prato, endereço, sócio..." oninput="bdSearch(this.value)">
+        </div>
+        <div class="bd-list-actions">
+          <button class="bd-add-btn" onclick="bdNewCliente()">＋ Novo Cliente</button>
+        </div>
+        <div class="bd-list" id="bdList"></div>
+      </div>
+      <!-- Main: ficha do cliente -->
+      <div class="bd-main" id="bdMain">
+        <div class="bd-empty">
+          <div style="font-size:42px;">📚</div>
+          <div>Selecione um cliente ao lado<br>ou crie um novo</div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /tab-base -->
+
   <!-- Pomodoro Widget -->
   <div class="pj-pomo-widget" id="pjPomoWidget" style="display:none;">
     <div class="pj-pomo-header">
@@ -5019,8 +5145,9 @@ let _syncTimer = null;
    marcar nos checkboxes (abas principais + espaços de projetos).
    Persistência: localStorage 'pj_permissions' = { [email]: {tabs:[], spaces:[]} }
    Em produção, sincronizar via Firestore coleção 'pj_permissions'. */
-const ALL_TABS = ['entrada','visualizar','acesso','social','gmb','metricas','projetos'];
+const ALL_TABS = ['base','entrada','visualizar','acesso','social','gmb','metricas','projetos'];
 const TAB_LABELS = {
+  base:'📚 Base de Dados',
   entrada:'✏️ Criar Post', visualizar:'📅 Calendário Social Media', acesso:'🔑 Acesso',
   social:'🚀 Publipost', gmb:'📍 Google', metricas:'📊 Métricas', projetos:'🎯 Gestão Central'
 };
@@ -17772,6 +17899,730 @@ function pjRelTime(date) {
 
 // ── Tab init hook ────────────────────────────────────────
 // Auto-init when Projetos tab is activated (pjInit called from switchTab)
+
+/* ════════════════════════════════════════════════════════════════
+   BASE DE DADOS — Cadastro de Restaurantes (clientes)
+   Coleção Firestore: 'clientes_base'
+   ════════════════════════════════════════════════════════════════ */
+let _bdClientes = [];
+let _bdSelectedId = null;
+let _bdUnsub = null;
+let _bdSearchQuery = '';
+let _bdAvisosTimer = null;
+
+const BD_PALETA = ['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#14b8a6','#06b6d4','#0ea5e9','#3b82f6','#6366f1','#8b5cf6','#a855f7','#d946ef','#ec4899','#f43f5e','#64748b'];
+
+const BD_DEFAULT = () => ({
+  nome: '', razaoSocial: '', cnpj: '', logoUrl: '', fotoUrl: '', cor: BD_PALETA[Math.floor(Math.random()*BD_PALETA.length)],
+  endereco: '', cidade: '', estado: '', cep: '', telefone: '', whatsapp: '', email: '', site: '',
+  ig: '', igBio: '',
+  gmbCategoria: '', gmbHorario: '', gmbLink: '',
+  tomVoz: '', aniversarioRestaurante: '', aniversariosSocios: [], promocoesFixas: [], pratosTop: [], pratosAssinatura: [],
+  ticketMedio: '', cores: [], fontes: '', hashtags: [], persona: '',
+  driveUrl: '',
+  senhas: [],
+  tipoCozinha: '', modSalao:false, modDelivery:false, modDrive:false, modReserva:false,
+  ifoodUrl:'', rappiUrl:'',
+  capacidade: '', estacionamento:false, petFriendly:false, ar:false, acessivel:false,
+  combos: [], happyHour: '', fidelidade: '',
+  cardapioDigitalUrl: '', vegano:false, vegetariano:false, semGluten:false, semLactose:false, kids:false,
+  notaGoogle:'', notaIfood:'', reclamacoes:'', pontosFortes:'',
+  concorrentes: [], referencias: [], oqueNaoPostar:'',
+  pinNote: '', notas: '',
+  aprendizados: [],
+  avisos: [],
+  tags: [],
+  createdAt: Date.now(), updatedAt: Date.now()
+});
+
+function _bdDb() { try { return firebase.firestore(); } catch(e) { return null; } }
+
+async function bdInit() {
+  const db = _bdDb(); if (!db) return;
+  if (_bdUnsub) return;
+  try {
+    _bdUnsub = db.collection('clientes_base').onSnapshot(snap => {
+      _bdClientes = [];
+      snap.forEach(doc => _bdClientes.push({ id: doc.id, ...doc.data() }));
+      _bdClientes.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+      bdRenderList();
+      if (_bdSelectedId) bdRenderDetail(_bdSelectedId);
+      bdCheckAvisos();
+    }, () => {});
+  } catch(e) { console.error('BD init:', e); }
+  // Timer pra checar avisos
+  if (!_bdAvisosTimer) _bdAvisosTimer = setInterval(bdCheckAvisos, 60 * 60 * 1000); // 1x por hora
+}
+
+function bdSearch(q) {
+  _bdSearchQuery = (q||'').toLowerCase().trim();
+  bdRenderList();
+}
+
+function _bdMatchesSearch(c, q) {
+  if (!q) return true;
+  const haystack = [
+    c.nome, c.razaoSocial, c.cnpj, c.endereco, c.cidade, c.telefone, c.whatsapp, c.email,
+    c.ig, c.tipoCozinha, c.persona, c.tomVoz, c.notas,
+    ...(c.pratosTop||[]),
+    ...(c.pratosAssinatura||[]),
+    ...((c.aniversariosSocios||[]).map(s => s.nome||'')),
+    ...((c.promocoesFixas||[]).map(p => p.nome||'')),
+    ...(c.hashtags||[]),
+    ...(c.tags||[]),
+  ].join(' ').toLowerCase();
+  return haystack.includes(q);
+}
+
+function bdRenderList() {
+  const list = document.getElementById('bdList');
+  if (!list) return;
+  const filtered = _bdClientes.filter(c => _bdMatchesSearch(c, _bdSearchQuery));
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="bd-list-empty">${_bdSearchQuery ? 'Nenhum resultado' : 'Nenhum cliente cadastrado.<br>Clique em "Novo Cliente"'}</div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(c => {
+    const initial = (c.nome||'?').charAt(0).toUpperCase();
+    const avatarStyle = c.fotoUrl ? `background-image:url('${c.fotoUrl.replace(/'/g,"\\'")}');` : `background-color:${c.cor||'#6366f1'};`;
+    const active = c.id === _bdSelectedId ? 'active' : '';
+    return `<div class="bd-list-item ${active}" onclick="bdSelectCliente('${c.id}')">
+      <div class="bd-list-avatar" style="${avatarStyle}">${c.fotoUrl?'':initial}</div>
+      <div class="bd-list-info">
+        <div class="bd-list-name">${_bdEsc(c.nome||'(sem nome)')}</div>
+        <div class="bd-list-sub">${_bdEsc(c.tipoCozinha||c.cidade||c.ig||'')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function bdSelectCliente(id) {
+  _bdSelectedId = id;
+  bdRenderList();
+  bdRenderDetail(id);
+}
+
+async function bdNewCliente() {
+  const db = _bdDb(); if (!db) { alert('Sem conexão.'); return; }
+  const nome = prompt('Nome do restaurante:');
+  if (!nome) return;
+  const data = BD_DEFAULT(); data.nome = nome.trim();
+  try {
+    const ref = await db.collection('clientes_base').add(data);
+    _bdSelectedId = ref.id;
+  } catch(e) { alert('Erro: '+e.message); }
+}
+
+async function bdSaveField(id, field, value) {
+  const db = _bdDb(); if (!db) return;
+  try {
+    await db.collection('clientes_base').doc(id).update({ [field]: value, updatedAt: Date.now() });
+  } catch(e) { console.error('bdSave',e); }
+}
+
+async function bdDelete(id) {
+  if (!confirm('Excluir este cliente permanentemente?')) return;
+  const db = _bdDb(); if (!db) return;
+  try { await db.collection('clientes_base').doc(id).delete(); _bdSelectedId = null; bdRenderDetail(null); }
+  catch(e) { alert('Erro: '+e.message); }
+}
+
+function _bdEsc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function _bdHealthScore(c) {
+  // Calcula % completo da ficha (campos importantes)
+  const checks = [
+    !!c.nome, !!c.cnpj, !!c.logoUrl||!!c.fotoUrl, !!c.endereco, !!c.telefone||!!c.whatsapp, !!c.email,
+    !!c.ig, !!c.gmbLink, !!c.tomVoz, !!c.aniversarioRestaurante,
+    (c.pratosTop||[]).length>0, (c.hashtags||[]).length>0, !!c.persona,
+    !!c.driveUrl, !!c.tipoCozinha, !!c.cardapioDigitalUrl,
+    (c.cores||[]).length>0, (c.concorrentes||[]).length>0, !!c.notaGoogle,
+    (c.promocoesFixas||[]).length>0, (c.aniversariosSocios||[]).length>0,
+  ];
+  const filled = checks.filter(Boolean).length;
+  return Math.round((filled / checks.length) * 100);
+}
+
+function _bdCopyHtml(value) {
+  const safe = (value||'').replace(/`/g,'\\`').replace(/'/g,"\\'");
+  return `<button class="bd-copy-btn" onclick="bdCopy(this,'${safe}')" title="Copiar">📎</button>`;
+}
+
+window.bdCopy = function(btn, text) {
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add('ok');
+    const old = btn.textContent;
+    btn.textContent = '✓';
+    setTimeout(() => { btn.classList.remove('ok'); btn.textContent = old; }, 1200);
+  });
+};
+
+window.bdOpenAll = function(c) {
+  const links = [];
+  if (c.ig) links.push(`https://instagram.com/${c.ig.replace('@','')}`);
+  if (c.gmbLink) links.push(c.gmbLink);
+  if (c.ifoodUrl) links.push(c.ifoodUrl);
+  if (c.rappiUrl) links.push(c.rappiUrl);
+  if (c.driveUrl) links.push(c.driveUrl);
+  if (c.site) links.push(c.site);
+  if (links.length === 0) { alert('Nenhum link cadastrado pra abrir.'); return; }
+  links.forEach(l => window.open(l, '_blank'));
+};
+
+window.bdAIBrief = function(c) {
+  const partes = [];
+  partes.push(`Você é social media/copywriter de um restaurante chamado **${c.nome||'(sem nome)'}**.`);
+  if (c.tipoCozinha) partes.push(`Tipo de cozinha: ${c.tipoCozinha}.`);
+  if (c.cidade) partes.push(`Localizado em ${c.cidade}${c.estado?'/'+c.estado:''}.`);
+  if (c.tomVoz) partes.push(`Tom de voz: ${c.tomVoz}.`);
+  if (c.persona) partes.push(`Público-alvo: ${c.persona}.`);
+  if ((c.pratosTop||[]).length) partes.push(`Pratos mais vendidos: ${c.pratosTop.join(', ')}.`);
+  if ((c.pratosAssinatura||[]).length) partes.push(`Pratos assinatura: ${c.pratosAssinatura.join(', ')}.`);
+  if (c.ticketMedio) partes.push(`Ticket médio: ${c.ticketMedio}.`);
+  if ((c.promocoesFixas||[]).length) {
+    const proms = c.promocoesFixas.map(p => `${p.nome}${p.dia?' ('+p.dia+')':''}${p.preco?' por '+p.preco:''}`).join('; ');
+    partes.push(`Promoções fixas: ${proms}.`);
+  }
+  if (c.happyHour) partes.push(`Happy hour: ${c.happyHour}.`);
+  const restr = [];
+  if (c.vegano) restr.push('vegano'); if (c.vegetariano) restr.push('vegetariano');
+  if (c.semGluten) restr.push('sem glúten'); if (c.semLactose) restr.push('sem lactose');
+  if (c.kids) restr.push('opções kids');
+  if (restr.length) partes.push(`Atende: ${restr.join(', ')}.`);
+  const mods = [];
+  if (c.modSalao) mods.push('salão'); if (c.modDelivery) mods.push('delivery');
+  if (c.modDrive) mods.push('drive-thru'); if (c.modReserva) mods.push('reserva');
+  if (mods.length) partes.push(`Modalidades: ${mods.join(', ')}.`);
+  if ((c.hashtags||[]).length) partes.push(`Hashtags padrão: ${c.hashtags.map(h => h.startsWith('#')?h:'#'+h).join(' ')}.`);
+  if ((c.aprendizados||[]).length) {
+    partes.push(`\nAprendizados/o que funciona com este cliente:\n` + c.aprendizados.map(a => '- '+a.texto).join('\n'));
+  }
+  if (c.oqueNaoPostar) partes.push(`\n⚠️ NÃO postar: ${c.oqueNaoPostar}`);
+  const txt = partes.join(' ');
+  navigator.clipboard.writeText(txt).then(() => {
+    if (typeof showToast === 'function') showToast('ok','✨','Briefing copiado! Cole no Claude/ChatGPT.');
+    else alert('Briefing copiado!');
+  });
+};
+
+function bdRenderDetail(id) {
+  const main = document.getElementById('bdMain');
+  if (!main) return;
+  if (!id) {
+    main.innerHTML = `<div class="bd-empty"><div style="font-size:42px;">📚</div><div>Selecione um cliente ao lado<br>ou crie um novo</div></div>`;
+    return;
+  }
+  const c = _bdClientes.find(x => x.id === id);
+  if (!c) { main.innerHTML = `<div class="bd-empty">Cliente não encontrado.</div>`; return; }
+
+  const initial = (c.nome||'?').charAt(0).toUpperCase();
+  const avatarStyle = c.fotoUrl ? `background-image:url('${c.fotoUrl.replace(/'/g,"\\'")}');` : '';
+  const health = _bdHealthScore(c);
+  const cor = c.cor || '#6366f1';
+  const wa = (c.whatsapp||c.telefone||'').replace(/\D/g,'');
+  const waLink = wa ? `https://wa.me/55${wa}` : '';
+
+  main.innerHTML = `
+    <div class="bd-header" style="--bd-color:${cor};background:linear-gradient(135deg,${cor} 0%,rgba(0,0,0,.35) 100%);">
+      <div class="bd-health-bar">Ficha ${health}% completa <div class="bd-health-bar-fill"><div style="width:${health}%"></div></div></div>
+      <div class="bd-header-inner">
+        <label class="bd-photo-upload" style="${avatarStyle}background-color:rgba(255,255,255,.15);width:80px;height:80px;border:3px solid rgba(255,255,255,.4);">
+          ${c.fotoUrl ? '' : `<span style="font-size:32px;font-weight:700;color:#fff;">${initial}</span>`}
+          <input type="file" accept="image/*" onchange="bdUploadPhoto('${c.id}',this)">
+        </label>
+        <div style="flex:1;min-width:0;">
+          <div class="bd-cliente-name">${_bdEsc(c.nome)}</div>
+          <div class="bd-cliente-meta">${_bdEsc([c.tipoCozinha,c.cidade,c.ig?'@'+c.ig.replace('@',''):''].filter(Boolean).join(' · '))}</div>
+          <div class="bd-header-actions">
+            <button class="bd-action-btn primary" onclick='bdAIBrief(${JSON.stringify(c).replace(/'/g,"&#39;")})'>✨ Copiar contexto pra IA</button>
+            <button class="bd-action-btn" onclick='bdOpenAll(${JSON.stringify(c).replace(/'/g,"&#39;")})'>🔗 Abrir tudo</button>
+            ${waLink?`<a class="bd-action-btn" href="${waLink}" target="_blank" style="text-decoration:none;">💬 WhatsApp</a>`:''}
+            <button class="bd-action-btn" onclick="bdDelete('${c.id}')" style="margin-left:auto;">🗑️ Excluir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    ${c.pinNote ? `<div class="bd-pin-note">📌 ${_bdEsc(c.pinNote)} <button onclick="bdSaveField('${c.id}','pinNote','')" title="Remover">✕</button></div>` : ''}
+
+    <div class="bd-content">
+      ${_bdRenderAvisosBox(c)}
+      ${_bdSectionPin(c)}
+      ${_bdSectionIdent(c)}
+      ${_bdSectionContato(c)}
+      ${_bdSectionRedes(c)}
+      ${_bdSectionEstrategia(c)}
+      ${_bdSectionDocs(c)}
+      ${_bdSectionSenhas(c)}
+      ${_bdSectionOperacao(c)}
+      ${_bdSectionDatas(c)}
+      ${_bdSectionPromocoes(c)}
+      ${_bdSectionCardapio(c)}
+      ${_bdSectionReputacao(c)}
+      ${_bdSectionInspiracoes(c)}
+      ${_bdSectionAprendizados(c)}
+      ${_bdSectionAvisos(c)}
+      ${_bdSectionNotas(c)}
+      ${_bdSectionVisual(c)}
+    </div>
+  `;
+}
+
+function _bdSec(title, body, opts={}) {
+  const open = opts.open ? 'open' : '';
+  return `<div class="bd-section ${open}"><div class="bd-section-head" onclick="this.parentElement.classList.toggle('open')">
+    <div class="bd-section-title">${title}</div><div class="bd-section-toggle">▶</div>
+  </div><div class="bd-section-body">${body}</div></div>`;
+}
+
+function _bdInput(c, field, label, opts={}) {
+  const v = c[field]||'';
+  const type = opts.type||'text';
+  const copy = opts.copy !== false ? _bdCopyHtml(v) : '';
+  return `<div class="bd-field"><div class="bd-field-label">${label}</div><div class="bd-field-value">
+    <input class="bd-field-input" type="${type}" value="${_bdEsc(v)}" onchange="bdSaveField('${c.id}','${field}',this.value)" ${opts.placeholder?'placeholder="'+opts.placeholder+'"':''}>
+    ${copy}
+  </div></div>`;
+}
+
+function _bdTextarea(c, field, label) {
+  const v = c[field]||'';
+  return `<div class="bd-field"><div class="bd-field-label">${label}</div><div class="bd-field-value">
+    <textarea class="bd-field-textarea" onchange="bdSaveField('${c.id}','${field}',this.value)">${_bdEsc(v)}</textarea>
+    ${_bdCopyHtml(v)}
+  </div></div>`;
+}
+
+function _bdCheck(c, field, label) {
+  return `<label><input type="checkbox" ${c[field]?'checked':''} onchange="bdSaveField('${c.id}','${field}',this.checked)"> ${label}</label>`;
+}
+
+function _bdListInput(c, field, label) {
+  const items = c[field]||[];
+  const rows = items.map((v,i) => `<div class="bd-list-item-row">
+    <input value="${_bdEsc(v)}" onchange="bdListUpdate('${c.id}','${field}',${i},this.value)">
+    ${_bdCopyHtml(v)}
+    <button onclick="bdListRemove('${c.id}','${field}',${i})">✕</button>
+  </div>`).join('');
+  return `<div class="bd-field"><div class="bd-field-label">${label}</div>
+    <div class="bd-list-items">${rows}<button class="bd-add-row-btn" onclick="bdListAdd('${c.id}','${field}')">＋ adicionar</button></div>
+  </div>`;
+}
+
+window.bdListUpdate = (id, field, i, val) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  const arr = [...(c[field]||[])]; arr[i] = val;
+  bdSaveField(id, field, arr);
+};
+window.bdListAdd = (id, field) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  const v = prompt('Adicionar:'); if (v===null) return;
+  bdSaveField(id, field, [...(c[field]||[]), v]);
+};
+window.bdListRemove = (id, field, i) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  const arr = [...(c[field]||[])]; arr.splice(i,1);
+  bdSaveField(id, field, arr);
+};
+
+function _bdSectionPin(c) {
+  return _bdSec('📌 Anotação fixada (aparece no topo)', `
+    <div class="bd-grid bd-grid-1">
+      ${_bdTextarea(c,'pinNote','Texto fixo (aparece destacado no topo)')}
+    </div>
+  `);
+}
+
+function _bdSectionIdent(c) {
+  return _bdSec('📋 Identificação', `
+    <div class="bd-grid">
+      ${_bdInput(c,'nome','Nome fantasia')}
+      ${_bdInput(c,'razaoSocial','Razão social')}
+      ${_bdInput(c,'cnpj','CNPJ')}
+      ${_bdInput(c,'logoUrl','Logo (URL)')}
+      ${_bdInput(c,'fotoUrl','Foto/avatar (URL)')}
+      ${_bdInput(c,'tipoCozinha','Tipo de cozinha')}
+    </div>
+  `, {open:true});
+}
+
+function _bdSectionContato(c) {
+  return _bdSec('📞 Contato & Endereço', `
+    <div class="bd-grid">
+      ${_bdInput(c,'endereco','Endereço completo')}
+      ${_bdInput(c,'cidade','Cidade')}
+      ${_bdInput(c,'estado','Estado')}
+      ${_bdInput(c,'cep','CEP')}
+      ${_bdInput(c,'telefone','Telefone')}
+      ${_bdInput(c,'whatsapp','WhatsApp')}
+      ${_bdInput(c,'email','E-mail')}
+      ${_bdInput(c,'site','Site')}
+    </div>
+  `);
+}
+
+function _bdSectionRedes(c) {
+  return _bdSec('📱 Redes & Presença', `
+    <div class="bd-grid">
+      ${_bdInput(c,'ig','@ Instagram')}
+      ${_bdInput(c,'gmbCategoria','Categoria GMB')}
+      ${_bdInput(c,'gmbHorario','Horário de funcionamento')}
+      ${_bdInput(c,'gmbLink','Link curto Google Maps')}
+      ${_bdInput(c,'ifoodUrl','iFood (URL)')}
+      ${_bdInput(c,'rappiUrl','Rappi (URL)')}
+    </div>
+    <div class="bd-grid bd-grid-1" style="margin-top:10px;">
+      ${_bdTextarea(c,'igBio','Bio atual')}
+    </div>
+  `);
+}
+
+function _bdSectionEstrategia(c) {
+  return _bdSec('🎯 Estratégia de Marca', `
+    <div class="bd-grid bd-grid-1">
+      ${_bdTextarea(c,'tomVoz','Tom de voz')}
+      ${_bdTextarea(c,'persona','Persona / público-alvo')}
+    </div>
+    <div class="bd-grid" style="margin-top:10px;">
+      ${_bdInput(c,'aniversarioRestaurante','Aniversário do restaurante (DD/MM/AAAA)')}
+      ${_bdInput(c,'ticketMedio','Ticket médio')}
+      ${_bdInput(c,'fontes','Fontes da marca')}
+    </div>
+    <div style="margin-top:14px;">${_bdListInput(c,'hashtags','Hashtags padrão')}</div>
+    <div style="margin-top:10px;">${_bdListInput(c,'cores','Cores da marca (hex)')}</div>
+    <div style="margin-top:10px;">${_bdListInput(c,'pratosTop','🍽️ Top pratos mais vendidos')}</div>
+    <div style="margin-top:10px;">${_bdListInput(c,'pratosAssinatura','⭐ Pratos assinatura / carro-chefe')}</div>
+    <div style="margin-top:14px;"><div class="bd-field-label">🎂 Aniversários de sócios/donos</div>
+      <div class="bd-list-items">
+        ${(c.aniversariosSocios||[]).map((s,i)=>`<div class="bd-list-item-row">
+          <input placeholder="Nome" value="${_bdEsc(s.nome||'')}" onchange="bdSocioUpd('${c.id}',${i},'nome',this.value)" style="flex:2;">
+          <input placeholder="DD/MM" value="${_bdEsc(s.data||'')}" onchange="bdSocioUpd('${c.id}',${i},'data',this.value)" style="flex:1;">
+          <button onclick="bdSocioDel('${c.id}',${i})">✕</button>
+        </div>`).join('')}
+        <button class="bd-add-row-btn" onclick="bdSocioAdd('${c.id}')">＋ adicionar</button>
+      </div>
+    </div>
+  `);
+}
+
+window.bdSocioAdd = (id) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  bdSaveField(id, 'aniversariosSocios', [...(c.aniversariosSocios||[]), {nome:'',data:''}]);
+};
+window.bdSocioUpd = (id, i, field, val) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  const arr = [...(c.aniversariosSocios||[])]; arr[i] = {...arr[i], [field]:val};
+  bdSaveField(id, 'aniversariosSocios', arr);
+};
+window.bdSocioDel = (id, i) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  const arr = [...(c.aniversariosSocios||[])]; arr.splice(i,1);
+  bdSaveField(id, 'aniversariosSocios', arr);
+};
+
+function _bdSectionDocs(c) {
+  return _bdSec('📁 Documentos & Drive', `
+    <div class="bd-grid bd-grid-1">
+      ${_bdInput(c,'driveUrl','Link da pasta no Google Drive')}
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px;">Sub-pastas sugeridas no Drive: Contrato · Briefing · Fotos do estabelecimento · Fotos dos pratos · Vídeos · Cardápio · Identidade visual</div>
+  `);
+}
+
+function _bdSectionSenhas(c) {
+  const senhas = c.senhas||[];
+  const rows = senhas.map((s,i)=>`<div class="bd-list-item-row" style="flex-wrap:wrap;">
+    <input placeholder="Onde (Ex: Instagram)" value="${_bdEsc(s.label||'')}" onchange="bdSenhaUpd('${c.id}',${i},'label',this.value)" style="flex:1;min-width:120px;">
+    <input placeholder="Login" value="${_bdEsc(s.login||'')}" onchange="bdSenhaUpd('${c.id}',${i},'login',this.value)" style="flex:1;min-width:120px;">
+    <input placeholder="Senha" type="password" value="${_bdEsc(s.senha||'')}" onchange="bdSenhaUpd('${c.id}',${i},'senha',this.value)" style="flex:1;min-width:120px;">
+    <button onclick="bdSenhaShow(this)" title="Revelar">👁</button>
+    <button onclick="bdSenhaCopy('${c.id}',${i})" title="Copiar senha">📎</button>
+    <button onclick="bdSenhaDel('${c.id}',${i})">✕</button>
+  </div>`).join('');
+  return _bdSec('🔐 Acessos & Senhas', `
+    <div class="bd-list-items">${rows}<button class="bd-add-row-btn" onclick="bdSenhaAdd('${c.id}')">＋ adicionar acesso</button></div>
+    <div style="font-size:11px;color:#f59e0b;margin-top:10px;">⚠️ Senhas armazenadas no Firestore. Restrinja acesso da coleção 'clientes_base' nas regras do Firebase.</div>
+  `);
+}
+
+window.bdSenhaAdd = (id) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  bdSaveField(id, 'senhas', [...(c.senhas||[]), {label:'',login:'',senha:'',notas:''}]);
+};
+window.bdSenhaUpd = (id, i, field, val) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  const arr = [...(c.senhas||[])]; arr[i] = {...arr[i], [field]:val};
+  bdSaveField(id, 'senhas', arr);
+};
+window.bdSenhaDel = (id, i) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  if (!confirm('Remover esse acesso?')) return;
+  const arr = [...(c.senhas||[])]; arr.splice(i,1);
+  bdSaveField(id, 'senhas', arr);
+};
+window.bdSenhaShow = (btn) => {
+  const row = btn.parentElement;
+  const inp = row.querySelector('input[type="password"]') || row.querySelector('input[data-pw]');
+  if (!inp) return;
+  if (inp.type === 'password') { inp.type = 'text'; inp.dataset.pw='1'; btn.textContent='🙈'; }
+  else { inp.type = 'password'; btn.textContent='👁'; }
+};
+window.bdSenhaCopy = (id, i) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  const s = (c.senhas||[])[i]; if (!s) return;
+  navigator.clipboard.writeText(s.senha||'').then(() => {
+    if (typeof showToast === 'function') showToast('ok','📎','Senha copiada');
+  });
+};
+
+function _bdSectionOperacao(c) {
+  return _bdSec('🍴 Operação do Restaurante', `
+    <div class="bd-field-label">Modalidades de venda</div>
+    <div class="bd-checkbox-group" style="margin-bottom:14px;">
+      ${_bdCheck(c,'modSalao','Salão')} ${_bdCheck(c,'modDelivery','Delivery')}
+      ${_bdCheck(c,'modDrive','Drive-thru')} ${_bdCheck(c,'modReserva','Reserva')}
+    </div>
+    <div class="bd-field-label">Comodidades</div>
+    <div class="bd-checkbox-group" style="margin-bottom:14px;">
+      ${_bdCheck(c,'estacionamento','Estacionamento')} ${_bdCheck(c,'petFriendly','Pet-friendly')}
+      ${_bdCheck(c,'ar','Ar-condicionado')} ${_bdCheck(c,'acessivel','Acessível')}
+    </div>
+    <div class="bd-grid">
+      ${_bdInput(c,'capacidade','Capacidade (mesas/lugares)')}
+    </div>
+  `);
+}
+
+function _bdSectionDatas(c) {
+  return _bdSec('📅 Datas-chave', `
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Aniversário do restaurante e dos sócios estão na seção <b>🎯 Estratégia</b>.</div>
+    ${_bdListInput(c,'concorrentes','Concorrentes diretos (perfis IG)')}
+    <div style="margin-top:10px;">${_bdListInput(c,'referencias','Referências de inspiração')}</div>
+  `);
+}
+
+function _bdSectionPromocoes(c) {
+  const proms = c.promocoesFixas||[];
+  const rows = proms.map((p,i)=>`<div class="bd-list-item-row" style="flex-wrap:wrap;">
+    <input placeholder="Nome (ex: Feijoada)" value="${_bdEsc(p.nome||'')}" onchange="bdPromUpd('${c.id}',${i},'nome',this.value)" style="flex:2;min-width:140px;">
+    <input placeholder="Dia/recorrência" value="${_bdEsc(p.dia||'')}" onchange="bdPromUpd('${c.id}',${i},'dia',this.value)" style="flex:1;min-width:100px;">
+    <input placeholder="Preço" value="${_bdEsc(p.preco||'')}" onchange="bdPromUpd('${c.id}',${i},'preco',this.value)" style="flex:1;min-width:80px;">
+    <button onclick="bdPromDel('${c.id}',${i})">✕</button>
+  </div>`).join('');
+  return _bdSec('🎁 Promoções & Combos', `
+    <div class="bd-field-label">Promoções fixas</div>
+    <div class="bd-list-items">${rows}<button class="bd-add-row-btn" onclick="bdPromAdd('${c.id}')">＋ adicionar promoção</button></div>
+    <div class="bd-grid" style="margin-top:14px;">
+      ${_bdInput(c,'happyHour','Happy hour (dias/horário)')}
+      ${_bdInput(c,'fidelidade','Programa de fidelidade')}
+    </div>
+    <div style="margin-top:10px;">${_bdListInput(c,'combos','Combos disponíveis')}</div>
+  `);
+}
+
+window.bdPromAdd = (id) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  bdSaveField(id, 'promocoesFixas', [...(c.promocoesFixas||[]), {nome:'',dia:'',preco:''}]);
+};
+window.bdPromUpd = (id, i, field, val) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  const arr = [...(c.promocoesFixas||[])]; arr[i] = {...arr[i], [field]:val};
+  bdSaveField(id, 'promocoesFixas', arr);
+};
+window.bdPromDel = (id, i) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  const arr = [...(c.promocoesFixas||[])]; arr.splice(i,1);
+  bdSaveField(id, 'promocoesFixas', arr);
+};
+
+function _bdSectionCardapio(c) {
+  return _bdSec('🍽️ Cardápio & Restrições', `
+    <div class="bd-grid bd-grid-1">
+      ${_bdInput(c,'cardapioDigitalUrl','Cardápio digital (link)')}
+    </div>
+    <div class="bd-field-label" style="margin-top:14px;">Restrições atendidas</div>
+    <div class="bd-checkbox-group">
+      ${_bdCheck(c,'vegano','Vegano')} ${_bdCheck(c,'vegetariano','Vegetariano')}
+      ${_bdCheck(c,'semGluten','Sem glúten')} ${_bdCheck(c,'semLactose','Sem lactose')}
+      ${_bdCheck(c,'kids','Opções kids')}
+    </div>
+  `);
+}
+
+function _bdSectionReputacao(c) {
+  return _bdSec('⭐ Reputação', `
+    <div class="bd-grid">
+      ${_bdInput(c,'notaGoogle','Nota no Google')}
+      ${_bdInput(c,'notaIfood','Nota no iFood')}
+    </div>
+    <div class="bd-grid bd-grid-1" style="margin-top:10px;">
+      ${_bdTextarea(c,'reclamacoes','Reclamações recorrentes (notas internas)')}
+      ${_bdTextarea(c,'pontosFortes','Pontos fortes nas avaliações (usar em conteúdo)')}
+    </div>
+  `);
+}
+
+function _bdSectionInspiracoes(c) {
+  return _bdSec('📸 Inspirações & Restrições de Conteúdo', `
+    <div class="bd-grid bd-grid-1">
+      ${_bdTextarea(c,'oqueNaoPostar','⚠️ O que NÃO postar (restrições do cliente)')}
+    </div>
+  `);
+}
+
+function _bdSectionAprendizados(c) {
+  const apr = c.aprendizados||[];
+  const rows = apr.map((a,i) => `<div class="bd-aprendizado">
+    <div class="bd-aprendizado-text">${_bdEsc(a.texto)}</div>
+    <div class="bd-aprendizado-date">${a.data?new Date(a.data).toLocaleDateString('pt-BR'):''}</div>
+    <div class="bd-aprendizado-x" onclick="bdAprDel('${c.id}',${i})">✕</div>
+  </div>`).join('');
+  return _bdSec('💡 Histórico — O que funcionou', `
+    ${rows||'<div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Nenhum aprendizado ainda. Registre o que funciona com este cliente.</div>'}
+    <div style="display:flex;gap:6px;margin-top:10px;">
+      <input id="bdAprIn-${c.id}" class="bd-field-input" placeholder="Ex: Posts de feijoada na quarta sempre bombam" style="flex:1;">
+      <button class="bd-add-row-btn" onclick="bdAprAdd('${c.id}')" style="padding:7px 12px;">＋ adicionar</button>
+    </div>
+  `);
+}
+
+window.bdAprAdd = (id) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  const inp = document.getElementById('bdAprIn-'+id);
+  if (!inp || !inp.value.trim()) return;
+  bdSaveField(id, 'aprendizados', [{texto:inp.value.trim(),data:Date.now()}, ...(c.aprendizados||[])]);
+  inp.value = '';
+};
+window.bdAprDel = (id, i) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  const arr = [...(c.aprendizados||[])]; arr.splice(i,1);
+  bdSaveField(id, 'aprendizados', arr);
+};
+
+function _bdSectionAvisos(c) {
+  const avs = c.avisos||[];
+  const rows = avs.map((a,i) => {
+    const dueClass = _bdAvisoIsDue(c, a) ? 'due' : '';
+    return `<div class="bd-aviso ${dueClass}">
+      <div class="bd-aviso-text">🔔 Avisar <b>${a.dias||0} dia(s)</b> antes de <b>${_bdEsc(a.evento||'')}</b> ${a.data?'('+a.data+')':''}</div>
+      <button class="bd-aprendizado-x" onclick="bdAvisoDel('${c.id}',${i})">✕</button>
+    </div>`;
+  }).join('');
+  return _bdSec('🔔 Avisos configurados', `
+    ${rows||'<div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Nenhum aviso. Adicione lembretes pra contratos, aniversários, datas comemorativas.</div>'}
+    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+      <input id="bdAvN-${c.id}" class="bd-field-input" placeholder="Evento (ex: Vencimento contrato)" style="flex:2;min-width:180px;">
+      <input id="bdAvD-${c.id}" class="bd-field-input" placeholder="DD/MM/AAAA" style="flex:1;min-width:100px;">
+      <input id="bdAvDi-${c.id}" type="number" class="bd-field-input" placeholder="Dias antes" value="7" style="flex:1;min-width:80px;">
+      <button class="bd-add-row-btn" onclick="bdAvisoAdd('${c.id}')" style="padding:7px 12px;">＋ adicionar</button>
+    </div>
+  `);
+}
+
+function _bdAvisoIsDue(c, a) {
+  if (!a || !a.data) return false;
+  const m = a.data.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return false;
+  const target = new Date(+m[3], +m[2]-1, +m[1]);
+  const now = new Date(); now.setHours(0,0,0,0);
+  const diffDays = Math.ceil((target - now) / 86400000);
+  return diffDays >= 0 && diffDays <= (a.dias||0);
+}
+
+window.bdAvisoAdd = (id) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  const ev = document.getElementById('bdAvN-'+id)?.value?.trim();
+  const dt = document.getElementById('bdAvD-'+id)?.value?.trim();
+  const di = +document.getElementById('bdAvDi-'+id)?.value || 7;
+  if (!ev || !dt) { alert('Preencha evento e data.'); return; }
+  bdSaveField(id, 'avisos', [...(c.avisos||[]), {evento:ev,data:dt,dias:di}]);
+  document.getElementById('bdAvN-'+id).value = '';
+  document.getElementById('bdAvD-'+id).value = '';
+};
+window.bdAvisoDel = (id, i) => {
+  const c = _bdClientes.find(x => x.id===id); if (!c) return;
+  const arr = [...(c.avisos||[])]; arr.splice(i,1);
+  bdSaveField(id, 'avisos', arr);
+};
+
+function _bdRenderAvisosBox(c) {
+  const due = (c.avisos||[]).filter(a => _bdAvisoIsDue(c, a));
+  if (due.length === 0) return '';
+  return `<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:8px;padding:12px;margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:600;color:#dc2626;margin-bottom:6px;">🔔 Avisos próximos</div>
+    ${due.map(a=>`<div style="font-size:12px;color:var(--text);">→ ${_bdEsc(a.evento)} em ${a.data}</div>`).join('')}
+  </div>`;
+}
+
+function bdCheckAvisos() {
+  // Mostra toast quando algum cliente tem aviso vencendo
+  if (typeof showToast !== 'function') return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const lastShown = localStorage.getItem('bdAvisosLastShown') || '';
+  const todayKey = today.toISOString().slice(0,10);
+  if (lastShown === todayKey) return;
+  let shown = 0;
+  _bdClientes.forEach(c => {
+    (c.avisos||[]).forEach(a => {
+      if (_bdAvisoIsDue(c, a) && shown < 3) {
+        showToast('warn','🔔', `${c.nome}: ${a.evento} em ${a.data}`);
+        shown++;
+      }
+    });
+  });
+  if (shown > 0) localStorage.setItem('bdAvisosLastShown', todayKey);
+}
+
+function _bdSectionNotas(c) {
+  return _bdSec('📝 Notas livres', `
+    ${_bdTextarea(c,'notas','Diário de bordo / observações gerais')}
+  `);
+}
+
+function _bdSectionVisual(c) {
+  const swatches = BD_PALETA.map(col => {
+    const active = (c.cor === col) ? 'active' : '';
+    return `<div class="bd-color-swatch ${active}" style="background:${col};" onclick="bdSaveField('${c.id}','cor','${col}')"></div>`;
+  }).join('');
+  return _bdSec('🎨 Identificação visual', `
+    <div class="bd-field-label">Cor de identificação</div>
+    <div class="bd-color-picker">${swatches}</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px;">A cor é usada no avatar e em referências futuras.</div>
+  `);
+}
+
+window.bdUploadPhoto = async function(id, input) {
+  const file = input.files?.[0]; if (!file) return;
+  if (file.size > 4 * 1024 * 1024) { alert('Imagem muito grande (máx 4MB).'); return; }
+  // Upload via ImgBB se chave configurada
+  const imgbbKey = (typeof getApiKey === 'function' ? getApiKey('imgbb') : null) || (typeof getSpImgbbKey === 'function' ? getSpImgbbKey() : null);
+  if (!imgbbKey) {
+    // Fallback: data URL
+    const reader = new FileReader();
+    reader.onload = () => bdSaveField(id, 'fotoUrl', reader.result);
+    reader.readAsDataURL(file);
+    return;
+  }
+  try {
+    const fd = new FormData(); fd.append('image', file);
+    const r = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method:'POST', body: fd });
+    const j = await r.json();
+    if (j?.data?.url) bdSaveField(id, 'fotoUrl', j.data.url);
+    else alert('Erro no upload.');
+  } catch(e) { alert('Erro: '+e.message); }
+};
+
+// Hook na switchTab
+(function bdHookSwitch(){
+  const orig = window.switchTab;
+  if (typeof orig !== 'function') return;
+  window.switchTab = function(tab, btn) {
+    const r = orig.apply(this, arguments);
+    if (tab === 'base') { setTimeout(bdInit, 100); }
+    return r;
+  };
+})();
 
 </script>
 </body>
