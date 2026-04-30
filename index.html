@@ -4756,28 +4756,6 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
         <div class="mtr-empty">Selecione uma conta para ver as métricas.</div>
       </div>
 
-      <!-- Localização dos Clientes -->
-      <div class="mtr-loc-card" id="mtrLocCard">
-        <div class="mtr-loc-header">
-          <div>
-            <div class="mtr-loc-title">📍 Localização dos Clientes</div>
-            <div class="mtr-loc-sub">Visualize todos os seus clientes no mapa</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <button class="mtr-loc-view-btn active" id="mtrLocBtnMap" onclick="mtrLocSetView('map',this)">🗺️ Mapa</button>
-            <button class="mtr-loc-view-btn" id="mtrLocBtnList" onclick="mtrLocSetView('list',this)">📋 Lista</button>
-          </div>
-        </div>
-        <!-- Map view -->
-        <div id="mtrLocMapView">
-          <div id="mtrClientsMap" class="mtr-loc-map"></div>
-        </div>
-        <!-- List view -->
-        <div id="mtrLocListView" style="display:none">
-          <div id="mtrLocList" class="mtr-loc-list"></div>
-        </div>
-      </div>
-
     </div>
 
     <!-- Botão sair do modo apresentação -->
@@ -7038,8 +7016,6 @@ function switchTab(tab, btn) {
     }
     // Populate GMB selector
     if (typeof mtrPopulateGmbSelect === 'function') mtrPopulateGmbSelect();
-    // Render client location map
-    setTimeout(() => mtrLocRenderMap(), 300);
   }
   if (tab === 'social') {
     const savedToken = getSpToken ? getSpToken() : null;
