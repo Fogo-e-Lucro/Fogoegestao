@@ -6522,6 +6522,46 @@ function getRestaurants() {
   return [...new Set([...fromBD, ...fromPosts, ...fromClients])].sort();
 }
 
+// Lista canônica de clientes — fonte única de verdade vinda da Base de Dados.
+// Quando a BD atualiza (Firestore real-time), tudo que usa essa função reflete.
+// Inclui legacy (clients) só como fallback temporário pra compatibilidade.
+function getCanonicalClientNames() {
+  let fromBD = [];
+  try {
+    if (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes)) {
+      fromBD = _bdClientes.map(c => c.nome).filter(Boolean);
+    }
+  } catch(e) { fromBD = []; }
+  // Se BD ainda não carregou, cai no legacy. Quando BD carrega, ela domina.
+  if (fromBD.length === 0) {
+    try { return Object.keys(clients || {}).sort(); } catch(e) { return []; }
+  }
+  return [...new Set(fromBD)].sort();
+}
+
+// Hook chamado pelo listener da Base de Dados quando _bdClientes atualiza.
+// Re-renderiza tudo que mostra lista de cliente em qualquer aba ativa.
+function onClientesBaseChanged() {
+  // 1) Dropdown de restaurante no calendário
+  try { if (typeof populateRestauranteSelect === 'function') populateRestauranteSelect(); } catch(e) {}
+  // 2) Aba de Projetos: filtros + tarefa aberta + view "Por Cliente"
+  try {
+    if (typeof pjRenderMain === 'function' && typeof pjInitialized !== 'undefined' && pjInitialized) {
+      pjRenderMain();
+    }
+    if (typeof pjCurrentTaskId !== 'undefined' && pjCurrentTaskId && typeof pjRenderTaskModal === 'function') {
+      pjRenderTaskModal(pjCurrentTaskId);
+    }
+  } catch(e) {}
+  // 3) Modal de configuração IA (se aberto, repopula seletor de cliente)
+  try {
+    const sel = document.getElementById('aiClienteSelect');
+    if (sel && typeof populateAiClienteSelect === 'function') populateAiClienteSelect();
+  } catch(e) {}
+  // 4) Chips de restaurante / calendário (cores, logos baseadas em clients)
+  try { if (typeof renderRestaurantChips === 'function') renderRestaurantChips(); } catch(e) {}
+}
+
 function populateRestauranteSelect(selectedValue) {
   const sel = document.getElementById('restauranteSelect');
   if (!sel) return;
@@ -14621,8 +14661,9 @@ function pjBuildFilterBar(list) {
     {id:'overdue',label:'Atrasadas'},{id:'today',label:'Hoje'},
     {id:'week',label:'Próximos 7 dias'},{id:'none',label:'Sem data'},
   ].map(d => `<option value="${d.id}" ${f.due===d.id?'selected':''}>${d.label}</option>`).join('');
-  // Client options: from registered clients OR from custom-field 'client' values
-  const clientNames = new Set(Object.keys((typeof clients!=='undefined'&&clients)||{}));
+  // Client options: principalmente da Base de Dados, + valores legados de tasks existentes
+  const baseNames = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : Object.keys((typeof clients!=='undefined'&&clients)||{});
+  const clientNames = new Set(baseNames);
   pjAllTasks.forEach(t => {
     const lst = pjLists.find(l => l.id === t.listId);
     (lst?.customFields||[]).filter(cf => cf.type==='client').forEach(cf => {
@@ -16880,10 +16921,12 @@ function pjRenderTaskModal(task) {
       const val = task.customFieldValues?.[f.id] || '';
       let input;
       if (f.type === 'client') {
-        const names = Object.keys((typeof clients!=='undefined'&&clients)||{}).sort();
+        const names = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : Object.keys((typeof clients!=='undefined'&&clients)||{}).sort();
+        // Garante que valor atual (mesmo se cliente foi removido da BD) ainda apareça
+        const allOpts = val && !names.includes(val) ? [val, ...names] : names;
         input = `<select class="pj-field-value" onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">
           <option value="">— Selecione —</option>
-          ${names.map(n => `<option ${n===val?'selected':''}>${escHtml(n)}</option>`).join('')}
+          ${allOpts.map(n => `<option ${n===val?'selected':''}>${escHtml(n)}</option>`).join('')}
         </select>`;
       } else if (f.type === 'select') {
         input = `<select class="pj-field-value" onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">
@@ -17957,6 +18000,8 @@ async function bdInit() {
       bdRenderList();
       if (_bdSelectedId) bdRenderDetail(_bdSelectedId);
       bdCheckAvisos();
+      // Propaga mudanças pra outras abas (dropdowns de cliente)
+      try { if (typeof onClientesBaseChanged === 'function') onClientesBaseChanged(); } catch(e) {}
     }, () => {});
   } catch(e) { console.error('BD init:', e); }
   // Timer pra checar avisos
