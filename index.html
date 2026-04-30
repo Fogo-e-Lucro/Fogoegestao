@@ -1172,13 +1172,36 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 @keyframes spin { to { transform: rotate(360deg); } }
 .ai-label-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
 .ai-result-box {
-  display: none; margin-top: 8px; padding: 10px 12px;
-  border-radius: 10px; border: 1px solid rgba(124,58,237,.25);
-  background: rgba(124,58,237,.07); font-size: 12.5px; color: var(--text);
-  line-height: 1.55; white-space: pre-wrap;
+  display: none; margin-top: 10px; padding: 16px 18px;
+  border-radius: 12px; border: 1px solid rgba(124,58,237,.25);
+  background: linear-gradient(180deg, rgba(124,58,237,.09), rgba(124,58,237,.04));
+  font-size: 13.5px; color: var(--text); line-height: 1.65;
+  box-shadow: 0 1px 3px rgba(124,58,237,.08);
 }
 .ai-result-box.visible { display: block; }
-.ai-result-actions { display: flex; gap: 6px; margin-top: 8px; }
+.ai-result-actions { display: flex; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(124,58,237,.2); }
+/* Estrutura interna do resultado de IA (markdown renderizado) */
+.ai-rendered { display: block; }
+.ai-rendered h3 {
+  font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--accent); margin: 14px 0 6px; padding-bottom: 4px;
+  border-bottom: 1px solid rgba(124,58,237,.2); display: flex; align-items: center; gap: 6px;
+}
+.ai-rendered h3:first-child { margin-top: 0; }
+.ai-rendered p { margin: 0 0 10px; }
+.ai-rendered p:last-child { margin-bottom: 0; }
+.ai-rendered strong { color: var(--accent); font-weight: 700; }
+.ai-rendered em { color: var(--text2); font-style: italic; }
+.ai-rendered ul, .ai-rendered ol { margin: 6px 0 10px; padding-left: 22px; }
+.ai-rendered li { margin: 3px 0; }
+.ai-rendered .ai-section {
+  background: rgba(255,255,255,.04); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;
+  border-left: 3px solid var(--accent);
+}
+.ai-rendered blockquote {
+  border-left: 3px solid var(--accent); padding: 4px 10px; margin: 6px 0;
+  background: rgba(124,58,237,.06); border-radius: 0 6px 6px 0; font-style: italic; color: var(--text2);
+}
 .ai-use-btn {
   padding: 5px 12px; border-radius: 8px; border: 1px solid var(--accent);
   background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; cursor: pointer;
@@ -7445,6 +7468,40 @@ function getPostContext() {
   };
 }
 
+// Mini-renderizador de markdown leve para resultados de IA (headings, bold, italic, listas)
+function aiRenderMarkdown(raw) {
+  let s = String(raw || '');
+  // escape HTML primeiro
+  s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // headings ## ou ### (e linhas tipo "Abertura:" ou "**Hook:**" tratadas como secção)
+  s = s.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
+  s = s.replace(/^##\s+(.+)$/gm, '<h3>$1</h3>');
+  s = s.replace(/^#\s+(.+)$/gm, '<h3>$1</h3>');
+  // bold/italic
+  s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>');
+  // blockquote >
+  s = s.replace(/^>\s?(.+)$/gm, '<blockquote>$1</blockquote>');
+  // listas: - item / * item
+  s = s.replace(/(^|\n)((?:[-*]\s+.+\n?)+)/g, (_, p, block) => {
+    const items = block.trim().split(/\n/).map(l => l.replace(/^[-*]\s+/, '')).map(li => `<li>${li}</li>`).join('');
+    return `${p}<ul>${items}</ul>`;
+  });
+  // listas numeradas: 1. item
+  s = s.replace(/(^|\n)((?:\d+\.\s+.+\n?)+)/g, (_, p, block) => {
+    const items = block.trim().split(/\n/).map(l => l.replace(/^\d+\.\s+/, '')).map(li => `<li>${li}</li>`).join('');
+    return `${p}<ol>${items}</ol>`;
+  });
+  // parágrafos: separa blocos por \n\n
+  const parts = s.split(/\n{2,}/).map(part => {
+    const trimmed = part.trim();
+    if (!trimmed) return '';
+    if (/^<(h3|ul|ol|blockquote)/.test(trimmed)) return trimmed;
+    return `<p>${trimmed.replace(/\n/g, '<br>')}</p>`;
+  });
+  return `<div class="ai-rendered">${parts.join('')}</div>`;
+}
+
 async function callClaude(systemPrompt, userPrompt, btnId, resultBoxId) {
   const key = getClaudeKey();
   if (!key) {
@@ -7479,8 +7536,10 @@ async function callClaude(systemPrompt, userPrompt, btnId, resultBoxId) {
     }
     const data = await res.json();
     const text = data.content?.[0]?.text || '';
-    box.textContent = text;
-    box.innerHTML = escHtml(text) + `<div class="ai-result-actions">
+    // Guarda raw em dataset pra o "Usar" extrair texto puro
+    box.dataset.rawText = text;
+    const rendered = aiRenderMarkdown(text);
+    box.innerHTML = rendered + `<div class="ai-result-actions">
       <button class="ai-use-btn" onclick="aiUseResult('${resultBoxId}','${resultBoxId.replace('Result','').replace('ai','')}')">✅ Usar</button>
       <button class="ai-discard-btn" onclick="aiDiscard('${resultBoxId}')">✕ Descartar</button>
     </div>`;
@@ -7495,8 +7554,11 @@ async function callClaude(systemPrompt, userPrompt, btnId, resultBoxId) {
 
 function aiUseResult(boxId, fieldKey) {
   const box = document.getElementById(boxId);
-  // extract text (first text node before action buttons)
-  const text = box.firstChild?.textContent?.trim() || box.innerText.split('\n').slice(0,-2).join('\n').trim();
+  // Prefere o texto raw guardado no dataset (mantém estrutura markdown limpa)
+  let text = box.dataset.rawText || '';
+  if (!text) {
+    text = box.firstChild?.textContent?.trim() || box.innerText.split('\n').slice(0,-2).join('\n').trim();
+  }
   const fieldMap = { Gancho: 'gancho', Legenda: 'legenda', Script: 'script' };
   // derive field from boxId
   const match = boxId.match(/ai(\w+)Result/);
@@ -7549,7 +7611,20 @@ function aiGerarRoteiro() {
   const btn = document.getElementById('aiScriptBtn');
   btn.dataset.origLabel = btn.innerHTML;
   const c = getPostContext();
-  const system = `Você é roteirista de vídeos curtos (Reels) para restaurantes brasileiros. Crie roteiros de fala naturais, dinâmicos e que vendam. Máximo 60 segundos de fala (~150 palavras). Formato: fala corrida, sem cenas. Retorne apenas o roteiro, sem títulos ou explicações.` + buildAiStyleBlock();
+  const system = `Você é roteirista de vídeos curtos (Reels) para restaurantes brasileiros. Crie roteiros de fala naturais, dinâmicos e que vendam. Máximo 60 segundos de fala (~150 palavras).
+
+FORMATO OBRIGATÓRIO (markdown — use exatamente estes 3 blocos):
+
+## 🎬 Abertura (0-3s)
+[Hook forte e curto pra prender atenção, 1-2 frases]
+
+## 🔥 Desenvolvimento (3-45s)
+[Corpo do roteiro — descrição sensorial, benefícios, diferenciais. 2-4 frases curtas, fala natural]
+
+## 📣 CTA (45-60s)
+[Chamada pra ação clara e direta — visite, peça pelo iFood, marque alguém, etc]
+
+Não inclua descrições de cena nem direções de câmera. Apenas o que será FALADO. Mantenha tom natural de pessoa falando.` + buildAiStyleBlock();
   const user = `Restaurante: ${c.restaurante||'Restaurante'}
 Objetivo: ${c.objetivo||'Conversão'}
 ${c.prato?`Prato em destaque: ${c.prato}`:''}
@@ -7557,7 +7632,7 @@ ${c.gancho?`Gancho/tema: ${c.gancho}`:''}
 ${c.legenda?`Contexto adicional: ${c.legenda.slice(0,300)}`:''}
 ${c.script?`Rascunho atual do roteiro (expanda/melhore mantendo a essência):\n${c.script}`:''}
 
-${c.script?'Melhore e complete o roteiro acima.':'Crie o roteiro de fala para o Reels.'}`;
+${c.script?'Melhore e complete o roteiro acima nos 3 blocos.':'Crie o roteiro de fala para o Reels nos 3 blocos.'}`;
   callClaude(system, user, 'aiScriptBtn', 'aiScriptResult');
 }
 
