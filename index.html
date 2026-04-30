@@ -3494,63 +3494,215 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .bd-pin-note button { background:transparent; border:none; cursor:pointer; color:#92400e; font-size:14px; opacity:.6; }
 .bd-pin-note button:hover { opacity:1; }
 
-.bd-content { padding:18px 24px; max-width:1100px; }
-.bd-section { background:var(--card); border:1px solid var(--border); border-radius:10px; margin-bottom:14px; overflow:hidden; }
-.bd-section-head { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; cursor:pointer; user-select:none; background:var(--bg2); border-bottom:1px solid var(--border); }
-.bd-section-head:hover { background:var(--bg3); }
-.bd-section-title { font-size:13px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:8px; }
-.bd-section-toggle { font-size:11px; color:var(--text3); }
-.bd-section-body { padding:14px 16px; display:none; }
-.bd-section.open .bd-section-body { display:block; }
-.bd-section.open .bd-section-toggle { transform:rotate(90deg); }
-.bd-sec-hide-btn { opacity: .35; transition: opacity .15s, background .15s; }
-.bd-section-head:hover .bd-sec-hide-btn { opacity: 1; }
-.bd-sec-hide-btn:hover { background: rgba(239,68,68,.15) !important; color: #ef4444 !important; }
+.bd-content { padding:22px 28px; max-width:1100px; }
 
-.bd-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+/* ── SECTION CARD ─────────────────────────────────────── */
+.bd-section {
+  background:var(--card); border:1px solid var(--border); border-radius:14px;
+  margin-bottom:14px; overflow:hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.03);
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+.bd-section:hover { border-color: rgba(124,58,237,.25); }
+.bd-section.open { box-shadow: 0 4px 16px rgba(0,0,0,.06); border-color: rgba(124,58,237,.25); }
+.bd-section-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px; cursor:pointer; user-select:none;
+  background:transparent;
+  transition: background .15s;
+}
+.bd-section.open .bd-section-head { border-bottom:1px solid var(--border); }
+.bd-section-head:hover { background:var(--bg2); }
+.bd-section-title { font-size:14px; font-weight:700; color:var(--text1); display:flex; align-items:center; gap:10px; letter-spacing:-.2px; }
+.bd-section-toggle { font-size:11px; color:var(--text3); transition: transform .2s ease; }
+.bd-section-body { padding:20px 22px 22px; display:none; }
+.bd-section.open .bd-section-body { display:block; animation: bdFadeIn .25s ease; }
+.bd-section.open .bd-section-toggle { transform:rotate(90deg); }
+@keyframes bdFadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+
+.bd-sec-hide-btn { opacity: .35; transition: opacity .15s, background .15s, color .15s; }
+.bd-section-head:hover .bd-sec-hide-btn { opacity: .8; }
+.bd-sec-hide-btn:hover { background: rgba(239,68,68,.12) !important; color: #ef4444 !important; opacity:1 !important; }
+
+/* ── SUB-BLOCK (grupo dentro da seção, removível) ─────── */
+.bd-subblock {
+  background: var(--bg); border:1px solid var(--border); border-radius:10px;
+  padding:14px 16px 16px; margin-bottom:14px;
+  transition: border-color .15s ease, background .15s ease;
+}
+.bd-subblock:last-child { margin-bottom:0; }
+.bd-subblock:hover { border-color: rgba(124,58,237,.25); }
+.bd-subblock-head {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:12px;
+}
+.bd-subblock-label {
+  font-size:10.5px; font-weight:700; letter-spacing:1.2px;
+  color:var(--text3); text-transform:uppercase;
+}
+.bd-subblock-del {
+  background:none; border:none; cursor:pointer;
+  color:var(--text3); font-size:13px; padding:4px 8px; border-radius:6px;
+  opacity:0; transition: opacity .15s, color .15s, background .15s;
+}
+.bd-subblock:hover .bd-subblock-del { opacity:.55; }
+.bd-subblock-del:hover { opacity:1 !important; color:#ef4444; background:rgba(239,68,68,.1); }
+
+/* ── GRID & FIELDS ────────────────────────────────────── */
+.bd-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px 18px; }
 .bd-grid-1 { grid-template-columns:1fr; }
-.bd-field { display:flex; flex-direction:column; gap:4px; }
-.bd-field-label { font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:var(--text2); font-weight:600; }
-.bd-field-value { display:flex; align-items:center; gap:6px; }
-.bd-field-input { flex:1; padding:7px 10px; border:1px solid var(--border); border-radius:6px; background:var(--bg2); color:var(--text); font-size:13px; }
-.bd-field-input:focus { outline:none; border-color:var(--accent); }
-.bd-field-textarea { flex:1; padding:7px 10px; border:1px solid var(--border); border-radius:6px; background:var(--bg2); color:var(--text); font-size:13px; min-height:60px; resize:vertical; font-family:inherit; }
-.bd-copy-btn { padding:6px 8px; border:1px solid var(--border); background:var(--bg2); border-radius:6px; cursor:pointer; font-size:11px; color:var(--text2); flex-shrink:0; transition:all .15s; }
-.bd-copy-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+.bd-field { display:flex; flex-direction:column; gap:6px; }
+.bd-field-label {
+  font-size:10.5px; text-transform:uppercase; letter-spacing:1.2px;
+  color:var(--text3); font-weight:700;
+}
+.bd-field-value { display:flex; align-items:stretch; gap:8px; }
+
+.bd-field-input, .bd-field-textarea {
+  flex:1; padding:11px 14px; border:1px solid var(--border); border-radius:10px;
+  background:var(--bg); color:var(--text1); font-size:14px; font-family:inherit;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.bd-field-input::placeholder, .bd-field-textarea::placeholder { color:var(--text3); }
+.bd-field-input:hover, .bd-field-textarea:hover { border-color: rgba(124,58,237,.3); }
+.bd-field-input:focus, .bd-field-textarea:focus {
+  outline:none; border-color:var(--accent);
+  box-shadow: 0 0 0 3px rgba(124,58,237,.12);
+}
+.bd-field-textarea { min-height:72px; resize:vertical; line-height:1.5; }
+
+.bd-copy-btn {
+  width:40px; min-width:40px; padding:0;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--border); background:var(--bg); border-radius:10px;
+  cursor:pointer; font-size:14px; color:var(--text2); flex-shrink:0;
+  transition: all .15s ease;
+}
+.bd-copy-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); transform:scale(1.04); }
 .bd-copy-btn.ok { background:#22c55e; color:#fff; border-color:#22c55e; }
 
-.bd-list-items { display:flex; flex-direction:column; gap:6px; }
-.bd-list-item-row { display:flex; gap:6px; align-items:center; }
-.bd-list-item-row input { flex:1; padding:6px 8px; border:1px solid var(--border); border-radius:5px; background:var(--bg2); color:var(--text); font-size:12px; }
-.bd-list-item-row button { padding:5px 8px; border:none; background:var(--bg3); color:var(--text2); border-radius:5px; cursor:pointer; font-size:11px; }
-.bd-list-item-row button:hover { background:#ef4444; color:#fff; }
-.bd-add-row-btn { padding:5px 10px; border:1px dashed var(--border); background:transparent; color:var(--text2); border-radius:5px; cursor:pointer; font-size:11px; align-self:flex-start; }
-.bd-add-row-btn:hover { border-color:var(--accent); color:var(--accent); }
+/* ── LIST ITEMS (acessos, sócios, promoções, etc) ─────── */
+.bd-list-items { display:flex; flex-direction:column; gap:8px; }
+.bd-list-item-row {
+  display:flex; gap:8px; align-items:center; padding:8px;
+  background:var(--bg); border:1px solid var(--border); border-radius:10px;
+  transition: border-color .15s ease;
+}
+.bd-list-item-row:hover { border-color: rgba(124,58,237,.25); }
+.bd-list-item-row input, .bd-list-item-row select {
+  flex:1; padding:8px 12px; border:1px solid transparent; border-radius:7px;
+  background:var(--bg2); color:var(--text1); font-size:13px;
+  transition: border-color .15s, background .15s;
+}
+.bd-list-item-row input:focus, .bd-list-item-row select:focus {
+  outline:none; border-color:var(--accent); background:var(--card);
+}
+.bd-list-item-row button {
+  padding:6px 10px; border:none; background:transparent; color:var(--text3);
+  border-radius:7px; cursor:pointer; font-size:13px;
+  transition: all .15s;
+}
+.bd-list-item-row button:hover { background:rgba(124,58,237,.1); color:var(--accent); }
+.bd-list-item-row button[onclick*="Del"]:hover, .bd-list-item-row button:last-child:hover { background:rgba(239,68,68,.12); color:#ef4444; }
 
-.bd-color-picker { display:flex; gap:6px; flex-wrap:wrap; }
-.bd-color-swatch { width:28px; height:28px; border-radius:50%; cursor:pointer; border:2px solid transparent; }
-.bd-color-swatch.active { border-color:var(--text); box-shadow:0 0 0 2px var(--bg); }
+.bd-add-row-btn {
+  padding:9px 14px; border:1px dashed var(--border); background:transparent;
+  color:var(--text2); border-radius:10px; cursor:pointer; font-size:12.5px;
+  font-weight:600; align-self:flex-start;
+  transition: all .15s ease;
+}
+.bd-add-row-btn:hover { border-color:var(--accent); color:var(--accent); background:rgba(124,58,237,.05); transform:translateY(-1px); }
 
-.bd-tag { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; background:var(--bg3); border-radius:12px; font-size:11px; color:var(--text); margin-right:4px; margin-bottom:4px; }
-.bd-tag-x { cursor:pointer; opacity:.5; }
+/* ── COLOR PICKER ─────────────────────────────────────── */
+.bd-color-picker { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.bd-color-swatch {
+  width:32px; height:32px; border-radius:50%; cursor:pointer;
+  border:2px solid transparent; box-shadow: 0 2px 4px rgba(0,0,0,.08);
+  transition: transform .15s, box-shadow .15s;
+}
+.bd-color-swatch:hover { transform:scale(1.1); }
+.bd-color-swatch.active { border-color:var(--text1); box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+
+/* ── TAGS ─────────────────────────────────────────────── */
+.bd-tag {
+  display:inline-flex; align-items:center; gap:6px; padding:5px 12px;
+  background: rgba(124,58,237,.08);
+  border:1px solid rgba(124,58,237,.18);
+  border-radius:999px; font-size:12px; color:var(--text1);
+  margin-right:6px; margin-bottom:6px; font-weight:500;
+  transition: border-color .15s;
+}
+.bd-tag:hover { border-color:var(--accent); }
+.bd-tag-x { cursor:pointer; opacity:.5; font-size:11px; transition: opacity .15s, color .15s; }
 .bd-tag-x:hover { opacity:1; color:#ef4444; }
 
-.bd-aprendizado { padding:8px 10px; background:var(--bg2); border-left:3px solid var(--accent); border-radius:0 5px 5px 0; font-size:12px; color:var(--text); margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+/* ── APRENDIZADOS / AVISOS ────────────────────────────── */
+.bd-aprendizado {
+  padding:11px 14px; background:var(--bg);
+  border-left:3px solid var(--accent); border-radius:0 10px 10px 0;
+  font-size:13px; color:var(--text1); margin-bottom:8px;
+  display:flex; align-items:center; gap:10px;
+  border-top:1px solid var(--border); border-right:1px solid var(--border); border-bottom:1px solid var(--border);
+  transition: border-color .15s;
+}
+.bd-aprendizado:hover { border-color: rgba(124,58,237,.3); }
 .bd-aprendizado-text { flex:1; }
-.bd-aprendizado-date { font-size:10px; color:var(--text3); }
-.bd-aprendizado-x { cursor:pointer; opacity:.4; }
-.bd-aprendizado-x:hover { opacity:1; color:#ef4444; }
+.bd-aprendizado-date { font-size:10.5px; color:var(--text3); font-weight:600; }
+.bd-aprendizado-x { cursor:pointer; opacity:.4; transition: opacity .15s, color .15s; padding:4px; border-radius:6px; }
+.bd-aprendizado-x:hover { opacity:1; color:#ef4444; background:rgba(239,68,68,.08); }
 
-.bd-aviso { padding:8px 10px; background:rgba(99,102,241,.08); border:1px solid rgba(99,102,241,.3); border-radius:6px; font-size:12px; color:var(--text); margin-bottom:6px; display:flex; align-items:center; gap:8px; }
-.bd-aviso.due { background:rgba(239,68,68,.1); border-color:rgba(239,68,68,.4); }
+.bd-aviso {
+  padding:11px 14px; background:rgba(99,102,241,.06);
+  border:1px solid rgba(99,102,241,.3); border-radius:10px;
+  font-size:13px; color:var(--text1); margin-bottom:8px;
+  display:flex; align-items:center; gap:10px;
+}
+.bd-aviso.due { background:rgba(239,68,68,.08); border-color:rgba(239,68,68,.4); }
 .bd-aviso-text { flex:1; }
 
-.bd-photo-upload { width:80px; height:80px; border-radius:50%; border:2px dashed var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; background-size:cover; background-position:center; flex-shrink:0; }
-.bd-photo-upload:hover { border-color:var(--accent); }
+/* ── PHOTO UPLOAD ─────────────────────────────────────── */
+.bd-photo-upload {
+  width:80px; height:80px; border-radius:50%;
+  border:2px dashed var(--border);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; overflow:hidden;
+  background-size:cover; background-position:center; flex-shrink:0;
+  transition: border-color .2s, transform .15s;
+}
+.bd-photo-upload:hover { border-color:var(--accent); transform:scale(1.03); }
 .bd-photo-upload input { display:none; }
 
-.bd-checkbox-group { display:flex; flex-wrap:wrap; gap:10px; }
-.bd-checkbox-group label { display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--text); cursor:pointer; }
+/* ── CHECKBOXES (estilo pill) ─────────────────────────── */
+.bd-checkbox-group { display:flex; flex-wrap:wrap; gap:8px; }
+.bd-checkbox-group label {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 14px; border-radius:999px;
+  background:var(--bg); border:1px solid var(--border);
+  font-size:13px; color:var(--text1); cursor:pointer;
+  user-select:none;
+  transition: all .15s ease;
+}
+.bd-checkbox-group label:hover { border-color: rgba(124,58,237,.4); transform:translateY(-1px); }
+.bd-checkbox-group input[type="checkbox"] {
+  appearance:none; -webkit-appearance:none;
+  width:16px; height:16px; border-radius:5px;
+  border:1.5px solid var(--text3); background:transparent;
+  cursor:pointer; position:relative; flex-shrink:0;
+  transition: all .15s;
+}
+.bd-checkbox-group input[type="checkbox"]:checked {
+  background:var(--accent); border-color:var(--accent);
+}
+.bd-checkbox-group input[type="checkbox"]:checked::after {
+  content:'✓'; position:absolute; left:50%; top:50%;
+  transform:translate(-50%,-50%); color:#fff; font-size:11px; font-weight:800; line-height:1;
+}
+.bd-checkbox-group label:has(input:checked) {
+  background: rgba(124,58,237,.1);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight:600;
+}
 
 @media (max-width:900px) {
   .bd-wrap { flex-direction:column; height:auto; }
@@ -14211,11 +14363,43 @@ async function pjLoadAllTasks() {
   });
 }
 
+// Hidrata pjMembers com photoUrl vindo de app_members (fonte da foto)
+async function _pjHydratePhotos() {
+  try {
+    if (!Array.isArray(pjMembers) || !pjMembers.length) return;
+    const amSnap = await _db.collection('app_members').get();
+    const byEmail = {};
+    amSnap.forEach(d => {
+      const data = d.data() || {};
+      if (data.email && data.photoUrl) byEmail[data.email.toLowerCase()] = data.photoUrl;
+    });
+    let changed = false;
+    pjMembers.forEach(m => {
+      if (!m) return;
+      const fromAm = m.email ? byEmail[m.email.toLowerCase()] : null;
+      if (fromAm && m.photoUrl !== fromAm) { m.photoUrl = fromAm; changed = true; }
+    });
+    // Também usa foto do auth atual se nada estiver disponível pro próprio usuário
+    try {
+      const u = _auth?.currentUser;
+      if (u && u.photoURL) {
+        const me = pjMembers.find(m => m.uid === u.uid || m.email === u.email);
+        if (me && !me.photoUrl) { me.photoUrl = u.photoURL; changed = true; }
+      }
+    } catch(_) {}
+    if (changed && pjCurrentTaskId && typeof pjRenderTaskModal === 'function') {
+      try { pjRenderTaskModal(); } catch(_) {}
+    }
+  } catch(e) { /* silencia */ }
+}
+
 function pjSetupRealtime() {
   const myUid = _auth.currentUser?.uid || _currentUser?.uid;
   // Listen for member changes (new members, login completions, role updates)
   const unsubMembers = pjC('pj_members').onSnapshot(snap => {
     pjMembers = snap.docs.map(d => ({id:d.id,...d.data()}));
+    // hidrata fotos do app_members (em paralelo, não bloqueia)
+    _pjHydratePhotos();
     // Refresh team list in settings if open
     const eqPane = document.querySelector('.app-settings-pane[data-pane="equipe"]');
     if (eqPane && eqPane.style.display !== 'none' && typeof loadAcessoList === 'function') {
@@ -18362,21 +18546,65 @@ function _bdSec(title, body, opts={}) {
   </div>`;
 }
 
+// ── SUB-BLOCO (grupo dentro de seção, removível) ────────────────────
+function _bdGetHiddenSubblocks() {
+  try { return JSON.parse(localStorage.getItem('bd_hidden_subblocks') || '[]'); } catch(e) { return []; }
+}
+function _bdSetHiddenSubblocks(arr) {
+  try { localStorage.setItem('bd_hidden_subblocks', JSON.stringify(arr||[])); } catch(e) {}
+}
+window.bdHideSubblock = function(id, label) {
+  if (!confirm(`Ocultar o bloco "${label}"?\n\nVocê pode restaurar depois no rodapé da ficha.`)) return;
+  const h = new Set(_bdGetHiddenSubblocks()); h.add(id);
+  _bdSetHiddenSubblocks([...h]);
+  if (_bdSelectedId) bdRenderDetail(_bdSelectedId);
+};
+window.bdRestoreSubblock = function(id) {
+  const h = new Set(_bdGetHiddenSubblocks()); h.delete(id);
+  _bdSetHiddenSubblocks([...h]);
+  if (_bdSelectedId) bdRenderDetail(_bdSelectedId);
+};
+window.bdRestoreAllSubblocks = function() {
+  if (!confirm('Restaurar todos os blocos ocultos?')) return;
+  _bdSetHiddenSubblocks([]);
+  if (_bdSelectedId) bdRenderDetail(_bdSelectedId);
+};
+
+// Renderiza um sub-bloco com label + botão de excluir. Se oculto, retorna ''.
+function _bdSub(id, label, body) {
+  if (_bdGetHiddenSubblocks().includes(id)) return '';
+  const safeLabel = String(label).replace(/'/g,"\\'");
+  return `<div class="bd-subblock" data-sub-id="${id}">
+    <div class="bd-subblock-head">
+      <div class="bd-subblock-label">${label}</div>
+      <button class="bd-subblock-del" title="Ocultar este bloco" onclick="bdHideSubblock('${id}','${safeLabel}')">🗑️</button>
+    </div>
+    ${body}
+  </div>`;
+}
+
 // Bloco de "Seções ocultas" mostrado no rodapé pra restaurar
 function _bdRenderHiddenFooter() {
-  const hidden = _bdGetHiddenSections();
-  if (!hidden.length) return '';
-  const items = hidden.map(id => `
-    <button onclick="bdRestoreSection('${id}')" style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:5px 12px;cursor:pointer;font-size:12px;color:var(--text2);display:inline-flex;align-items:center;gap:6px;">
+  const hiddenSecs = _bdGetHiddenSections();
+  const hiddenSubs = _bdGetHiddenSubblocks();
+  if (!hiddenSecs.length && !hiddenSubs.length) return '';
+  const secChips = hiddenSecs.map(id => `
+    <button onclick="bdRestoreSection('${id}')" style="background:var(--card);border:1px solid var(--border);border-radius:999px;padding:6px 14px;cursor:pointer;font-size:12px;color:var(--text1);display:inline-flex;align-items:center;gap:6px;font-weight:500;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text1)'">
       ↩️ ${_bdEsc(id)}
     </button>
   `).join('');
-  return `<div style="margin-top:18px;padding:14px;border:1px dashed var(--border);border-radius:10px;background:var(--bg2);">
-    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
-      <span>📦 Seções ocultas (${hidden.length})</span>
-      <button onclick="bdRestoreAllSections()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:11px;font-weight:600;">Restaurar todas</button>
+  const subChips = hiddenSubs.map(id => `
+    <button onclick="bdRestoreSubblock('${id}')" style="background:var(--card);border:1px solid var(--border);border-radius:999px;padding:6px 14px;cursor:pointer;font-size:12px;color:var(--text1);display:inline-flex;align-items:center;gap:6px;font-weight:500;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text1)'">
+      ↩️ ${_bdEsc(id)}
+    </button>
+  `).join('');
+  const total = hiddenSecs.length + hiddenSubs.length;
+  return `<div style="margin-top:22px;padding:16px 18px;border:1px dashed var(--border);border-radius:14px;background:var(--bg2);">
+    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;font-weight:700;">
+      <span>📦 Itens ocultos (${total})</span>
+      <button onclick="bdRestoreAllSections();bdRestoreAllSubblocks();" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:11px;font-weight:700;letter-spacing:.8px;">Restaurar todos</button>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;">${items}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">${secChips}${subChips}</div>
   </div>`;
 }
 
@@ -18582,19 +18810,23 @@ window.bdSenhaCopy = (id, i) => {
 
 function _bdSectionOperacao(c) {
   return _bdSec('🍴 Operação do Restaurante', `
-    <div class="bd-field-label">Modalidades de venda</div>
-    <div class="bd-checkbox-group" style="margin-bottom:14px;">
-      ${_bdCheck(c,'modSalao','Salão')} ${_bdCheck(c,'modDelivery','Delivery')}
-      ${_bdCheck(c,'modDrive','Drive-thru')} ${_bdCheck(c,'modReserva','Reserva')}
-    </div>
-    <div class="bd-field-label">Comodidades</div>
-    <div class="bd-checkbox-group" style="margin-bottom:14px;">
-      ${_bdCheck(c,'estacionamento','Estacionamento')} ${_bdCheck(c,'petFriendly','Pet-friendly')}
-      ${_bdCheck(c,'ar','Ar-condicionado')} ${_bdCheck(c,'acessivel','Acessível')}
-    </div>
-    <div class="bd-grid">
-      ${_bdInput(c,'capacidade','Capacidade (mesas/lugares)')}
-    </div>
+    ${_bdSub('op-modalidades', 'Modalidades de venda', `
+      <div class="bd-checkbox-group">
+        ${_bdCheck(c,'modSalao','Salão')} ${_bdCheck(c,'modDelivery','Delivery')}
+        ${_bdCheck(c,'modDrive','Drive-thru')} ${_bdCheck(c,'modReserva','Reserva')}
+      </div>
+    `)}
+    ${_bdSub('op-comodidades', 'Comodidades', `
+      <div class="bd-checkbox-group">
+        ${_bdCheck(c,'estacionamento','Estacionamento')} ${_bdCheck(c,'petFriendly','Pet-friendly')}
+        ${_bdCheck(c,'ar','Ar-condicionado')} ${_bdCheck(c,'acessivel','Acessível')}
+      </div>
+    `)}
+    ${_bdSub('op-capacidade', 'Capacidade', `
+      <div class="bd-grid">
+        ${_bdInput(c,'capacidade','Mesas / lugares')}
+      </div>
+    `)}
   `);
 }
 
