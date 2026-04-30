@@ -161,7 +161,13 @@ body {
   transform: translateY(12px);
   pointer-events: none;
   position: absolute;
+  top: 0; left: 0;
   width: 100%;
+  /* Colapsa altura quando inativo para não contribuir com scrollHeight do body
+     (evita o "vão de espaço" abaixo de páginas curtas como Métricas). */
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
   transition: opacity var(--t2) var(--ease-out), transform var(--t2) var(--ease-out);
 }
 .tab-panel.active {
@@ -169,6 +175,9 @@ body {
   transform: translateY(0);
   pointer-events: auto;
   position: relative;
+  height: auto;
+  overflow: visible;
+  visibility: visible;
 }
 
 /* ── FORM SECTIONS (collapsible) ─────────────────────── */
@@ -1876,6 +1885,32 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .mtr-source-tab.active { color:var(--accent);border-bottom-color:var(--accent); }
 .mtr-source-tab-count { font-size:10px;background:var(--bg2);color:var(--text2);padding:2px 7px;border-radius:10px;font-weight:700; }
 .mtr-source-tab.active .mtr-source-tab-count { background:var(--accentGlow);color:var(--accent); }
+/* Templates / Modelos */
+.mtr-tpl-hint { font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.45; }
+.mtr-tpl-save-row { display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap; }
+.mtr-tpl-save-btn { flex:1 1 auto;background:var(--bg2);border:1px solid var(--border);color:var(--text1);padding:7px 10px;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap; }
+.mtr-tpl-save-btn:hover { border-color:var(--accent);color:var(--accent);background:var(--accentGlow); }
+.mtr-tpl-save-btn.all { background:var(--accent);color:#fff;border-color:var(--accent); }
+.mtr-tpl-save-btn.all:hover { filter:brightness(1.1);background:var(--accent);color:#fff; }
+.mtr-tpl-subtitle { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin:12px 0 6px;padding-left:2px; }
+.mtr-tpl-list { display:flex;flex-direction:column;gap:5px;margin-bottom:8px; }
+.mtr-tpl-item { display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:8px 10px;transition:all .15s; }
+.mtr-tpl-item:hover { border-color:var(--accent);background:var(--accentGlow);transform:translateX(2px); }
+.mtr-tpl-item.factory { background:linear-gradient(90deg,var(--bg2),var(--card)); }
+.mtr-tpl-info { flex:1;min-width:0;cursor:pointer; }
+.mtr-tpl-name { font-size:12.5px;font-weight:700;color:var(--text1);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.mtr-tpl-meta { display:flex;gap:5px;align-items:center;flex-wrap:wrap; }
+.mtr-tpl-count { font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px; }
+.mtr-tpl-count.ig { background:rgba(225,48,108,.15);color:#e1306c; }
+.mtr-tpl-count.ad { background:rgba(59,130,246,.15);color:#3b82f6; }
+.mtr-tpl-count.gmb { background:rgba(34,197,94,.15);color:#22c55e; }
+.mtr-tpl-scope { font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:var(--bg);color:var(--text2);text-transform:uppercase;letter-spacing:.04em; }
+.mtr-tpl-scope.all { background:var(--accentGlow);color:var(--accent); }
+.mtr-tpl-actions { display:flex;gap:3px; }
+.mtr-tpl-actions button { background:transparent;border:1px solid var(--border);color:var(--text2);width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center;transition:all .12s; }
+.mtr-tpl-actions .mtr-tpl-apply:hover { border-color:var(--accent);color:var(--accent);background:var(--accentGlow); }
+.mtr-tpl-actions .mtr-tpl-rename:hover { border-color:#3b82f6;color:#3b82f6; }
+.mtr-tpl-actions .mtr-tpl-del:hover { border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.1); }
 .mtr-kpi:hover { transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.12); }
 .mtr-kpi-icon { font-size:20px;margin-bottom:8px; }
 .mtr-kpi-label { font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px; }
@@ -9651,6 +9686,97 @@ function mtrSaveUserKpis() {
   const k = mtrClientKey('mtrUserKpis');
   localStorage.setItem(k, JSON.stringify(mtrUserKpis));
 }
+
+/* ─── Modelos (presets) de KPIs ─────────────────────────────────
+   Cada modelo: { id, name, kpis: [...], scope: 'all'|'ig'|'ad', createdAt }
+   Salvos por cliente (mtrKpiTemplates_<igId>).
+   Modelos globais (factory) ficam em MTR_FACTORY_TEMPLATES e sempre aparecem. */
+const MTR_FACTORY_TEMPLATES = [
+  { id:'_factory_ig_basic', name:'Instagram — Básico', scope:'ig', factory:true,
+    kpis:['ig_reach','ig_accounts_engaged','ig_total_interactions','ig_followers_count','ig_follower_count','ig_profile_views','ig_website_clicks'] },
+  { id:'_factory_ig_engagement', name:'Instagram — Engajamento', scope:'ig', factory:true,
+    kpis:['ig_likes','ig_comments','ig_shares','ig_saves','ig_views','ig_total_interactions','ig_accounts_engaged'] },
+  { id:'_factory_ad_basic', name:'Meta Ads — Performance', scope:'ad', factory:true,
+    kpis:['ad_spend','ad_reach','ad_impressions','ad_clicks','ad_ctr','ad_cpc','ad_cpm','ad_frequency'] },
+  { id:'_factory_ad_conv', name:'Meta Ads — Conversão', scope:'ad', factory:true,
+    kpis:['ad_spend','ad_purchases','ad_revenue','ad_roas','ad_cpp','ad_leads','ad_cpl','ad_landing_page_views'] },
+];
+
+function mtrLoadTemplates() {
+  const k = mtrClientKey('mtrKpiTemplates');
+  try {
+    const s = localStorage.getItem(k);
+    if (s) return JSON.parse(s);
+  } catch(e){}
+  return [];
+}
+function mtrSaveTemplates(list) {
+  const k = mtrClientKey('mtrKpiTemplates');
+  localStorage.setItem(k, JSON.stringify(list));
+}
+/* Salva o estado atual como um novo modelo (ou substitui um existente com o mesmo nome).
+   scope: 'all' = todas as KPIs em uso; 'ig' = só ig_*; 'ad' = só ad_* */
+function mtrSaveCurrentAsTemplate(scope) {
+  scope = scope || 'all';
+  const name = (prompt(`Nome do modelo${scope==='ig'?' (Instagram)':scope==='ad'?' (Meta Ads)':''}:`, '') || '').trim();
+  if (!name) return;
+  let kpis = [...mtrUserKpis];
+  if (scope === 'ig') kpis = kpis.filter(id => { const m = MTR_CATALOG.find(x=>x.id===id); return m && (m.source==='ig' || m.source==='gmb'); });
+  if (scope === 'ad') kpis = kpis.filter(id => { const m = MTR_CATALOG.find(x=>x.id===id); return m && m.source==='ad'; });
+  if (!kpis.length) { alert('Nenhuma métrica desta fonte está no painel atualmente.'); return; }
+  const list = mtrLoadTemplates();
+  // Substitui se existir com mesmo nome+scope
+  const idx = list.findIndex(t => t.name === name && t.scope === scope);
+  const tpl = { id: idx >= 0 ? list[idx].id : ('tpl_' + Date.now() + '_' + Math.random().toString(36).slice(2,6)),
+                name, scope, kpis, createdAt: Date.now() };
+  if (idx >= 0) list[idx] = tpl; else list.push(tpl);
+  mtrSaveTemplates(list);
+  showToast('success','✓','Modelo "' + name + '" salvo.');
+  mtrRenderSidebar();
+}
+function mtrApplyTemplate(tplId) {
+  const all = [...MTR_FACTORY_TEMPLATES, ...mtrLoadTemplates()];
+  const tpl = all.find(t => t.id === tplId);
+  if (!tpl) return;
+  // Se o modelo é só de uma fonte, mescla: mantém as KPIs da OUTRA fonte que já estão em uso
+  // e substitui as da fonte do modelo. Se for 'all', substitui tudo.
+  if (tpl.scope === 'ig') {
+    const otherSource = mtrUserKpis.filter(id => { const m = MTR_CATALOG.find(x=>x.id===id); return m && m.source==='ad'; });
+    mtrUserKpis = [...tpl.kpis, ...otherSource];
+  } else if (tpl.scope === 'ad') {
+    const otherSource = mtrUserKpis.filter(id => { const m = MTR_CATALOG.find(x=>x.id===id); return m && (m.source==='ig' || m.source==='gmb'); });
+    mtrUserKpis = [...otherSource, ...tpl.kpis];
+  } else {
+    mtrUserKpis = [...tpl.kpis];
+  }
+  mtrSaveUserKpis();
+  showToast('success','✓','Modelo "' + tpl.name + '" aplicado.');
+  mtrRenderSidebar();
+  if (mtrLastSnapshot) {
+    const s = mtrLastSnapshot;
+    renderMetrics(s.igCurr, s.igPrev, s.adsData, s.adsPrev, s.curr, s.prev, s.compare, s.warnings, s.campaigns, s.health);
+  } else if (mtrCurrentAcc) {
+    loadMetrics();
+  }
+}
+function mtrDeleteTemplate(tplId) {
+  const list = mtrLoadTemplates();
+  const tpl = list.find(t => t.id === tplId);
+  if (!tpl) return;
+  if (!confirm(`Excluir o modelo "${tpl.name}"?`)) return;
+  mtrSaveTemplates(list.filter(t => t.id !== tplId));
+  mtrRenderSidebar();
+}
+function mtrRenameTemplate(tplId) {
+  const list = mtrLoadTemplates();
+  const tpl = list.find(t => t.id === tplId);
+  if (!tpl) return;
+  const newName = (prompt('Novo nome:', tpl.name) || '').trim();
+  if (!newName || newName === tpl.name) return;
+  tpl.name = newName;
+  mtrSaveTemplates(list);
+  mtrRenderSidebar();
+}
 function mtrLoadAiTraining() {
   const k = mtrClientKey('mtrAiTraining');
   let v = localStorage.getItem(k);
@@ -10434,7 +10560,52 @@ function mtrRenderSidebar() {
       <button onclick="mtrDeleteCustomMetric('${cm.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;">✕</button>
     </div>`).join('');
 
+  // ─── Modelos (templates) ────────────────────────────────────
+  const userTpls = mtrLoadTemplates();
+  const allTpls = [...MTR_FACTORY_TEMPLATES, ...userTpls];
+  const tplBadge = (tpl) => {
+    const igN = tpl.kpis.filter(id => { const m = MTR_CATALOG.find(x=>x.id===id); return m && m.source==='ig'; }).length;
+    const adN = tpl.kpis.filter(id => { const m = MTR_CATALOG.find(x=>x.id===id); return m && m.source==='ad'; }).length;
+    const gmbN = tpl.kpis.filter(id => { const m = MTR_CATALOG.find(x=>x.id===id); return m && m.source==='gmb'; }).length;
+    const parts = [];
+    if (igN) parts.push(`<span class="mtr-tpl-count ig">📷 ${igN}</span>`);
+    if (adN) parts.push(`<span class="mtr-tpl-count ad">📢 ${adN}</span>`);
+    if (gmbN) parts.push(`<span class="mtr-tpl-count gmb">📍 ${gmbN}</span>`);
+    return parts.join('');
+  };
+  const tplItem = (tpl) => `
+    <div class="mtr-tpl-item ${tpl.factory?'factory':''}">
+      <div class="mtr-tpl-info" onclick="mtrApplyTemplate('${tpl.id}')" title="Aplicar este modelo">
+        <div class="mtr-tpl-name">${tpl.factory?'⭐ ':''}${escHtml(tpl.name)}</div>
+        <div class="mtr-tpl-meta">${tplBadge(tpl)} ${tpl.scope==='ig'?'<span class="mtr-tpl-scope">IG</span>':tpl.scope==='ad'?'<span class="mtr-tpl-scope">Ads</span>':'<span class="mtr-tpl-scope all">Todas</span>'}</div>
+      </div>
+      <div class="mtr-tpl-actions">
+        <button class="mtr-tpl-apply" onclick="mtrApplyTemplate('${tpl.id}')" title="Aplicar">▶</button>
+        ${!tpl.factory ? `
+          <button class="mtr-tpl-rename" onclick="mtrRenameTemplate('${tpl.id}')" title="Renomear">✎</button>
+          <button class="mtr-tpl-del" onclick="mtrDeleteTemplate('${tpl.id}')" title="Excluir">✕</button>
+        ` : ''}
+      </div>
+    </div>`;
+
+  const factoryHtml = MTR_FACTORY_TEMPLATES.map(tplItem).join('');
+  const userHtml = userTpls.length ? userTpls.map(tplItem).join('')
+    : '<div style="font-size:11px;color:var(--text3);padding:6px;font-style:italic;">Nenhum modelo salvo ainda.</div>';
+
   document.getElementById('mtrCatList').innerHTML = `
+    <div class="mtr-side-section">
+      <div class="mtr-side-section-title">📋 Modelos</div>
+      <div class="mtr-tpl-hint">Salve a configuração atual para reutilizar depois. Clique em um modelo para aplicar.</div>
+      <div class="mtr-tpl-save-row">
+        <button class="mtr-tpl-save-btn all" onclick="mtrSaveCurrentAsTemplate('all')" title="Salva todas as métricas em uso">💾 Salvar atual</button>
+        <button class="mtr-tpl-save-btn ig" onclick="mtrSaveCurrentAsTemplate('ig')" title="Salva apenas as métricas do Instagram">📷 Só IG</button>
+        <button class="mtr-tpl-save-btn ad" onclick="mtrSaveCurrentAsTemplate('ad')" title="Salva apenas as métricas de Meta Ads">📢 Só Ads</button>
+      </div>
+      <div class="mtr-tpl-subtitle">Modelos prontos</div>
+      <div class="mtr-tpl-list">${factoryHtml}</div>
+      <div class="mtr-tpl-subtitle">Seus modelos</div>
+      <div class="mtr-tpl-list">${userHtml}</div>
+    </div>
     <div class="mtr-side-section">
       <div class="mtr-side-section-title">Em uso (arraste para reordenar)</div>
       <div class="mtr-cat-list" id="mtrCatSelected">
@@ -11559,6 +11730,22 @@ function mtrRenderFunnelModal() {
         ${v.map(c => `<button onclick="mtrFunnelAdd('${c.id}')" ${mtrUserFunnel.includes(c.id) ? 'disabled' : ''}>${c.icon} ${escHtml(c.label)}</button>`).join('')}
       </div></div>`;
   }).join('');
+  // Modelos de funil salvos pelo usuário
+  const userTpls = mtrLoadFunnelTemplates();
+  const tplItems = userTpls.length ? userTpls.map(t => `
+    <div class="mtr-tpl-item">
+      <div class="mtr-tpl-info" onclick="mtrApplyFunnelTemplate('${t.id}')" title="Aplicar">
+        <div class="mtr-tpl-name">${escHtml(t.name)}</div>
+        <div class="mtr-tpl-meta"><span class="mtr-tpl-count" style="background:var(--accentGlow);color:var(--accent);">${t.stages.length} etapas</span></div>
+      </div>
+      <div class="mtr-tpl-actions">
+        <button class="mtr-tpl-apply" onclick="mtrApplyFunnelTemplate('${t.id}')" title="Aplicar">▶</button>
+        <button class="mtr-tpl-rename" onclick="mtrRenameFunnelTemplate('${t.id}')" title="Renomear">✎</button>
+        <button class="mtr-tpl-del" onclick="mtrDeleteFunnelTemplate('${t.id}')" title="Excluir">✕</button>
+      </div>
+    </div>`).join('')
+    : '<div style="font-size:11px;color:var(--text3);padding:6px;font-style:italic;">Nenhum modelo de funil salvo. Configure as etapas e clique em "💾 Salvar como modelo".</div>';
+
   m.innerHTML = `<div class="mtr-funnel-modal-card">
     <button class="mtr-funnel-modal-close" onclick="mtrCloseFunnelModal()">×</button>
     <h3>⚙️ Personalizar Funil</h3>
@@ -11567,6 +11754,11 @@ function mtrRenderFunnelModal() {
       ${Object.entries(MTR_FUNNEL_PRESETS).map(([k,p]) => `<button onclick="mtrFunnelApplyPreset('${k}')">${p.label}</button>`).join('')}
       <button onclick="mtrFunnelClear()" style="color:#ef4444;">🗑️ Limpar</button>
     </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 0 8px;">
+      <div style="font-size:12px;color:var(--text2);font-weight:700;">📋 Meus modelos de funil</div>
+      <button onclick="mtrSaveCurrentFunnelAsTemplate()" style="background:var(--accent);color:#fff;border:none;border-radius:7px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;">💾 Salvar atual como modelo</button>
+    </div>
+    <div class="mtr-tpl-list" style="margin-bottom:14px;">${tplItems}</div>
     <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Etapas atuais (arraste para reordenar):</div>
     <div class="mtr-funnel-cfg-list">${cfgItems}</div>
     <div style="font-size:12px;color:var(--text2);">Adicionar etapa:</div>
@@ -11579,6 +11771,57 @@ function mtrFunnelAdd(id) {
     mtrSaveFunnel();
     mtrRerender();
   }
+}
+
+/* ─── Modelos de Funil ─────────────────────────────────────────
+   Salvos por cliente (mtrFunnelTemplates_<igId>). */
+function mtrLoadFunnelTemplates() {
+  const k = mtrClientKey('mtrFunnelTemplates');
+  try { const s = localStorage.getItem(k); if (s) return JSON.parse(s); } catch(e){}
+  return [];
+}
+function mtrSaveFunnelTemplates(list) {
+  localStorage.setItem(mtrClientKey('mtrFunnelTemplates'), JSON.stringify(list));
+}
+function mtrSaveCurrentFunnelAsTemplate() {
+  if (!mtrUserFunnel.length) { alert('O funil está vazio. Adicione etapas primeiro.'); return; }
+  const name = (prompt('Nome do modelo de funil:', '') || '').trim();
+  if (!name) return;
+  const list = mtrLoadFunnelTemplates();
+  const idx = list.findIndex(t => t.name === name);
+  const tpl = { id: idx >= 0 ? list[idx].id : ('fnl_' + Date.now() + '_' + Math.random().toString(36).slice(2,6)),
+                name, stages: [...mtrUserFunnel], createdAt: Date.now() };
+  if (idx >= 0) list[idx] = tpl; else list.push(tpl);
+  mtrSaveFunnelTemplates(list);
+  showToast('success','✓','Modelo de funil "' + name + '" salvo.');
+  mtrRenderFunnelModalIfOpen();
+}
+function mtrApplyFunnelTemplate(tplId) {
+  const list = mtrLoadFunnelTemplates();
+  const tpl = list.find(t => t.id === tplId);
+  if (!tpl) return;
+  mtrUserFunnel = [...tpl.stages];
+  mtrSaveFunnel();
+  showToast('success','✓','Funil "' + tpl.name + '" aplicado.');
+  mtrRerender();
+}
+function mtrDeleteFunnelTemplate(tplId) {
+  const list = mtrLoadFunnelTemplates();
+  const tpl = list.find(t => t.id === tplId);
+  if (!tpl) return;
+  if (!confirm(`Excluir o modelo "${tpl.name}"?`)) return;
+  mtrSaveFunnelTemplates(list.filter(t => t.id !== tplId));
+  mtrRenderFunnelModalIfOpen();
+}
+function mtrRenameFunnelTemplate(tplId) {
+  const list = mtrLoadFunnelTemplates();
+  const tpl = list.find(t => t.id === tplId);
+  if (!tpl) return;
+  const newName = (prompt('Novo nome:', tpl.name) || '').trim();
+  if (!newName || newName === tpl.name) return;
+  tpl.name = newName;
+  mtrSaveFunnelTemplates(list);
+  mtrRenderFunnelModalIfOpen();
 }
 function mtrFunnelClear() {
   mtrUserFunnel = [];
