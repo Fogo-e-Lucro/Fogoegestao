@@ -2940,8 +2940,16 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-status-group-header {
   padding:14px 10px 8px; display:flex; align-items:center; gap:10px;
   position:sticky; top:0; z-index:2;
-  background:var(--bg);
+  background:var(--bg); cursor:pointer; user-select:none;
 }
+.pj-status-group-header:hover { background:var(--bg2); }
+.pj-status-chev {
+  width:14px; height:14px; flex-shrink:0;
+  transition:transform .18s ease;
+  color:var(--text3);
+}
+.pj-status-group-header.collapsed .pj-status-chev { transform:rotate(-90deg); }
+.pj-status-zone.collapsed { display:none; }
 .pj-status-group-header::after {
   content:''; position:absolute; left:0; right:0; bottom:0; height:1px;
   background:linear-gradient(90deg, var(--border) 0%, transparent 100%);
@@ -3646,7 +3654,12 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-modal-topbar .sep { color:var(--border); }
 .pj-modal-body { display:flex; flex:1; min-height:0; }
 .pj-modal-left { flex:1; overflow-y:auto; padding:32px 48px; }
-.pj-modal-right { width:380px; border-left:1px solid var(--border); overflow-y:auto; padding:18px; background:var(--bg2); flex-shrink:0; }
+.pj-modal-right { width:380px; border-left:1px solid var(--border); padding:18px; background:var(--bg2); flex-shrink:0; display:flex; flex-direction:column; min-height:0; overflow:hidden; }
+.pj-modal-right .pj-activity-title { flex-shrink:0; }
+.pj-modal-right .pj-activity-list { flex:1 1 auto; overflow-y:auto; min-height:0; padding-right:4px; margin-right:-4px; }
+.pj-modal-right .pj-reply-banner { flex-shrink:0; }
+.pj-modal-right .pj-comment-input-wrap { flex-shrink:0; margin-top:12px; }
+.pj-modal-right .pj-comment-attach-preview { flex-shrink:0; }
 .pj-modal-title-input { width:100%; border:none; background:none; color:var(--text); font-size:22px; font-weight:800; font-family:var(--font); outline:none; resize:none; padding:0; margin-bottom:12px; line-height:1.4; }
 .pj-modal-title-input::placeholder { color:var(--text3); }
 .pj-modal-meta { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid var(--border); }
@@ -16294,17 +16307,23 @@ function pjBuildListPage(listId) {
 
   statuses.forEach(st => {
     const stTasks = tasks.filter(t => (t.statusId||statuses[0].id) === st.id && !t.parentTaskId);
-    h += `<div class="pj-status-group-header pj-status-droptarget" style="margin-top:8px;"
+    const isDoneStatus = st.id === 'done';
+    const collapsedKey = `pjStatusCollapsed:${listId}:${st.id}`;
+    const stored = localStorage.getItem(collapsedKey);
+    const collapsed = stored === null ? isDoneStatus : (stored === '1');
+    h += `<div class="pj-status-group-header pj-status-droptarget ${collapsed?'collapsed':''}" style="margin-top:8px;"
          data-list-id="${listId}" data-status-id="${st.id}"
+         onclick="pjToggleStatusCollapse('${listId}','${st.id}',event)"
          ondragover="pjListDragOver(event)" ondragleave="pjListDragLeave(event)" ondrop="pjListDrop(event,'${listId}','${st.id}')">
+      <svg class="pj-status-chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 8 10 13 15 8"/></svg>
       <div class="pj-status-dot" style="background:${st.color}"></div>
       <span class="pj-status-group-name">${escHtml(st.name)}</span>
       <span class="pj-status-group-count">${stTasks.length}</span>
     </div>
-    <div class="pj-status-zone" data-list-id="${listId}" data-status-id="${st.id}"
+    <div class="pj-status-zone ${collapsed?'collapsed':''}" data-list-id="${listId}" data-status-id="${st.id}"
          ondragover="pjListDragOver(event)" ondragleave="pjListDragLeave(event)" ondrop="pjListDrop(event,'${listId}','${st.id}')">`;
     stTasks.forEach(t => { h += pjTaskColumnRowHtml(t, fields, gridTpl); });
-    h += `<div class="pj-add-task-row" onclick="pjQuickCreateTask('${listId}','${st.id}')">＋ Adicionar tarefa</div></div>`;
+    h += `<div class="pj-add-task-row" onclick="event.stopPropagation();pjQuickCreateTask('${listId}','${st.id}')">＋ Adicionar tarefa</div></div>`;
   });
   h += `</div>`;
   return h + '</div>';
@@ -17112,6 +17131,16 @@ function pjListDragOver(e) {
   if (!_pjDragTaskId) return;
   e.preventDefault();
   e.currentTarget.classList.add('drag-over');
+}
+function pjToggleStatusCollapse(listId, statusId, ev) {
+  if (ev) ev.stopPropagation();
+  const header = document.querySelector(`.pj-status-group-header[data-list-id="${listId}"][data-status-id="${statusId}"]`);
+  const zone = document.querySelector(`.pj-status-zone[data-list-id="${listId}"][data-status-id="${statusId}"]`);
+  if (!header || !zone) return;
+  const willCollapse = !header.classList.contains('collapsed');
+  header.classList.toggle('collapsed', willCollapse);
+  zone.classList.toggle('collapsed', willCollapse);
+  try { localStorage.setItem(`pjStatusCollapsed:${listId}:${statusId}`, willCollapse ? '1' : '0'); } catch(e) {}
 }
 function pjListDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
 async function pjListDrop(e, listId, statusId) {
@@ -19768,15 +19797,15 @@ function pjOpenFieldsEditor(listId) {
     const t = CF_TYPES.find(x=>x.id===type)||CF_TYPES[0];
     return `<div class="pj-field-edit-row" data-fid="${fid}">
       <div class="pj-field-type-icon" style="background:${t.color}1a;color:${t.color};" title="${t.label}">${t.icon}</div>
-      <input class="pj-field-name-input" value="${escHtml(name)}" placeholder="Nome do campo">
+      <input class="pj-field-name-input" value="${escHtml(name)}" placeholder="Nome do campo" oninput="pjAutoSaveFields('${listId}')">
       <button class="pj-field-type-btn" onclick="pjFieldTypePopup(event,this)" data-type="${type}">
         ${t.icon} ${t.label}
         <svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor" style="opacity:.5"><path d="M2 4l4 4 4-4z"/></svg>
       </button>
-      <button class="pj-field-del-btn" title="Remover campo" onclick="this.closest('.pj-field-edit-row').remove()">
+      <button class="pj-field-del-btn" title="Remover campo" onclick="(function(b){b.closest('.pj-field-edit-row').remove();pjAutoSaveFields('${listId}');})(this)">
         <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
       </button>
-      <input class="pj-field-options-input" value="${escHtml((options||[]).join(', '))}" placeholder="opção1, opção2, opção3..." style="${type==='select'?'':'display:none;'}" title="Opções separadas por vírgula">
+      <input class="pj-field-options-input" value="${escHtml((options||[]).join(', '))}" placeholder="opção1, opção2, opção3..." style="${type==='select'?'':'display:none;'}" title="Opções separadas por vírgula" oninput="pjAutoSaveFields('${listId}')">
     </div>`;
   };
 
@@ -19806,6 +19835,7 @@ function pjOpenFieldsEditor(listId) {
   </div>`;
   pjOpenFormModal(html);
   window._cfBuildRow = buildFieldRow;
+  window._pjFieldsEditorListId = listId;
 }
 function pjFieldTypePopup(ev, btn) {
   const types = window._cfTypes || [];
@@ -19820,6 +19850,7 @@ function pjFieldTypePopup(ev, btn) {
     if (ic) { ic.style.background = t.color+'1a'; ic.style.color = t.color; ic.textContent = t.icon; }
     const optInput = row.querySelector('.pj-field-options-input');
     if (optInput) optInput.style.display = newType === 'select' ? '' : 'none';
+    if (window._pjFieldsEditorListId) pjAutoSaveFields(window._pjFieldsEditorListId);
   });
 }
 function pjAddFieldRow() {
@@ -19827,7 +19858,60 @@ function pjAddFieldRow() {
   const id = 'cf_' + Date.now();
   if (window._cfBuildRow) {
     el.insertAdjacentHTML('beforeend', window._cfBuildRow(id, 'Novo campo', 'text', []));
+    if (window._pjFieldsEditorListId) pjAutoSaveFields(window._pjFieldsEditorListId);
+    const last = el.lastElementChild?.querySelector('.pj-field-name-input');
+    if (last) { last.focus(); last.select(); }
   }
+}
+let _pjFieldsAutoSaveTimer = null;
+function pjAutoSaveFields(listId) {
+  clearTimeout(_pjFieldsAutoSaveTimer);
+  _pjFieldsAutoSaveTimer = setTimeout(async () => {
+    const rows = document.querySelectorAll('#pjFieldsEditList .pj-field-edit-row');
+    const fields = [...rows].map(row => {
+      const name = row.querySelector('.pj-field-name-input').value.trim();
+      const typeBtn = row.querySelector('.pj-field-type-btn');
+      const type = typeBtn?.dataset.type || 'text';
+      const opt  = row.querySelector('.pj-field-options-input')?.value.trim() || '';
+      const f = { id: row.dataset.fid, name, type };
+      if (type === 'select' && opt) f.options = opt.split(',').map(s=>s.trim()).filter(Boolean);
+      return f;
+    }).filter(f => f.name);
+    const l = pjLists.find(x => x.id === listId);
+    if (l) l.customFields = fields;
+    try { await pjC('pj_lists').doc(listId).update({ customFields: fields }); } catch(e){ console.error(e); }
+    // Re-render only the custom fields panel of the task modal (não fecha o editor)
+    if (pjCurrentTaskId) {
+      const t = pjAllTasks.find(x => x.id === pjCurrentTaskId);
+      const cfEl = document.getElementById('pjModalCustomFields');
+      if (t && cfEl) {
+        const list = pjLists.find(x => x.id === t.listId);
+        let fieldsHtml = '';
+        if (fields.length && list) {
+          fieldsHtml = `<div class="pj-modal-section-title" style="display:flex;align-items:center;gap:8px;">Campos<button class="pj-icon-btn" style="font-size:12px;padding:3px 9px;" title="Gerenciar campos" onclick="pjOpenFieldsEditor('${list.id}')">⚙️ Gerenciar</button></div><div class="pj-fields-grid">`;
+          fields.forEach(f => {
+            const val = t.customFieldValues?.[f.id] || '';
+            let input;
+            if (f.type === 'select') {
+              input = `<select class="pj-field-value" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)"><option value="">—</option>${(f.options||[]).map(o=>`<option ${o===val?'selected':''}>${escHtml(o)}</option>`).join('')}</select>`;
+            } else if (f.type === 'date') {
+              input = `<input class="pj-field-value" type="date" value="${escHtml(String(val))}" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)">`;
+            } else if (f.type === 'number') {
+              input = `<input class="pj-field-value" type="number" value="${escHtml(String(val))}" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)">`;
+            } else {
+              input = `<input class="pj-field-value" type="text" value="${escHtml(String(val))}" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)">`;
+            }
+            fieldsHtml += `<div class="pj-field-item"><div class="pj-field-label">${escHtml(f.name)}<button class="pj-field-quick-del" title="Remover este campo" onclick="pjQuickRemoveField('${list.id}','${f.id}')">×</button></div>${input}</div>`;
+          });
+          fieldsHtml += '</div>';
+        } else if (list) {
+          fieldsHtml = `<div class="pj-modal-section-title" style="display:flex;align-items:center;gap:8px;">Campos<button class="pj-btn pj-btn-secondary" style="font-size:11px;padding:4px 10px;" onclick="pjOpenFieldsEditor('${list.id}')">＋ Adicionar campo</button></div>`;
+        }
+        cfEl.innerHTML = fieldsHtml;
+      }
+    }
+    if (pjCurrentView.id === listId) pjRenderMain();
+  }, 350);
 }
 async function pjQuickRemoveField(listId, fieldId) {
   const list = pjLists.find(l => l.id === listId);
