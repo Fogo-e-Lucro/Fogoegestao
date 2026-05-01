@@ -156,6 +156,62 @@ body {
 /* ── CONTENT & PANELS ────────────────────────────────── */
 .app-content { width:100%; margin:0; padding:24px 32px; }
 
+/* ── TAB ENTRADA — Layout centrado e espaçado ─────────── */
+#tab-entrada {
+  max-width: 740px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+
+/* Contador automático de passos */
+#tab-entrada { counter-reset: entrada-step; }
+#tab-entrada .form-section { counter-increment: entrada-step; }
+
+/* Badge de passo antes de cada header */
+#tab-entrada .form-section-header::before {
+  content: "0" counter(entrada-step);
+  font-size: 10px; font-weight: 800; letter-spacing: .3px;
+  color: var(--accent3);
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.25);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-right: 2px;
+}
+
+/* Borda esquerda colorida quando aberto */
+#tab-entrada .form-section:not(.collapsed) {
+  border-color: rgba(124,58,237,.35);
+}
+#tab-entrada .form-section:not(.collapsed) .form-section-header {
+  border-bottom: 1px solid var(--border);
+  background: rgba(124,58,237,.03);
+}
+
+/* Page header de Criar Post */
+.entrada-page-header {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.entrada-page-title {
+  font-size: 22px; font-weight: 800;
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--text) 0%, var(--accent3) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 4px;
+}
+.entrada-page-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-text-fill-color: #fff;
+  font-size: 16px; flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(124,58,237,.35);
+}
+.entrada-page-sub {
+  font-size: 13px; color: var(--text3); margin-left: 44px;
+}
+
 .tab-panel {
   opacity: 0;
   transform: translateY(12px);
@@ -193,8 +249,8 @@ body {
 .form-section:focus-within { border-color: rgba(124,58,237,.4); box-shadow: 0 4px 20px rgba(124,58,237,.12); }
 
 .form-section-header {
-  padding: 14px 18px;
-  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  display: flex; align-items: center; gap: 10px; justify-content: space-between;
   cursor: pointer;
   user-select: none;
   background: var(--card);
@@ -203,14 +259,15 @@ body {
 .form-section-header:hover { background: rgba(255,255,255,.04); }
 
 .form-section-title {
-  font-size: 12px; font-weight: 700;
-  color: var(--text3);
-  text-transform: uppercase; letter-spacing: 1px;
-  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 700;
+  color: var(--text);
+  text-transform: none; letter-spacing: 0;
+  display: flex; align-items: center; gap: 10px;
+  flex: 1;
 }
 
 .section-chevron {
-  width: 20px; height: 20px;
+  width: 18px; height: 18px;
   color: var(--text3);
   transition: transform var(--t2) var(--ease);
   flex-shrink: 0;
@@ -221,30 +278,60 @@ body {
   overflow: hidden;
   transition: height var(--t2) var(--ease);
 }
-.form-section-body-inner { padding: 0 20px 20px; }
+.form-section-body-inner { padding: 20px 22px 26px; }
 
 /* ── RESTAURANT BAR ──────────────────────────────────── */
 .restaurant-sticky {
-  background: linear-gradient(135deg, var(--bg2), var(--bg3));
-  border: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(124,58,237,.07) 0%, var(--bg2) 100%);
+  border: 1px solid rgba(124,58,237,.22);
   border-radius: 16px;
-  padding: 14px 20px;
-  margin-bottom: 14px;
+  padding: 18px 22px;
+  margin-bottom: 20px;
   display: flex; align-items: center; gap: 14px;
-  box-shadow: 0 2px 10px rgba(0,0,0,.15);
+  box-shadow: 0 4px 18px rgba(124,58,237,.1);
   transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
+  position: relative;
 }
-.restaurant-sticky:focus-within { border-color: rgba(124,58,237,.5); box-shadow: 0 4px 18px rgba(124,58,237,.1); }
-.restaurant-sticky label { font-size: 12px; font-weight: 700; color: var(--accent3); white-space: nowrap; }
+.restaurant-sticky::before {
+  content: '';
+  position: absolute; left: 0; top: 16px; bottom: 16px; width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(180deg, var(--accent), var(--accent2));
+}
+.restaurant-sticky:focus-within { border-color: var(--accent); box-shadow: 0 6px 24px rgba(124,58,237,.18); }
+.restaurant-sticky label {
+  font-size: 11px; font-weight: 800; color: var(--accent3);
+  text-transform: uppercase; letter-spacing: 1.2px; white-space: nowrap;
+}
 .restaurant-sticky input { flex: 1; }
 
+/* Select do restaurante – remove aparência nativa */
+#restauranteSelect {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M0 0l6 7 6-7z' fill='%237c3aed'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 14px center !important;
+  background-size: 10px !important;
+  padding-right: 38px !important;
+  font-weight: 600 !important;
+  font-family: var(--font) !important;
+  cursor: pointer !important;
+  transition: border-color .2s, box-shadow .2s !important;
+}
+#restauranteSelect:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(124,58,237,.14) !important;
+  background-color: var(--bg3) !important;
+}
+
 /* ── FORM CONTROLS ───────────────────────────────────── */
-.form-group { margin-bottom: 18px; }
+.form-group { margin-bottom: 20px; }
 .form-group:last-child { margin-bottom: 0; }
 
 .form-group label {
-  display: block; font-size: 12px; font-weight: 600;
-  color: var(--text2); margin-bottom: 7px;
+  display: block; font-size: 12px; font-weight: 700;
+  color: var(--text2); margin-bottom: 8px; letter-spacing: .2px;
 }
 .form-group label .req { color: var(--accent2); margin-left: 2px; }
 
@@ -255,9 +342,9 @@ input[type="time"],
 textarea {
   width: 100%;
   background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--r2);
-  padding: 10px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
   color: var(--text);
   font-size: 14px; font-family: var(--font);
   transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease), background var(--t) var(--ease);
@@ -290,32 +377,34 @@ textarea { min-height: 96px; resize: vertical; }
 .error-msg.visible { display: flex; }
 
 /* ── TYPE GRID ───────────────────────────────────────── */
-.type-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.type-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
 
 .type-btn {
   background: var(--bg);
   border: 2px solid var(--border);
-  border-radius: 14px;
-  padding: 16px 8px;
+  border-radius: 16px;
+  padding: 20px 10px 16px;
   cursor: pointer;
   text-align: center;
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  font-family: var(--font); color: var(--text2);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  font-family: var(--font); color: var(--text3);
   transition: border-color var(--t) var(--ease),
               background var(--t) var(--ease),
               color var(--t) var(--ease),
               transform var(--t) var(--spring),
               box-shadow var(--t) var(--ease);
 }
-.type-btn .type-icon { font-size: 26px; line-height: 1; }
-.type-btn .type-label { font-size: 10px; font-weight: 800; letter-spacing: .9px; text-transform: uppercase; }
-.type-btn:hover { transform: translateY(-3px); border-color: var(--accent); color: var(--text); box-shadow: 0 6px 20px rgba(0,0,0,.2); }
+.type-btn .type-icon { font-size: 30px; line-height: 1; filter: grayscale(.4); transition: filter .2s, transform .2s; }
+.type-btn .type-label { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; }
+.type-btn:hover { transform: translateY(-4px); border-color: var(--accent); color: var(--text); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+.type-btn:hover .type-icon { filter: grayscale(0); transform: scale(1.1); }
 .type-btn:active { transform: translateY(0); }
 
-.type-btn.active[data-type="REELS"]    { border-color:var(--reels);     background:linear-gradient(135deg,rgba(124,58,237,.18),rgba(124,58,237,.08)); color:var(--reels);     box-shadow:0 6px 20px rgba(124,58,237,.25); }
-.type-btn.active[data-type="FOTO"]     { border-color:var(--foto);      background:linear-gradient(135deg,rgba(59,130,246,.18),rgba(59,130,246,.08));  color:var(--foto);      box-shadow:0 6px 20px rgba(59,130,246,.25); }
-.type-btn.active[data-type="CARROSSEL"]{ border-color:var(--carrossel); background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(245,158,11,.08));  color:var(--carrossel); box-shadow:0 6px 20px rgba(245,158,11,.25); }
-.type-btn.active[data-type="STORY"]   { border-color:var(--story);     background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(16,185,129,.08));  color:var(--story);     box-shadow:0 6px 20px rgba(16,185,129,.25); }
+.type-btn.active[data-type="REELS"]    { border-color:var(--reels);     background:linear-gradient(160deg,rgba(124,58,237,.2),rgba(124,58,237,.06)); color:var(--reels);     box-shadow:0 8px 24px rgba(124,58,237,.3); }
+.type-btn.active[data-type="FOTO"]     { border-color:var(--foto);      background:linear-gradient(160deg,rgba(59,130,246,.2),rgba(59,130,246,.06));  color:var(--foto);      box-shadow:0 8px 24px rgba(59,130,246,.3); }
+.type-btn.active[data-type="CARROSSEL"]{ border-color:var(--carrossel); background:linear-gradient(160deg,rgba(245,158,11,.2),rgba(245,158,11,.06));  color:var(--carrossel); box-shadow:0 8px 24px rgba(245,158,11,.3); }
+.type-btn.active[data-type="STORY"]   { border-color:var(--story);     background:linear-gradient(160deg,rgba(16,185,129,.2),rgba(16,185,129,.06));  color:var(--story);     box-shadow:0 8px 24px rgba(16,185,129,.3); }
+.type-btn.active .type-icon { filter: grayscale(0); }
 
 /* ── OBJETIVO ────────────────────────────────────────── */
 .objetivo-grid { display: flex; flex-wrap: wrap; gap: 7px; }
@@ -425,6 +514,13 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(124,58,237,.58); }
 .btn-primary:hover::after { background: rgba(255,255,255,.08); }
 .btn-primary:active { transform: translateY(0); box-shadow: 0 2px 10px rgba(124,58,237,.3); }
+
+/* Submit button específico do Criar Post */
+.entrada-submit-btn {
+  margin-top: 8px; height: 56px;
+  font-size: 16px; letter-spacing: .3px;
+  border-radius: 16px;
+}
 
 .btn-secondary {
   padding: 8px 15px;
@@ -1173,12 +1269,15 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 /* ── CLAUDE AI ───────────────────────────────────────── */
 .ai-btn {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(124,58,237,.35);
-  background: rgba(124,58,237,.1); color: var(--accent);
+  padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(124,58,237,.4);
+  background: linear-gradient(135deg, rgba(124,58,237,.14), rgba(168,85,247,.08));
+  color: var(--accent2);
   font-size: 11px; font-weight: 700; cursor: pointer; letter-spacing: .3px;
-  transition: all .15s; white-space: nowrap;
+  transition: all .2s; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(124,58,237,.12);
 }
-.ai-btn:hover:not(:disabled) { background: rgba(124,58,237,.22); border-color: var(--accent); }
+.ai-btn:hover:not(:disabled) { background: linear-gradient(135deg, rgba(124,58,237,.28), rgba(168,85,247,.18)); border-color: var(--accent); box-shadow: 0 4px 14px rgba(124,58,237,.25); transform: translateY(-1px); }
+.ai-btn:active { transform: translateY(0); }
 .ai-btn:disabled { opacity: .5; cursor: wait; }
 .ai-btn .ai-spin { display: inline-block; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -4533,9 +4632,17 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
   <!-- ═══ ABA ENTRADA ═══════════════════════════════════ -->
   <div class="tab-panel" id="tab-entrada">
 
+    <div class="entrada-page-header" data-reveal>
+      <div class="entrada-page-title">
+        <span class="entrada-page-icon">✦</span>
+        Criar Post
+      </div>
+      <div class="entrada-page-sub">Preencha os campos abaixo para adicionar um post ao calendário</div>
+    </div>
+
     <div class="restaurant-sticky" data-reveal style="flex-direction:column;align-items:stretch;">
-      <label style="margin-bottom:8px;">🍽️ Restaurante:</label>
-      <select id="restauranteSelect" onchange="onRestauranteSelectChange()" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:14px;outline:none;cursor:pointer;">
+      <label style="margin-bottom:8px;">🏢 Cliente</label>
+      <select id="restauranteSelect" onchange="onRestauranteSelectChange()" style="width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text);font-size:14px;outline:none;cursor:pointer;font-family:var(--font);">
         <option value="">Selecione um restaurante...</option>
       </select>
       <div id="novoRestauranteWrap" style="display:none;margin-top:10px;">
@@ -4705,8 +4812,9 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
       </div>
     </div>
 
-    <button class="btn-primary" id="submitBtn" onclick="savePost()" data-reveal>
-      ➕ Adicionar ao Calendário
+    <button class="btn-primary entrada-submit-btn" id="submitBtn" onclick="savePost()" data-reveal>
+      <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+      Adicionar ao Calendário
     </button>
   </div>
 
