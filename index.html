@@ -19077,6 +19077,15 @@ function pjRenderSubtasks(parentId) {
             <option value="">—</option>
             ${opts.map(o=>`<option ${o===val?'selected':''}>${escHtml(o)}</option>`).join('')}
           </select>`;
+        } else if (f.type === 'address') {
+          const addrId = `pjAddr_${t.id}_${f.id}_sub`;
+          inputEl = `<div style="position:relative;display:inline-flex;align-items:center;">
+            <input class="pj-subtask-field-val" id="${addrId}" type="text" value="${escHtml(String(val))}"
+              placeholder="—" autocomplete="off"
+              oninput="pjAddrInput(event,'${t.id}','${f.id}')"
+              onblur="setTimeout(()=>pjAddrHideSugg('${addrId}'),200)">
+            <div class="pj-addr-suggestions" id="${addrId}_sugg" style="min-width:220px;"></div>
+          </div>`;
         } else {
           const itype = f.type==='date'?'date':(f.type==='number'?'number':'text');
           inputEl = `<input class="pj-subtask-field-val" type="${itype}" value="${escHtml(String(val))}"
@@ -19539,7 +19548,7 @@ async function pjUpdateTask(taskId, data) {
   }
   try { await pjC('pj_tasks').doc(taskId).update({...data, updatedAt:pjNow()}); } catch(e){}
 }
-// ── Address Autocomplete (Nominatim) ──────────────────
+// ── Address Autocomplete (Google Places → fallback Nominatim) ──────────────────
 let _pjAddrDebounce = null;
 function pjAddrInput(ev, taskId, fieldId) {
   const input = ev.target;
@@ -19548,19 +19557,44 @@ function pjAddrInput(ev, taskId, fieldId) {
   clearTimeout(_pjAddrDebounce);
   _pjAddrDebounce = setTimeout(async () => {
     pjUpdateTaskField(taskId, fieldId, input.value);
-    if (!suggEl || q.length < 3) { if(suggEl) suggEl.innerHTML=''; return; }
+    if (!suggEl || q.length < 3) { if (suggEl) suggEl.innerHTML = ''; return; }
+    const gKey = (typeof getApiKey === 'function') ? getApiKey('google_places') : null;
     try {
-      const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=6&addressdetails=0`, { headers:{'Accept-Language':'pt-BR'} });
-      const results = await r.json();
-      if (!suggEl || input !== document.getElementById(input.id)) return;
-      if (!results.length) { suggEl.innerHTML = ''; return; }
-      suggEl.innerHTML = results.map(item => {
-        const label = item.display_name.split(',').slice(0,5).join(', ');
-        return `<div class="pj-addr-sugg-item" onmousedown="event.preventDefault();pjAddrSelect('${input.id}','${taskId}','${fieldId}',\`${label.replace(/`/g,"'")}\`)">
-          <span class="pj-addr-sugg-icon">📍</span><span>${escHtml(label)}</span></div>`;
-      }).join('');
-    } catch(_) { if(suggEl) suggEl.innerHTML=''; }
-  }, 420);
+      if (gKey) {
+        // Google Places Autocomplete (v1)
+        const res = await fetch('https://places.googleapis.com/v1/places:autocomplete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': gKey },
+          body: JSON.stringify({ input: q, languageCode: 'pt-BR' })
+        });
+        const data = await res.json();
+        const suggestions = data.suggestions || [];
+        if (!suggEl || input !== document.getElementById(input.id)) return;
+        if (!suggestions.length) { suggEl.innerHTML = ''; return; }
+        suggEl.innerHTML = suggestions.map(s => {
+          const label = s.placePrediction?.text?.text || s.queryPrediction?.text?.text || '';
+          const main  = s.placePrediction?.structuredFormat?.mainText?.text || label;
+          const sec   = s.placePrediction?.structuredFormat?.secondaryText?.text || '';
+          if (!label) return '';
+          return `<div class="pj-addr-sugg-item" onmousedown="event.preventDefault();pjAddrSelect('${input.id}','${taskId}','${fieldId}',\`${label.replace(/`/g,"'")}\`)">
+            <span class="pj-addr-sugg-icon">📍</span>
+            <span><strong>${escHtml(main)}</strong>${sec ? `<span style="color:var(--text3);font-size:11px;"> — ${escHtml(sec)}</span>` : ''}</span>
+          </div>`;
+        }).filter(Boolean).join('');
+      } else {
+        // Fallback: Nominatim (OpenStreetMap)
+        const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=6&addressdetails=0`, { headers: { 'Accept-Language': 'pt-BR' } });
+        const results = await r.json();
+        if (!suggEl || input !== document.getElementById(input.id)) return;
+        if (!results.length) { suggEl.innerHTML = ''; return; }
+        suggEl.innerHTML = results.map(item => {
+          const label = item.display_name.split(',').slice(0, 5).join(', ');
+          return `<div class="pj-addr-sugg-item" onmousedown="event.preventDefault();pjAddrSelect('${input.id}','${taskId}','${fieldId}',\`${label.replace(/`/g,"'")}\`)">
+            <span class="pj-addr-sugg-icon">📍</span><span>${escHtml(label)}</span></div>`;
+        }).join('');
+      }
+    } catch(_) { if (suggEl) suggEl.innerHTML = ''; }
+  }, 380);
 }
 function pjAddrHideSugg(inputId) {
   const el = document.getElementById(inputId + '_sugg'); if (el) el.innerHTML = '';
