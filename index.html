@@ -3627,6 +3627,46 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-col-add-btn { width:100%; padding:7px; border:1px dashed var(--border); border-radius:8px; background:none; color:var(--text3); font-size:12px; font-family:var(--font); cursor:pointer; transition:border-color .15s,color .15s; }
 .pj-col-add-btn:hover { border-color:var(--accent); color:var(--accent); }
 
+/* ── Dashboard ── */
+.pj-dash-wrap { padding:28px 32px; max-width:1200px; animation:pjFadeIn .3s ease; }
+.pj-dash-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+.pj-dash-greet { font-size:24px; font-weight:800; color:var(--text1); }
+.pj-dash-date { font-size:13px; color:var(--text3); margin-top:4px; }
+.pj-dash-kpis { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
+.pj-dash-kpi { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px 20px; cursor:default; transition:transform .15s,box-shadow .15s; }
+.pj-dash-kpi:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.1); }
+.pj-dash-kpi-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.pj-dash-kpi-icon { font-size:22px; }
+.pj-dash-kpi-val { font-size:36px; font-weight:800; line-height:1; }
+.pj-dash-kpi-label { font-size:12px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; }
+.pj-dash-kpi-sub { font-size:11px; color:var(--text3); margin-top:4px; }
+.pj-dash-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+@media(max-width:768px) { .pj-dash-grid { grid-template-columns:1fr; } .pj-dash-wrap { padding:16px; } }
+.pj-dash-col { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; }
+.pj-dash-section-title { display:flex; align-items:center; justify-content:space-between; font-size:12px; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; margin-bottom:14px; }
+.pj-dash-section-count { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:2px 8px; font-size:11px; color:var(--text3); font-weight:700; }
+.pj-dash-task-list { display:flex; flex-direction:column; gap:4px; }
+.pj-dash-task-row { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:9px; cursor:pointer; transition:background .12s; }
+.pj-dash-task-row:hover { background:var(--bg2); }
+.pj-dash-task-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.pj-dash-task-info { flex:1; min-width:0; }
+.pj-dash-task-title { font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pj-dash-task-meta { font-size:11px; color:var(--text3); margin-top:1px; }
+.pj-dash-empty { font-size:12px; color:var(--text3); padding:16px 0; text-align:center; font-style:italic; }
+.pj-dash-see-all { font-size:12px; color:var(--accent); cursor:pointer; padding:8px 10px; text-align:center; margin-top:4px; border-radius:8px; transition:background .12s; }
+.pj-dash-see-all:hover { background:var(--accentGlow); }
+.pj-dash-members { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; margin-top:14px; }
+.pj-dash-member { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; }
+.pj-dash-member-head { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.pj-dash-member-info { flex:1; min-width:0; }
+.pj-dash-member-name { font-size:13px; font-weight:700; color:var(--text); }
+.pj-dash-member-role { font-size:11px; color:var(--text3); margin-top:1px; }
+.pj-dash-member-stats { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+.pj-dash-stat { font-size:11px; color:var(--text2); background:var(--bg2); border-radius:6px; padding:3px 8px; }
+.pj-dash-stat-red { font-size:11px; color:#ef4444; background:rgba(239,68,68,.1); border-radius:6px; padding:3px 8px; font-weight:700; }
+.pj-dash-progress-wrap { height:5px; background:var(--bg2); border-radius:3px; overflow:hidden; }
+.pj-dash-progress-bar { height:100%; background:linear-gradient(90deg,#22c55e,#16a34a); border-radius:3px; transition:width .4s ease; }
+
 /* ── WhatsApp Daily Report Preview ── */
 .pj-wa-modal { position:fixed; inset:0; background:rgba(0,0,0,.65); backdrop-filter:blur(6px); z-index:5000; display:flex; align-items:center; justify-content:center; padding:24px; animation:pjFadeIn .2s ease; }
 .pj-wa-card { background:var(--card); border:1px solid var(--border); border-radius:18px; max-width:540px; width:100%; max-height:92vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 24px 80px rgba(0,0,0,.6); }
@@ -6104,6 +6144,10 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             </button>
 
             <!-- Vistas principais -->
+            <button class="pj-nav-btn" id="pjBtnDashboard" onclick="pjNavigate('dashboard')">
+              <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M2 4a1 1 0 011-1h3a1 1 0 011 1v4a1 1 0 01-1 1H3a1 1 0 01-1-1V4zm6 0a1 1 0 011-1h3a1 1 0 011 1v2a1 1 0 01-1 1H9a1 1 0 01-1-1V4zm7-1a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1V4a1 1 0 00-1-1h-2zM2 11a1 1 0 011-1h3a1 1 0 011 1v4a1 1 0 01-1 1H3a1 1 0 01-1-1v-4zm7 1a1 1 0 00-1 1v2a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 00-1-1H9zm5-1a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2a1 1 0 01-1-1v-4z"/></svg></span>
+              Dashboard
+            </button>
             <button class="pj-nav-btn" id="pjBtnInbox" onclick="pjNavigate('inbox')">
               <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M3 3a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 13.846 4.632 16 6.414 16H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 5H6.28l-.31-1.243A1 1 0 005 3H3z"/><path fill-rule="evenodd" d="M16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd"/></svg></span>
               Caixa de Entrada
@@ -15753,7 +15797,7 @@ let pjSpaces = [], pjFolders = [], pjLists = [], pjMembers = [];
 let pjTasks = {};        // listId → [tasks]
 let pjAllTasks = [];     // flat array for inbox/all views
 let pjComments = [];     // current task comments
-let pjCurrentView = { type:'inbox', id:null };
+let pjCurrentView = { type:'dashboard', id:null };
 let pjCurrentTaskId = null;
 let pjViewMode = {};     // listId → 'list'|'kanban'
 let pjSubtaskOpen = true;
@@ -16032,7 +16076,7 @@ function pjSetupRealtime() {
     });
     pjUpdateInboxCount();
     if (pjCurrentView.type === 'list' || pjCurrentView.type === 'kanban') pjRenderMain();
-    if (pjCurrentView.type === 'inbox' || pjCurrentView.type === 'all') pjRenderMain();
+    if (pjCurrentView.type === 'inbox' || pjCurrentView.type === 'all' || pjCurrentView.type === 'dashboard') pjRenderMain();
   }, ()=>{});
   pjUnsubs.push(unsub);
 }
@@ -16345,6 +16389,7 @@ function pjRenderMain() {
   const el = document.getElementById('pjMain');
   if (!el) return;
   const { type, id } = pjCurrentView;
+  if (type === 'dashboard') { el.innerHTML = pjBuildDashboard(); return; }
   if (type === 'inbox') { el.innerHTML = pjBuildInbox(); return; }
   if (type === 'all')   { el.innerHTML = pjBuildAll(); return; }
   if (type === 'list')  { el.innerHTML = pjBuildListPage(id); return; }
@@ -16357,6 +16402,143 @@ function pjRenderMain() {
   if (type === 'digest')     { el.innerHTML = pjBuildDigest(); return; }
   if (type === 'integracoes'){ el.innerHTML = pjBuildIntegracoes(); return; }
   if (type === 'gantt')      { el.innerHTML = pjBuildGantt(); return; }
+}
+
+// ── Dashboard ───────────────────────────────────────────
+function pjBuildDashboard() {
+  const today = pjDateStr(new Date());
+  const now = new Date();
+  const allActive = pjVisibleTasks().filter(t => !pjIsDone(t) && !t.parentTaskId);
+  const overdue   = allActive.filter(t => t.dueDate && t.dueDate < today);
+  const todayT    = allActive.filter(t => t.dueDate === today);
+  const doneToday = pjVisibleTasks(false).filter(t => pjIsDone(t) && t.completedAt?.toMillis && (now - new Date(t.completedAt.toMillis())) < 86400000);
+  const noDate    = allActive.filter(t => !t.dueDate);
+
+  const hours = now.getHours();
+  const greet = hours < 12 ? 'Bom dia' : hours < 18 ? 'Boa tarde' : 'Boa noite';
+  const uid = _auth?.currentUser?.uid || _currentUser?.uid;
+  const me = pjMembers.find(m => m.uid === uid);
+  const firstName = (me?.name || 'time').split(' ')[0];
+
+  const dows = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+  const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const dateStr = `${dows[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]}`;
+
+  // ── KPI cards ──
+  const kpi = (icon, label, value, color, sub) => `
+    <div class="pj-dash-kpi" style="border-top:3px solid ${color}">
+      <div class="pj-dash-kpi-top"><span class="pj-dash-kpi-icon">${icon}</span><span class="pj-dash-kpi-val" style="color:${color}">${value}</span></div>
+      <div class="pj-dash-kpi-label">${label}</div>
+      ${sub ? `<div class="pj-dash-kpi-sub">${sub}</div>` : ''}
+    </div>`;
+
+  // ── Equipe ──
+  const memberCards = pjMembers.filter(m => m.uid).map(m => {
+    const mTasks   = allActive.filter(t => (t.assignees||[]).includes(m.uid));
+    const mOverdue = mTasks.filter(t => t.dueDate && t.dueDate < today);
+    const mToday   = mTasks.filter(t => t.dueDate === today);
+    const mDone    = pjVisibleTasks(false).filter(t => pjIsDone(t) && (t.assignees||[]).includes(m.uid) && t.completedAt?.toMillis && (now - new Date(t.completedAt.toMillis())) < 86400000);
+    const barW     = mTasks.length ? Math.round((mDone.length / (mTasks.length + mDone.length)) * 100) : 0;
+    const initial  = (m.name || m.email || '?')[0].toUpperCase();
+    const avatarStyle = m.photoUrl ? `background-image:url('${m.photoUrl}');background-size:cover;` : `background:linear-gradient(135deg,var(--accent),var(--accent2));`;
+    return `
+      <div class="pj-dash-member">
+        <div class="pj-dash-member-head">
+          <div class="pj-avatar" style="${avatarStyle}width:36px;height:36px;border-radius:10px;font-size:14px;flex-shrink:0;">${m.photoUrl?'':initial}</div>
+          <div class="pj-dash-member-info">
+            <div class="pj-dash-member-name">${escHtml(m.name || m.email || '?')}</div>
+            <div class="pj-dash-member-role">${m.role === 'admin' ? '🔑 Admin' : '✏️ Membro'}</div>
+          </div>
+        </div>
+        <div class="pj-dash-member-stats">
+          <span class="${mOverdue.length ? 'pj-dash-stat-red' : 'pj-dash-stat'}">🔴 ${mOverdue.length} atrasada${mOverdue.length !== 1 ? 's' : ''}</span>
+          <span class="pj-dash-stat">📋 ${mToday.length} hoje</span>
+          <span class="pj-dash-stat">✅ ${mDone.length} concluída${mDone.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="pj-dash-progress-wrap">
+          <div class="pj-dash-progress-bar" style="width:${barW}%"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px;">${barW}% concluído hoje · ${mTasks.length} ativa${mTasks.length !== 1 ? 's' : ''}</div>
+      </div>`;
+  }).join('');
+
+  // ── Tarefas atrasadas (equipe toda) ──
+  const overdueRows = overdue.slice(0, 8).map(t => {
+    const list = pjLists.find(l => l.id === t.listId);
+    const due = new Date(t.dueDate + 'T00:00:00');
+    const diff = Math.round((now - due) / 86400000);
+    const assignees = (t.assignees||[]).slice(0,2).map(uid => pjAvatarHtml(uid)).join('');
+    return `<div class="pj-dash-task-row" onclick="pjOpenTask('${t.id}')">
+      <div class="pj-dash-task-dot" style="background:#ef4444"></div>
+      <div class="pj-dash-task-info">
+        <div class="pj-dash-task-title">${escHtml(t.title||'Sem título')}</div>
+        <div class="pj-dash-task-meta">${escHtml(list?.name||'')} · <span style="color:#ef4444;font-weight:600;">há ${diff} dia${diff!==1?'s':''}</span></div>
+      </div>
+      <div style="display:flex;gap:2px;flex-shrink:0;">${assignees}</div>
+    </div>`;
+  }).join('') || '<div class="pj-dash-empty">🎉 Nenhuma tarefa atrasada!</div>';
+
+  // ── Tarefas de hoje ──
+  const todayRows = todayT.slice(0, 8).map(t => {
+    const list = pjLists.find(l => l.id === t.listId);
+    const pColors = { urgent:'#ef4444', high:'#f97316', normal:'#6366f1', low:'#94a3b8' };
+    const dot = pColors[t.priority||'normal'];
+    const assignees = (t.assignees||[]).slice(0,2).map(uid => pjAvatarHtml(uid)).join('');
+    return `<div class="pj-dash-task-row" onclick="pjOpenTask('${t.id}')">
+      <div class="pj-dash-task-dot" style="background:${dot}"></div>
+      <div class="pj-dash-task-info">
+        <div class="pj-dash-task-title">${escHtml(t.title||'Sem título')}</div>
+        <div class="pj-dash-task-meta">${escHtml(list?.name||'')}${t.dueTime ? ' · 🕐 ' + t.dueTime : ''}</div>
+      </div>
+      <div style="display:flex;gap:2px;flex-shrink:0;">${assignees}</div>
+    </div>`;
+  }).join('') || '<div class="pj-dash-empty">Sem tarefas para hoje</div>';
+
+  return `
+  <div class="pj-dash-wrap">
+    <div class="pj-dash-header">
+      <div>
+        <div class="pj-dash-greet">${greet}, ${escHtml(firstName)}! 👋</div>
+        <div class="pj-dash-date">${dateStr}</div>
+      </div>
+      <button class="pj-wa-trigger-btn" onclick="pjOpenDailyReport()" style="font-size:12px;">
+        📱 Relatório do dia
+      </button>
+    </div>
+
+    <div class="pj-dash-kpis">
+      ${kpi('📋','Tarefas ativas', allActive.length, 'var(--accent)', `${noDate.length} sem data`)}
+      ${kpi('🔴','Atrasadas', overdue.length, overdue.length ? '#ef4444' : '#22c55e', overdue.length ? 'requer atenção' : 'tudo em dia!')}
+      ${kpi('📅','Vencem hoje', todayT.length, '#f97316', `${todayT.filter(t=>t.dueTime).length} com horário`)}
+      ${kpi('✅','Concluídas hoje', doneToday.length, '#22c55e', `da equipe toda`)}
+    </div>
+
+    <div class="pj-dash-grid">
+      <div class="pj-dash-col">
+        <div class="pj-dash-section-title">
+          <span>🔴 Atrasadas</span>
+          <span class="pj-dash-section-count">${overdue.length}</span>
+        </div>
+        <div class="pj-dash-task-list">${overdueRows}</div>
+        ${overdue.length > 8 ? `<div class="pj-dash-see-all" onclick="pjNavigate('all')">Ver todas (${overdue.length}) →</div>` : ''}
+      </div>
+
+      <div class="pj-dash-col">
+        <div class="pj-dash-section-title">
+          <span>📅 Hoje</span>
+          <span class="pj-dash-section-count">${todayT.length}</span>
+        </div>
+        <div class="pj-dash-task-list">${todayRows}</div>
+        ${todayT.length > 8 ? `<div class="pj-dash-see-all" onclick="pjNavigate('inbox')">Ver todas (${todayT.length}) →</div>` : ''}
+      </div>
+    </div>
+
+    <div class="pj-dash-section-title" style="margin-top:28px;">
+      <span>👥 Equipe</span>
+      <span class="pj-dash-section-count">${pjMembers.filter(m=>m.uid).length} membros</span>
+    </div>
+    <div class="pj-dash-members">${memberCards || '<div class="pj-dash-empty">Nenhum membro encontrado</div>'}</div>
+  </div>`;
 }
 
 // ── Inbox ───────────────────────────────────────────────
