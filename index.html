@@ -18592,6 +18592,8 @@ async function pjSetRecurrence(taskId, pattern) {
 }
 function pjClosePopups() {
   document.querySelectorAll('.pj-popup-menu').forEach(el => el.remove());
+  document.getElementById('pjDatePicker')?.classList.remove('open');
+  document.getElementById('pjTimePicker')?.classList.remove('open');
 }
 function pjShowPopupMenu(ev, items, current, onSelect) {
   ev.stopPropagation();
@@ -18664,6 +18666,7 @@ function pjFmtDateShort(yyyymmdd) {
 }
 function pjOpenDatePicker(ev, taskId) {
   ev.stopPropagation();
+  pjClosePopups();
   const t = pjAllTasks.find(x => x.id === taskId);
   if (!t) return;
   const today = new Date();
@@ -18773,6 +18776,7 @@ async function pjDpClear() {
 // ── Time Picker ───────────────────────────────────────────
 function pjOpenTimePicker(ev, taskId) {
   ev.stopPropagation();
+  pjClosePopups();
   const t = pjAllTasks.find(x => x.id === taskId);
   if (!t) return;
   const cur = t.dueTime || '';
