@@ -2489,10 +2489,25 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-lt { width:100%; border-collapse:collapse; font-size:13px; }
 .pj-lt th { text-align:left; padding:6px 10px; font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid var(--border); white-space:nowrap; }
 .pj-lt td { padding:0; border-bottom:1px solid var(--border); }
-.pj-status-group-header { padding:10px 10px 4px; display:flex; align-items:center; gap:8px; }
-.pj-status-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-.pj-status-group-name { font-size:12px; font-weight:700; color:var(--text2); }
-.pj-status-group-count { font-size:11px; color:var(--text3); }
+.pj-status-group-header {
+  padding:14px 10px 8px; display:flex; align-items:center; gap:10px;
+  position:sticky; top:0; z-index:2;
+  background:var(--bg);
+}
+.pj-status-group-header::after {
+  content:''; position:absolute; left:0; right:0; bottom:0; height:1px;
+  background:linear-gradient(90deg, var(--border) 0%, transparent 100%);
+}
+.pj-status-dot {
+  width:11px; height:11px; border-radius:50%; flex-shrink:0;
+  box-shadow:0 0 0 3px color-mix(in srgb, currentColor 15%, transparent);
+}
+.pj-status-group-name { font-size:12px; font-weight:700; color:var(--text); letter-spacing:.02em; }
+.pj-status-group-count {
+  font-size:10px; font-weight:700; color:var(--text3);
+  background:var(--bg2); border:1px solid var(--border);
+  padding:1px 7px; border-radius:10px; margin-left:2px;
+}
 .pj-task-row {
   display:flex; align-items:center; gap:10px;
   padding:10px 12px 10px 14px;
@@ -2880,8 +2895,19 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 }
 .pj-status-pill::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.9; }
 .pj-status-pill:hover { transform:scale(1.04); }
-.pj-add-task-row { display:flex; align-items:center; gap:8px; padding:6px 10px; color:var(--text3); font-size:12.5px; cursor:pointer; border-radius:6px; transition:background .12s; }
-.pj-add-task-row:hover { background:var(--card); color:var(--text2); }
+.pj-add-task-row {
+  display:flex; align-items:center; gap:7px;
+  padding:8px 12px; margin:4px 2px;
+  color:var(--text3); font-size:12.5px; font-weight:500;
+  cursor:pointer; border-radius:8px;
+  border:1px dashed transparent;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.pj-add-task-row:hover {
+  background:rgba(99,102,241,.05);
+  color:var(--accent);
+  border-color:rgba(99,102,241,.2);
+}
 
 /* ── Kanban ── */
 .pj-kanban { display:flex; gap:14px; padding:4px 0 16px; overflow-x:auto; min-height:300px; align-items:flex-start; }
