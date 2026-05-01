@@ -3703,17 +3703,89 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 /* Status editor */
 .pj-status-list { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
 .pj-status-row { display:flex; align-items:center; gap:8px; padding:6px 8px; background:var(--bg); border-radius:8px; }
-.pj-fields-edit-list { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
-.pj-field-edit-row { display:flex; align-items:center; gap:6px; padding:6px 8px; background:var(--bg); border-radius:8px; flex-wrap:wrap; }
+/* Link / Address field buttons */
+.pj-field-link-btn {
+  width:28px; height:28px; border-radius:7px;
+  background:rgba(99,102,241,.1); color:var(--accent);
+  display:inline-flex; align-items:center; justify-content:center;
+  text-decoration:none; flex-shrink:0;
+  transition:background .15s, transform .1s;
+}
+.pj-field-link-btn:hover { background:rgba(99,102,241,.2); transform:scale(1.08); }
+/* Map view */
+.pj-map-wrap { display:grid; grid-template-columns:340px 1fr; gap:16px; padding:16px; align-items:start; }
+.pj-map-list { display:flex; flex-direction:column; gap:8px; max-height:calc(100vh - 220px); overflow-y:auto; }
+.pj-map-task-card {
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:12px 14px; cursor:pointer;
+  transition:border-color .15s, box-shadow .15s;
+}
+.pj-map-task-card:hover { border-color:var(--accent); box-shadow:0 2px 8px rgba(99,102,241,.1); }
+.pj-map-task-card.selected { border-color:var(--accent); background:rgba(99,102,241,.05); }
+.pj-map-task-title { font-size:13px; font-weight:600; color:var(--text); margin-bottom:6px; }
+.pj-map-addr-row { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text2); margin-top:4px; }
+.pj-map-open-link { margin-left:auto; font-size:11px; color:var(--accent); text-decoration:none; font-weight:600; white-space:nowrap; }
+.pj-map-open-link:hover { text-decoration:underline; }
+.pj-map-iframe-wrap { position:sticky; top:16px; border-radius:14px; overflow:hidden; border:1px solid var(--border); box-shadow:0 4px 20px rgba(0,0,0,.1); }
+.pj-map-empty { padding:60px; text-align:center; color:var(--text3); font-size:14px; }
+/* Custom Fields Modal Redesign */
+.pj-cf-modal-wrap { width:480px; max-width:95vw; }
+.pj-cf-modal-header { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+.pj-cf-modal-icon { width:38px; height:38px; border-radius:10px; background:rgba(99,102,241,.12); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.pj-cf-modal-title { font-size:16px; font-weight:700; color:var(--text); }
+.pj-cf-modal-sub { font-size:12px; color:var(--text3); margin-bottom:16px; }
+.pj-fields-edit-list { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; max-height:340px; overflow-y:auto; padding-right:2px; }
+.pj-field-edit-row {
+  display:flex; align-items:center; gap:10px;
+  padding:12px 14px; background:var(--bg); border:1px solid var(--border);
+  border-radius:12px; flex-wrap:wrap;
+  transition:border-color .15s, box-shadow .15s;
+  cursor:default;
+}
+.pj-field-edit-row:hover { border-color:rgba(99,102,241,.3); box-shadow:0 2px 8px rgba(99,102,241,.08); }
+.pj-field-type-icon {
+  width:32px; height:32px; border-radius:8px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; font-weight:700; background:rgba(99,102,241,.1); color:var(--accent);
+}
 .pj-field-edit-row .pj-field-name-input,
 .pj-field-edit-row .pj-field-options-input,
 .pj-field-edit-row .pj-field-type-select {
-  padding:5px 8px; background:var(--card); border:1px solid var(--border); border-radius:6px;
-  color:var(--text); font-size:12.5px; font-family:var(--font); outline:none;
+  padding:7px 10px; background:var(--card); border:1px solid var(--border); border-radius:8px;
+  color:var(--text); font-size:13px; font-family:var(--font); outline:none;
+  transition:border-color .15s;
 }
-.pj-field-edit-row .pj-field-name-input { flex:1; min-width:130px; }
-.pj-field-edit-row .pj-field-type-select { width:140px; }
-.pj-field-edit-row .pj-field-options-input { flex:1; min-width:140px; }
+.pj-field-edit-row .pj-field-name-input:focus,
+.pj-field-edit-row .pj-field-options-input:focus { border-color:var(--accent); }
+.pj-field-edit-row .pj-field-name-input { flex:1; min-width:140px; }
+.pj-field-edit-row .pj-field-options-input { flex:1; min-width:160px; width:100%; margin-top:6px; }
+/* Field type button (replaces native select) */
+.pj-field-type-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 12px; border-radius:20px;
+  border:1px solid var(--border); background:var(--card);
+  color:var(--text2); font-size:12px; font-weight:600; font-family:var(--font);
+  cursor:pointer; white-space:nowrap;
+  transition:border-color .15s, color .15s;
+}
+.pj-field-type-btn:hover { border-color:var(--accent); color:var(--accent); }
+/* Delete field button */
+.pj-field-del-btn {
+  width:28px; height:28px; border-radius:7px; border:none; background:none;
+  color:var(--text3); cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:background .15s, color .15s; flex-shrink:0;
+}
+.pj-field-del-btn:hover { background:rgba(239,68,68,.1); color:#ef4444; }
+/* Add field button */
+.pj-cf-add-btn {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; padding:10px; border-radius:10px;
+  border:2px dashed var(--border); background:none;
+  color:var(--text3); font-size:13px; font-weight:600; font-family:var(--font);
+  cursor:pointer; margin-bottom:14px;
+  transition:border-color .15s, color .15s, background .15s;
+}
+.pj-cf-add-btn:hover { border-color:var(--accent); color:var(--accent); background:rgba(99,102,241,.04); }
 .pj-status-color-dot { width:14px; height:14px; border-radius:4px; flex-shrink:0; cursor:pointer; }
 .pj-status-name-input { flex:1; border:none; background:none; color:var(--text); font-size:13px; font-family:var(--font); outline:none; }
 .pj-status-del { background:none; border:none; color:var(--text3); cursor:pointer; font-size:13px; }
@@ -15439,6 +15511,7 @@ function pjBuildListPage(listId) {
     <div class="pj-view-toggle">
       <button class="${view==='list'?'active':''}" onclick="pjSetView('${listId}','list')">☰ Lista</button>
       <button class="${view==='kanban'?'active':''}" onclick="pjSetView('${listId}','kanban')">⊞ Kanban</button>
+      ${(list.customFields||[]).some(f=>f.type==='address') ? `<button class="${view==='map'?'active':''}" onclick="pjSetView('${listId}','map')">📍 Mapa</button>` : ''}
     </div>
     <button class="pj-icon-btn" title="Editar status" onclick="pjOpenStatusEditor('${listId}')" style="font-size:18px;">🏷️</button>
     <button class="pj-icon-btn" title="Campos personalizados" onclick="pjOpenFieldsEditor('${listId}')" style="font-size:18px;">📋</button>
@@ -15449,6 +15522,7 @@ function pjBuildListPage(listId) {
   tasks = pjApplySort(pjApplyFilter(tasks));
 
   if (view === 'kanban') return h + pjBuildKanban(listId, statuses, tasks) + '</div>';
+  if (view === 'map')    return h + pjBuildMapView(listId, tasks) + '</div>';
 
   // List view — colunas separadas + agrupado por status
   const fields = list.customFields || [];
@@ -15929,6 +16003,50 @@ function pjBuildWorkload() {
   });
   h += `</div></div>`;
   return h;
+}
+
+// ── Visão Mapa ─────────────────────────────────────────
+function pjBuildMapView(listId, tasks) {
+  const list = pjLists.find(l => l.id === listId);
+  const addrFields = (list?.customFields || []).filter(f => f.type === 'address');
+  if (!addrFields.length) {
+    return `<div class="pj-map-empty"><div style="font-size:40px;margin-bottom:12px;">📍</div>Adicione um campo do tipo <strong>Endereço</strong> para usar esta visão.</div>`;
+  }
+  const items = tasks.map(t => {
+    const vals = addrFields.map(f => ({ field:f, val:(t.customFieldValues?.[f.id]||'').trim() })).filter(x=>x.val);
+    return vals.length ? { task:t, vals } : null;
+  }).filter(Boolean);
+  if (!items.length) {
+    return `<div class="pj-map-empty"><div style="font-size:40px;margin-bottom:12px;">🗺️</div>Nenhuma tarefa tem endereço preenchido ainda.</div>`;
+  }
+  // default: show map for first task's first address
+  const firstAddr = items[0].vals[0].val;
+  const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(firstAddr)}&output=embed&hl=pt-BR`;
+  return `<div class="pj-map-wrap">
+    <div class="pj-map-list">
+      ${items.map(({task,vals},i) => {
+        const addr = vals[0].val;
+        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
+        return `<div class="pj-map-task-card${i===0?' selected':''}" onclick="pjMapFocus(this,'${encodeURIComponent(addr)}')">
+          <div class="pj-map-task-title">${escHtml(task.title||'Sem título')}</div>
+          ${vals.map(({field,val}) => `<div class="pj-map-addr-row">
+            <span>📍</span>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(val)}</span>
+            <a class="pj-map-open-link" href="${encodeURIComponent(val)?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(val)}`:''}" target="_blank" rel="noopener" onclick="event.stopPropagation()">↗ Maps</a>
+          </div>`).join('')}
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="pj-map-iframe-wrap">
+      <iframe id="pjMapIframe" src="${mapSrc}" width="100%" height="520" style="border:0;display:block;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </div>`;
+}
+function pjMapFocus(card, addrEncoded) {
+  document.querySelectorAll('.pj-map-task-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  const iframe = document.getElementById('pjMapIframe');
+  if (iframe) iframe.src = `https://maps.google.com/maps?q=${addrEncoded}&output=embed&hl=pt-BR`;
 }
 
 // ── Visão por Cliente ──────────────────────────────────
@@ -16882,11 +17000,23 @@ function pjBuildDigest() {
     return d >= weekStart && d < weekEnd;
   });
 
-  // Group completed by member
+  // Verifica se um UID tem um nome válido (não é "null" nem o próprio UID cru)
+  const isValidMemberUid = uid => {
+    if (uid === '—') return true;
+    const m = pjMembers.find(x => x.uid === uid);
+    const name = m?.name || m?.email || '';
+    if (!name || name === 'null') return false;
+    // Rejeita strings que parecem Firebase UIDs (>20 chars, sem espaço, alfanumérico)
+    if (name.length > 20 && /^[a-zA-Z0-9_-]+$/.test(name) && !name.includes(' ')) return false;
+    return true;
+  };
+
+  // Group completed by member (filtra UIDs inválidos)
   const memberMap = {};
   completedThisWeek.forEach(t => {
     const assignees = t.assignees?.length ? t.assignees : ['—'];
     assignees.forEach(uid => {
+      if (!isValidMemberUid(uid)) return; // ignora UIDs sem nome real
       if (!memberMap[uid]) memberMap[uid] = { done: [], timeMs: 0 };
       memberMap[uid].done.push(t);
       // Sum time entries for this uid
@@ -17990,6 +18120,23 @@ function pjRenderTaskModal(task) {
           <option value="">—</option>
           ${(f.options||[]).map(o => `<option ${o===val?'selected':''}>${escHtml(o)}</option>`).join('')}
         </select>`;
+      } else if (f.type === 'link') {
+        input = `<div style="display:flex;align-items:center;gap:6px;">
+          <input class="pj-field-value" type="url" value="${escHtml(String(val))}" placeholder="https://..."
+            style="flex:1;" onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">
+          ${val ? `<a href="${escHtml(String(val))}" target="_blank" rel="noopener" class="pj-field-link-btn" title="Abrir link">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13"><path d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/><path d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/></svg>
+          </a>` : ''}
+        </div>`;
+      } else if (f.type === 'address') {
+        const mapsUrl = val ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(val))}` : '';
+        input = `<div style="display:flex;align-items:center;gap:6px;">
+          <input class="pj-field-value" type="text" value="${escHtml(String(val))}" placeholder="Rua, número, cidade..."
+            style="flex:1;" onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">
+          ${val ? `<a href="${mapsUrl}" target="_blank" rel="noopener" class="pj-field-link-btn" title="Ver no Google Maps" style="background:rgba(239,68,68,.1);color:#ef4444;">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+          </a>` : ''}
+        </div>`;
       } else {
         const t = f.type==='date'?'date':(f.type==='number'?'number':'text');
         input = `<input class="pj-field-value" type="${t}" value="${escHtml(String(val))}"
@@ -18803,56 +18950,93 @@ async function pjDeleteListData(listId) {
 function pjOpenFieldsEditor(listId) {
   const list = pjLists.find(l=>l.id===listId); if(!list)return;
   const fields = list.customFields || [];
-  const types = [
-    {id:'text', label:'Texto'},
-    {id:'number', label:'Número'},
-    {id:'date', label:'Data'},
-    {id:'client', label:'Cliente (da base)'},
-    {id:'select', label:'Lista de opções'},
+  const CF_TYPES = [
+    { id:'text',    label:'Texto',            icon:'T',  color:'#6366f1' },
+    { id:'number',  label:'Número',            icon:'#',  color:'#10b981' },
+    { id:'date',    label:'Data',              icon:'📅', color:'#f59e0b' },
+    { id:'link',    label:'Link / URL',        icon:'🔗', color:'#3b82f6' },
+    { id:'address', label:'Endereço',          icon:'📍', color:'#ef4444' },
+    { id:'client',  label:'Cliente (da base)', icon:'🏢', color:'#8b5cf6' },
+    { id:'select',  label:'Lista de opções',   icon:'≡',  color:'#a855f7' },
   ];
-  const tOpts = (sel) => types.map(t=>`<option value="${t.id}" ${sel===t.id?'selected':''}>${t.label}</option>`).join('');
-  let html = `<h3>📋 Campos personalizados — ${escHtml(list.name)}</h3>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Campos extras viram colunas na lista e aparecem no modal da tarefa.</div>
-    <div class="pj-fields-edit-list" id="pjFieldsEditList">
-    ${fields.map(f=>`
-      <div class="pj-field-edit-row" data-fid="${f.id}">
-        <input class="pj-field-name-input" value="${escHtml(f.name)}" placeholder="Nome do campo">
-        <select class="pj-field-type-select" onchange="this.parentElement.querySelector('.pj-field-options-input').style.display=this.value==='select'?'':'none'">${tOpts(f.type||'text')}</select>
-        <input class="pj-field-options-input" value="${escHtml((f.options||[]).join(','))}" placeholder="opção1,opção2" style="${f.type==='select'?'':'display:none;'}">
-        <button class="pj-status-del" onclick="this.parentElement.remove()">×</button>
-      </div>`).join('')}
-    </div>
-    <button class="pj-btn pj-btn-secondary" style="width:100%;margin-bottom:10px;" onclick="pjAddFieldRow()">＋ Novo campo</button>
-    <div class="pj-form-actions">
-      <button class="pj-btn pj-btn-secondary" onclick="pjCloseFormModal()">Fechar</button>
-      <button class="pj-btn pj-btn-primary" onclick="pjSaveFields('${listId}')">Salvar</button>
+  window._cfTypes = CF_TYPES;
+
+  const buildFieldRow = (fid, name, type, options) => {
+    const t = CF_TYPES.find(x=>x.id===type)||CF_TYPES[0];
+    return `<div class="pj-field-edit-row" data-fid="${fid}">
+      <div class="pj-field-type-icon" style="background:${t.color}1a;color:${t.color};" title="${t.label}">${t.icon}</div>
+      <input class="pj-field-name-input" value="${escHtml(name)}" placeholder="Nome do campo">
+      <button class="pj-field-type-btn" onclick="pjFieldTypePopup(event,this)" data-type="${type}">
+        ${t.icon} ${t.label}
+        <svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor" style="opacity:.5"><path d="M2 4l4 4 4-4z"/></svg>
+      </button>
+      <button class="pj-field-del-btn" title="Remover campo" onclick="this.closest('.pj-field-edit-row').remove()">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+      </button>
+      <input class="pj-field-options-input" value="${escHtml((options||[]).join(', '))}" placeholder="opção1, opção2, opção3..." style="${type==='select'?'':'display:none;'}" title="Opções separadas por vírgula">
     </div>`;
+  };
+
+  let html = `<div class="pj-cf-modal-wrap">
+    <div class="pj-cf-modal-header">
+      <div class="pj-cf-modal-icon">📋</div>
+      <div>
+        <div class="pj-cf-modal-title">Campos personalizados</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:1px;">${escHtml(list.name)}</div>
+      </div>
+    </div>
+    <div class="pj-cf-modal-sub">Adicione campos extras que aparecem como colunas na lista e no modal de cada tarefa.</div>
+    <div class="pj-fields-edit-list" id="pjFieldsEditList">
+      ${fields.map(f => buildFieldRow(f.id, f.name, f.type||'text', f.options)).join('')}
+    </div>
+    <button class="pj-cf-add-btn" onclick="pjAddFieldRow()">
+      <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+      Adicionar campo
+    </button>
+    <div class="pj-form-actions">
+      <button class="pj-btn pj-btn-secondary" onclick="pjCloseFormModal()">Cancelar</button>
+      <button class="pj-btn pj-btn-primary" onclick="pjSaveFields('${listId}')">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13" style="margin-right:4px"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        Salvar campos
+      </button>
+    </div>
+  </div>`;
   pjOpenFormModal(html);
+  window._cfBuildRow = buildFieldRow;
+}
+function pjFieldTypePopup(ev, btn) {
+  const types = window._cfTypes || [];
+  const current = btn.dataset.type || 'text';
+  const items = types.map(t => ({ id:t.id, label:t.label, icon:t.icon }));
+  pjShowPopupMenu(ev, items, current, newType => {
+    const t = types.find(x => x.id === newType) || types[0];
+    const row = btn.closest('.pj-field-edit-row');
+    btn.dataset.type = newType;
+    btn.innerHTML = `${t.icon} ${t.label} <svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor" style="opacity:.5"><path d="M2 4l4 4 4-4z"/></svg>`;
+    const ic = row.querySelector('.pj-field-type-icon');
+    if (ic) { ic.style.background = t.color+'1a'; ic.style.color = t.color; ic.textContent = t.icon; }
+    const optInput = row.querySelector('.pj-field-options-input');
+    if (optInput) optInput.style.display = newType === 'select' ? '' : 'none';
+  });
 }
 function pjAddFieldRow() {
-  const el = document.getElementById('pjFieldsEditList'); if(!el)return;
-  const id = 'cf_'+Date.now();
-  el.insertAdjacentHTML('beforeend', `
-    <div class="pj-field-edit-row" data-fid="${id}">
-      <input class="pj-field-name-input" value="Novo campo" placeholder="Nome do campo">
-      <select class="pj-field-type-select" onchange="this.parentElement.querySelector('.pj-field-options-input').style.display=this.value==='select'?'':'none'">
-        <option value="text">Texto</option><option value="number">Número</option><option value="date">Data</option>
-        <option value="client">Cliente (da base)</option><option value="select">Lista de opções</option>
-      </select>
-      <input class="pj-field-options-input" placeholder="opção1,opção2" style="display:none;">
-      <button class="pj-status-del" onclick="this.parentElement.remove()">×</button>
-    </div>`);
+  const el = document.getElementById('pjFieldsEditList'); if (!el) return;
+  const id = 'cf_' + Date.now();
+  if (window._cfBuildRow) {
+    el.insertAdjacentHTML('beforeend', window._cfBuildRow(id, 'Novo campo', 'text', []));
+  }
 }
 async function pjSaveFields(listId) {
   const rows = document.querySelectorAll('#pjFieldsEditList .pj-field-edit-row');
   const fields = [...rows].map(row => {
     const name = row.querySelector('.pj-field-name-input').value.trim();
-    const type = row.querySelector('.pj-field-type-select').value;
-    const opt  = row.querySelector('.pj-field-options-input').value.trim();
+    const typeBtn = row.querySelector('.pj-field-type-btn');
+    const type = typeBtn?.dataset.type || row.querySelector('.pj-field-type-select')?.value || 'text';
+    const opt  = row.querySelector('.pj-field-options-input')?.value.trim() || '';
     const f = { id: row.dataset.fid, name, type };
-    if (type==='select' && opt) f.options = opt.split(',').map(s=>s.trim()).filter(Boolean);
+    if (type === 'select' && opt) f.options = opt.split(',').map(s=>s.trim()).filter(Boolean);
     return f;
-  }).filter(f=>f.name);
+  }).filter(f => f.name);
   const l = pjLists.find(x=>x.id===listId);
   if (l) l.customFields = fields;
   try { await pjC('pj_lists').doc(listId).update({ customFields: fields }); } catch(e){}
