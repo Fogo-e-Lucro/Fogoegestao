@@ -16152,17 +16152,39 @@ function pjTaskRowHtml(t) {
 }
 
 function pjAvatarHtml(key) {
-  const k = key || '?';
-  const m = pjMembers.find(x => x.uid === k) || pjMembers.find(x => x.id === k) || pjMembers.find(x => x.email === k);
-  const initials = (m?.name||m?.email||String(k)||'?').charAt(0).toUpperCase();
+  const k = key || '';
   const colors = ['#6366f1','#8b5cf6','#ec4899','#f97316','#22c55e','#3b82f6'];
-  const color = colors[String(k).charCodeAt(0)%colors.length];
-  const title = m?.name||m?.email||k;
-  // Usa foto se disponível, senão inicial colorida
-  if (m?.photoUrl) {
-    return `<div class="pj-avatar" style="background:${color};background-image:url('${m.photoUrl.replace(/'/g,"\\'") }');background-size:cover;background-position:center;" title="${title}"></div>`;
+  const color = k ? colors[String(k).charCodeAt(0) % colors.length] : '#9ca3af';
+
+  // 1) Procura em pjMembers por uid, id ou email
+  let m = pjMembers.find(x => x.uid === k)
+       || pjMembers.find(x => x.id === k)
+       || (k.includes('@') ? pjMembers.find(x => x.email === k) : null);
+
+  // 2) Fallback: tenta auth.currentUser (resolve o "?" do próprio usuário logado)
+  if (!m) {
+    try {
+      const u = _auth?.currentUser;
+      if (u && (u.uid === k || u.email === k)) {
+        // Usa displayName + photoURL do Auth diretamente
+        m = { name: u.displayName || u.email, email: u.email, photoUrl: u.photoURL || null };
+        // Salva em pjMembers em memória para próximas chamadas
+        const inList = pjMembers.find(x => x.email === u.email);
+        if (inList) {
+          if (!inList.uid) inList.uid = u.uid;
+          if (!inList.photoUrl && u.photoURL) inList.photoUrl = u.photoURL;
+        }
+      }
+    } catch(_) {}
   }
-  return `<div class="pj-avatar" style="background:${color}" title="${title}">${initials}</div>`;
+
+  const title = m?.name || m?.email || k || '?';
+  const initials = (m?.name || m?.email || String(k) || '?').trim().charAt(0).toUpperCase() || '?';
+
+  if (m?.photoUrl) {
+    return `<div class="pj-avatar" style="background:${color};background-image:url('${String(m.photoUrl).replace(/'/g,"\\'")}');background-size:cover;background-position:center;" title="${escHtml(title)}"></div>`;
+  }
+  return `<div class="pj-avatar" style="background:${color}" title="${escHtml(title)}">${initials}</div>`;
 }
 
 // ── Task Quick Create ───────────────────────────────────
