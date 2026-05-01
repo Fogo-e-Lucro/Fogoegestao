@@ -2593,21 +2593,34 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-popup-menu {
   position:fixed; z-index:10000;
   background:var(--card); border:1px solid var(--border);
-  border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.06);
-  padding:6px; min-width:200px;
-  animation: pjPopIn .15s cubic-bezier(.4,0,.2,1);
+  border-radius:14px;
+  box-shadow:0 20px 60px rgba(0,0,0,.22), 0 4px 16px rgba(0,0,0,.1);
+  padding:5px; min-width:190px;
+  animation: pjPopIn .14s cubic-bezier(.4,0,.2,1);
 }
-@keyframes pjPopIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+@keyframes pjPopIn { from { opacity:0; transform:translateY(-6px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+.pj-popup-label {
+  font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--text3); padding:6px 12px 4px; display:block;
+}
+.pj-popup-separator { height:1px; background:var(--border); margin:4px 6px; }
 .pj-popup-item {
   display:flex; align-items:center; gap:10px;
-  padding:8px 10px; border-radius:7px;
-  cursor:pointer; font-size:13px; color:var(--text);
-  transition:background .12s;
+  padding:9px 12px; border-radius:9px;
+  cursor:pointer; font-size:13px; font-weight:500;
+  color:var(--text); font-family:var(--font);
+  transition:background .12s, color .12s;
 }
-.pj-popup-item:hover { background:var(--bg2); }
-.pj-popup-item.active { background:rgba(99,102,241,.08); color:var(--accent); font-weight:600; }
-.pj-popup-icon { font-size:14px; width:16px; text-align:center; }
-.pj-popup-check { margin-left:auto; color:var(--accent); font-weight:700; }
+.pj-popup-item:hover { background:rgba(99,102,241,.07); color:var(--text); }
+.pj-popup-item.active { background:var(--accent); color:#fff; font-weight:600; }
+.pj-popup-item.active .pj-popup-icon { color:#fff !important; }
+.pj-popup-icon { font-size:14px; width:18px; text-align:center; flex-shrink:0; }
+.pj-popup-check { margin-left:auto; font-weight:700; font-size:12px; opacity:.85; }
+/* Active filter button */
+.pj-filter-active-btn {
+  border-color:var(--accent) !important; background:rgba(99,102,241,.08) !important;
+  color:var(--accent) !important; font-weight:600 !important;
+}
 
 /* Filter bar */
 .pj-filter-bar {
@@ -15447,45 +15460,84 @@ function pjClearFilter() {
   localStorage.setItem('pj_filter', JSON.stringify(pjFilter));
   pjRenderMain();
 }
+
+// ── Popup pickers para filter bar ─────────────────────────
+function pjFilterPopAssignee(ev) {
+  const items = [
+    { id:'', label:'Todos', icon:'👤' },
+    ...pjMembers.map(m => ({ id: m.uid||m.id||m.email, label: m.name||m.email||'?', icon: m.photoUrl ? '' : '👤' }))
+  ];
+  pjShowPopupMenu(ev, items, pjFilter.assignee||'', val => pjSetFilter('assignee', val));
+}
+function pjFilterPopPriority(ev) {
+  const icons = { urgent:'🔴', high:'🟠', normal:'🔵', low:'⚪' };
+  const items = [
+    { id:'', label:'Todas as prioridades', icon:'⚑' },
+    ...PJ_PRIORITIES.map(p => ({ id: p.id, label: p.label, icon: icons[p.id]||'•' }))
+  ];
+  pjShowPopupMenu(ev, items, pjFilter.priority||'', val => pjSetFilter('priority', val));
+}
+function pjFilterPopDue(ev) {
+  const items = [
+    { id:'',        label:'Qualquer data',    icon:'📅' },
+    { id:'overdue', label:'Atrasadas',         icon:'⚠️' },
+    { id:'today',   label:'Hoje',              icon:'📌' },
+    { id:'week',    label:'Próximos 7 dias',   icon:'🗓️' },
+    { id:'none',    label:'Sem data definida', icon:'—' },
+  ];
+  pjShowPopupMenu(ev, items, pjFilter.due||'', val => pjSetFilter('due', val));
+}
+function pjFilterPopClient(ev) {
+  const names = typeof getCanonicalClientNames === 'function' ? getCanonicalClientNames() : [];
+  const items = [
+    { id:'', label:'Todos os clientes', icon:'🏢' },
+    ...names.sort().map(n => ({ id: n, label: n, icon: '🏢' }))
+  ];
+  pjShowPopupMenu(ev, items, pjFilter.client||'', val => pjSetFilter('client', val));
+}
+function pjFilterPopSort(ev) {
+  const items = [
+    { id:'order',    label:'Padrão (manual)',   icon:'☰' },
+    { id:'due',      label:'Vencimento',         icon:'📅' },
+    { id:'priority', label:'Prioridade',         icon:'⚑' },
+    { id:'title',    label:'Título A → Z',       icon:'🔤' },
+  ];
+  pjShowPopupMenu(ev, items, pjFilter.sort||'order', val => pjSetFilter('sort', val));
+}
+
 function pjBuildFilterBar(list) {
-  const f = pjFilter;
-  const memberOpts = pjMembers.map(m => `<option value="${m.uid}" ${f.assignee===m.uid?'selected':''}>${escHtml(m.name||m.email)}</option>`).join('');
-  const prioOpts = PJ_PRIORITIES.map(p => `<option value="${p.id}" ${f.priority===p.id?'selected':''}>${p.label}</option>`).join('');
-  const dueOpts = [
-    {id:'overdue',label:'Atrasadas'},{id:'today',label:'Hoje'},
-    {id:'week',label:'Próximos 7 dias'},{id:'none',label:'Sem data'},
-  ].map(d => `<option value="${d.id}" ${f.due===d.id?'selected':''}>${d.label}</option>`).join('');
-  // Client options: APENAS clientes que existem na Base de Dados.
-  // Se o filtro atual aponta para um valor legado (ex: cliente excluído), preserva-o
-  // para o usuário poder limpar, mas não polui o dropdown com legados antigos.
-  const baseNames = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : Object.keys((typeof clients!=='undefined'&&clients)||{});
-  const clientNames = new Set(baseNames);
-  if (f.client && !clientNames.has(f.client)) clientNames.add(f.client);
-  const clientOpts = [...clientNames].sort().map(c => `<option value="${escHtml(c)}" ${f.client===c?'selected':''}>${escHtml(c)}</option>`).join('');
-  const sortOpts = [
-    {id:'order',label:'Padrão'},{id:'due',label:'Vencimento'},
-    {id:'priority',label:'Prioridade'},{id:'title',label:'Título A→Z'},
-  ].map(s => `<option value="${s.id}" ${f.sort===s.id?'selected':''}>${s.label}</option>`).join('');
-  const active = f.search||f.assignee||f.priority||f.due||f.client||(f.sort&&f.sort!=='order');
-  const cls = (val, defaultVal='') => val && val !== defaultVal ? ' pj-filter-active' : '';
+  let f = pjFilter;
+
+  // Auto-limpa filtros de clientes que não existem mais na Base de Dados
+  const canonicalNames = new Set(typeof getCanonicalClientNames === 'function' ? getCanonicalClientNames() : []);
+  if (f.client && !canonicalNames.has(f.client)) {
+    pjFilter.client = '';
+    f = pjFilter;
+    localStorage.setItem('pj_filter', JSON.stringify(pjFilter));
+  }
+
+  const active = f.search || f.assignee || f.priority || f.due || f.client || (f.sort && f.sort !== 'order');
+
+  // Rótulos dos botões de filtro (mostra seleção atual ou default)
+  const assigneeLabel = f.assignee ? (pjMembers.find(m => m.uid === f.assignee)?.name || '?') : '👤 Responsável';
+  const priorityLabel = f.priority ? (PJ_PRIORITIES.find(p => p.id === f.priority)?.label || f.priority) : '⚑ Prioridade';
+  const dueLabel      = f.due ? ({overdue:'Atrasadas',today:'Hoje',week:'7 dias',none:'Sem data'}[f.due] || f.due) : '📅 Vencimento';
+  const clientLabel   = f.client || '🏢 Cliente';
+  const sortLabel     = (f.sort && f.sort !== 'order') ? ({due:'Vencimento',priority:'Prioridade',title:'A→Z'}[f.sort]||f.sort) : 'Ordenar';
+
+  const fb = (label, active, fn, extra='') =>
+    `<button class="pj-filter-btn${active?' pj-filter-active-btn':''}" onclick="${fn}" ${extra}>${escHtml(label)} <span style="font-size:9px;opacity:.5;margin-left:2px;">▾</span></button>`;
+
   return `<div class="pj-filter-bar">
     <input class="pj-filter-search" placeholder="🔍 Buscar tarefas..." value="${escHtml(f.search||'')}"
       oninput="pjSetFilter('search',this.value)">
-    <select class="pj-filter-sel${cls(f.assignee)}" onchange="pjSetFilter('assignee',this.value)">
-      <option value="">👤 Responsável</option>${memberOpts}
-    </select>
-    <select class="pj-filter-sel${cls(f.priority)}" onchange="pjSetFilter('priority',this.value)">
-      <option value="">⚑ Prioridade</option>${prioOpts}
-    </select>
-    <select class="pj-filter-sel${cls(f.due)}" onchange="pjSetFilter('due',this.value)">
-      <option value="">📅 Vencimento</option>${dueOpts}
-    </select>
-    <select class="pj-filter-sel${cls(f.client)}" onchange="pjSetFilter('client',this.value)">
-      <option value="">🏢 Cliente</option>${clientOpts}
-    </select>
-    <select class="pj-filter-sel${cls(f.sort,'order')}" onchange="pjSetFilter('sort',this.value)">${sortOpts}</select>
+    ${fb(assigneeLabel, !!f.assignee, 'pjFilterPopAssignee(event)')}
+    ${fb(priorityLabel, !!f.priority, 'pjFilterPopPriority(event)')}
+    ${fb(dueLabel,      !!f.due,      'pjFilterPopDue(event)')}
+    ${fb(clientLabel,   !!f.client,   'pjFilterPopClient(event)')}
+    ${fb(sortLabel, !!(f.sort&&f.sort!=='order'), 'pjFilterPopSort(event)')}
     <button class="pj-filter-btn" onclick="pjOpenViewsMenu(event)" title="Visões salvas">⭐ Visões</button>
-    ${active?`<button class="pj-filter-btn pj-filter-btn-danger" onclick="pjClearFilter()" title="Limpar filtros">✕ Limpar</button>`:''}
+    ${active ? `<button class="pj-filter-btn pj-filter-btn-danger" onclick="pjClearFilter()" title="Limpar filtros">✕ Limpar</button>` : ''}
   </div>`;
 }
 function pjApplyFilter(tasks) {
