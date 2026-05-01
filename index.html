@@ -633,7 +633,8 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .collapsible-head-left { display: flex; align-items: center; gap: 12px; }
 
 /* Ícone do bloco colapsável */
-.collapsible-head-left > span[style] {
+.collapsible-head-left > span[style],
+.collapsible-icon {
   width: 36px !important; height: 36px !important;
   border-radius: 10px !important;
   background: rgba(124,58,237,.12) !important;
@@ -1590,8 +1591,8 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .user-avatar-placeholder { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
 .user-name { font-size: 11px; font-weight: 600; color: var(--text2); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* ── Acesso Tab ── */
-.acesso-wrap { max-width:620px; margin:0 auto; padding:8px 0; }
-.acesso-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:22px 24px; margin-bottom:16px; }
+.acesso-wrap { max-width:620px; margin:0 auto; padding:8px 0 40px; }
+.acesso-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px 24px; margin-bottom:16px; }
 .acesso-title { font-size:13px; font-weight:700; color:var(--text); margin-bottom:4px; }
 .acesso-sub { font-size:12px; color:var(--text3); margin-bottom:16px; }
 .acesso-add-row { display:flex; gap:8px; margin-bottom:14px; }
@@ -2356,7 +2357,7 @@ body[data-active-tab="metricas"] .rest-bar { display:none; }
 .mtr-camp-table tr.clickable { cursor:pointer;transition:background .15s; }
 .mtr-camp-table tr.clickable:hover td { background:var(--card2); }
 .mtr-camp-table tr.selected td { background:var(--accentGlow,rgba(124,58,237,.1));border-left:3px solid var(--accent); }
-.mtr-camp-name { font-weight:600;color:var(--text1);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.mtr-camp-name { font-weight:600;color:var(--text1);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle; }
 .mtr-camp-status { display:inline-flex;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;letter-spacing:.04em;text-transform:uppercase;margin-left:6px; }
 .mtr-camp-status.active { background:rgba(34,197,94,.15);color:#22c55e; }
 .mtr-camp-status.paused { background:rgba(148,163,184,.15);color:#94a3b8; }
@@ -2721,7 +2722,10 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
 .mtr-kpi-modal-source { font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:var(--accentGlow);color:var(--accent); }
 .mtr-kpi-modal-close { position:absolute;top:16px;right:18px;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer; }
 .mtr-kpi-modal-value { font-size:44px;font-weight:800;color:var(--text1);line-height:1;margin-bottom:8px; }
-.mtr-kpi-modal-pct { font-size:13px;font-weight:700;margin-bottom:16px; }
+.mtr-kpi-modal-pct { font-size:13px;font-weight:700;margin-bottom:16px; color:var(--text3); }
+.mtr-kpi-modal-pct.pos { color:#22c55e; }
+.mtr-kpi-modal-pct.neg { color:#ef4444; }
+.mtr-kpi-modal-spark.no-data { color:var(--text3); font-size:11px; }
 .mtr-kpi-modal-spark { margin:16px 0;height:70px;background:var(--bg2);border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center; }
 .mtr-kpi-modal-spark svg { width:100%;height:70px; }
 .mtr-kpi-modal-def { font-size:12px;color:var(--text2);line-height:1.65;background:var(--bg2);border-radius:8px;padding:10px 14px;margin-top:10px; }
@@ -2927,6 +2931,7 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   color:#fff; font-weight:700;
 }
 .pj-view-body { flex:1; overflow-y:auto; padding:16px 20px; }
+.pj-view-body-sm { padding:14px !important; }
 
 /* ── List View ── */
 .pj-lt { width:100%; border-collapse:collapse; font-size:13px; }
@@ -3191,9 +3196,10 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-notif-icon { font-size:16px; flex-shrink:0; }
 .pj-notif-body { flex:1; min-width:0; }
 .pj-notif-body > div:first-child {
-  font-size:13px; color:var(--text); line-height:1.35;
+  font-size:13px; color:var(--text); font-weight:500; line-height:1.35;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
+.pj-notif-body > div:first-child.bold { font-weight:700; }
 .pj-notif-sub { font-size:11px; color:var(--text3); margin-top:2px; }
 .pj-notif-time { font-size:10px; color:var(--text3); margin-left:auto; flex-shrink:0; }
 .pj-notif-empty {
@@ -3440,6 +3446,24 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   border-bottom:1px solid var(--border); font-size:12px;
 }
 .pj-integ-log-row:last-child { border-bottom:none; }
+.pj-integ-log-row .log-status { flex-shrink:0; }
+.pj-integ-log-row.ok .log-status { color:#22c55e; }
+.pj-integ-log-row.err .log-status { color:#ef4444; }
+.pj-integ-log-time { font-size:11px; color:var(--text3); }
+.pj-integ-log-event { font-size:12px; font-weight:500; }
+.pj-integ-log-url { font-size:11px; color:var(--text3); margin-left:auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pj-integ-log-err { font-size:11px; color:#ef4444; }
+.pj-integ-log-empty { color:var(--text3); font-size:12px; padding:12px 0; }
+.pj-queue-status-ok { color:#22c55e; font-weight:600; }
+.pj-queue-status-off { color:var(--text3); font-weight:600; }
+.pj-integ-notice { background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(139,92,246,.04)); border-color:rgba(99,102,241,.3) !important; }
+.pj-integ-notice-inner { display:flex; align-items:center; gap:10px; }
+.pj-integ-notice-icon { font-size:18px; flex-shrink:0; }
+.pj-integ-notice-body { flex:1; }
+.pj-integ-notice-title { font-size:13px; font-weight:600; color:var(--text); }
+.pj-integ-notice-sub { font-size:11px; color:var(--text3); margin-top:2px; }
+.pj-integ-section-sub { font-size:12px; color:var(--text3); margin-bottom:10px; }
+.pj-integ-row { display:flex; gap:8px; align-items:center; }
 .pj-integ-schema-grid { display:flex; gap:12px; flex-wrap:wrap; }
 .pj-integ-schema-block { flex:1; min-width:200px; }
 .pj-integ-schema-title {
@@ -3494,11 +3518,23 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   padding:6px 4px; border-bottom:1px solid var(--border);
 }
 .pj-digest-task-row:last-child { border-bottom:none; }
+.pj-digest-task-row.done { opacity:.7; }
+.pj-digest-task-title { font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text); }
+.pj-digest-task-title.pj-done-text { text-decoration:line-through; color:var(--text3); }
+.pj-digest-task-list-name { font-size:11px; color:var(--text3); }
+.pj-digest-task-list-name.overdue { color:#ef4444; font-weight:600; }
 .pj-digest-list-row {
   display:flex; align-items:center; gap:8px;
   padding:8px 0; border-bottom:1px solid var(--border);
 }
 .pj-digest-list-row:last-child { border-bottom:none; }
+.pj-digest-list-name { flex:1; font-size:13px; font-weight:500; color:var(--text); }
+.pj-digest-list-cnt { font-size:12px; color:var(--text3); margin-right:10px; }
+.pj-digest-list-bar { width:80px; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; }
+.pj-digest-list-bar-fill { height:100%; background:var(--accent); border-radius:3px; }
+/* Digest header meta */
+.pj-digest-nav { display:flex; gap:8px; align-items:center; margin-left:auto; }
+.pj-digest-range { font-size:12px; color:var(--text3); font-weight:600; padding:3px 10px; border-radius:20px; background:var(--bg2); border:1px solid var(--border); }
 /* Digest collaborator filter chips */
 .pj-digest-collab-filter { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
 .pj-digest-chip { padding:5px 13px; border-radius:20px; border:1px solid var(--border); background:var(--card); font-size:12px; font-weight:500; color:var(--text2); cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all .15s; font-family:var(--font); }
@@ -3537,6 +3573,10 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-tm-h { font-size:13px; font-weight:700; color:var(--text); margin-bottom:8px; }
 .pj-tm-row { display:grid; grid-template-columns:160px 1fr 140px; gap:10px; align-items:center; padding:6px 0; }
 .pj-tm-name { font-size:13px; color:var(--text); }
+.pj-tm-duration { font-size:11px; color:var(--text3); }
+.pj-tm-rate-input { width:70px; padding:3px 6px; font-size:11px; border:1px solid var(--border); border-radius:4px; background:var(--bg); color:var(--text); }
+.pj-tm-cost { font-weight:700; color:var(--text3); }
+.pj-tm-cost.has-cost { color:#22c55e; }
 .pj-tm-bar { height:8px; background:var(--bg); border-radius:4px; overflow:hidden; }
 .pj-tm-bar-fill { height:100%; background:linear-gradient(90deg,#6366f1,#a855f7); border-radius:4px; }
 .pj-tm-val { font-size:12px; color:var(--text2); text-align:right; }
@@ -3690,6 +3730,15 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-add-subtask-input::placeholder { color:var(--text3); }
 .pj-tpl-row { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:var(--bg); }
 .pj-tpl-row:hover { border-color:var(--accent); }
+.pj-tpl-info { flex:1; }
+.pj-tpl-name { font-weight:600; font-size:13px; color:var(--text); }
+.pj-tpl-desc { font-size:11px; color:var(--text3); margin-top:1px; }
+.pj-assignee-list { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.pj-assignee-row { display:flex; align-items:center; gap:10px; padding:8px; background:var(--bg); border-radius:8px; cursor:pointer; }
+.pj-assignee-name { font-size:13px; color:var(--text); }
+.pj-activity-empty { text-align:center; padding:24px 16px; color:var(--text3); font-size:12px; display:flex; flex-direction:column; align-items:center; gap:6px; }
+.pj-activity-empty-icon { font-size:28px; }
+.pj-activity-empty-title { font-weight:700; color:var(--text2); font-size:12.5px; }
 
 /* Gantt */
 .pj-gantt-wrap { min-width:max-content; }
@@ -3875,6 +3924,7 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-reply-banner button:hover { color:#ef4444; }
 
 /* Workload */
+.pj-view-header-meta { margin-left:auto; font-size:12px; color:var(--text3); font-weight:600; padding:3px 10px; border-radius:20px; background:var(--bg2); border:1px solid var(--border); }
 .pj-workload-grid { display:flex; flex-direction:column; gap:10px; }
 .pj-workload-row {
   display:grid; grid-template-columns:200px 1fr 350px;
@@ -3908,6 +3958,64 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-wl-day-label { font-size:9px; color:var(--text3); text-transform:uppercase; font-weight:600; }
 .pj-wl-day-count { font-size:14px; font-weight:700; color:var(--text); margin-top:2px; min-height:18px; }
 .pj-wl-day-count.has { color:var(--accent); }
+
+/* Workload user info */
+.pj-wl-name { font-weight:600; font-size:13px; color:var(--text); }
+.pj-wl-meta { font-size:11px; color:var(--text3); margin-top:2px; }
+.pj-wl-meta .overdue { color:#ef4444; font-weight:700; }
+
+/* workload bar fill colors via CSS */
+.pj-workload-bar-fill.ok   { background: var(--accent); }
+.pj-workload-bar-fill.mid  { background: #f59e0b; }
+.pj-workload-bar-fill.high { background: #ef4444; }
+
+/* pj-main initial state */
+.pj-main-initial {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; gap: 14px; color: var(--text3); text-align: center; padding: 40px;
+}
+.pj-main-initial-icon {
+  width: 72px; height: 72px; border-radius: 20px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+  box-shadow: 0 8px 28px rgba(124,58,237,.3);
+}
+.pj-main-initial-text { font-size:15px; font-weight:700; color:var(--text2); }
+.pj-main-initial-sub { font-size:13px; color:var(--text3); max-width:260px; line-height:1.5; }
+
+/* Demo button */
+.pj-demo-btn {
+  background: linear-gradient(135deg, #a855f7, #6366f1) !important;
+  color: #fff !important; border: none !important;
+}
+
+/* Sign-out button */
+.acesso-signout-btn {
+  margin-top: 14px; padding: 8px 16px; border-radius: var(--r2);
+  background: var(--bg2); border: 1px solid var(--border);
+  color: var(--text2); font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: var(--font);
+  transition: border-color .15s, color .15s;
+}
+.acesso-signout-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+/* bd-empty redesign */
+.bd-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; color: var(--text3); gap: 14px; text-align: center; padding: 40px;
+}
+.bd-empty-icon {
+  width: 72px; height: 72px; border-radius: 20px;
+  background: var(--bg2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 32px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.1);
+}
+.bd-empty-text { font-size:15px; font-weight:700; color:var(--text2); }
+.bd-empty-sub { font-size:13px; color:var(--text3); line-height:1.5; }
+
+/* pj-icon-btn large */
+.pj-icon-btn-lg { font-size: 16px !important; }
 
 /* By Client (legacy classes mantidas) */
 .pj-client-card {
@@ -4136,6 +4244,7 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 }
 .pj-btn-primary:hover { box-shadow:0 6px 20px rgba(124,58,237,.45); }
 .pj-btn-secondary { background:var(--bg2); color:var(--text2); border:1px solid var(--border); }
+.pj-btn-sm { font-size:11px !important; padding:4px 10px !important; }
 /* Status editor */
 .pj-status-list { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
 .pj-status-row { display:flex; align-items:center; gap:8px; padding:6px 8px; background:var(--bg); border-radius:8px; }
@@ -4295,6 +4404,18 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .bd-list-name { font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .bd-list-sub { font-size:11px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .bd-list-empty { padding:24px 12px; text-align:center; color:var(--text3); font-size:12px; }
+.bd-field-row { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--bg2); border-radius:8px; margin-bottom:8px; }
+.bd-field-icon { font-size:18px; flex-shrink:0; }
+.bd-field-info { flex:1; min-width:0; }
+.bd-field-name { font-size:13px; font-weight:600; color:var(--text); }
+.bd-field-type { font-size:11px; color:var(--text3); }
+.bd-field-btn { background:none; border:1px solid var(--border); border-radius:5px; padding:3px 7px; cursor:pointer; color:var(--text2); font-size:12px; }
+.bd-field-btn.danger { color:#ef4444; }
+.bd-field-empty { text-align:center; color:var(--text3); padding:24px; font-size:13px; }
+.bd-tipo-opt { display:flex; align-items:center; gap:10px; padding:10px 12px; border:2px solid var(--border); border-radius:8px; cursor:pointer; background:var(--bg2); transition:border-color .15s; }
+.bd-tipo-opt:has(input:checked) { border-color:var(--accent); }
+.bd-tipo-icon { font-size:20px; flex-shrink:0; }
+.bd-tipo-label { font-size:13px; font-weight:600; color:var(--text); }
 
 .bd-main { flex:1; overflow-y:auto; padding:0; min-height:0; min-width:0; }
 .bd-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text3); font-size:14px; gap:14px; text-align:center; }
@@ -4836,7 +4957,7 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
       <div class="acesso-card" id="acessoCurrentUser" style="display:none">
         <div class="acesso-title">Sua conta</div>
         <div id="acessoCurrentUserInfo" style="font-size:13px;color:var(--text2);margin-top:8px;"></div>
-        <button onclick="signOutUser()" style="margin-top:14px;padding:8px 16px;border-radius:var(--r2);background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);">Sair da conta</button>
+        <button onclick="signOutUser()" class="acesso-signout-btn">Sair da conta</button>
       </div>
     </div>
 
@@ -5182,7 +5303,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
     <div class="collapsible-block" id="statsBlock" data-reveal>
       <div class="collapsible-head" onclick="toggleCollapsible('statsBlock')">
         <div class="collapsible-head-left">
-          <span style="font-size:18px;">📊</span>
+          <span class="collapsible-icon">📊</span>
           <div>
             <div class="collapsible-head-title">Estatísticas</div>
             <div class="collapsible-head-sub" id="statsBlockSub">Visão geral do calendário</div>
@@ -5199,7 +5320,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
     <div class="collapsible-block" id="calBlock" data-reveal>
       <div class="collapsible-head" onclick="toggleCollapsible('calBlock')">
         <div class="collapsible-head-left">
-          <span style="font-size:18px;">📆</span>
+          <span class="collapsible-icon">📆</span>
           <div>
             <div class="collapsible-head-title">Calendário</div>
             <div class="collapsible-head-sub">Visualize a distribuição dos posts</div>
@@ -5244,7 +5365,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
     <div class="collapsible-block" id="postsBlock" data-reveal>
       <div class="collapsible-head" onclick="toggleCollapsible('postsBlock')">
         <div class="collapsible-head-left">
-          <span style="font-size:18px;">📋</span>
+          <span class="collapsible-icon">📋</span>
           <div>
             <div class="collapsible-head-title">Todos os Posts</div>
             <div class="collapsible-head-sub" id="postsBlockSub">Carregando...</div>
@@ -5944,7 +6065,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
             Templates
           </button>
-          <button class="pj-add-space-btn pj-admin-only" id="pjDemoBtn" style="background:linear-gradient(90deg,#a855f7,#6366f1);color:#fff;border:none;" onclick="pjToggleDemo()">
+          <button class="pj-add-space-btn pj-admin-only pj-demo-btn" id="pjDemoBtn" onclick="pjToggleDemo()">
             <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
             Carregar Demo
           </button>
@@ -5952,9 +6073,10 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
       </div>
       <!-- Main -->
       <div class="pj-main" id="pjMain">
-        <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:14px;flex-direction:column;gap:12px;">
-          <div style="font-size:36px;">🗂️</div>
-          <div>Selecione uma lista ou a Caixa de Entrada</div>
+        <div class="pj-main-initial">
+          <div class="pj-main-initial-icon">🗂️</div>
+          <div class="pj-main-initial-text">Gestão Central</div>
+          <div class="pj-main-initial-sub">Selecione uma lista na sidebar ou abra a Caixa de Entrada</div>
         </div>
       </div>
     </div>
@@ -5976,8 +6098,9 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
       <!-- Main: ficha do cliente -->
       <div class="bd-main" id="bdMain">
         <div class="bd-empty">
-          <div style="font-size:42px;">📚</div>
-          <div>Selecione um cliente ao lado<br>ou crie um novo</div>
+          <div class="bd-empty-icon">📚</div>
+          <div class="bd-empty-text">Base de Clientes</div>
+          <div class="bd-empty-sub">Selecione um cliente ao lado ou crie um novo</div>
         </div>
       </div>
     </div>
@@ -11452,7 +11575,7 @@ function mtrCampaignRowHtml(c) {
     </td>
     <td onclick="mtrSelectCampaign('${c.id}')">
       <button class="mtr-drill-toggle ${drillOpen?'expanded':''}" onclick="event.stopPropagation();mtrToggleDrill('${c.id}')" title="Drill-down: conjuntos & anúncios">${drillOpen?'▼':'▶'}</button>
-      <span class="mtr-camp-name" style="display:inline-block;vertical-align:middle;">${escHtml(c.name || '—')}<span class="mtr-camp-status ${statusCls}">${c.status||'—'}</span></span>
+      <span class="mtr-camp-name">${escHtml(c.name || '—')}<span class="mtr-camp-status ${statusCls}">${c.status||'—'}</span></span>
     </td>
     ${colCells}
     <td class="actions" onclick="event.stopPropagation()">
@@ -13427,12 +13550,13 @@ function mtrOpenKpiModal(id) {
   const pv = mtrGetValue(id, s.igPrev, s.adsPrev);
   const series = mtrGetSeries(id, s.igCurr);
   const delta = (cv !== null && pv !== null && pv !== 0) ? ((cv - pv) / Math.abs(pv) * 100) : null;
+  const deltaPos = delta >= 0 ? !m.invert : m.invert;
   const deltaHtml = delta !== null
-    ? `<div class="mtr-kpi-modal-pct" style="color:${delta>=0?(m.invert?'#ef4444':'#22c55e'):(m.invert?'#22c55e':'#ef4444')}">${delta>=0?'▲':'▼'} ${Math.abs(delta).toFixed(1)}% vs período anterior</div>`
-    : '<div class="mtr-kpi-modal-pct" style="color:var(--text3);">— sem dados do período anterior</div>';
+    ? `<div class="mtr-kpi-modal-pct ${deltaPos?'pos':'neg'}">${delta>=0?'▲':'▼'} ${Math.abs(delta).toFixed(1)}% vs período anterior</div>`
+    : '<div class="mtr-kpi-modal-pct">— sem dados do período anterior</div>';
   const sparkHtml = (series && series.length >= 2)
     ? `<div class="mtr-kpi-modal-spark">${mtrSparkSvg(series)}</div>`
-    : '<div class="mtr-kpi-modal-spark" style="color:var(--text3);font-size:11px;">Série diária indisponível para esta métrica</div>';
+    : '<div class="mtr-kpi-modal-spark no-data">Série diária indisponível para esta métrica</div>';
   const def = MTR_DEFINITIONS[id] || 'Métrica do painel de desempenho.';
   document.getElementById('mtrKpiModalBody').innerHTML = `
     <div class="mtr-kpi-modal-head">
@@ -16132,8 +16256,8 @@ function pjBuildListPage(listId) {
       <button class="${view==='kanban'?'active':''}" onclick="pjSetView('${listId}','kanban')">⊞ Kanban</button>
       ${(list.customFields||[]).some(f=>f.type==='address') ? `<button class="${view==='map'?'active':''}" onclick="pjSetView('${listId}','map')">📍 Mapa</button>` : ''}
     </div>
-    <button class="pj-icon-btn" title="Editar status" onclick="pjOpenStatusEditor('${listId}')" style="font-size:18px;">🏷️</button>
-    <button class="pj-icon-btn" title="Campos personalizados" onclick="pjOpenFieldsEditor('${listId}')" style="font-size:18px;">📋</button>
+    <button class="pj-icon-btn pj-icon-btn-lg" title="Editar status" onclick="pjOpenStatusEditor('${listId}')">🏷️</button>
+    <button class="pj-icon-btn pj-icon-btn-lg" title="Campos personalizados" onclick="pjOpenFieldsEditor('${listId}')">📋</button>
     <button class="pj-btn pj-btn-primary" style="font-size:12px;padding:6px 14px;" onclick="pjQuickCreateTask('${listId}')">＋ Tarefa</button>
   </div>` + pjBuildFilterBar(list) + pjBuildBulkBar() + `<div class="pj-view-body" style="padding-top:8px;">`;
 
@@ -16527,7 +16651,7 @@ function pjRenderNotifPanel() {
     return `<div class="pj-notif-item ${n.read?'read':'unread'} ${isMention&&!n.read?'mention-highlight':''}" onclick="pjOpenNotif('${n.id}')">
       <span class="pj-notif-icon ${isMention?'mention-icon':''}">${icon}</span>
       <div class="pj-notif-body">
-        <div style="font-weight:${isMention&&!n.read?'700':'500'}">${escHtml(n.title||'')}</div>
+        <div class="${isMention&&!n.read?'bold':''}">${escHtml(n.title||'')}</div>
         ${n.subtitle?`<div class="pj-notif-sub">${escHtml(n.subtitle)}</div>`:''}
         <div class="pj-notif-time">${time}</div>
       </div>
@@ -16592,9 +16716,9 @@ function pjBuildWorkload() {
 
   let h = `<div class="pj-view-header">
     <div class="pj-view-title">👥 Workload da semana</div>
-    <div style="margin-left:auto;font-size:12px;color:var(--text3);">${totalCount} tarefas abertas</div>
+    <div class="pj-view-header-meta">${totalCount} tarefas abertas</div>
   </div>
-  <div class="pj-view-body" style="padding:14px;">
+  <div class="pj-view-body pj-view-body-sm">
     <div class="pj-workload-grid">`;
   members.forEach(m => {
     const myTasks = openTasks.filter(t => (t.assignees||[]).includes(m.uid));
@@ -16612,11 +16736,11 @@ function pjBuildWorkload() {
       <div class="pj-workload-user">
         ${pjAvatarHtml(m.uid)}
         <div>
-          <div style="font-weight:600;font-size:13px;color:var(--text);">${escHtml(m.name||m.email||'')}</div>
-          <div style="font-size:11px;color:var(--text3);">${myTasks.length} aberta${myTasks.length!==1?'s':''}${overdue?` · <span style="color:#ef4444;">${overdue} atrasada${overdue!==1?'s':''}</span>`:''}</div>
+          <div class="pj-wl-name">${escHtml(m.name||m.email||'')}</div>
+          <div class="pj-wl-meta">${myTasks.length} aberta${myTasks.length!==1?'s':''}${overdue?` · <span class="overdue">${overdue} atrasada${overdue!==1?'s':''}</span>`:''}</div>
         </div>
       </div>
-      <div class="pj-workload-bar"><div class="pj-workload-bar-fill" style="width:${pct}%;background:${pct>80?'#ef4444':(pct>50?'#f59e0b':'var(--accent)')}"></div></div>
+      <div class="pj-workload-bar"><div class="pj-workload-bar-fill ${pct>80?'high':(pct>50?'mid':'ok')}" style="width:${pct}%"></div></div>
       <div class="pj-workload-days">${dayCells}</div>
     </div>`;
   });
@@ -17679,10 +17803,10 @@ function pjBuildDigest() {
       const tasks = info.done.map(t => {
         const list = pjLists.find(l=>l.id===t.listId);
         return `<div class="pj-digest-task-row">
-          <span class="pj-task-check done" style="font-size:11px;">✓</span>
+          <span class="pj-task-check done">✓</span>
           <div style="flex:1;min-width:0;">
-            <div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(t.title||'')}</div>
-            <div style="font-size:11px;color:var(--text3);">${escHtml(list?.name||'')}</div>
+            <div class="pj-digest-task-title">${escHtml(t.title||'')}</div>
+            <div class="pj-digest-task-list-name">${escHtml(list?.name||'')}</div>
           </div>
         </div>`;
       }).join('');
@@ -17706,11 +17830,9 @@ function pjBuildDigest() {
       const l = pjLists.find(x=>x.id===lid);
       const pct = completedThisWeek.length ? Math.round(cnt/completedThisWeek.length*100) : 0;
       return `<div class="pj-digest-list-row">
-        <div style="flex:1;font-size:13px;font-weight:500;">${escHtml(l?.name||lid)}</div>
-        <div style="font-size:12px;color:var(--text3);margin-right:10px;">${cnt} tarefa${cnt!==1?'s':''}</div>
-        <div style="width:80px;height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;">
-          <div style="width:${pct}%;height:100%;background:var(--accent);"></div>
-        </div>
+        <div class="pj-digest-list-name">${escHtml(l?.name||lid)}</div>
+        <div class="pj-digest-list-cnt">${cnt} tarefa${cnt!==1?'s':''}</div>
+        <div class="pj-digest-list-bar"><div class="pj-digest-list-bar-fill" style="width:${pct}%"></div></div>
       </div>`;
     }).join('');
 
@@ -17720,9 +17842,9 @@ function pjBuildDigest() {
 
   return `<div class="pj-view-header">
     <div class="pj-view-title">📋 Digest Semanal</div>
-    <div style="display:flex;gap:8px;align-items:center;margin-left:auto;">
+    <div class="pj-digest-nav">
       ${prevBtn}
-      <span style="font-size:12px;color:var(--text3);font-weight:600;">${rangeLabel}${isCurrentWeek?' (esta semana)':''}</span>
+      <span class="pj-digest-range">${rangeLabel}${isCurrentWeek?' · esta semana':''}</span>
       ${nextBtn}
     </div>
   </div>
@@ -17764,11 +17886,11 @@ function pjBuildDigest() {
           const done = pjIsDone(t);
           const d = new Date(t.dueDate);
           const overdue = !done && d < now;
-          return `<div class="pj-digest-task-row" style="opacity:${done?.7:1};">
-            <span style="font-size:11px;color:${overdue?'#ef4444':'var(--text3)'};">${overdue?'⚠':'📅'}</span>
+          return `<div class="pj-digest-task-row${done?' done':''}">
+            <span style="font-size:11px;${overdue?'color:#ef4444;':''}">${overdue?'⚠':'📅'}</span>
             <div style="flex:1;min-width:0;">
-              <div style="font-size:12px;${done?'text-decoration:line-through;color:var(--text3);':''}">${escHtml(t.title||'')}</div>
-              <div style="font-size:11px;color:${overdue?'#ef4444':'var(--text3)'};">${d.toLocaleDateString('pt-BR')}${done?' · concluída':overdue?' · atrasada':''}</div>
+              <div class="pj-digest-task-title${done?' pj-done-text':''}">${escHtml(t.title||'')}</div>
+              <div class="pj-digest-task-list-name${overdue?' overdue':''}">${d.toLocaleDateString('pt-BR')}${done?' · concluída':overdue?' · atrasada':''}</div>
             </div>
           </div>`;
         }).join('')}` : ''}
@@ -17955,25 +18077,25 @@ function pjBuildIntegracoes() {
   const logRows = _pjWebhookLog.length ? _pjWebhookLog.map(l => {
     const t = new Date(l.ts).toLocaleTimeString('pt-BR');
     return `<div class="pj-integ-log-row ${l.ok?'ok':'err'}">
-      <span style="color:${l.ok?'#22c55e':'#ef4444'}">${l.ok?'✓':'✗'}</span>
-      <span style="font-size:11px;color:var(--text3);">${t}</span>
-      <span style="font-size:12px;font-weight:500;">${l.eventId}</span>
-      <span style="font-size:11px;color:var(--text3);margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.url}</span>
-      ${l.error?`<span style="font-size:11px;color:#ef4444;">${escHtml(l.error)}</span>`:''}
+      <span class="log-status">${l.ok?'✓':'✗'}</span>
+      <span class="pj-integ-log-time">${t}</span>
+      <span class="pj-integ-log-event">${l.eventId}</span>
+      <span class="pj-integ-log-url">${l.url}</span>
+      ${l.error?`<span class="pj-integ-log-err">${escHtml(l.error)}</span>`:''}
     </div>`;
-  }).join('') : `<div style="color:var(--text3);font-size:12px;padding:12px 0;">Nenhum disparo nesta sessão.</div>`;
+  }).join('') : `<div class="pj-integ-log-empty">Nenhum disparo nesta sessão.</div>`;
 
   const queueStatus = _pjQueueUnsub
-    ? `<span style="color:#22c55e;font-weight:600;">● Conectado</span>`
-    : `<span style="color:var(--text3);">○ Não iniciado</span>`;
+    ? `<span class="pj-queue-status-ok">● Conectado</span>`
+    : `<span class="pj-queue-status-off">○ Não iniciado</span>`;
 
   const globalAppUrl = (window._appConfig?.n8n_global_url || '').trim();
-  const globalNotice = `<div class="pj-integ-card" style="background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(139,92,246,.04));border-color:rgba(99,102,241,.3);">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <div style="font-size:18px;">⚙️</div>
-      <div style="flex:1;">
-        <div style="font-size:13px;font-weight:600;color:var(--text);">Configuração global do app</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px;">
+  const globalNotice = `<div class="pj-integ-card pj-integ-notice">
+    <div class="pj-integ-notice-inner">
+      <div class="pj-integ-notice-icon">⚙️</div>
+      <div class="pj-integ-notice-body">
+        <div class="pj-integ-notice-title">Configuração global do app</div>
+        <div class="pj-integ-notice-sub">
           ${globalAppUrl
             ? `URL n8n global: <code>${escHtml(globalAppUrl.slice(0,50))}${globalAppUrl.length>50?'…':''}</code> · Os eventos abaixo são <strong>overrides</strong> deste fallback.`
             : `Nenhuma URL global configurada. Use abas <strong>⚙️ no cabeçalho → Integrações</strong> para definir uma URL padrão para todos os módulos.`}
@@ -17992,8 +18114,8 @@ function pjBuildIntegracoes() {
     <!-- Global webhook URL (Projetos override) -->
     <div class="pj-integ-card">
       <div class="pj-integ-card-title">URL global apenas para Projetos</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Sobrescreve a URL global do app só para eventos deste módulo. Útil se Projetos vai pra um workflow diferente do resto.</div>
-      <div style="display:flex;gap:8px;align-items:center;">
+      <div class="pj-integ-section-sub">Sobrescreve a URL global do app só para eventos deste módulo. Útil se Projetos vai pra um workflow diferente do resto.</div>
+      <div class="pj-integ-row">
         <input class="pj-integ-input" id="pjWebhookGlobalUrl"
           placeholder="https://n8n.exemplo.com/webhook/uuid"
           value="${escHtml(urls['*']||'')}"
@@ -18277,9 +18399,9 @@ function pjBuildTimeMetrics() {
     const rate = costRates[uid] || 0;
     return `<div class="pj-tm-row" style="grid-template-columns:1fr 110px 90px 110px;">
       <div class="pj-tm-name">${escHtml(m.name||m.email||uid)}</div>
-      <div style="font-size:11px;color:var(--text3);">${pjFormatDuration(byUser[uid])}</div>
-      <div><input type="number" min="0" step="1" value="${rate}" style="width:70px;padding:3px 6px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);" onchange="pjSetCostRate('${uid}', this.value)" title="R$/hora"></div>
-      <div style="font-weight:700;color:${costByUser[uid]?'#22c55e':'var(--text3)'}">${costByUser[uid] ? 'R$ '+costByUser[uid].toFixed(2) : '—'}</div>
+      <div class="pj-tm-duration">${pjFormatDuration(byUser[uid])}</div>
+      <div><input type="number" min="0" step="1" value="${rate}" class="pj-tm-rate-input" onchange="pjSetCostRate('${uid}', this.value)" title="R$/hora"></div>
+      <div class="pj-tm-cost ${costByUser[uid]?'has-cost':''}">${costByUser[uid] ? 'R$ '+costByUser[uid].toFixed(2) : '—'}</div>
     </div>`;
   }).join('');
 
@@ -18363,7 +18485,7 @@ function pjShowPopupMenu(ev, items, current, onSelect) {
     const item = document.createElement('div');
     item.className = 'pj-popup-item' + (current===o.id?' active':'');
     item.innerHTML = `
-      <span class="pj-popup-icon" style="${o.color?`color:${o.color}`:''}">${o.icon||''}</span>
+      <span class="pj-popup-icon" ${o.color?`style="color:${o.color}"` : ''}>${o.icon||''}</span>
       <span>${escHtml(o.label)}</span>
       ${current===o.id?'<span class="pj-popup-check">✓</span>':''}`;
     item.onclick = (e) => { e.stopPropagation(); onSelect(o.id); pjClosePopups(); };
@@ -18922,9 +19044,9 @@ function pjRenderActivity() {
   if (!el) return;
   const top = pjComments.filter(c => !c.parentId);
   const items = top.map(c => pjRenderActivityComment(c, false)).join('');
-  el.innerHTML = items || `<div style="text-align:center;padding:24px 16px;color:var(--text3);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:6px;">
-    <span style="font-size:28px;">💬</span>
-    <span style="font-weight:700;color:var(--text2);font-size:12.5px;">Sem atividade ainda</span>
+  el.innerHTML = items || `<div class="pj-activity-empty">
+    <span class="pj-activity-empty-icon">💬</span>
+    <span class="pj-activity-empty-title">Sem atividade ainda</span>
     <span>Escreva um comentário para iniciar</span>
   </div>`;
   if (pjReplyTo) {
@@ -19380,11 +19502,11 @@ function pjOpenAssignModal(taskId) {
   const task = pjAllTasks.find(t=>t.id===taskId); if (!task) return;
   const assigned = task.assignees || [];
   const html = `<h3>👤 Responsáveis</h3>
-    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+    <div class="pj-assignee-list">
     ${pjMembers.map(m=>`
-      <label style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg);border-radius:8px;cursor:pointer;">
+      <label class="pj-assignee-row">
         <input type="checkbox" ${assigned.includes(m.uid)?'checked':''} onchange="pjToggleAssignee('${taskId}','${m.uid}',this.checked)">
-        ${pjAvatarHtml(m.uid)} <span style="font-size:13px;">${escHtml(m.name||m.email)}</span>
+        ${pjAvatarHtml(m.uid)} <span class="pj-assignee-name">${escHtml(m.name||m.email)}</span>
       </label>`).join('')}
     </div>
     <div class="pj-form-actions"><button class="pj-btn pj-btn-secondary" onclick="pjCloseFormModal()">Fechar</button></div>`;
@@ -19489,14 +19611,14 @@ function pjOpenTemplatesModal() {
     ? templates.map(tpl => `
       <div class="pj-tpl-row">
         <div class="pj-space-icon" style="background:${tpl.color||'#6366f1'};width:28px;height:28px;font-size:12px;">${(tpl.name||'?')[0].toUpperCase()}</div>
-        <div style="flex:1;">
-          <div style="font-weight:600;font-size:13px;">${escHtml(tpl.name)}</div>
-          <div style="font-size:11px;color:var(--text3);">${tpl.folders.length} pasta${tpl.folders.length!==1?'s':''} · ${tpl.directLists.length} lista${tpl.directLists.length!==1?'s':''} diretas</div>
+        <div class="pj-tpl-info">
+          <div class="pj-tpl-name">${escHtml(tpl.name)}</div>
+          <div class="pj-tpl-desc">${tpl.folders.length} pasta${tpl.folders.length!==1?'s':''} · ${tpl.directLists.length} lista${tpl.directLists.length!==1?'s':''} diretas</div>
         </div>
-        <button class="pj-btn pj-btn-primary" style="font-size:11px;padding:4px 10px;" onclick="pjCreateFromTemplate('${tpl.id}')">＋ Usar</button>
-        <button class="pj-btn pj-btn-secondary" style="font-size:11px;padding:4px 8px;" onclick="pjDeleteTemplate('${tpl.id}')">🗑️</button>
+        <button class="pj-btn pj-btn-primary pj-btn-sm" onclick="pjCreateFromTemplate('${tpl.id}')">＋ Usar</button>
+        <button class="pj-btn pj-btn-secondary pj-btn-sm" onclick="pjDeleteTemplate('${tpl.id}')">🗑️</button>
       </div>`).join('')
-    : `<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px;">Nenhum template salvo ainda.<br>Salve um espaço como template clicando em 📋 na sidebar.</div>`;
+    : `<div class="pj-activity-empty"><span class="pj-activity-empty-title">Nenhum template salvo ainda.</span><span>Salve um espaço como template clicando em 📋 na sidebar.</span></div>`;
   const html = `<h3>📋 Templates de Projeto</h3>
     <div style="display:flex;flex-direction:column;gap:8px;margin:12px 0;">${listHtml}</div>
     <div class="pj-form-actions">
@@ -20078,7 +20200,7 @@ function bdRenderDetail(id) {
   const main = document.getElementById('bdMain');
   if (!main) return;
   if (!id) {
-    main.innerHTML = `<div class="bd-empty"><div style="font-size:42px;">📚</div><div>Selecione um cliente ao lado<br>ou crie um novo</div></div>`;
+    main.innerHTML = `<div class="bd-empty"><div class="bd-empty-icon">📚</div><div class="bd-empty-text">Base de Clientes</div><div class="bd-empty-sub">Selecione um cliente ao lado ou crie um novo</div></div>`;
     return;
   }
   const c = _bdClientes.find(x => x.id === id);
@@ -20769,20 +20891,20 @@ function bdRenderFieldsList() {
   const el = document.getElementById('bdFieldsList');
   if (!el) return;
   if (_bdSchema.length === 0) {
-    el.innerHTML = `<div style="text-align:center;color:var(--text3);padding:24px;font-size:13px;">Nenhum campo extra criado ainda.<br>Clique em "＋ Adicionar novo campo".</div>`;
+    el.innerHTML = `<div class="bd-field-empty">Nenhum campo extra criado ainda.<br>Clique em "＋ Adicionar novo campo".</div>`;
     return;
   }
   el.innerHTML = _bdSchema.map((f,i) => {
     const tipo = BD_TIPOS.find(t => t.value === f.type) || BD_TIPOS[0];
-    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border-radius:8px;margin-bottom:8px;">
-      <span style="font-size:18px;">${tipo.icon}</span>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:600;color:var(--text);">${_bdEsc(f.label)}</div>
-        <div style="font-size:11px;color:var(--text3);">${tipo.label}${f.section?' · '+f.section:''}</div>
+    return `<div class="bd-field-row">
+      <span class="bd-field-icon">${tipo.icon}</span>
+      <div class="bd-field-info">
+        <div class="bd-field-name">${_bdEsc(f.label)}</div>
+        <div class="bd-field-type">${tipo.label}${f.section?' · '+f.section:''}</div>
       </div>
-      <button onclick="bdFieldMoveUp(${i})" title="Subir" style="background:none;border:1px solid var(--border);border-radius:5px;padding:3px 7px;cursor:pointer;color:var(--text2);">↑</button>
-      <button onclick="bdFieldMoveDown(${i})" title="Descer" style="background:none;border:1px solid var(--border);border-radius:5px;padding:3px 7px;cursor:pointer;color:var(--text2);">↓</button>
-      <button onclick="bdFieldDelete(${i})" title="Excluir" style="background:none;border:1px solid var(--border);border-radius:5px;padding:3px 7px;cursor:pointer;color:#ef4444;">🗑️</button>
+      <button class="bd-field-btn" onclick="bdFieldMoveUp(${i})" title="Subir">↑</button>
+      <button class="bd-field-btn" onclick="bdFieldMoveDown(${i})" title="Descer">↓</button>
+      <button class="bd-field-btn danger" onclick="bdFieldDelete(${i})" title="Excluir">🗑️</button>
     </div>`;
   }).join('');
 }
@@ -20824,12 +20946,10 @@ window.bdAddFieldPrompt = function() {
         <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">TIPO DE CAMPO</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
           ${BD_TIPOS.map(t => `
-            <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:2px solid var(--border);border-radius:8px;cursor:pointer;background:var(--bg2);" class="bd-tipo-opt">
-              <input type="radio" name="bdNewFieldType" value="${t.value}" style="display:none;" onchange="document.querySelectorAll('.bd-tipo-opt').forEach(x=>x.style.borderColor='var(--border)');this.closest('.bd-tipo-opt').style.borderColor='var(--accent)'">
-              <span style="font-size:20px;">${t.icon}</span>
-              <div>
-                <div style="font-size:13px;font-weight:600;color:var(--text);">${t.label}</div>
-              </div>
+            <label class="bd-tipo-opt">
+              <input type="radio" name="bdNewFieldType" value="${t.value}" style="display:none;">
+              <span class="bd-tipo-icon">${t.icon}</span>
+              <div><div class="bd-tipo-label">${t.label}</div></div>
             </label>`).join('')}
         </div>
       </div>
