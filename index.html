@@ -2262,6 +2262,8 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .mtr-tpl-actions .mtr-tpl-apply:hover { border-color:var(--accent);color:var(--accent);background:var(--accentGlow); }
 .mtr-tpl-actions .mtr-tpl-rename:hover { border-color:#3b82f6;color:#3b82f6; }
 .mtr-tpl-actions .mtr-tpl-del:hover { border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.1); }
+.mtr-tpl-restore-btn { display:block;width:100%;margin-top:6px;padding:6px 10px;border:1px dashed var(--border);border-radius:7px;background:none;color:var(--text3);font-size:11px;cursor:pointer;text-align:center;transition:all .15s; }
+.mtr-tpl-restore-btn:hover { border-color:var(--accent);color:var(--accent);background:var(--accentGlow); }
 .mtr-kpi:hover { transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.12); }
 .mtr-kpi-icon { font-size:20px;margin-bottom:8px; }
 .mtr-kpi-label { font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px; }
@@ -10867,6 +10869,40 @@ function mtrRenameTemplate(tplId) {
   mtrSaveTemplates(list);
   mtrRenderSidebar();
 }
+/* ─── Modelos prontos (factory): ocultar / restaurar / clonar ─── */
+function mtrGetHiddenFactories() {
+  try { return JSON.parse(localStorage.getItem('mtrHiddenFactories') || '[]'); } catch(e) { return []; }
+}
+function mtrSetHiddenFactories(ids) {
+  localStorage.setItem('mtrHiddenFactories', JSON.stringify(ids));
+}
+function mtrHideFactory(tplId) {
+  const tpl = MTR_FACTORY_TEMPLATES.find(t => t.id === tplId);
+  if (!tpl) return;
+  if (!confirm(`Ocultar o modelo "${tpl.name}"?\n\nVocê pode restaurar os modelos prontos a qualquer momento.`)) return;
+  const hidden = mtrGetHiddenFactories();
+  if (!hidden.includes(tplId)) hidden.push(tplId);
+  mtrSetHiddenFactories(hidden);
+  mtrRenderSidebar();
+  showToast('ok', '✓', `Modelo "${tpl.name}" ocultado.`);
+}
+function mtrRestoreFactories() {
+  mtrSetHiddenFactories([]);
+  mtrRenderSidebar();
+  showToast('ok', '✓', 'Modelos prontos restaurados.');
+}
+function mtrCloneFactory(tplId) {
+  const tpl = MTR_FACTORY_TEMPLATES.find(t => t.id === tplId);
+  if (!tpl) return;
+  const name = (prompt('Nome para a cópia editável:', tpl.name + ' (cópia)') || '').trim();
+  if (!name) return;
+  const list = mtrLoadTemplates();
+  const clone = { id: 'utpl_' + Date.now(), name, scope: tpl.scope, kpis: [...tpl.kpis], createdAt: Date.now() };
+  list.unshift(clone);
+  mtrSaveTemplates(list);
+  mtrRenderSidebar();
+  showToast('ok', '✓', `Cópia "${name}" criada em Seus modelos.`);
+}
 function mtrLoadAiTraining() {
   const k = mtrClientKey('mtrAiTraining');
   let v = localStorage.getItem(k);
@@ -11671,14 +11707,20 @@ function mtrRenderSidebar() {
       </div>
       <div class="mtr-tpl-actions">
         <button class="mtr-tpl-apply" onclick="mtrApplyTemplate('${tpl.id}')" title="Aplicar">▶</button>
-        ${!tpl.factory ? `
+        ${tpl.factory ? `
+          <button class="mtr-tpl-rename" onclick="mtrCloneFactory('${tpl.id}')" title="Editar cópia">✎</button>
+          <button class="mtr-tpl-del" onclick="mtrHideFactory('${tpl.id}')" title="Ocultar">✕</button>
+        ` : `
           <button class="mtr-tpl-rename" onclick="mtrRenameTemplate('${tpl.id}')" title="Renomear">✎</button>
           <button class="mtr-tpl-del" onclick="mtrDeleteTemplate('${tpl.id}')" title="Excluir">✕</button>
-        ` : ''}
+        `}
       </div>
     </div>`;
 
-  const factoryHtml = MTR_FACTORY_TEMPLATES.map(tplItem).join('');
+  const hiddenFactories = mtrGetHiddenFactories();
+  const visibleFactories = MTR_FACTORY_TEMPLATES.filter(t => !hiddenFactories.includes(t.id));
+  const factoryHtml = visibleFactories.map(tplItem).join('')
+    + (hiddenFactories.length ? `<button class="mtr-tpl-restore-btn" onclick="mtrRestoreFactories()" title="Restaurar modelos ocultos">↺ Restaurar modelos prontos (${hiddenFactories.length} oculto${hiddenFactories.length>1?'s':''})</button>` : '');
   const userHtml = userTpls.length ? userTpls.map(tplItem).join('')
     : '<div style="font-size:11px;color:var(--text3);padding:6px;font-style:italic;">Nenhum modelo salvo ainda.</div>';
 
@@ -11692,7 +11734,7 @@ function mtrRenderSidebar() {
         <button class="mtr-tpl-save-btn ad" onclick="mtrSaveCurrentAsTemplate('ad')" title="Salva apenas as métricas de Meta Ads">📢 Só Ads</button>
       </div>
       <div class="mtr-tpl-subtitle">Modelos prontos</div>
-      <div class="mtr-tpl-list">${factoryHtml}</div>
+      <div class="mtr-tpl-list">${factoryHtml || `<div style="font-size:11px;color:var(--text3);padding:4px 0 2px;font-style:italic;">Todos os modelos estão ocultos.</div><button class="mtr-tpl-restore-btn" onclick="mtrRestoreFactories()">↺ Restaurar modelos prontos</button>`}</div>
       <div class="mtr-tpl-subtitle">Seus modelos</div>
       <div class="mtr-tpl-list">${userHtml}</div>
     </div>
