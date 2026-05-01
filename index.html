@@ -16301,9 +16301,9 @@ function pjBuildInbox() {
       <div class="pj-inbox-section-body">${bodyContent}</div>
     </div>`;
   };
-  h += section('Atrasadas','#ef4444', overdue, 'Nenhuma tarefa atrasada 🎉');
-  h += section('Hoje','#f97316', todayT, 'Sem tarefas para hoje');
-  h += section('Futuras','#6366f1', future, 'Sem tarefas futuras');
+  h += section('Atrasadas','#ef4444', overdue, 'Nenhuma tarefa atrasada 🎉', false);
+  h += section('Hoje','#f97316', todayT, 'Sem tarefas para hoje', false);
+  h += section('Futuras','#6366f1', future, 'Sem tarefas futuras', true);
   if (done.length) h += section('Concluídas recentes','#22c55e', done, '', true);
   return h + '</div>';
 }
