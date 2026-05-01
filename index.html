@@ -4278,6 +4278,16 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .pj-notif-panel { width:calc(100vw - 24px); right:12px; }
 }
 
+@media (max-width: 768px) {
+  .pj-task-modal { width:100% !important; max-width:100vw !important; height:100vh !important; max-height:100vh !important; border-radius:0 !important; margin:0 !important; }
+  .pj-modal-body { flex-direction:column !important; overflow-y:auto !important; }
+  .pj-modal-left { padding:16px !important; min-width:0 !important; }
+  .pj-modal-right { width:100% !important; border-left:none !important; border-top:1px solid var(--border); max-height:none !important; overflow:visible !important; }
+  .pj-meta-bar { flex-wrap:wrap !important; gap:6px !important; }
+  .pj-meta-item { font-size:11px !important; padding:5px 8px !important; }
+  .pj-modal-title-input { font-size:18px !important; }
+}
+
 /* ── Modals (new space / list / status) ── */
 .pj-form-modal { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:2100; display:none; align-items:center; justify-content:center; }
 .pj-form-modal.open { display:flex; }
@@ -4445,6 +4455,23 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .pj-modal-left { padding:14px; }
   .pj-fields-grid { grid-template-columns:1fr; }
 }
+
+/* ── Global Search trigger button ── */
+.pj-search-trigger { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:7px 14px; cursor:pointer; display:flex; align-items:center; gap:8px; color:var(--text2); font-size:13px; font-family:var(--font); transition:all .15s; width:100%; box-sizing:border-box; }
+.pj-search-trigger:hover { border-color:var(--accent); color:var(--text); }
+
+/* ── Drag between status (list view) ── */
+.pj-task-row[draggable="true"] { cursor:grab; }
+.pj-task-row[draggable="true"]:active { cursor:grabbing; }
+.pj-task-row.pj-row-dragging { opacity:.4; }
+.pj-status-group-header.pj-drop-target { background:var(--accentGlow) !important; outline:2px dashed var(--accent); outline-offset:-2px; }
+
+/* ── Lightbox ── */
+.pj-lightbox { position:fixed; inset:0; background:rgba(0,0,0,.92); backdrop-filter:blur(8px); z-index:9000; display:flex; align-items:center; justify-content:center; padding:20px; animation:pjFadeIn .2s ease; cursor:zoom-out; }
+.pj-lightbox img { max-width:90vw; max-height:90vh; object-fit:contain; border-radius:12px; box-shadow:0 24px 80px rgba(0,0,0,.8); }
+.pj-lightbox-close { position:absolute; top:20px; right:24px; background:rgba(255,255,255,.15); border:none; color:#fff; font-size:24px; cursor:pointer; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background .15s; }
+.pj-lightbox-close:hover { background:rgba(255,255,255,.25); }
+.pj-lightbox-caption { position:absolute; bottom:24px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,.7); font-size:13px; background:rgba(0,0,0,.5); padding:6px 14px; border-radius:20px; white-space:nowrap; }
 
 /* ============== BASE DE DADOS (CLIENTES) ============== */
 #tab-base { padding:0; overflow:hidden; display:flex; flex-direction:column; }
@@ -6069,6 +6096,12 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
                 <span class="pj-notif-count" id="pjNotifCount">0</span>
               </button>
             </div>
+
+            <!-- Busca global -->
+            <button class="pj-search-trigger" onclick="pjOpenSearch()">
+              <span>🔍</span> Buscar tarefas...
+              <span style="margin-left:auto;font-size:10px;opacity:.5;">⌘K</span>
+            </button>
 
             <!-- Vistas principais -->
             <button class="pj-nav-btn" id="pjBtnInbox" onclick="pjNavigate('inbox')">
@@ -9391,7 +9424,7 @@ function renderPosts() {
 }
 
 function renderPostCard(post) {
-  const imgs    = post.imagens ? post.imagens.map(s=>`<img src="${s}" alt="">`).join('') : '';
+  const imgs    = post.imagens ? post.imagens.map(s=>`<img src="${s}" alt="" onclick="event.stopPropagation();pjOpenLightbox(this.src,'')" style="cursor:zoom-in;">`).join('') : '';
   const thumbs  = imgs ? `<div class="post-thumb">${imgs}</div>` : '';
   const scriptSafe = escHtml(post.script||'');
   const legendaSafe = escHtml(post.legenda||'');
@@ -15866,6 +15899,43 @@ async function pjLoadAllTasks() {
     if (!pjTasks[t.listId]) pjTasks[t.listId] = [];
     pjTasks[t.listId].push(t);
   });
+  pjStartRealtime();
+}
+
+// ── Real-time task notifications ──────────────────────
+let _pjRealtimeUnsub = null;
+let _pjRealtimeReady = false;
+
+function pjStartRealtime() {
+  const uid = _auth?.currentUser?.uid || _currentUser?.uid;
+  if (!uid || _pjRealtimeUnsub) return;
+  // Espera 3s após load pra não notificar o carregamento inicial
+  setTimeout(() => { _pjRealtimeReady = true; }, 3000);
+
+  _pjRealtimeUnsub = pjC('pj_tasks').onSnapshot(snapshot => {
+    if (!_pjRealtimeReady) return;
+    snapshot.docChanges().forEach(change => {
+      const task = { id: change.doc.id, ...change.doc.data() };
+      const byOther = task.updatedBy && task.updatedBy !== uid;
+      if (change.type === 'modified' && byOther) {
+        const updater = pjMembers.find(m => m.uid === task.updatedBy);
+        const name = updater?.name || 'Alguém';
+        // Atualiza localmente sem re-render completo
+        const idx = pjAllTasks.findIndex(t => t.id === task.id);
+        if (idx >= 0) pjAllTasks[idx] = { ...pjAllTasks[idx], ...task };
+        if (typeof showToast === 'function') showToast('info', '🔔', `${name} atualizou "${task.title || 'uma tarefa'}"`);
+      }
+      if (change.type === 'added' && byOther) {
+        const updater = pjMembers.find(m => m.uid === task.updatedBy || m.uid === task.createdBy);
+        const name = updater?.name || 'Alguém';
+        if (!pjAllTasks.find(t => t.id === task.id)) {
+          pjAllTasks.push(task);
+          if (pjTasks[task.listId]) pjTasks[task.listId].push(task);
+        }
+        if (typeof showToast === 'function') showToast('info', '➕', `${name} criou "${task.title || 'uma tarefa'}"`);
+      }
+    });
+  });
 }
 
 // Hidrata pjMembers com photoUrl vindo de app_members (fonte da foto)
@@ -17866,6 +17936,27 @@ document.addEventListener('keydown', function(e) {
     pjOpenSearch();
   }
 });
+
+// ── Lightbox ────────────────────────────────────────────
+function pjOpenLightbox(src, caption) {
+  let lb = document.getElementById('pjLightbox');
+  if (lb) lb.remove();
+  lb = document.createElement('div');
+  lb.id = 'pjLightbox';
+  lb.className = 'pj-lightbox';
+  lb.onclick = e => { if (e.target === lb || e.target.tagName === 'IMG') pjCloseLightbox(); };
+  lb.innerHTML = `
+    <button class="pj-lightbox-close" onclick="pjCloseLightbox()">×</button>
+    <img src="${escHtml(src)}" alt="${escHtml(caption||'')}">
+    ${caption ? `<div class="pj-lightbox-caption">${escHtml(caption)}</div>` : ''}`;
+  document.body.appendChild(lb);
+  document.addEventListener('keydown', _pjLightboxKey);
+}
+function _pjLightboxKey(e) { if (e.key === 'Escape') pjCloseLightbox(); }
+function pjCloseLightbox() {
+  document.getElementById('pjLightbox')?.remove();
+  document.removeEventListener('keydown', _pjLightboxKey);
+}
 
 // ── Gantt View ──────────────────────────────────────────
 function pjBuildGantt() {
