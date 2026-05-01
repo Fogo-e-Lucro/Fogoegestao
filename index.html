@@ -2218,8 +2218,8 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .mtr-section-title { font-size:14px;font-weight:700;color:var(--text2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px; }
 .mtr-section-title::after { content:'';flex:1;height:1px;background:var(--border); }
 
-.mtr-kpi-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-bottom:20px; }
-.mtr-kpi { background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 16px;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s; }
+.mtr-kpi-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:24px; }
+.mtr-kpi { background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 22px;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s; }
 /* Delete button on KPI card */
 .mtr-kpi-del { position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);color:#ef4444;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s,transform .15s,background .15s;z-index:5; }
 .mtr-kpi:hover .mtr-kpi-del { opacity:1; }
@@ -2265,9 +2265,9 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .mtr-tpl-restore-btn { display:block;width:100%;margin-top:6px;padding:6px 10px;border:1px dashed var(--border);border-radius:7px;background:none;color:var(--text3);font-size:11px;cursor:pointer;text-align:center;transition:all .15s; }
 .mtr-tpl-restore-btn:hover { border-color:var(--accent);color:var(--accent);background:var(--accentGlow); }
 .mtr-kpi:hover { transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.12); }
-.mtr-kpi-icon { font-size:20px;margin-bottom:8px; }
-.mtr-kpi-label { font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px; }
-.mtr-kpi-value { font-size:26px;font-weight:800;color:var(--text1);line-height:1; }
+.mtr-kpi-icon { font-size:24px;margin-bottom:10px; }
+.mtr-kpi-label { font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px; }
+.mtr-kpi-value { font-size:32px;font-weight:800;color:var(--text1);line-height:1; }
 .mtr-kpi-delta { margin-top:6px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:4px; }
 .mtr-kpi-delta.up { color:#22c55e; }
 .mtr-kpi-delta.down { color:#ef4444; }
@@ -2426,8 +2426,8 @@ body[data-active-tab="metricas"] .rest-bar { display:none; }
 @keyframes skelShimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
 
 /* 2) MINI-SPARKLINES INSIDE KPI */
-.mtr-kpi { padding-bottom:34px; }
-.mtr-kpi-spark { position:absolute;bottom:8px;left:14px;right:14px;height:18px;pointer-events:none;opacity:.85; }
+.mtr-kpi { padding-bottom:38px; }
+.mtr-kpi-spark { position:absolute;bottom:10px;left:18px;right:18px;height:20px;pointer-events:none;opacity:.85; }
 .mtr-kpi-spark svg { width:100%;height:100%;display:block; }
 .mtr-kpi-spark .spk-line { fill:none;stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round; }
 .mtr-kpi-spark .spk-area { stroke:none; }
@@ -10688,7 +10688,7 @@ let mtrSharedSnapshotId = null;    // se carregado em modo compartilhado
 let mtrIsSharedView = false;
 let mtrShowPct = false;            // toggle % variação vs valor absoluto
 let mtrCustomMetrics = JSON.parse(localStorage.getItem('mtrCustomMetrics') || '[]'); // [{id,label,value}]
-let mtrSourceTab = localStorage.getItem('mtrSourceTab') || 'ig'; // 'ig' | 'ad' — qual aba está ativa quando ambas estão disponíveis
+let mtrSourceTab = localStorage.getItem('mtrSourceTab') || 'all'; // 'ig' | 'ad' | 'all' — qual aba está ativa quando ambas estão disponíveis
 
 /* Catálogo completo de métricas disponíveis */
 const MTR_CATALOG = [
@@ -11398,6 +11398,7 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
   let activeTab = mtrSourceTab;
   if (hasIg && !hasAd) activeTab = 'ig';
   if (!hasIg && hasAd) activeTab = 'ad';
+  if (showTabs && activeTab !== 'ig' && activeTab !== 'ad' && activeTab !== 'all') activeTab = 'all';
 
   // Helper: monta o HTML de um card KPI
   const buildKpiCard = (id) => {
@@ -11443,6 +11444,8 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
   const filterByTab = (id) => {
     const m = MTR_CATALOG.find(x => x.id === id);
     if (!m) return false;
+    // Aba Geral: mostra tudo (IG + Ads + GMB)
+    if (showTabs && activeTab === 'all') return true;
     // GMB: sempre exibido (não tem aba dedicada — vai junto com a aba IG ou quando não há tabs)
     if (m.source === 'gmb') return showTabs ? activeTab === 'ig' : true;
     if (showTabs) return m.source === activeTab;
@@ -11454,8 +11457,8 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
   const visibleKpis = mtrUserKpis.filter(filterByTab);
   const cards = visibleKpis.map(buildKpiCard).join('');
 
-  // Métricas personalizadas (só aparecem na aba IG ou quando não há tabs)
-  const showCustom = !showTabs || activeTab === 'ig';
+  // Métricas personalizadas (aparecem na aba IG, Geral, ou quando não há tabs)
+  const showCustom = !showTabs || activeTab === 'ig' || activeTab === 'all';
   const customCards = showCustom ? mtrCustomMetrics.map(cm => `
     <div class="mtr-kpi" style="cursor:default;">
       <button class="mtr-kpi-del" onclick="event.stopPropagation();mtrDeleteCustomMetric('${cm.id}')" title="Remover">✕</button>
@@ -11468,8 +11471,10 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
   // Tabs de fonte (só quando ambos IG e Ads estão conectados)
   const igCount = mtrUserKpis.filter(id => { const m = MTR_CATALOG.find(x=>x.id===id); return m && m.source==='ig'; }).length;
   const adCount = mtrUserKpis.filter(id => { const m = MTR_CATALOG.find(x=>x.id===id); return m && m.source==='ad'; }).length;
+  const allCount = igCount + adCount;
   const sourceTabsHtml = showTabs ? `
     <div class="mtr-source-tabs">
+      <button class="mtr-source-tab ${activeTab==='all'?'active':''}" onclick="mtrSwitchSourceTab('all')">🌐 Geral <span class="mtr-source-tab-count">${allCount}</span></button>
       <button class="mtr-source-tab ${activeTab==='ig'?'active':''}" onclick="mtrSwitchSourceTab('ig')">📷 Instagram <span class="mtr-source-tab-count">${igCount}</span></button>
       <button class="mtr-source-tab ${activeTab==='ad'?'active':''}" onclick="mtrSwitchSourceTab('ad')">📢 Meta Ads <span class="mtr-source-tab-count">${adCount}</span></button>
     </div>` : '';
@@ -11786,9 +11791,9 @@ function mtrRemoveKpi(id) {
   }
 }
 
-/* Alterna entre as abas de fonte (Instagram / Meta Ads) quando ambas estão disponíveis */
+/* Alterna entre as abas de fonte (Geral / Instagram / Meta Ads) quando ambas estão disponíveis */
 function mtrSwitchSourceTab(src) {
-  if (src !== 'ig' && src !== 'ad') return;
+  if (src !== 'ig' && src !== 'ad' && src !== 'all') return;
   mtrSourceTab = src;
   localStorage.setItem('mtrSourceTab', src);
   if (mtrLastSnapshot) {
@@ -19064,7 +19069,7 @@ async function pjAddSubtask() {
     spaceId: parentTask.spaceId || pjLists.find(l=>l.id===parentTask.listId)?.spaceId || '',
     statusId: (pjLists.find(l=>l.id===parentTask.listId)?.statuses||PJ_DEFAULT_STATUSES)[0].id,
     assignees:[], dueDate:null, priority:null,
-    parentTaskId:pjCurrentTaskId, customFieldValues:{},
+    parentTaskId:pjCurrentTaskId, customFieldValues:{ ...(parentTask.customFieldValues || {}) },
     createdBy:uid, createdAt:pjNow(), updatedAt:pjNow(), order:Date.now(),
   };
   // Optimistic local add (works in demo/offline)
