@@ -3702,8 +3702,16 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   padding-bottom:6px; border-bottom:1px solid var(--border);
 }
 .pj-fields-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
-.pj-field-item { display:flex; flex-direction:column; gap:3px; }
-.pj-field-label { font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; }
+.pj-field-item { display:flex; flex-direction:column; gap:3px; position:relative; }
+.pj-field-label { font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; display:flex; align-items:center; gap:6px; }
+.pj-field-quick-del {
+  margin-left:auto; width:20px; height:20px; border-radius:5px; border:none;
+  background:none; color:var(--text3); cursor:pointer; display:flex;
+  align-items:center; justify-content:center; font-size:13px; line-height:1;
+  opacity:0; transition:opacity .15s, background .15s, color .15s;
+}
+.pj-field-item:hover .pj-field-quick-del { opacity:1; }
+.pj-field-quick-del:hover { background:rgba(239,68,68,.12); color:#ef4444; }
 .pj-field-value { padding:6px 8px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:12.5px; font-family:var(--font); outline:none; border:1px solid transparent; }
 .pj-field-value:hover { border-color:var(--border); }
 .pj-field-value:focus { border-color:var(--accent); background:var(--card); }
@@ -18843,7 +18851,7 @@ function pjRenderTaskModal(task) {
   if (fields.length) {
     fieldsHtml = `<div class="pj-modal-section-title" style="display:flex;align-items:center;gap:8px;">
       Campos
-      <button class="pj-icon-btn" style="font-size:14px;padding:2px 6px;" title="Editar campos" onclick="pjOpenFieldsEditor('${list.id}')">＋</button>
+      <button class="pj-icon-btn" style="font-size:12px;padding:3px 9px;" title="Gerenciar campos (adicionar, renomear, excluir)" onclick="pjOpenFieldsEditor('${list.id}')">⚙️ Gerenciar</button>
     </div><div class="pj-fields-grid">`;
     fields.forEach(f => {
       const val = task.customFieldValues?.[f.id] || '';
@@ -18888,7 +18896,7 @@ function pjRenderTaskModal(task) {
                  onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">`;
       }
       fieldsHtml += `<div class="pj-field-item">
-        <div class="pj-field-label">${escHtml(f.name)}</div>${input}
+        <div class="pj-field-label">${escHtml(f.name)}<button class="pj-field-quick-del" title="Remover este campo de todas as tarefas" onclick="pjQuickRemoveField('${list.id}','${f.id}')">×</button></div>${input}
       </div>`;
     });
     fieldsHtml += '</div>';
@@ -19820,6 +19828,21 @@ function pjAddFieldRow() {
   if (window._cfBuildRow) {
     el.insertAdjacentHTML('beforeend', window._cfBuildRow(id, 'Novo campo', 'text', []));
   }
+}
+async function pjQuickRemoveField(listId, fieldId) {
+  const list = pjLists.find(l => l.id === listId);
+  if (!list) return;
+  const field = (list.customFields || []).find(f => f.id === fieldId);
+  if (!field) return;
+  if (!confirm(`Remover o campo "${field.name}"?\n\nIsso vai apagar esse campo de TODAS as tarefas dessa lista. Os dados preenchidos nesse campo serão perdidos.`)) return;
+  list.customFields = (list.customFields || []).filter(f => f.id !== fieldId);
+  try { await pjC('pj_lists').doc(listId).update({ customFields: list.customFields }); } catch(e){ console.error(e); }
+  if (pjCurrentTaskId) {
+    const t = pjAllTasks.find(x => x.id === pjCurrentTaskId);
+    if (t) pjRenderTaskModal({ ...t });
+  }
+  if (pjCurrentView.id === listId) pjRenderMain();
+  if (typeof showToast === 'function') showToast(`Campo "${field.name}" removido`, 'ok');
 }
 async function pjSaveFields(listId) {
   const rows = document.querySelectorAll('#pjFieldsEditList .pj-field-edit-row');
