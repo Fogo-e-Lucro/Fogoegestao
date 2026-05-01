@@ -3363,7 +3363,7 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-wl-day-count { font-size:14px; font-weight:700; color:var(--text); margin-top:2px; min-height:18px; }
 .pj-wl-day-count.has { color:var(--accent); }
 
-/* By Client */
+/* By Client (legacy classes mantidas) */
 .pj-client-card {
   background:var(--card); border:1px solid var(--border);
   border-radius:12px; padding:12px 14px;
@@ -3384,6 +3384,120 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 }
 .pj-client-task:hover { background:var(--bg2); }
 .pj-client-task .done { text-decoration:line-through; color:var(--text3); }
+
+/* Visão por Cliente — grid de cartões pra escolher */
+.pj-bc-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:14px;
+}
+.pj-bc-card {
+  display:flex; align-items:center; gap:12px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:14px 14px;
+  cursor:pointer; text-align:left; font-family:inherit;
+  transition:all .18s ease;
+  position:relative; overflow:hidden;
+  width:100%;
+}
+.pj-bc-card::before {
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:linear-gradient(180deg, var(--accent), var(--accent2,var(--accent)));
+  opacity:0; transition:opacity .18s;
+}
+.pj-bc-card:hover { transform:translateY(-3px); border-color:var(--accent); box-shadow:0 12px 32px rgba(0,0,0,.18); }
+.pj-bc-card:hover::before { opacity:1; }
+.pj-bc-card:hover .pj-bc-card-arrow { color:var(--accent); transform:translateX(3px); }
+.pj-bc-card.empty { opacity:.7; }
+.pj-bc-card.none { background:linear-gradient(135deg, var(--bg2), var(--card)); border-style:dashed; }
+.pj-bc-card-avatar {
+  width:52px; height:52px; flex-shrink:0;
+  border-radius:14px;
+  background:linear-gradient(135deg, var(--accent), var(--accent2,#a855f7));
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-size:22px; font-weight:800; letter-spacing:.02em;
+  box-shadow:0 4px 14px rgba(0,0,0,.18);
+  border:2px solid var(--card);
+}
+.pj-bc-card.none .pj-bc-card-avatar { background:var(--bg3,var(--bg2)); color:var(--text3); }
+.pj-bc-card-body { flex:1; min-width:0; }
+.pj-bc-card-name {
+  font-size:14.5px; font-weight:700; color:var(--text1,var(--text));
+  margin-bottom:3px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.pj-bc-card-sub {
+  font-size:11.5px; color:var(--text3);
+  margin-bottom:8px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.pj-bc-card-stats { display:flex; flex-wrap:wrap; gap:5px; }
+.pj-bc-mini {
+  font-size:10.5px; font-weight:700;
+  padding:3px 8px; border-radius:10px;
+  background:var(--bg2); color:var(--text2);
+  letter-spacing:.02em;
+}
+.pj-bc-mini.total { background:var(--accentGlow); color:var(--accent); }
+.pj-bc-mini.open { background:rgba(34,197,94,.14); color:#22c55e; }
+.pj-bc-mini.overdue { background:rgba(239,68,68,.14); color:#ef4444; }
+.pj-bc-mini.muted { background:transparent; color:var(--text3); border:1px dashed var(--border); }
+.pj-bc-card-arrow {
+  font-size:18px; color:var(--text3);
+  transition:all .18s; flex-shrink:0;
+  margin-right:2px;
+}
+
+/* Visão detalhe (cliente selecionado) */
+.pj-bc-back {
+  background:var(--bg2); border:1px solid var(--border); color:var(--text2);
+  padding:6px 12px; border-radius:8px; font-size:12px; font-weight:700;
+  cursor:pointer; font-family:inherit;
+  transition:all .15s;
+}
+.pj-bc-back:hover { border-color:var(--accent); color:var(--accent); background:var(--accentGlow); }
+.pj-bc-detail-hero {
+  display:flex; align-items:center; gap:18px;
+  background:linear-gradient(135deg, var(--card), var(--bg2));
+  border:1px solid var(--border); border-radius:16px;
+  padding:20px 22px; margin-bottom:18px;
+}
+.pj-bc-detail-avatar {
+  width:78px; height:78px; flex-shrink:0;
+  border-radius:18px;
+  background:linear-gradient(135deg, var(--accent), var(--accent2,#a855f7));
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-size:34px; font-weight:800;
+  box-shadow:0 6px 20px rgba(0,0,0,.22);
+  border:3px solid var(--card);
+}
+.pj-bc-detail-info { flex:1; min-width:0; }
+.pj-bc-detail-name { font-size:22px; font-weight:800; color:var(--text1,var(--text)); margin-bottom:4px; }
+.pj-bc-detail-sub { font-size:13px; color:var(--text3); margin-bottom:12px; }
+.pj-bc-detail-stats { display:flex; flex-wrap:wrap; gap:8px; }
+.pj-bc-stat {
+  font-size:12px; font-weight:600;
+  padding:5px 12px; border-radius:10px;
+  background:var(--bg2); color:var(--text2);
+}
+.pj-bc-stat strong { color:var(--text1,var(--text)); margin-right:4px; font-weight:800; }
+.pj-bc-stat.open strong { color:var(--accent); }
+.pj-bc-stat.done strong { color:#22c55e; }
+.pj-bc-stat.overdue { background:rgba(239,68,68,.12); color:#ef4444; }
+.pj-bc-stat.overdue strong { color:#ef4444; }
+
+.pj-bc-tasks-list { display:flex; flex-direction:column; gap:6px; }
+.pj-bc-task-row {
+  display:flex; align-items:center; gap:12px;
+  padding:11px 14px; border-radius:10px;
+  background:var(--card); border:1px solid var(--border);
+  cursor:pointer; transition:all .15s;
+}
+.pj-bc-task-row:hover { border-color:var(--accent); transform:translateX(3px); background:var(--accentGlow); }
+.pj-bc-task-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.pj-bc-task-title { flex:1; font-size:13.5px; color:var(--text1,var(--text)); font-weight:500; }
+.pj-bc-task-title.done { text-decoration:line-through; color:var(--text3); }
+.pj-bc-task-list { font-size:11px; color:var(--text3); font-weight:600; padding:3px 8px; border-radius:6px; background:var(--bg2); }
 
 /* Timeline / calendar grid */
 .pj-cal-grid {
@@ -6284,9 +6398,21 @@ function acessoSendInvite(email, name, authType, pwd) {
   window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(email)}&su=${subject}&body=${encodeURIComponent(body)}`, '_blank');
 }
 
-async function acessoUploadAvatar(el) {
-  const email = getCurrentEmail();
-  if (!email) return;
+async function acessoUploadAvatar(el, targetEmail) {
+  // targetEmail: opcional. Se omitido, sobe foto do próprio usuário.
+  // Se passado, admin sobe foto de outro membro.
+  const myEmail = getCurrentEmail();
+  if (!myEmail) return;
+  const email = targetEmail || myEmail;
+  // Verifica permissão: usuário comum só pode editar a própria foto;
+  // admin pode editar qualquer uma.
+  if (email !== myEmail) {
+    const me = _acessoMembers.find(x => x.email === myEmail);
+    if (!me || me.role !== 'admin') {
+      showToast('warn','⚠️','Apenas admin pode trocar a foto de outros membros.');
+      return;
+    }
+  }
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
@@ -6311,6 +6437,13 @@ async function acessoUploadAvatar(el) {
         } catch(_) {}
         const m = _acessoMembers.find(x => x.email === email);
         if (m) m.photoUrl = dataUrl;
+        // Atualiza pjMembers em memória se aplicável
+        try {
+          if (typeof pjMembers !== 'undefined' && Array.isArray(pjMembers)) {
+            const pm = pjMembers.find(x => x.email === email);
+            if (pm) pm.photoUrl = dataUrl;
+          }
+        } catch(_) {}
         renderMemberList();
         showToast('success','📷','Foto atualizada');
       } catch(e) { showToast('error','❌','Erro ao salvar foto'); }
@@ -6401,10 +6534,17 @@ function renderMemberList() {
       ? `background-image:url('${photo}');background-color:${color};`
       : `background:${color};`;
     const avatarContent = photo ? '' : initial;
-    const editableCls = isMe ? ' editable' : '';
-    const onclickAttr = isMe ? `onclick="acessoUploadAvatar(this)"` : '';
+    // Admin pode editar foto de qualquer membro; usuário comum só a própria
+    const meRow = _acessoMembers.find(x => x.email === myEmail);
+    const iAmAdmin = meRow && meRow.role === 'admin';
+    const canEditPhoto = isMe || iAmAdmin;
+    const editableCls = canEditPhoto ? ' editable' : '';
+    const onclickAttr = canEditPhoto
+      ? (isMe ? `onclick="acessoUploadAvatar(this)"` : `onclick="acessoUploadAvatar(this,'${safeEmail}')"`)
+      : '';
+    const photoTitle = isMe ? 'Clique para mudar a sua foto' : (iAmAdmin ? `Clique para definir foto de ${m.name||m.email}` : '');
     return `<div class="acesso-member-row">
-      <div class="acesso-member-avatar${editableCls}" style="${avatarStyle}" ${onclickAttr} title="${isMe?'Clique para mudar a foto':''}">${avatarContent}</div>
+      <div class="acesso-member-avatar${editableCls}" style="${avatarStyle}" ${onclickAttr} title="${photoTitle}">${avatarContent}</div>
       <div class="acesso-member-info">
         <div class="acesso-member-name">${escHtml(m.name||m.email)}</div>
         <div class="acesso-member-email">${escHtml(m.email)}${permSummary ? ' · '+permSummary : ''}</div>
@@ -15260,15 +15400,12 @@ function pjBuildFilterBar(list) {
     {id:'overdue',label:'Atrasadas'},{id:'today',label:'Hoje'},
     {id:'week',label:'Próximos 7 dias'},{id:'none',label:'Sem data'},
   ].map(d => `<option value="${d.id}" ${f.due===d.id?'selected':''}>${d.label}</option>`).join('');
-  // Client options: principalmente da Base de Dados, + valores legados de tasks existentes
+  // Client options: APENAS clientes que existem na Base de Dados.
+  // Se o filtro atual aponta para um valor legado (ex: cliente excluído), preserva-o
+  // para o usuário poder limpar, mas não polui o dropdown com legados antigos.
   const baseNames = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : Object.keys((typeof clients!=='undefined'&&clients)||{});
   const clientNames = new Set(baseNames);
-  pjAllTasks.forEach(t => {
-    const lst = pjLists.find(l => l.id === t.listId);
-    (lst?.customFields||[]).filter(cf => cf.type==='client').forEach(cf => {
-      const v = t.customFieldValues?.[cf.id]; if (v) clientNames.add(v);
-    });
-  });
+  if (f.client && !clientNames.has(f.client)) clientNames.add(f.client);
   const clientOpts = [...clientNames].sort().map(c => `<option value="${escHtml(c)}" ${f.client===c?'selected':''}>${escHtml(c)}</option>`).join('');
   const sortOpts = [
     {id:'order',label:'Padrão'},{id:'due',label:'Vencimento'},
@@ -15601,55 +15738,142 @@ function pjBuildWorkload() {
 }
 
 // ── Visão por Cliente ──────────────────────────────────
+let _pjByClientSelected = null; // nome do cliente selecionado no grid (null = mostrar grid)
+function pjByClientSelect(name) {
+  _pjByClientSelected = (_pjByClientSelected === name) ? null : name;
+  pjRenderMain();
+}
 function pjBuildByClient() {
-  const clientsObj = (typeof clients!=='undefined' && clients) || {};
-  // Coletar mapa client -> tasks (do custom field "client" ou "cliente")
+  // Mapa de clientes canônicos da Base de Dados (com logo, cidade etc.)
+  const bdMap = {};
+  try {
+    if (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes)) {
+      _bdClientes.forEach(c => { if (c.nome) bdMap[c.nome] = c; });
+    }
+  } catch(e){}
+  const canonical = new Set(Object.keys(bdMap));
+
+  // Resolve cliente de uma task (custom field tipo "client")
   const taskClient = (t) => {
     const fields = pjLists.find(l=>l.id===t.listId)?.customFields || [];
     const clientField = fields.find(f => f.type==='client' || /client/i.test(f.name));
     if (clientField) return t.customFieldValues?.[clientField.id] || null;
     return null;
   };
-  const groups = {};
-  pjVisibleTasks().forEach(t => {
-    const c = taskClient(t) || '__none__';
-    (groups[c] = groups[c] || []).push(t);
-  });
-  const keys = Object.keys(groups).sort((a,b) => groups[b].length - groups[a].length);
 
-  let h = `<div class="pj-view-header">
-    <div class="pj-view-title">🏢 Visão por Cliente</div>
-    <div style="margin-left:auto;font-size:12px;color:var(--text3);">${keys.length} cliente${keys.length!==1?'s':''}</div>
-  </div>
-  <div class="pj-view-body" style="padding:14px;">`;
-  if (!keys.length) { h += `<div style="color:var(--text3);font-size:13px;">Nenhuma tarefa associada a clientes.</div></div>`; return h; }
-  keys.forEach(k => {
-    const items = groups[k];
+  // Agrupa: clientes canônicos + bucket "__none__" para Sem cliente / legados
+  const groups = {};
+  canonical.forEach(n => { groups[n] = []; });
+  groups['__none__'] = [];
+  pjVisibleTasks().forEach(t => {
+    const c = taskClient(t);
+    if (c && canonical.has(c)) groups[c].push(t);
+    else groups['__none__'].push(t);
+  });
+
+  // Ordem: canônicos por nome, "Sem cliente" sempre primeiro
+  const canonicalKeys = [...canonical].sort((a,b) => a.localeCompare(b));
+  const orderedKeys = ['__none__', ...canonicalKeys];
+  const totalClientes = canonicalKeys.length;
+
+  // Stats helper
+  const stats = (items) => {
     const open = items.filter(t => !pjIsDone(t)).length;
+    const done = items.length - open;
     const overdue = items.filter(t => !pjIsDone(t) && t.dueDate && t.dueDate < pjDateStr(new Date())).length;
-    const cinfo = clientsObj[k];
-    const display = k === '__none__' ? '— Sem cliente —' : (cinfo?.name || k);
-    h += `<div class="pj-client-card">
-      <div class="pj-client-card-head">
-        <div style="font-weight:700;font-size:14px;color:var(--text);">${escHtml(display)}</div>
-        <div style="margin-left:auto;display:flex;gap:8px;font-size:11px;">
-          <span class="pj-tag-pill">${items.length} total</span>
-          <span class="pj-tag-pill" style="color:var(--accent);">${open} abertas</span>
-          ${overdue?`<span class="pj-tag-pill" style="color:#ef4444;">${overdue} atrasadas</span>`:''}
+    return { total:items.length, open, done, overdue };
+  };
+
+  // ── MODO 1: Cliente selecionado → mostra detalhes ─────────────
+  if (_pjByClientSelected && groups[_pjByClientSelected]) {
+    const items = groups[_pjByClientSelected];
+    const s = stats(items);
+    const c = bdMap[_pjByClientSelected];
+    const display = _pjByClientSelected === '__none__' ? '— Sem cliente —' : (c?.nome || _pjByClientSelected);
+    const subtitle = c ? [c.tipoCozinha, c.cidade, c.ig?'@'+String(c.ig).replace('@',''):''].filter(Boolean).join(' · ') : '';
+    const initial = (display || '?').trim().charAt(0).toUpperCase();
+    const fotoStyle = c?.fotoUrl ? `background-image:url('${c.fotoUrl}');background-size:cover;background-position:center;` : '';
+    let h = `<div class="pj-view-header">
+      <button class="pj-bc-back" onclick="pjByClientSelect(null)">← Voltar</button>
+      <div class="pj-view-title" style="margin-left:6px;">🏢 ${escHtml(display)}</div>
+    </div>
+    <div class="pj-view-body" style="padding:18px 22px;">
+      <div class="pj-bc-detail-hero">
+        <div class="pj-bc-detail-avatar" style="${fotoStyle}">${c?.fotoUrl?'':initial}</div>
+        <div class="pj-bc-detail-info">
+          <div class="pj-bc-detail-name">${escHtml(display)}</div>
+          ${subtitle?`<div class="pj-bc-detail-sub">${escHtml(subtitle)}</div>`:''}
+          <div class="pj-bc-detail-stats">
+            <span class="pj-bc-stat"><strong>${s.total}</strong> total</span>
+            <span class="pj-bc-stat open"><strong>${s.open}</strong> abertas</span>
+            <span class="pj-bc-stat done"><strong>${s.done}</strong> concluídas</span>
+            ${s.overdue?`<span class="pj-bc-stat overdue"><strong>${s.overdue}</strong> atrasadas</span>`:''}
+          </div>
         </div>
       </div>
-      <div class="pj-client-tasks">${items.slice(0,8).map(t => {
+      <div class="pj-bc-tasks-list">`;
+    if (!items.length) {
+      h += `<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">Nenhuma tarefa para este cliente ainda.</div>`;
+    } else {
+      items.forEach(t => {
         const list = pjLists.find(l=>l.id===t.listId);
         const due = t.dueDate ? pjDueCls(t.dueDate) : null;
-        return `<div class="pj-client-task" onclick="pjOpenTask('${t.id}')">
-          <span class="${pjIsDone(t)?'done':''}">${escHtml(t.title||'')}</span>
-          <span style="margin-left:auto;font-size:11px;color:var(--text3);">${escHtml(list?.name||'')}</span>
-          ${due?`<span class="pj-task-due ${due.cls}" style="font-size:11px;">${due.label}</span>`:''}
+        const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
+        const st = statuses.find(s=>s.id===(t.statusId||statuses[0].id))||statuses[0];
+        h += `<div class="pj-bc-task-row" onclick="pjOpenTask('${t.id}')">
+          <span class="pj-bc-task-dot" style="background:${st.color};"></span>
+          <span class="pj-bc-task-title ${pjIsDone(t)?'done':''}">${escHtml(t.title||'(sem título)')}</span>
+          <span class="pj-bc-task-list">${escHtml(list?.name||'')}</span>
+          ${due?`<span class="pj-task-due ${due.cls}">${due.label}</span>`:''}
         </div>`;
-      }).join('')}${items.length>8?`<div style="font-size:11px;color:var(--text3);padding:6px 8px;">+${items.length-8} outras...</div>`:''}</div>
-    </div>`;
+      });
+    }
+    h += `</div></div>`;
+    return h;
+  }
+
+  // ── MODO 2: Grid de cartões pra escolher cliente ──────────────
+  let h = `<div class="pj-view-header">
+    <div class="pj-view-title">🏢 Visão por Cliente</div>
+    <div style="margin-left:auto;font-size:12px;color:var(--text3);">${totalClientes} cliente${totalClientes!==1?'s':''}</div>
+  </div>
+  <div class="pj-view-body" style="padding:18px 22px;">`;
+
+  if (!totalClientes && !groups['__none__'].length) {
+    h += `<div style="text-align:center;padding:50px 20px;color:var(--text3);font-size:13px;">
+      Nenhum cliente cadastrado na Base de Dados ainda.<br>
+      <button onclick="switchTab('base')" style="margin-top:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">+ Cadastrar cliente</button>
+    </div></div>`;
+    return h;
+  }
+
+  h += `<div class="pj-bc-grid">`;
+  orderedKeys.forEach(k => {
+    const items = groups[k] || [];
+    if (k === '__none__' && !items.length) return; // não mostra "Sem cliente" se vazio
+    const s = stats(items);
+    const c = bdMap[k];
+    const display = k === '__none__' ? 'Sem cliente' : (c?.nome || k);
+    const subtitle = c ? [c.tipoCozinha, c.cidade].filter(Boolean).join(' · ') : (k==='__none__'?'Tarefas sem cliente atribuído':'');
+    const initial = (display || '?').trim().charAt(0).toUpperCase();
+    const fotoStyle = c?.fotoUrl ? `background-image:url('${c.fotoUrl}');background-size:cover;background-position:center;` : '';
+    const isEmpty = !items.length;
+    h += `<button class="pj-bc-card ${k==='__none__'?'none':''} ${isEmpty?'empty':''}" onclick="pjByClientSelect('${String(k).replace(/'/g,"\\'")}')">
+      <div class="pj-bc-card-avatar" style="${fotoStyle}">${c?.fotoUrl?'':initial}</div>
+      <div class="pj-bc-card-body">
+        <div class="pj-bc-card-name">${escHtml(display)}</div>
+        ${subtitle?`<div class="pj-bc-card-sub">${escHtml(subtitle)}</div>`:''}
+        <div class="pj-bc-card-stats">
+          <span class="pj-bc-mini total">${s.total}</span>
+          ${s.open?`<span class="pj-bc-mini open">${s.open} abertas</span>`:''}
+          ${s.overdue?`<span class="pj-bc-mini overdue">⚠ ${s.overdue}</span>`:''}
+          ${isEmpty?`<span class="pj-bc-mini muted">sem tarefas</span>`:''}
+        </div>
+      </div>
+      <div class="pj-bc-card-arrow">→</div>
+    </button>`;
   });
-  h += `</div>`;
+  h += `</div></div>`;
   return h;
 }
 
