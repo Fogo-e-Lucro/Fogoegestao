@@ -575,46 +575,72 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 /* ── VISUALIZAR HEADER ───────────────────────────────── */
 .visualizar-header {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
 }
-.visualizar-title { font-size: 19px; font-weight: 700; }
+.visualizar-title {
+  font-size: 22px; font-weight: 800;
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, var(--text) 0%, var(--accent3) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.visualizar-title-icon {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+  -webkit-text-fill-color: initial;
+  box-shadow: 0 4px 14px rgba(124,58,237,.3);
+}
+.visualizar-actions { display: flex; align-items: center; gap: 8px; }
 
 .btn-export {
-  padding: 9px 20px;
+  padding: 10px 20px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border: none; border-radius: var(--r); color: #fff;
+  border: none; border-radius: 20px; color: #fff;
   font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font);
   display: flex; align-items: center; gap: 7px;
-  box-shadow: 0 2px 18px rgba(124,58,237,.38);
+  box-shadow: 0 4px 18px rgba(124,58,237,.35);
   transition: transform var(--t) var(--spring), box-shadow var(--t) var(--ease);
 }
-.btn-export:hover { transform: translateY(-2px); box-shadow: 0 6px 26px rgba(124,58,237,.55); }
+.btn-export:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,.55); }
 .btn-export:active { transform: translateY(0); }
 
-/* ── COLLAPSIBLE BLOCK ───────────────────────────────── */
+/* ── COLLAPSIBLE BLOCK — redesign ────────────────────── */
 .collapsible-block {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--r);
+  border-radius: 16px;
   overflow: hidden;
-  margin-bottom: 14px;
-  transition: border-color var(--t) var(--ease);
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.15);
+  transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
+.collapsible-block:not(.closed) { border-color: rgba(124,58,237,.25); }
 
 .collapsible-head {
-  padding: 14px 18px;
+  padding: 16px 20px;
   display: flex; align-items: center; justify-content: space-between;
   cursor: pointer; user-select: none;
   transition: background var(--t) var(--ease);
 }
-.collapsible-head:hover { background: rgba(255,255,255,.025); }
+.collapsible-head:hover { background: rgba(124,58,237,.03); }
+.collapsible-block:not(.closed) .collapsible-head { border-bottom: 1px solid var(--border); }
 
-.collapsible-head-left { display: flex; align-items: center; gap: 10px; }
-.collapsible-head-title { font-size: 14px; font-weight: 700; }
-.collapsible-head-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.collapsible-head-left { display: flex; align-items: center; gap: 12px; }
+
+/* Ícone do bloco colapsável */
+.collapsible-head-left > span[style] {
+  width: 36px !important; height: 36px !important;
+  border-radius: 10px !important;
+  background: rgba(124,58,237,.12) !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  font-size: 16px !important; flex-shrink: 0;
+}
+.collapsible-head-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.collapsible-head-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
 
 .collapsible-chevron {
-  width: 22px; height: 22px; flex-shrink: 0;
+  width: 20px; height: 20px; flex-shrink: 0;
   color: var(--text3);
   transition: transform var(--t2) var(--ease), color var(--t) var(--ease);
 }
@@ -897,10 +923,61 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
   display: flex; gap: 7px; justify-content: flex-end;
 }
 
-.empty-state { text-align: center; padding: 44px 24px; color: var(--text3); }
-.empty-state-icon { font-size: 44px; margin-bottom: 12px; }
-.empty-state-text { font-size: 14px; margin-bottom: 5px; }
-.empty-state-sub  { font-size: 12px; }
+/* ── EMPTY STATES — redesign ─────────────────────────── */
+.empty-state {
+  text-align: center; padding: 56px 24px; color: var(--text3);
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+}
+.empty-state-icon {
+  font-size: 48px; margin-bottom: 16px;
+  width: 76px; height: 76px; border-radius: 20px;
+  background: var(--bg2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1; box-shadow: 0 4px 18px rgba(0,0,0,.1);
+}
+.empty-state-text { font-size: 15px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
+.empty-state-sub  { font-size: 13px; color: var(--text3); margin-bottom: 18px; max-width: 280px; line-height: 1.5; }
+.empty-state-cta {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px; border-radius: 20px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; font-size: 13px; font-weight: 700; border: none;
+  cursor: pointer; font-family: var(--font);
+  box-shadow: 0 4px 14px rgba(124,58,237,.3);
+  transition: transform var(--t) var(--spring), box-shadow var(--t) var(--ease);
+}
+.empty-state-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,58,237,.45); }
+
+/* ── SKELETON LOADING ────────────────────────────────── */
+@keyframes sk-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+.sk {
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--bg2) 25%, var(--border) 50%, var(--bg2) 75%);
+  background-size: 800px 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+}
+/* Post card skeleton */
+.post-card-skeleton {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden; padding: 0;
+}
+.post-card-skeleton .sk-header { height: 40px; background: var(--bg2); display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.post-card-skeleton .sk-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.post-card-skeleton .sk-footer { height: 38px; background: var(--bg2); border-top: 1px solid var(--border); }
+.sk-circle { border-radius: 50% !important; }
+/* KPI skeleton */
+.kpi-skeleton {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px;
+}
+/* Task row skeleton */
+.task-skeleton {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-bottom: 1px solid var(--border);
+}
 
 /* ── MODAL ───────────────────────────────────────────── */
 .modal-overlay {
@@ -1133,39 +1210,43 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 /* ── FILTER BAR ──────────────────────────────────────── */
 .filter-bar {
   display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
-  margin-bottom: 16px; padding: 12px 16px;
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--r);
+  margin-bottom: 20px; padding: 12px 16px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,.12);
 }
 .filter-search {
-  flex: 1; min-width: 160px;
-  background: var(--bg); border: 1px solid var(--border);
-  border-radius: var(--r2); padding: 7px 11px;
+  flex: 1; min-width: 180px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 20px; padding: 8px 14px;
   color: var(--text); font-size: 13px; font-family: var(--font);
   outline: none;
-  transition: border-color var(--t) var(--ease);
+  transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
-.filter-search:focus { border-color: var(--accent); }
-.filter-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.filter-search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,58,237,.1); }
+.filter-chips { display: flex; gap: 5px; flex-wrap: wrap; }
 .filter-chip {
-  padding: 4px 10px; border-radius: 20px;
-  border: 1px solid var(--border); background: var(--bg);
-  color: var(--text2); font-size: 11px; font-weight: 600;
+  padding: 6px 14px; border-radius: 20px;
+  border: 1.5px solid var(--border); background: var(--bg);
+  color: var(--text2); font-size: 12px; font-weight: 600;
   cursor: pointer; font-family: var(--font);
   transition: all var(--t) var(--ease);
+  display: inline-flex; align-items: center; gap: 5px;
 }
-.filter-chip:hover { border-color: var(--accent2); color: var(--text); }
-.filter-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.filter-chip:hover { border-color: var(--accent2); color: var(--text); transform: translateY(-1px); }
+.filter-chip.active[data-ftype="REELS"]     { background:rgba(124,58,237,.15); border-color:var(--reels);     color:var(--reels); }
+.filter-chip.active[data-ftype="FOTO"]      { background:rgba(59,130,246,.15);  border-color:var(--foto);      color:var(--foto); }
+.filter-chip.active[data-ftype="CARROSSEL"] { background:rgba(245,158,11,.15);  border-color:var(--carrossel); color:var(--carrossel); }
+.filter-chip.active[data-ftype="STORY"]     { background:rgba(16,185,129,.15);  border-color:var(--story);     color:var(--story); }
 .filter-clear {
-  padding: 4px 10px; border-radius: 20px;
-  border: 1px solid var(--danger); background: transparent;
-  color: var(--danger); font-size: 11px; font-weight: 600;
+  padding: 6px 12px; border-radius: 20px;
+  border: 1px solid rgba(239,68,68,.35); background: rgba(239,68,68,.06);
+  color: var(--danger); font-size: 11px; font-weight: 700;
   cursor: pointer; font-family: var(--font);
   transition: all var(--t) var(--ease);
   display: none;
 }
 .filter-clear.visible { display: inline-flex; align-items: center; gap: 4px; }
-.filter-clear:hover { background: rgba(239,68,68,.1); }
+.filter-clear:hover { background: rgba(239,68,68,.14); border-color: var(--danger); }
 
 /* ── STATUS BADGE ────────────────────────────────────── */
 .status-badge {
@@ -1815,15 +1896,62 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 ═══════════════════════════════════════════════════════ */
 .sp-wrap { display:flex;flex-direction:column;gap:16px;padding:20px 24px 60px;width:100%; }
 
+/* ── PUBLIPOST PAGE HEADER ─────────────────────────────── */
+.sp-page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 4px;
+}
+.sp-page-title-wrap { display: flex; align-items: center; gap: 14px; }
+.sp-page-icon {
+  width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+  background: linear-gradient(135deg, #1877f2, #0a5fcc);
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+  box-shadow: 0 4px 16px rgba(24,119,242,.35);
+}
+.sp-page-title { font-size: 22px; font-weight: 800; color: var(--text); }
+.sp-page-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
 /* Config bar */
-.sp-config { background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 20px; }
-.sp-config-inner { display:flex;flex-wrap:wrap;gap:16px;align-items:center; }
+.sp-config {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+.sp-config-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+.sp-config-header-label {
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .6px;
+}
+.sp-config-inner { display:flex;flex-wrap:wrap;gap:12px;align-items:center; padding: 12px 18px; }
 .sp-config-group { display:flex;align-items:center;gap:8px;flex-wrap:wrap; }
 .sp-config-label { font-size:12px;font-weight:700;color:var(--text2);white-space:nowrap; }
 .sp-config-input { padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:12px;font-family:var(--font);width:220px;outline:none;transition:border-color .2s; }
 .sp-config-input:focus { border-color:var(--accent); }
 .sp-config-save-btn { padding:8px 14px;border-radius:8px;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:var(--font);transition:opacity .15s; }
 .sp-config-save-btn:hover { opacity:.85; }
+
+/* Facebook connect button */
+.sp-fb-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 16px; border-radius: 10px; border: none; cursor: pointer;
+  background: linear-gradient(135deg, #1877f2, #0a5fcc);
+  color: #fff; font-weight: 700; font-size: 13px; font-family: var(--font);
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(24,119,242,.3);
+  transition: transform var(--t) var(--spring), box-shadow var(--t) var(--ease), opacity .15s;
+}
+.sp-fb-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(24,119,242,.45); }
+.sp-fb-btn:active { transform: translateY(0); opacity: .9; }
+
+.sp-token-status { font-size: 12px; color: var(--text2); }
+.sp-config-hint {
+  font-size: 11px; color: var(--text3); margin-left: auto;
+  padding: 4px 10px; border-radius: 20px;
+  background: var(--bg); border: 1px solid var(--border);
+}
 
 /* Grid */
 .sp-grid { display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start; }
@@ -1834,8 +1962,23 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .sp-card-hdr { display:flex;align-items:center;justify-content:space-between;gap:12px; }
 .sp-card-title { font-size:15px;font-weight:700;color:var(--text); }
 
-/* Account select */
-.sp-account-select { padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:13px;font-family:var(--font);cursor:pointer;outline:none;max-width:220px; }
+/* Account select — modern styled */
+.sp-account-select-wrap { position: relative; display: inline-flex; align-items: center; }
+.sp-account-select {
+  -webkit-appearance: none !important; appearance: none !important;
+  padding: 9px 36px 9px 14px !important; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--bg2);
+  color: var(--text); font-size: 13px; font-weight: 600; font-family: var(--font);
+  cursor: pointer; outline: none; min-width: 180px; max-width: 240px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none' stroke='%237c3aed' stroke-width='2.5'%3E%3Cpolyline points='5 8 10 13 15 8'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
+}
+.sp-account-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124,58,237,.12);
+}
 
 /* Type tabs */
 .sp-type-row { display:flex;gap:8px;background:var(--bg2);border-radius:12px;padding:4px; }
@@ -1944,8 +2087,56 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
    MÉTRICAS TAB
 ═══════════════════════════════════════════════════════ */
 .mtr-wrap { padding:28px 32px;width:100%; }
-.mtr-header { display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:28px; }
-.mtr-title { font-size:22px;font-weight:800;color:var(--text1); }
+/* ── Métricas header — 2 linhas ────────────────────────── */
+.mtr-header {
+  display:flex; flex-direction:column; gap:0;
+  margin-bottom:28px;
+  background:var(--card); border:1px solid var(--border); border-radius:18px;
+  overflow:hidden;
+}
+.mtr-hrow { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:16px 20px; }
+.mtr-hrow-top { background:var(--card); }
+.mtr-hrow-bottom {
+  background:var(--bg2); border-top:1px solid var(--border);
+  gap:10px;
+}
+/* Título */
+.mtr-title-wrap { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.mtr-title-icon {
+  width:40px; height:40px; border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; flex-shrink:0; box-shadow:0 4px 14px rgba(124,58,237,.3);
+}
+.mtr-title { font-size:16px;font-weight:800;color:var(--text);line-height:1.1; }
+.mtr-subtitle { font-size:11px;color:var(--text3);margin-top:1px; }
+/* Fontes */
+.mtr-sources { display:flex; gap:8px; flex:1; flex-wrap:wrap; }
+/* Ações rápidas */
+.mtr-quick-actions { display:flex; gap:6px; align-items:center; margin-left:auto; }
+.mtr-quick-btn {
+  width:34px; height:34px; border-radius:10px; border:1px solid var(--border);
+  background:var(--bg2); color:var(--text2); font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:all .15s;
+}
+.mtr-quick-btn:hover { background:var(--bg3); border-color:var(--accent); color:var(--accent); }
+/* Período */
+.mtr-period-group { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+/* Comparação */
+.mtr-compare-group { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+/* Ferramentas */
+.mtr-tools-group { display:flex; align-items:center; gap:6px; margin-left:auto; }
+.mtr-tool-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:7px 14px; border-radius:20px; border:1px solid var(--border);
+  background:var(--card); color:var(--text2); font-size:12px; font-weight:600;
+  cursor:pointer; font-family:var(--font); transition:all .15s;
+}
+.mtr-tool-btn:hover { border-color:var(--accent); color:var(--accent); background:rgba(124,58,237,.06); }
+.mtr-tool-btn.mtr-tool-primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+.mtr-tool-btn.mtr-tool-primary:hover { filter:brightness(1.1); color:#fff; }
+.mtr-tool-btn.active { background:rgba(124,58,237,.15); border-color:var(--accent); color:var(--accent); }
+/* controls legacy compat */
 .mtr-controls { display:flex;align-items:center;gap:8px;flex-wrap:wrap; }
 .mtr-select {
   background:var(--card); border:1px solid var(--border); color:var(--text1);
@@ -1972,8 +2163,13 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .mtr-period-label { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text2); }
 .mtr-compare-same { background:transparent;border:1px solid var(--border);color:var(--text2);padding:5px 11px;border-radius:17px;font-size:11px;cursor:pointer;font-weight:600;margin-left:4px; }
 .mtr-compare-same:hover { border-color:var(--accent);color:var(--accent); }
-.mtr-refresh-btn { padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s; }
-.mtr-refresh-btn:hover { opacity:.85; }
+.mtr-refresh-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 16px; background:var(--accent); color:#fff;
+  border:none; border-radius:20px; font-size:12px; font-weight:700;
+  cursor:pointer; font-family:var(--font); transition:opacity .15s, transform .15s;
+}
+.mtr-refresh-btn:hover { opacity:.88; transform:translateY(-1px); }
 .mtr-refresh-btn:disabled { opacity:.5;cursor:not-allowed; }
 
 .mtr-section { margin-bottom:32px; }
@@ -2620,7 +2816,28 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-list-count { font-size:10px; color:var(--text3); font-weight:600; background:var(--bg2); padding:1px 6px; border-radius:8px; }
 .pj-list-actions { display:none; align-items:center; gap:2px; }
 .pj-list-row:hover .pj-list-actions { display:flex; }
+/* Sidebar footer with user avatar */
 .pj-sidebar-footer { padding:10px 10px 14px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:4px; }
+.pj-sidebar-user-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 10px; margin-bottom: 6px;
+  background: var(--bg2); border: 1px solid var(--border);
+  cursor: pointer; transition: background .15s, border-color .15s;
+}
+.pj-sidebar-user-row:hover { background: var(--card); border-color: var(--accent); }
+.pj-sidebar-user-info { flex: 1; min-width: 0; }
+.pj-sidebar-user-name {
+  font-size: 12px; font-weight: 700; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pj-sidebar-user-role {
+  font-size: 10px; color: var(--text3); margin-top: 1px;
+}
+.pj-sidebar-user-status {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #22c55e; flex-shrink: 0;
+  box-shadow: 0 0 0 2px var(--bg2), 0 0 6px rgba(34,197,94,.5);
+}
 .pj-add-space-btn {
   display:flex; align-items:center; gap:8px;
   padding:8px 12px; border-radius:8px;
@@ -3443,11 +3660,27 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-add-subtask { display:flex; align-items:center; gap:6px; padding:5px 6px; color:var(--text3); font-size:12.5px; cursor:pointer; border-radius:6px; }
 .pj-add-subtask:hover { background:var(--bg); color:var(--text2); }
 /* Activity */
-.pj-activity-title { font-size:12px; font-weight:700; color:var(--text2); margin-bottom:12px; }
-.pj-activity-list { display:flex; flex-direction:column; gap:10px; }
-.pj-activity-item { display:flex; gap:8px; }
-.pj-activity-text { font-size:12px; color:var(--text2); line-height:1.5; flex:1; }
-.pj-activity-time { font-size:10px; color:var(--text3); white-space:nowrap; margin-top:2px; }
+.pj-activity-title {
+  font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 6px;
+}
+.pj-activity-title::before {
+  content: ''; display: block; width: 3px; height: 14px;
+  border-radius: 2px; background: linear-gradient(180deg, var(--accent), var(--accent2));
+}
+.pj-activity-list { display:flex; flex-direction:column; gap:0; }
+.pj-activity-item {
+  display: flex; gap: 10px; padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.pj-activity-item:last-child { border-bottom: none; }
+.pj-activity-text { font-size:12.5px; color:var(--text2); line-height:1.5; flex:1; }
+.pj-activity-text strong { color: var(--text); }
+.pj-activity-time {
+  font-size: 10px; color: var(--text3); white-space: nowrap; margin-top: 2px;
+  background: var(--bg2); padding: 2px 6px; border-radius: 10px; border: 1px solid var(--border);
+}
 .pj-comment-input-wrap { margin-top:14px; display:flex; gap:8px; align-items:flex-end; }
 .pj-comment-input { flex:1; padding:12px 44px 12px 14px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:13.5px; line-height:1.45; font-family:var(--font); outline:none; resize:vertical; min-height:80px; max-height:240px; }
 .pj-comment-input:focus { border-color:var(--accent); }
@@ -4822,8 +5055,16 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
   <div class="tab-panel" id="tab-visualizar">
 
     <div class="visualizar-header" data-reveal>
-      <div class="visualizar-title">📅 Calendário de Conteúdo</div>
-      <button class="btn-export" onclick="openExportModal()">🎨 Exportar para Cliente</button>
+      <div class="visualizar-title">
+        <span class="visualizar-title-icon">📅</span>
+        Calendário de Conteúdo
+      </div>
+      <div class="visualizar-actions">
+        <button class="btn-export" onclick="openExportModal()">
+          <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+          Exportar para Cliente
+        </button>
+      </div>
     </div>
 
     <!-- STATS (collapsible) -->
@@ -4923,16 +5164,31 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
   <div class="tab-panel" id="tab-social">
     <div class="sp-wrap">
 
+      <!-- Page header -->
+      <div class="sp-page-header" data-reveal>
+        <div class="sp-page-title-wrap">
+          <div class="sp-page-icon">🚀</div>
+          <div>
+            <div class="sp-page-title">Publipost</div>
+            <div class="sp-page-sub">Publique diretamente nas redes sociais</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Config bar -->
-      <div class="sp-config" id="spConfigBar">
+      <div class="sp-config" id="spConfigBar" data-reveal>
+        <div class="sp-config-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3)"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <span class="sp-config-header-label">Conexão de contas</span>
+        </div>
         <div class="sp-config-inner">
           <div class="sp-config-group">
-            <button class="sp-config-save-btn" id="spFbLoginBtn" onclick="spFbLogin()" style="background:linear-gradient(135deg,#1877f2,#0a5fcc);color:#fff;font-weight:700;padding:6px 14px;border-radius:8px;display:flex;align-items:center;gap:6px;white-space:nowrap;">
+            <button class="sp-fb-btn" id="spFbLoginBtn" onclick="spFbLogin()">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073c0 6.019 4.388 11.003 10.125 11.927v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.931-1.956 1.886v2.267h3.328l-.532 3.49h-2.796v8.437C19.612 23.076 24 18.092 24 12.073z"/></svg>
               Conectar com Facebook
             </button>
-            <span id="spTokenStatus" style="font-size:11px;color:var(--text2);"></span>
-            <span style="font-size:11px;color:var(--text3);margin-left:auto;">Token Meta e ImgBB agora ficam em <strong>⚙️ Configurações</strong></span>
+            <span id="spTokenStatus" class="sp-token-status"></span>
+            <span class="sp-config-hint">⚙️ Token Meta e ImgBB → <strong>Configurações</strong></span>
           </div>
         </div>
       </div>
@@ -4944,9 +5200,11 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
         <div class="sp-creator sp-card" data-reveal>
           <div class="sp-card-hdr">
             <div class="sp-card-title">Nova Publicação</div>
-            <select id="spAccountSelect" class="sp-account-select" onchange="spOnAccountChange()">
-              <option value="">— Selecione a conta —</option>
-            </select>
+            <div class="sp-account-select-wrap">
+              <select id="spAccountSelect" class="sp-account-select" onchange="spOnAccountChange()">
+                <option value="">— Selecione a conta —</option>
+              </select>
+            </div>
           </div>
 
           <!-- Post type tabs -->
@@ -5350,49 +5608,79 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
   <div class="tab-panel" id="tab-metricas">
     <div class="mtr-wrap">
 
-      <!-- Header + controles -->
+      <!-- Header + controles (2 linhas) -->
       <div class="mtr-header">
-        <div class="mtr-title">📊 Métricas</div>
-        <div class="mtr-controls">
-          <select class="mtr-select" id="mtrAccountSelect" onchange="mtrOnAccountChange()" title="Conta do Instagram">
-            <option value="">📷 Selecione conta IG...</option>
-          </select>
-          <select class="mtr-select" id="mtrAdAccountSelect" onchange="mtrOnAdAccountChange()" title="Conta de anúncios">
-            <option value="">📢 Conta de anúncios...</option>
-          </select>
-          <select class="mtr-select" id="mtrGmbSelect" onchange="mtrOnGmbChange()" title="Perfil Google Meu Negócio">
-            <option value="">📍 Google Meu Negócio...</option>
-          </select>
-          <div class="mtr-period-block" title="Período principal">
-            <span class="mtr-period-label">Período</span>
+
+        <!-- Linha 1: Identidade + Fontes + Ações rápidas -->
+        <div class="mtr-hrow mtr-hrow-top">
+          <div class="mtr-title-wrap">
+            <div class="mtr-title-icon">📊</div>
+            <div>
+              <div class="mtr-title">Métricas</div>
+              <div class="mtr-subtitle">Análise de desempenho</div>
+            </div>
+          </div>
+          <div class="mtr-sources">
+            <select class="mtr-select" id="mtrAccountSelect" onchange="mtrOnAccountChange()" title="Conta do Instagram">
+              <option value="">📷 Instagram...</option>
+            </select>
+            <select class="mtr-select" id="mtrAdAccountSelect" onchange="mtrOnAdAccountChange()" title="Conta de anúncios">
+              <option value="">📢 Meta Ads...</option>
+            </select>
+            <select class="mtr-select" id="mtrGmbSelect" onchange="mtrOnGmbChange()" title="Perfil Google Meu Negócio">
+              <option value="">📍 Google Negócio...</option>
+            </select>
+          </div>
+          <div class="mtr-quick-actions">
+            <button class="mtr-quick-btn" onclick="mtrLoadDemo()" title="Carregar dados de exemplo">🎭</button>
+            <button class="mtr-quick-btn" onclick="mtrOpenShare()" title="Gerar link público">🔗</button>
+            <button class="mtr-quick-btn" onclick="mtrEnterPresentation()" title="Modo apresentação">🎤</button>
+            <button class="mtr-refresh-btn" id="mtrRefreshBtn" onclick="loadMetrics()" title="Atualizar">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+              Atualizar
+            </button>
+          </div>
+        </div>
+
+        <!-- Linha 2: Período + Comparação + Ferramentas -->
+        <div class="mtr-hrow mtr-hrow-bottom">
+          <div class="mtr-period-group">
+            <div class="mtr-presets">
+              <button class="mtr-preset active" data-days="7" onclick="mtrSetPreset(this)">7d</button>
+              <button class="mtr-preset" data-days="14" onclick="mtrSetPreset(this)">14d</button>
+              <button class="mtr-preset" data-days="30" onclick="mtrSetPreset(this)">30d</button>
+              <button class="mtr-preset" data-days="90" onclick="mtrSetPreset(this)">90d</button>
+            </div>
             <div class="mtr-compare-dates">
+              <span class="mtr-period-label">De</span>
               <input type="date" id="mtrMainSince" class="mtr-date-input" onchange="loadMetrics()" title="De">
               <span class="mtr-date-sep">→</span>
               <input type="date" id="mtrMainUntil" class="mtr-date-input" onchange="loadMetrics()" title="Até">
             </div>
           </div>
-          <div class="mtr-presets">
-            <button class="mtr-preset active" data-days="7" onclick="mtrSetPreset(this)">7d</button>
-            <button class="mtr-preset" data-days="14" onclick="mtrSetPreset(this)">14d</button>
-            <button class="mtr-preset" data-days="30" onclick="mtrSetPreset(this)">30d</button>
-            <button class="mtr-preset" data-days="90" onclick="mtrSetPreset(this)">90d</button>
+          <div class="mtr-compare-group">
+            <label class="mtr-compare-wrap">
+              <input type="checkbox" id="mtrCompare" onchange="mtrToggleCompare()"> Comparar
+            </label>
+            <div class="mtr-compare-dates" id="mtrCompareDates" style="display:none;">
+              <input type="date" id="mtrCompareSince" class="mtr-date-input" onchange="loadMetrics()">
+              <span class="mtr-date-sep">→</span>
+              <input type="date" id="mtrCompareUntil" class="mtr-date-input" onchange="loadMetrics()">
+              <button class="mtr-compare-same" onclick="mtrUseSamePeriodAsPrev()" title="Período anterior equivalente">↺</button>
+            </div>
           </div>
-          <label class="mtr-compare-wrap">
-            <input type="checkbox" id="mtrCompare" onchange="mtrToggleCompare()"> Comparar com
-          </label>
-          <div class="mtr-compare-dates" id="mtrCompareDates" style="display:none;">
-            <input type="date" id="mtrCompareSince" class="mtr-date-input" onchange="loadMetrics()" title="De">
-            <span class="mtr-date-sep">→</span>
-            <input type="date" id="mtrCompareUntil" class="mtr-date-input" onchange="loadMetrics()" title="Até">
-            <button class="mtr-compare-same" onclick="mtrUseSamePeriodAsPrev()" title="Usar período imediatamente anterior do mesmo tamanho">↺ período anterior</button>
+          <div class="mtr-tools-group">
+            <button class="mtr-tool-btn" id="mtrPctBtn" onclick="mtrTogglePct()" title="Alternar variação %">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/></svg>
+              % Variação
+            </button>
+            <button class="mtr-tool-btn mtr-tool-primary" id="mtrCustBtn" onclick="mtrOpenSidebar()">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+              Personalizar
+            </button>
           </div>
-          <button class="mtr-cust-btn" id="mtrCustBtn" onclick="mtrOpenSidebar()">⚙️ Personalizar</button>
-          <button class="mtr-pct-btn" id="mtrPctBtn" onclick="mtrTogglePct()" title="Alternar entre valor absoluto e variação %">% Variação</button>
-          <button class="mtr-present-btn" onclick="mtrEnterPresentation()" title="Modo apresentação (fullscreen)">🎤 Apresentar</button>
-          <button class="mtr-share-btn" onclick="mtrOpenShare()" title="Gerar link público read-only">🔗 Compartilhar</button>
-          <button class="mtr-share-btn" onclick="mtrLoadDemo()" title="Carregar dados de exemplo para testar a interface" style="background:linear-gradient(90deg,#a855f7,#6366f1);color:#fff;border-color:transparent;">🎭 Modo Demo</button>
-          <button class="mtr-refresh-btn" id="mtrRefreshBtn" onclick="loadMetrics()">↻ Atualizar</button>
         </div>
+
       </div>
 
       <!-- Personalizar: painel colapsível inline -->
@@ -5525,6 +5813,8 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           <div id="pjSpacesList"></div>
         </div>
         <div class="pj-sidebar-footer" id="pjSidebarFooter">
+          <!-- User row (injected by pjRenderSidebarUser) -->
+          <div id="pjSidebarUserRow"></div>
           <button class="pj-add-space-btn pj-admin-only" onclick="pjOpenSpaceForm()">
             <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg>
             Novo Espaço
@@ -7729,6 +8019,7 @@ function switchTab(tab, btn) {
   });
 
   if (tab === 'visualizar') {
+    showPostSkeletons(4);
     renderAll();
   }
   if (tab === 'metricas') {
@@ -8691,7 +8982,12 @@ function renderDayView() {
     <div class="day-view-header">${dn}, ${calDate.getDate()} de ${MONTHS_PT[calDate.getMonth()]}</div>`;
   html += dp.length
     ? '<div class="posts-grid">'+dp.map(renderPostCard).join('')+'</div>'
-    : '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">Nenhum post para este dia</div></div>';
+    : `<div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-text">Nenhum post para este dia</div>
+        <div class="empty-state-sub">Que tal criar um conteúdo para essa data?</div>
+        <button class="empty-state-cta" onclick="switchTab('entrada')">✦ Criar Post</button>
+      </div>`;
   html+='</div>';
   animateCalBody(html);
 }
@@ -8707,7 +9003,12 @@ function openDayPanel(ds) {
   const c=document.getElementById('dayPanelContent');
   c.innerHTML = dp.length
     ? dp.map(p=>renderPostCardCompact(p)).join('')
-    : '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">Nenhum post</div><div class="empty-state-sub">Adicione posts na aba Entrada</div></div>';
+    : `<div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-text">Nenhum post</div>
+        <div class="empty-state-sub">Adicione posts na aba Criar Post</div>
+        <button class="empty-state-cta" onclick="closeDayPanel();switchTab('entrada')">✦ Criar Post</button>
+      </div>`;
   document.getElementById('dayPanel').classList.add('open');
   document.getElementById('panelOverlay').classList.add('open');
 }
@@ -8731,6 +9032,28 @@ function switchPostsTab(tab, e) {
   observeCards(document.getElementById(tab==='feed'?'feedGrid':'storyGrid'));
 }
 
+/* ── Skeleton helpers ── */
+function renderPostSkeleton() {
+  return `<div class="post-card-skeleton">
+    <div class="sk-header">
+      <div class="sk sk-circle" style="width:22px;height:22px;flex-shrink:0;"></div>
+      <div class="sk" style="width:60px;height:14px;border-radius:20px;"></div>
+      <div class="sk" style="width:80px;height:12px;margin-left:auto;border-radius:20px;opacity:.6;"></div>
+    </div>
+    <div class="sk-body">
+      <div class="sk" style="width:90%;height:15px;"></div>
+      <div class="sk" style="width:60%;height:12px;opacity:.7;"></div>
+      <div class="sk" style="width:100%;height:60px;border-radius:10px;margin-top:4px;"></div>
+      <div class="sk" style="width:75%;height:12px;opacity:.6;"></div>
+    </div>
+    <div class="sk-footer"></div>
+  </div>`;
+}
+function showPostSkeletons(count=4) {
+  const fg = document.getElementById('feedGrid');
+  if (fg && !fg.children.length) fg.innerHTML = Array.from({length:count},renderPostSkeleton).join('');
+}
+
 function renderPosts() {
   const fp = getFilteredPosts();
   const feed  = fp.filter(p=>p.tipo!=='STORY').sort((a,b)=>a.dataPublicacao.localeCompare(b.dataPublicacao));
@@ -8743,10 +9066,20 @@ function renderPosts() {
   const sg=document.getElementById('storyGrid');
   fg.innerHTML = feed.length
     ? feed.map(renderPostCard).join('')
-    : '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📷</div><div class="empty-state-text">Nenhum post de feed</div><div class="empty-state-sub">Adicione posts do tipo REELS, FOTO ou CARROSSEL</div></div>';
+    : `<div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-state-icon">📷</div>
+        <div class="empty-state-text">Nenhum post de feed</div>
+        <div class="empty-state-sub">Adicione posts do tipo REELS, FOTO ou CARROSSEL</div>
+        <button class="empty-state-cta" onclick="switchTab('entrada')">✦ Criar Post</button>
+      </div>`;
   sg.innerHTML = story.length
     ? story.map(renderPostCard).join('')
-    : '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📱</div><div class="empty-state-text">Nenhum story</div></div>';
+    : `<div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-state-icon">📱</div>
+        <div class="empty-state-text">Nenhum story cadastrado</div>
+        <div class="empty-state-sub">Crie posts do tipo STORY na aba Criar Post</div>
+        <button class="empty-state-cta" onclick="switchTab('entrada')">✦ Criar Post</button>
+      </div>`;
 
   const activeTab = document.getElementById('postsTabBar').dataset.active || 'feed';
   setTimeout(()=> observeCards(document.getElementById(activeTab==='feed'?'feedGrid':'storyGrid')), 100);
@@ -15303,6 +15636,7 @@ function pjDemoMentionMe() {
 
 // ── Sidebar ────────────────────────────────────────────
 function pjRenderSidebar() {
+  pjRenderSidebarUser();
   const el = document.getElementById('pjSpacesList');
   if (!el) return;
   let html = '';
@@ -15555,6 +15889,32 @@ function pjNavigate(type, id = null) {
   pjRenderMain();
 }
 
+// ── Sidebar user row ────────────────────────────────────
+function pjRenderSidebarUser() {
+  const el = document.getElementById('pjSidebarUserRow');
+  if (!el) return;
+  const u = _currentUser;
+  if (!u) { el.innerHTML = ''; return; }
+  const name = u.displayName || u.email || 'Usuário';
+  const initial = name.charAt(0).toUpperCase();
+  const photoUrl = u.photoURL;
+  const avatarStyle = photoUrl
+    ? `background-image:url('${photoUrl}');background-size:cover;background-position:center;`
+    : `background:linear-gradient(135deg,var(--accent),var(--accent2));`;
+  const avatarContent = photoUrl ? '' : `<span style="color:#fff;font-weight:700;font-size:13px;">${initial}</span>`;
+  // Find member role
+  const member = pjMembers.find(m => m.uid === u.uid);
+  const role = member?.role === 'admin' ? '🔑 Admin' : member?.role === 'viewer' ? '👁 Viewer' : '✏️ Membro';
+  el.innerHTML = `<div class="pj-sidebar-user-row" onclick="pjOpenProfileSettings?.()">
+    <div class="pj-avatar" style="${avatarStyle}width:32px;height:32px;border-radius:10px;font-size:13px;">${avatarContent}</div>
+    <div class="pj-sidebar-user-info">
+      <div class="pj-sidebar-user-name">${escHtml(name)}</div>
+      <div class="pj-sidebar-user-role">${role}</div>
+    </div>
+    <div class="pj-sidebar-user-status" title="Online"></div>
+  </div>`;
+}
+
 // ── Main render router ──────────────────────────────────
 function pjRenderMain() {
   const el = document.getElementById('pjMain');
@@ -15619,7 +15979,11 @@ function pjBuildAll() {
   const today = pjDateStr(new Date());
   let h = `<div class="pj-view-header"><div class="pj-view-title">☰ Todas as tarefas</div></div><div class="pj-view-body">`;
   const active = pjVisibleTasks().filter(t => !pjIsDone(t));
-  if (!active.length) h += `<div style="color:var(--text3);font-size:13px;">Nenhuma tarefa.</div>`;
+  if (!active.length) h += `<div class="empty-state" style="padding:40px 24px;">
+    <div class="empty-state-icon">🎯</div>
+    <div class="empty-state-text">Nenhuma tarefa ativa</div>
+    <div class="empty-state-sub">Crie tarefas para organizar o trabalho da sua equipe</div>
+  </div>`;
   else active.forEach(t => { h += pjTaskRowHtml(t); });
   return h + '</div>';
 }
@@ -18433,7 +18797,11 @@ function pjRenderActivity() {
   if (!el) return;
   const top = pjComments.filter(c => !c.parentId);
   const items = top.map(c => pjRenderActivityComment(c, false)).join('');
-  el.innerHTML = items || `<div style="font-size:12px;color:var(--text3);">Nenhuma atividade ainda.</div>`;
+  el.innerHTML = items || `<div style="text-align:center;padding:24px 16px;color:var(--text3);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:6px;">
+    <span style="font-size:28px;">💬</span>
+    <span style="font-weight:700;color:var(--text2);font-size:12.5px;">Sem atividade ainda</span>
+    <span>Escreva um comentário para iniciar</span>
+  </div>`;
   if (pjReplyTo) {
     const target = pjComments.find(c => c.id === pjReplyTo);
     const banner = document.getElementById('pjReplyBanner');
