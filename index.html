@@ -3751,8 +3751,15 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-subtask-text:hover { color:var(--accent); text-decoration:underline; }
 .pj-subtask-text.done { text-decoration:line-through; color:var(--text3); }
 .pj-subtask-meta { display:flex; align-items:center; gap:4px; flex-shrink:0; }
-.pj-subtask-del { background:none; border:none; color:var(--text3); font-size:15px; cursor:pointer; opacity:0; padding:0 4px; }
-.pj-subtask-item:hover .pj-subtask-del { opacity:1; }
+.pj-subtask-del { background:none; border:none; color:var(--text3); font-size:15px; cursor:pointer; opacity:.35; padding:2px 5px; border-radius:5px; transition:opacity .12s, background .12s, color .12s; }
+.pj-subtask-del:hover { opacity:1; background:rgba(239,68,68,.12); color:#ef4444; }
+.pj-subtask-fields { display:flex; flex-wrap:wrap; gap:6px; padding:4px 0 4px 23px; }
+.pj-subtask-field-chip { display:flex; align-items:center; gap:4px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:2px 8px; font-size:11px; }
+.pj-subtask-field-label { color:var(--text3); font-weight:600; white-space:nowrap; }
+.pj-subtask-field-val { border:none; background:transparent; color:var(--text); font-size:11px; font-family:var(--font); outline:none; min-width:40px; max-width:120px; cursor:text; }
+.pj-subtask-field-val:focus { color:var(--accent); }
+.pj-subtask-field-select { border:none; background:transparent; color:var(--text); font-size:11px; font-family:var(--font); outline:none; cursor:pointer; max-width:120px; }
+.pj-subtask-field-empty { color:var(--text3); font-style:italic; }
 .pj-add-subtask-row { display:flex; align-items:center; gap:8px; padding:5px 6px; }
 .pj-add-subtask-input { flex:1; background:none; border:none; border-bottom:1px dashed var(--border); outline:none; font-size:13px; color:var(--text); font-family:var(--font); padding:3px 0; }
 .pj-add-subtask-input:focus { border-bottom-color:var(--accent); }
@@ -19041,21 +19048,57 @@ function pjRenderSubtasks(parentId) {
 
   if (!subtasks.length) { el.innerHTML = ''; return; }
 
+  // Busca a lista para pegar os campos personalizados
+  const parentTask = pjAllTasks.find(x => x.id === parentId);
+  const listObj = parentTask ? pjLists.find(l => l.id === parentTask.listId) : null;
+  const fields = listObj?.customFields || [];
+
   el.innerHTML = subtasks.map(t => {
     const isDone = pjIsDone(t);
     const due = t.dueDate ? pjDueCls(t.dueDate) : null;
     const assignees = (t.assignees||[]).slice(0,2).map(uid=>pjAvatarHtml(uid)).join('');
-    return `<div class="pj-subtask-item" data-id="${t.id}">
-      <div class="pj-subtask-check ${isDone?'done':''}" onclick="event.stopPropagation();pjToggleSubtaskDone('${t.id}')">
-        ${isDone?'✓':''}
+
+    // Campos personalizados inline
+    let fieldsHtml = '';
+    if (fields.length) {
+      fieldsHtml = '<div class="pj-subtask-fields">';
+      fields.forEach(f => {
+        const val = (t.customFieldValues || {})[f.id] || '';
+        let inputEl = '';
+        if (f.type === 'select' || f.type === 'client') {
+          const opts = f.type === 'client'
+            ? ((typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : [])
+            : (f.options || []);
+          inputEl = `<select class="pj-subtask-field-select" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)">
+            <option value="">—</option>
+            ${opts.map(o=>`<option ${o===val?'selected':''}>${escHtml(o)}</option>`).join('')}
+          </select>`;
+        } else {
+          const itype = f.type==='date'?'date':(f.type==='number'?'number':'text');
+          inputEl = `<input class="pj-subtask-field-val" type="${itype}" value="${escHtml(String(val))}"
+            placeholder="—" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)">`;
+        }
+        fieldsHtml += `<div class="pj-subtask-field-chip">
+          <span class="pj-subtask-field-label">${escHtml(f.name)}:</span>${inputEl}
+        </div>`;
+      });
+      fieldsHtml += '</div>';
+    }
+
+    return `<div class="pj-subtask-item" data-id="${t.id}" style="flex-direction:column;align-items:stretch;gap:0;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="pj-subtask-check ${isDone?'done':''}" onclick="event.stopPropagation();pjToggleSubtaskDone('${t.id}')">
+          ${isDone?'✓':''}
+        </div>
+        <span class="pj-subtask-text ${isDone?'done':''}" onclick="pjOpenTask('${t.id}')"
+              title="Abrir subtarefa">${escHtml(t.title||'(sem título)')}</span>
+        <div class="pj-subtask-meta">
+          ${due ? `<span class="pj-task-due ${due.cls}" style="font-size:10px;">${due.label}</span>` : ''}
+          ${assignees ? `<span style="display:flex;gap:2px;">${assignees}</span>` : ''}
+        </div>
+        <button class="pj-subtask-del" title="Excluir subtarefa" onclick="event.stopPropagation();pjDeleteSubtask('${t.id}','${parentId}')">×</button>
       </div>
-      <span class="pj-subtask-text ${isDone?'done':''}" onclick="pjOpenTask('${t.id}')"
-            title="Abrir subtarefa">${escHtml(t.title||'(sem título)')}</span>
-      <div class="pj-subtask-meta">
-        ${due ? `<span class="pj-task-due ${due.cls}" style="font-size:10px;">${due.label}</span>` : ''}
-        ${assignees ? `<span style="display:flex;gap:2px;">${assignees}</span>` : ''}
-      </div>
-      <button class="pj-subtask-del" title="Excluir" onclick="event.stopPropagation();pjDeleteSubtask('${t.id}','${parentId}')">×</button>
+      ${fieldsHtml}
     </div>`;
   }).join('');
 }
