@@ -1402,11 +1402,6 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
               <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/><path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd"/></svg></span>
               Arquivadas
             </button>
-            <button class="pj-nav-btn pj-askai-nav" id="pjBtnAskAi" onclick="pjNavigate('askai')">
-              <span class="pj-nav-ic">🤖</span>
-              Pergunte à IA
-              <span class="pj-askai-pill">novo</span>
-            </button>
 
             <!-- Admin section -->
             <div class="pj-section-label pj-admin-only">Admin</div>
@@ -1421,6 +1416,11 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             <button class="pj-nav-btn pj-admin-only" id="pjBtnIntegracoes" onclick="pjNavigate('integracoes')">
               <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"/></svg></span>
               Integrações
+            </button>
+            <button class="pj-nav-btn pj-admin-only pj-askai-nav" id="pjBtnAskAi" onclick="pjNavigate('askai')">
+              <span class="pj-nav-ic">🤖</span>
+              Pergunte à IA
+              <span class="pj-askai-pill">novo</span>
             </button>
           </div>
           <div class="pj-divider"></div>
@@ -11653,6 +11653,12 @@ function pjNavigate(type, id = null) {
       type = 'inbox'; id = null;
     }
   }
+  // Rotas restritas a admin
+  const adminOnlyRoutes = ['askai','timemetrics','digest','integracoes'];
+  if (adminOnlyRoutes.includes(type) && typeof userIsAdmin === 'function' && !userIsAdmin()) {
+    if (typeof showToast === 'function') showToast('Acesso restrito a administradores.', 'warn');
+    type = 'dashboard'; id = null;
+  }
   pjCurrentView = { type, id };
   document.querySelectorAll('.pj-nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.pj-list-row').forEach(b => b.classList.remove('active'));
@@ -14541,6 +14547,13 @@ function pjAskAiMarkdown(text) {
 }
 
 function pjBuildAskAi() {
+  if (typeof userIsAdmin === 'function' && !userIsAdmin()) {
+    return `<div class="pj-view-header"><div class="pj-view-title">🤖 Pergunte à IA</div></div>
+      <div style="padding:40px;text-align:center;color:var(--text3);font-size:13px;">
+        <div style="font-size:36px;margin-bottom:8px;">🔒</div>
+        <div>Esta funcionalidade é restrita a administradores.</div>
+      </div>`;
+  }
   const hasKey = !!(typeof getClaudeKey === 'function' && getClaudeKey());
   const ctx = pjAskAiBuildContext();
   const c = ctx.counts;
