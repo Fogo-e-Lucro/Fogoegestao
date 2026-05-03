@@ -11316,7 +11316,101 @@ async function pjLoadAllTasks() {
   });
   window._pjLoadedOnce = true;
   pjStartRealtime();
+  pjStartViewersListener();
 }
+
+// ── Real-time presence: quem está vendo cada tarefa ────
+// Listener global em app_editing escuta TODOS os recursos task:*.
+// Badge "viewers" injetado em qualquer card/linha com data-task-id.
+let pjViewersByTask = {}; // { taskId: [{uid,name,photoUrl,lastTouchMs}] }
+let _pjViewersUnsub = null;
+const PJ_VIEWER_THRESHOLD_MS = 30000;
+
+function pjStartViewersListener() {
+  if (_pjViewersUnsub) return;
+  if (typeof _db === 'undefined') return;
+  const me = _auth?.currentUser?.uid || _currentUser?.uid;
+  try {
+    _pjViewersUnsub = _db.collection('app_editing')
+      .onSnapshot(snap => {
+        const next = {};
+        const now = Date.now();
+        snap.forEach(doc => {
+          const d = doc.data() || {};
+          if (!d.resourceId || typeof d.resourceId !== 'string') return;
+          if (!d.resourceId.startsWith('task:')) return;
+          if (d.uid === me) return;
+          const ts = d.lastTouch?.toMillis ? d.lastTouch.toMillis() : 0;
+          if (!ts || (now - ts) > PJ_VIEWER_THRESHOLD_MS) return;
+          const taskId = d.resourceId.slice(5);
+          if (!next[taskId]) next[taskId] = [];
+          next[taskId].push({ uid: d.uid, name: d.name||'', photoUrl: d.photoUrl||'', lastTouchMs: ts });
+        });
+        pjViewersByTask = next;
+        pjUpdateViewerBadges();
+      }, () => {});
+  } catch(e) {}
+  // Limpa stale a cada 15s mesmo sem novo snapshot
+  setInterval(() => {
+    const now = Date.now();
+    let changed = false;
+    Object.keys(pjViewersByTask).forEach(tid => {
+      const fresh = pjViewersByTask[tid].filter(v => (now - v.lastTouchMs) <= PJ_VIEWER_THRESHOLD_MS);
+      if (fresh.length !== pjViewersByTask[tid].length) {
+        if (fresh.length) pjViewersByTask[tid] = fresh;
+        else delete pjViewersByTask[tid];
+        changed = true;
+      }
+    });
+    if (changed) pjUpdateViewerBadges();
+  }, 15000);
+}
+
+function pjUpdateViewerBadges() {
+  const ids = Object.keys(pjViewersByTask);
+  // Remove badges em cards cujo task não está mais sendo visto
+  document.querySelectorAll('.pj-task-viewers').forEach(b => {
+    const host = b.closest('[data-task-id]');
+    const tid = host?.dataset?.taskId;
+    if (!tid || !pjViewersByTask[tid]?.length) b.remove();
+  });
+  // Atualiza/cria pra tasks ativas
+  ids.forEach(tid => {
+    const viewers = pjViewersByTask[tid];
+    document.querySelectorAll(`[data-task-id="${tid}"]`).forEach(host => {
+      let badge = host.querySelector(':scope > .pj-task-viewers');
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.className = 'pj-task-viewers';
+        host.appendChild(badge);
+      }
+      const dotsHtml = viewers.slice(0, 3).map(v => {
+        const initial = (v.name || '?').trim()[0]?.toUpperCase() || '?';
+        const inner = v.photoUrl
+          ? `<img src="${v.photoUrl}" alt="" loading="lazy">`
+          : `<span class="pj-viewer-initial">${escHtml(initial)}</span>`;
+        return `<span class="pj-viewer-dot" title="${escHtml(v.name||'')} está vendo essa tarefa agora">${inner}</span>`;
+      }).join('');
+      const more = viewers.length > 3 ? `<span class="pj-viewer-dot pj-viewer-more">+${viewers.length-3}</span>` : '';
+      badge.innerHTML = `<span class="pj-viewer-pulse" aria-hidden="true"></span>${dotsHtml}${more}`;
+    });
+  });
+}
+// Re-injeta badges após qualquer re-render (kanban/list/dashboard)
+const _pjViewerRefreshDebounced = (() => {
+  let t = null;
+  return () => { clearTimeout(t); t = setTimeout(pjUpdateViewerBadges, 80); };
+})();
+new MutationObserver((muts) => {
+  for (const m of muts) {
+    for (const n of m.addedNodes) {
+      if (n.nodeType === 1 && (n.matches?.('[data-task-id]') || n.querySelector?.('[data-task-id]'))) {
+        _pjViewerRefreshDebounced();
+        return;
+      }
+    }
+  }
+}).observe(document.body, { childList: true, subtree: true });
 
 // ── Real-time task notifications ──────────────────────
 let _pjRealtimeUnsub = null;
