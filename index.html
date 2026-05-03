@@ -1402,6 +1402,11 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
               <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/><path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd"/></svg></span>
               Arquivadas
             </button>
+            <button class="pj-nav-btn pj-askai-nav" id="pjBtnAskAi" onclick="pjNavigate('askai')">
+              <span class="pj-nav-ic">🤖</span>
+              Pergunte à IA
+              <span class="pj-askai-pill">novo</span>
+            </button>
 
             <!-- Admin section -->
             <div class="pj-section-label pj-admin-only">Admin</div>
@@ -11661,6 +11666,7 @@ function pjNavigate(type, id = null) {
   if (type === 'timemetrics') document.getElementById('pjBtnTimeMetrics')?.classList.add('active');
   if (type === 'digest') document.getElementById('pjBtnDigest')?.classList.add('active');
   if (type === 'integracoes') document.getElementById('pjBtnIntegracoes')?.classList.add('active');
+  if (type === 'askai') document.getElementById('pjBtnAskAi')?.classList.add('active');
   if (type === 'list' || type === 'kanban') {
     document.querySelectorAll('.pj-list-row').forEach(r => {
       if (r.getAttribute('onclick')?.includes(id)) r.classList.add('active');
@@ -11731,6 +11737,7 @@ function pjRenderMain() {
   if (type === 'digest')     { el.innerHTML = pjBuildDigest(); return; }
   if (type === 'integracoes'){ el.innerHTML = pjBuildIntegracoes(); return; }
   if (type === 'gantt')      { el.innerHTML = pjBuildGantt(); return; }
+  if (type === 'askai')      { el.innerHTML = pjBuildAskAi(); pjMountAskAi(); return; }
 }
 
 // ── Dashboard ───────────────────────────────────────────
@@ -14392,6 +14399,315 @@ function pjBuildArchived() {
     </div>`;
   });
   return h + '</div>';
+}
+
+// ── Pergunte à IA (Claude) ──────────────────────────────
+window.pjAskAiHistory = window.pjAskAiHistory || [];
+window.pjAskAiBusy = window.pjAskAiBusy || false;
+
+function pjAskAiClear() {
+  window.pjAskAiHistory = [];
+  pjAskAiRenderMsgs();
+}
+
+function pjAskAiBuildContext() {
+  const todayStr = pjDateStr(new Date());
+  const memberMap = {};
+  (pjMembers||[]).forEach(m => { memberMap[m.uid] = m.name || m.email || m.uid; });
+  const listMap = {};
+  (pjLists||[]).forEach(l => { listMap[l.id] = l; });
+  const spaceMap = {};
+  (pjSpaces||[]).forEach(s => { spaceMap[s.id] = s.name || s.id; });
+  const cliMap = {};
+  (typeof _bdClientes !== 'undefined' ? _bdClientes : []).forEach(c => { cliMap[c.id] = c.nome || c.razaoSocial || c.id; });
+
+  // Tarefas: omit heavy fields, keep what AI needs
+  const tasks = (pjAllTasks||[]).filter(t => !t.parentTaskId).map(t => {
+    const list = listMap[t.listId];
+    const statuses = (list && list.statuses) || (typeof PJ_DEFAULT_STATUSES !== 'undefined' ? PJ_DEFAULT_STATUSES : []);
+    const st = statuses.find(s => s.id === t.statusId);
+    const completedAt = (() => {
+      if (!t.completedAt) return null;
+      try {
+        const ms = typeof t.completedAt === 'number' ? t.completedAt : t.completedAt.toMillis?.() || 0;
+        return ms ? new Date(ms).toISOString().slice(0,10) : null;
+      } catch(_) { return null; }
+    })();
+    return {
+      id: t.id,
+      title: t.title || '',
+      list: list?.name || null,
+      space: list?.spaceId ? spaceMap[list.spaceId] || null : null,
+      cliente: t.clienteId ? cliMap[t.clienteId] || null : null,
+      assignees: (t.assignees||[]).map(uid => memberMap[uid] || uid),
+      status: st?.name || null,
+      bucket: st ? (typeof pjStatusBucket === 'function' ? pjStatusBucket(st) : null) : null,
+      done: typeof pjIsDone === 'function' ? pjIsDone(t) : false,
+      archived: typeof pjIsArchived === 'function' ? pjIsArchived(t) : false,
+      priority: t.priority || null,
+      dueDate: t.dueDate || null,
+      completedAt,
+      tags: t.tags || [],
+      hasComments: Array.isArray(t.comments) && t.comments.length > 0,
+      commentCount: Array.isArray(t.comments) ? t.comments.length : 0
+    };
+  });
+
+  // Truncate if too many
+  const MAX_TASKS = 600;
+  let truncated = false;
+  let tasksOut = tasks;
+  if (tasks.length > MAX_TASKS) {
+    truncated = true;
+    // Prioriza recentes/abertas/atrasadas
+    const score = (t) => {
+      let s = 0;
+      if (!t.done) s += 100;
+      if (t.dueDate && t.dueDate < todayStr) s += 50;
+      if (t.dueDate === todayStr) s += 80;
+      if (t.completedAt && t.completedAt >= todayStr.slice(0,7)) s += 20;
+      return s;
+    };
+    tasksOut = [...tasks].sort((a,b) => score(b)-score(a)).slice(0, MAX_TASKS);
+  }
+
+  const lists = (pjLists||[]).map(l => ({
+    id: l.id, name: l.name,
+    space: l.spaceId ? spaceMap[l.spaceId] : null,
+    statuses: (l.statuses || []).map(s => ({ name: s.name, bucket: typeof pjStatusBucket==='function'? pjStatusBucket(s) : null }))
+  }));
+  const members = (pjMembers||[]).map(m => ({ name: m.name || m.email, role: m.role || 'member' }));
+  const clientes = (typeof _bdClientes !== 'undefined' ? _bdClientes : []).map(c => ({
+    nome: c.nome || c.razaoSocial || '',
+    tipoCozinha: c.tipoCozinha || null,
+    cidade: c.cidade || null,
+    tags: c.tags || []
+  }));
+
+  return {
+    today: todayStr,
+    counts: {
+      tasks: tasks.length,
+      lists: lists.length,
+      members: members.length,
+      clientes: clientes.length,
+      truncatedTasks: truncated ? (tasks.length - tasksOut.length) : 0
+    },
+    members, lists, clientes, tasks: tasksOut
+  };
+}
+
+function pjAskAiMarkdown(text) {
+  // Markdown leve: headings, bold, italic, código inline, listas, tabelas, links e quebras
+  let s = escHtml(text || '');
+  // Code blocks ```...```
+  s = s.replace(/```([\s\S]*?)```/g, (m, body) => `<pre class="pj-askai-code">${body}</pre>`);
+  // Inline code `...`
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Headings
+  s = s.replace(/^### (.+)$/gm, '<h3>$1</h3>')
+       .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+       .replace(/^# (.+)$/gm, '<h1>$1</h1>');
+  // Bold/italic
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+       .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+  // Tables (linha cabeçalho + linha separadora ---)
+  s = s.replace(/(?:^\|.+\|\s*\n)\|[-:\s|]+\|\s*\n((?:\|.+\|\s*\n?)+)/gm, (full) => {
+    const lines = full.trim().split('\n').filter(l => l.trim().startsWith('|'));
+    if (lines.length < 2) return full;
+    const head = lines[0].split('|').slice(1,-1).map(c => c.trim());
+    const rows = lines.slice(2).map(l => l.split('|').slice(1,-1).map(c => c.trim()));
+    return `<div class="pj-askai-tablewrap"><table class="pj-askai-table"><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  });
+  // Listas: detecta blocos contínuos de "- " ou "* "
+  s = s.replace(/(?:^|\n)((?:[-*] .+(?:\n|$))+)/g, (m, block) => {
+    const items = block.trim().split('\n').map(l => l.replace(/^[-*]\s+/, ''));
+    return '\n<ul class="pj-askai-ul">' + items.map(it => `<li>${it}</li>`).join('') + '</ul>';
+  });
+  // Listas numeradas
+  s = s.replace(/(?:^|\n)((?:\d+\. .+(?:\n|$))+)/g, (m, block) => {
+    const items = block.trim().split('\n').map(l => l.replace(/^\d+\.\s+/, ''));
+    return '\n<ol class="pj-askai-ol">' + items.map(it => `<li>${it}</li>`).join('') + '</ol>';
+  });
+  // Links [texto](url)
+  s = s.replace(/\[([^\]]+)\]\((https?:[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  // Parágrafos: quebra dupla → <p>; simples → <br>
+  // Evita quebrar dentro de blocos já estruturados
+  s = s.split(/\n{2,}/).map(part => {
+    if (/^<(h\d|ul|ol|pre|div|table)/.test(part.trim())) return part;
+    return `<p>${part.replace(/\n/g,'<br>')}</p>`;
+  }).join('');
+  return s;
+}
+
+function pjBuildAskAi() {
+  const hasKey = !!(typeof getClaudeKey === 'function' && getClaudeKey());
+  const ctx = pjAskAiBuildContext();
+  const c = ctx.counts;
+  const sugestoes = [
+    'Quais tarefas estão atrasadas hoje?',
+    'Quem tem mais tarefas em aberto?',
+    'Qual cliente tem mais tarefas pendentes?',
+    'Faça um relatório do que foi concluído essa semana',
+    'Liste tarefas urgentes sem responsável',
+    'Quais clientes não tiveram atividade nos últimos 14 dias?'
+  ];
+  return `
+    <div class="pj-askai-wrap">
+      <div class="pj-view-header">
+        <div class="pj-view-title">🤖 Pergunte à IA</div>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+          <span class="pj-askai-ctxbadge" title="Contexto enviado para a IA">
+            ${c.tasks} tarefas · ${c.lists} listas · ${c.members} membros · ${c.clientes} clientes
+          </span>
+          <button class="pj-filter-btn" onclick="pjAskAiClear()" title="Limpar conversa">🧹 Limpar</button>
+        </div>
+      </div>
+      <div class="pj-askai-body">
+        ${!hasKey ? `<div class="pj-askai-warn">
+          ⚠️ <strong>Configure a Claude API Key</strong> em Configurações (⚙️ no cabeçalho do app) para usar esta funcionalidade.
+        </div>` : ''}
+        <div class="pj-askai-msgs" id="pjAskAiMsgs"></div>
+        <div class="pj-askai-suggest" id="pjAskAiSuggest">
+          ${sugestoes.map(q => `<button class="pj-askai-chip" onclick="pjAskAiAsk(this.dataset.q)" data-q="${escHtml(q)}">${escHtml(q)}</button>`).join('')}
+        </div>
+        <div class="pj-askai-inputbar">
+          <textarea id="pjAskAiInput" class="pj-askai-input" rows="1" placeholder="Pergunte qualquer coisa sobre as tarefas, clientes, equipe…" ${!hasKey?'disabled':''}></textarea>
+          <button class="pj-askai-send" id="pjAskAiSendBtn" onclick="pjAskAiSend()" ${!hasKey?'disabled':''}>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.926A.75.75 0 004.41 8.7l8.59-1.075a.25.25 0 010 .495L4.41 9.196a.75.75 0 00-.717.535L2.279 14.66a.75.75 0 00.95.826l16-5.5a.75.75 0 000-1.418l-16-5.281z"/></svg>
+            Enviar
+          </button>
+        </div>
+        <div class="pj-askai-hint">
+          A IA recebe um snapshot atual do banco (sem dados pessoais sensíveis). Respostas em pt-BR. Modelo: Claude Haiku 4.5.
+          ${c.truncatedTasks ? `<br><span style="color:var(--warn);">⚠️ ${c.truncatedTasks} tarefas omitidas para caber no contexto (priorizei abertas e recentes).</span>` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function pjMountAskAi() {
+  pjAskAiRenderMsgs();
+  const inp = document.getElementById('pjAskAiInput');
+  if (inp) {
+    // Auto-resize
+    const resize = () => { inp.style.height='auto'; inp.style.height = Math.min(160, inp.scrollHeight) + 'px'; };
+    inp.addEventListener('input', resize);
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        pjAskAiSend();
+      }
+    });
+    setTimeout(() => inp.focus(), 30);
+  }
+}
+
+function pjAskAiAsk(q) {
+  const inp = document.getElementById('pjAskAiInput');
+  if (inp) inp.value = q;
+  pjAskAiSend();
+}
+
+function pjAskAiRenderMsgs() {
+  const box = document.getElementById('pjAskAiMsgs');
+  if (!box) return;
+  if (!window.pjAskAiHistory.length) {
+    box.innerHTML = `<div class="pj-askai-empty">
+      <div class="pj-askai-empty-emoji">🤖</div>
+      <div class="pj-askai-empty-title">Olá! Posso ajudar com relatórios, status de tarefas, análises por cliente e muito mais.</div>
+      <div class="pj-askai-empty-sub">Use uma sugestão abaixo ou digite sua pergunta.</div>
+    </div>`;
+    return;
+  }
+  box.innerHTML = window.pjAskAiHistory.map(m => {
+    const cls = m.role === 'user' ? 'user' : 'bot';
+    const content = m.role === 'user' ? `<p>${escHtml(m.text).replace(/\n/g,'<br>')}</p>` : pjAskAiMarkdown(m.text);
+    return `<div class="pj-askai-msg ${cls}">
+      <div class="pj-askai-avatar">${m.role==='user'?'🧑':'🤖'}</div>
+      <div class="pj-askai-bubble ${m.pending?'pending':''}">${content}</div>
+    </div>`;
+  }).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+async function pjAskAiSend() {
+  if (window.pjAskAiBusy) return;
+  const inp = document.getElementById('pjAskAiInput');
+  const sendBtn = document.getElementById('pjAskAiSendBtn');
+  const q = (inp?.value || '').trim();
+  if (!q) return;
+  const key = (typeof getClaudeKey === 'function') ? getClaudeKey() : '';
+  if (!key) {
+    if (typeof showToast === 'function') showToast('error','🔑','Configure a Claude API Key em Configurações.');
+    return;
+  }
+
+  window.pjAskAiHistory.push({ role:'user', text:q });
+  if (inp) { inp.value = ''; inp.style.height = 'auto'; }
+  // Esconde chips ao iniciar conversa
+  const chips = document.getElementById('pjAskAiSuggest');
+  if (chips) chips.style.display = 'none';
+  pjAskAiRenderMsgs();
+  window.pjAskAiBusy = true;
+  if (sendBtn) sendBtn.disabled = true;
+
+  // Mensagem temporária
+  window.pjAskAiHistory.push({ role:'bot', text:'⏳ Pensando…', pending:true });
+  pjAskAiRenderMsgs();
+
+  const ctx = pjAskAiBuildContext();
+  const me = (typeof _currentUser !== 'undefined' && _currentUser) ? (_currentUser.displayName || _currentUser.email || '') : '';
+  const system = `Você é um assistente analítico do app "Fogo & Gestão" — uma ferramenta interna da agência Fogo & Lucro para gerenciar tarefas de clientes (restaurantes).
+Responda em português brasileiro, de forma direta, profissional e amigável. Use markdown (negrito, listas, tabelas) quando ajudar.
+Use APENAS os dados fornecidos abaixo. Se não houver dado suficiente para responder, diga isso explicitamente.
+Quando der números, indique o período de referência. Para relatórios, use tabelas markdown.
+Hoje é ${ctx.today}. ${me ? `O usuário é "${me}".` : ''}
+Resumo do snapshot: ${ctx.counts.tasks} tarefas, ${ctx.counts.lists} listas, ${ctx.counts.members} membros, ${ctx.counts.clientes} clientes${ctx.counts.truncatedTasks?` (${ctx.counts.truncatedTasks} tarefas mais antigas/concluídas omitidas)`:''}.
+
+DADOS (JSON):
+${JSON.stringify(ctx)}`;
+
+  // Histórico p/ a API (sem o "pensando")
+  const apiMessages = window.pjAskAiHistory.filter(m => !m.pending).map(m => ({
+    role: m.role === 'bot' ? 'assistant' : 'user',
+    content: m.text
+  }));
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1500,
+        system,
+        messages: apiMessages
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err.error?.message || `Erro ${res.status}`);
+    }
+    const dj = await res.json();
+    const text = dj.content?.[0]?.text || '(sem resposta)';
+    window.pjAskAiHistory = window.pjAskAiHistory.filter(m => !m.pending);
+    window.pjAskAiHistory.push({ role:'bot', text });
+  } catch(e) {
+    window.pjAskAiHistory = window.pjAskAiHistory.filter(m => !m.pending);
+    window.pjAskAiHistory.push({ role:'bot', text: '❌ ' + (e.message || 'Erro ao chamar a IA.') });
+  } finally {
+    window.pjAskAiBusy = false;
+    if (sendBtn) sendBtn.disabled = false;
+    pjAskAiRenderMsgs();
+    document.getElementById('pjAskAiInput')?.focus();
+  }
 }
 
 // ── Digest Semanal ──────────────────────────────────────
