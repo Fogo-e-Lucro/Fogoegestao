@@ -6186,6 +6186,46 @@ body.pj-focus { overflow-x: hidden; }
   .pj-cycle-bar { min-width: 0; }
 }
 
+/* ── Offline badge ────────────────────────────────────────── */
+.pj-offline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #f59e0b 18%, transparent);
+  color: #f59e0b;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  border: 1px solid color-mix(in srgb, #f59e0b 35%, transparent);
+  animation: pjOfflinePulse 2s ease-in-out infinite;
+  margin-right: 6px;
+}
+.pj-offline-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 0 0 #f59e0b;
+  animation: pjOfflineDotPulse 1.6s ease-in-out infinite;
+}
+@keyframes pjOfflinePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .65; }
+}
+@keyframes pjOfflineDotPulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, #f59e0b 60%, transparent); }
+  70% { box-shadow: 0 0 0 6px color-mix(in srgb, #f59e0b 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, #f59e0b 0%, transparent); }
+}
+body.pj-offline .pj-fab,
+body.pj-offline .pj-add-btn { filter: saturate(.6); }
+
+@media (max-width: 600px) {
+  .pj-offline-badge .pj-offline-label { display: none; }
+  .pj-offline-badge { padding: 4px; }
+}
+
 /* ── SLA por cliente / prioridade ─────────────────────────── */
 .pj-sla-thresholds-row {
   display: flex;
