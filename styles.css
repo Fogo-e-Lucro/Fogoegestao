@@ -5414,6 +5414,19 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-askai-bubble.pending {
   opacity:.7; font-style:italic;
 }
+.pj-askai-bubble { position:relative; }
+.pj-askai-copy {
+  position:absolute; top:6px; right:6px;
+  width:26px; height:26px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--bg); border:1px solid var(--border);
+  color:var(--text2); border-radius:6px;
+  cursor:pointer; opacity:0;
+  transition:opacity .15s ease, color .15s ease, background .15s ease, border-color .15s ease;
+}
+.pj-askai-msg.bot:hover .pj-askai-copy { opacity:.9; }
+.pj-askai-copy:hover { color:var(--accent); border-color:var(--accent); background:var(--bg2); }
+.pj-askai-copy.copied { color:#22c55e; border-color:#22c55e; opacity:1; }
 .pj-askai-bubble p { margin:0 0 8px 0; }
 .pj-askai-bubble p:last-child { margin-bottom:0; }
 .pj-askai-bubble h1 { font-size:16px; margin:8px 0 6px; }

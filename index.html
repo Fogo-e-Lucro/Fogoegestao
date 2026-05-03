@@ -14675,15 +14675,37 @@ function pjAskAiRenderMsgs() {
     </div>`;
     return;
   }
-  box.innerHTML = window.pjAskAiHistory.map(m => {
+  box.innerHTML = window.pjAskAiHistory.map((m, idx) => {
     const cls = m.role === 'user' ? 'user' : 'bot';
     const content = m.role === 'user' ? `<p>${escHtml(m.text).replace(/\n/g,'<br>')}</p>` : pjAskAiMarkdown(m.text);
+    const copyBtn = (m.role === 'bot' && !m.pending)
+      ? `<button class="pj-askai-copy" type="button" onclick="pjAskAiCopy(${idx},this)" title="Copiar resposta" aria-label="Copiar">
+           <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="10" rx="1.5"/><path d="M7 4V2.5A.5.5 0 0 1 7.5 2h5a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5H11"/></svg>
+         </button>`
+      : '';
     return `<div class="pj-askai-msg ${cls}">
       <div class="pj-askai-avatar">${m.role==='user'?'🧑':'🤖'}</div>
-      <div class="pj-askai-bubble ${m.pending?'pending':''}">${content}</div>
+      <div class="pj-askai-bubble ${m.pending?'pending':''}">${content}${copyBtn}</div>
     </div>`;
   }).join('');
   box.scrollTop = box.scrollHeight;
+}
+
+async function pjAskAiCopy(idx, btnEl) {
+  const m = window.pjAskAiHistory?.[idx];
+  if (!m) return;
+  try {
+    await navigator.clipboard.writeText(m.text || '');
+    if (btnEl) {
+      btnEl.classList.add('copied');
+      const orig = btnEl.innerHTML;
+      btnEl.innerHTML = `<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l3 3 7-7"/></svg>`;
+      setTimeout(() => { btnEl.classList.remove('copied'); btnEl.innerHTML = orig; }, 1400);
+    }
+    if (typeof showToast === 'function') showToast('ok','📋','Copiado!');
+  } catch(e) {
+    if (typeof showToast === 'function') showToast('error','❌','Falha ao copiar');
+  }
 }
 
 async function pjAskAiSend() {
