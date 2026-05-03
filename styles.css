@@ -34,13 +34,14 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 body {
   font-family: var(--font);
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  width: 100%;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -5031,10 +5032,12 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
     min-width:0;
     gap:6px !important;
   }
-  .main-tabs { padding:2px; gap:2px; }
-  .main-tab { padding:6px 10px !important; font-size:11.5px !important; min-height:34px; }
+  .main-tabs { padding:2px; gap:2px; flex-shrink:1; min-width:0; }
+  .main-tab { padding:6px 9px !important; font-size:11.5px !important; min-height:32px; }
   .main-tab svg { display:none; }
-  .user-chip { align-self:auto; padding:4px 8px; font-size:12px; flex-shrink:0; }
+  /* User chip: avatar + nome, encolhe se precisar mas mantém o nome visível */
+  .user-chip { align-self:auto; padding:3px 8px 3px 3px; font-size:11.5px; flex-shrink:1; min-width:0; max-width:55%; }
+  .user-chip .user-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .sync-dot { width:8px; height:8px; flex-shrink:0; }
   /* Esconde botões secundários do header (theme picker, uazapi status, presença):
      no mobile o espaço fica pra tabs + avatar; configs ficam disponíveis no menu de perfil */
@@ -5094,13 +5097,15 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .pj-view-header > div[style*="margin-left"] { gap:6px !important; }
 }
 
-/* ≤480px: esconde texto da logo (deixa só 🔥), tabs ainda mais compactos */
+/* ≤480px: esconde tabs do header (já estão acessíveis pelo drawer ☰)
+   pra liberar todo espaço pro nome do usuário */
 @media (max-width:480px) {
   .app-logo-text { display:none; } /* só o ícone 🔥 fica */
-  .main-tab { padding:5px 9px !important; font-size:11px !important; }
-  .main-tab#tabProjetos { padding:5px 8px !important; }
+  /* Tabs principais somem no celular — drawer (☰) já dá acesso a tudo */
+  .main-tabs { display:none !important; }
   .pj-dash-greet { font-size:16px !important; }
   .pj-dash-kpi-val { font-size:22px !important; }
+  .user-chip { max-width:none; font-size:12px; }
 }
 
 /* Fine-tuning pra telas bem pequenas (iPhone SE / Android entry) */
