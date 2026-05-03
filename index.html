@@ -16445,7 +16445,7 @@ function pjOpenStatusEditor(listId) {
   const list = pjLists.find(l=>l.id===listId); if(!list)return;
   const statuses = list.statuses || [...PJ_DEFAULT_STATUSES];
   const bucketSelect = (sid, current) => `
-    <select class="pj-status-bucket-select" data-sid="${sid}" title="Categoria do status">
+    <select class="pj-status-bucket-select" data-sid="${sid}" data-bucket="${current}" title="Categoria do status" onchange="this.dataset.bucket=this.value">
       <option value="pending" ${current==='pending'?'selected':''}>● Não iniciado</option>
       <option value="active"  ${current==='active' ?'selected':''}>● Ativo</option>
       <option value="closed"  ${current==='closed' ?'selected':''}>● Fechado</option>
@@ -16477,7 +16477,7 @@ function pjAddStatus(listId) {
     <div class="pj-status-row">
       <input type="color" class="pj-status-color-input" value="#6366f1" title="Escolher cor">
       <input class="pj-status-name-input" value="Novo status" data-sid="${id}" onchange="pjStatusNameChanged(null,this)">
-      <select class="pj-status-bucket-select" data-sid="${id}" title="Categoria do status">
+      <select class="pj-status-bucket-select" data-sid="${id}" data-bucket="active" title="Categoria do status" onchange="this.dataset.bucket=this.value">
         <option value="pending">● Não iniciado</option>
         <option value="active" selected>● Ativo</option>
         <option value="closed">● Fechado</option>
