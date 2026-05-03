@@ -12259,10 +12259,10 @@ function pjListColumns(list) {
   const fields = (list && list.customFields) || [];
   return [
     { id:'title',    label:'Tarefa',      width:'minmax(220px,2fr)' },
+    { id:'status',   label:'Status',      width:'140px' },
     { id:'assignee', label:'Responsável', width:'150px' },
     { id:'due',      label:'Vencimento',  width:'130px' },
     { id:'priority', label:'Prioridade',  width:'100px' },
-    { id:'status',   label:'Status',      width:'120px' },
     ...fields.map(f => ({ id:`cf:${f.id}`, label:f.name || 'Campo', width:'140px', field:f })),
   ];
 }
