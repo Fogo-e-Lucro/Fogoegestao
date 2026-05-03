@@ -19,6 +19,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
   <script>window.fbAsyncInit = function() {
     FB.init({ appId: '1972040954188233', cookie: true, xfbml: false, version: 'v25.0' });
     // Suprime erros de console do FB SDK quando rodando em HTTP (não HTTPS)
@@ -216,6 +217,22 @@
         </div>
         <div class="app-settings-action-row">
           <span class="app-settings-hint">Cada módulo (Projetos, Social, GMB…) tem seus próprios eventos configuráveis em "Integrações" no painel do módulo. Esta URL é o fallback global.</span>
+        </div>
+      </div>
+
+      <div class="app-settings-section">
+        <div class="app-settings-row-label">🔔 Push Notifications (FCM) <span class="app-settings-hint">notificações push em qualquer dispositivo, mesmo com aba fechada</span></div>
+        <div class="app-settings-row">
+          <input type="text" class="app-settings-input" id="cfgFcmVapid" placeholder="VAPID Public Key (Firebase Console → Cloud Messaging → Web Push certificates)">
+          <button class="app-settings-btn" onclick="appSettingsSave('fcm_vapid','cfgFcmVapid'); try{localStorage.setItem('pj_fcm_vapid',document.getElementById('cfgFcmVapid').value||'');}catch(_){}">Salvar</button>
+        </div>
+        <div class="app-settings-action-row">
+          <span class="app-settings-hint">Após salvar a VAPID key, clique em "Ativar push" para registrar este dispositivo. Tokens ficam em <code>pj_push_tokens/{token}</code>.</span>
+        </div>
+        <div class="app-settings-action-row">
+          <a href="https://console.firebase.google.com/project/calendario-cd198/settings/cloudmessaging" target="_blank" class="app-settings-link">Console FCM →</a>
+          <button class="app-settings-btn-test" onclick="pjFcmEnable()">▶ Ativar push neste dispositivo</button>
+          <span class="app-settings-test-result" id="cfgFcmResult"></span>
         </div>
       </div>
 
@@ -3952,6 +3969,7 @@ function openAppSettings() {
   fill('cfgUazapiInstance', cfg.uazapi_instance);
   fill('cfgUazapiToken', cfg.uazapi_token);
   fill('cfgN8nUrl', cfg.n8n_global_url);
+  fill('cfgFcmVapid', cfg.fcm_vapid || (function(){ try { return localStorage.getItem('pj_fcm_vapid')||''; } catch(_) { return ''; }})());
   // Status do Meta token
   const ts = document.getElementById('cfgMetaTokenStatus');
   if (ts) {
@@ -19935,6 +19953,122 @@ window.bdUploadCustomImage = async function(cid, fid, input) {
     }
   };
 })();
+
+// ── FCM Push Notifications ────────────────────────────────────
+// Registra firebase-messaging-sw.js, pega o token e salva em pj_push_tokens.
+// Para envios reais, é preciso uma função de servidor (Cloud Function, n8n,
+// etc.) que use a Server Key + tokens armazenados em pj_push_tokens/{uid}.
+// VAPID public key fica em app_config/secrets.fcm_vapid (Firestore) — admin
+// configura em Settings → Integrações.
+let _pjFcmToken = null;
+let _pjFcmMessaging = null;
+let _pjFcmSwReg = null;
+
+async function pjFcmGetVapidKey() {
+  // 1) localStorage (cache rápido)
+  try {
+    const ls = localStorage.getItem('pj_fcm_vapid');
+    if (ls) return ls;
+  } catch(_) {}
+  // 2) Firestore app_config/secrets
+  try {
+    const snap = await _db.collection('app_config').doc('secrets').get();
+    const v = snap.exists ? (snap.data().fcm_vapid || '') : '';
+    if (v) { try { localStorage.setItem('pj_fcm_vapid', v); } catch(_) {} }
+    return v;
+  } catch(e) { return ''; }
+}
+
+async function pjFcmInit() {
+  if (!('serviceWorker' in navigator) || !('Notification' in window)) return;
+  if (!firebase?.messaging?.isSupported || !firebase.messaging.isSupported()) {
+    console.log('[FCM] não suportado neste browser');
+    return;
+  }
+  const uid = _auth?.currentUser?.uid || _currentUser?.uid;
+  if (!uid) return;
+  const vapid = await pjFcmGetVapidKey();
+  if (!vapid) {
+    console.log('[FCM] VAPID key não configurada — push em background indisponível.');
+    return;
+  }
+  try {
+    _pjFcmSwReg = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+    await navigator.serviceWorker.ready;
+    _pjFcmMessaging = firebase.messaging();
+    // Permission gating — não pede automaticamente, espera ação do usuário via botão.
+    if (Notification.permission !== 'granted') return;
+    _pjFcmToken = await _pjFcmMessaging.getToken({
+      vapidKey: vapid,
+      serviceWorkerRegistration: _pjFcmSwReg
+    });
+    if (_pjFcmToken) await pjFcmSaveToken(_pjFcmToken);
+    // Foreground messages → fallback pra desktop notif
+    _pjFcmMessaging.onMessage((payload) => {
+      const n = payload.notification || payload.data || {};
+      if (typeof pjFireDesktopNotif === 'function') {
+        pjFireDesktopNotif(n.title || 'Fogo & Gestão', n.body || '', n.taskId);
+      }
+    });
+    // Mensagens da SW (notificationclick → open task)
+    navigator.serviceWorker.addEventListener('message', (ev) => {
+      if (ev.data?.type === 'fg-open-task' && ev.data.taskId && typeof pjOpenTask === 'function') {
+        pjOpenTask(ev.data.taskId);
+      }
+    });
+    console.log('[FCM] token registrado');
+  } catch(e) {
+    console.warn('[FCM] falha:', e?.message || e);
+  }
+}
+
+async function pjFcmSaveToken(token) {
+  try {
+    const uid = _auth?.currentUser?.uid || _currentUser?.uid;
+    if (!uid || !token) return;
+    const ua = navigator.userAgent || '';
+    const dev = /Android/i.test(ua) ? 'android' : /iPhone|iPad|iPod/i.test(ua) ? 'ios' : 'desktop';
+    await _db.collection('pj_push_tokens').doc(token).set({
+      uid, token, device: dev, ua,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  } catch(e) { console.warn('[FCM] save token:', e?.message); }
+}
+
+window.pjFcmEnable = async function() {
+  if (!('Notification' in window)) {
+    showToast?.('error','❌','Este navegador não suporta notificações.');
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') {
+    showToast?.('warning','⚠️','Permissão negada. Ative em Configurações do site.');
+    return;
+  }
+  showToast?.('info','🔔','Ativando push...');
+  await pjFcmInit();
+  showToast?.('success','✅', _pjFcmToken
+    ? 'Push ativado!'
+    : 'Permissão concedida (configure o VAPID em Integrações para push em background).');
+};
+
+window.pjFcmStatus = function() {
+  return {
+    supported: !!('Notification' in window && firebase?.messaging?.isSupported?.()),
+    permission: 'Notification' in window ? Notification.permission : 'unsupported',
+    hasToken: !!_pjFcmToken,
+    token: _pjFcmToken,
+  };
+};
+
+// Auto-init quando logar (se já permitido)
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (_auth?.currentUser && Notification?.permission === 'granted') {
+      pjFcmInit();
+    }
+  }, 4000);
+});
 
 </script>
 </body>
