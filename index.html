@@ -11780,6 +11780,7 @@ function pjBuildDashboard() {
   const next24    = allActive.filter(t => t.dueDate === tomorrow);
   const doneToday = pjFilterByActiveClient(pjVisibleTasks(false)).filter(mineFilter).filter(t => pjIsDone(t) && t.completedAt?.toMillis && (now - new Date(t.completedAt.toMillis())) < 86400000);
   const noDate    = allActive.filter(t => !t.dueDate);
+  const stale     = allActive.map(t => ({t, info: pjStaleInfo(t)})).filter(x => x.info).sort((a,b) => b.info.days - a.info.days);
 
   const hours = now.getHours();
   const greet = hours < 12 ? 'Bom dia' : hours < 18 ? 'Boa tarde' : 'Boa noite';
@@ -11954,6 +11955,28 @@ function pjBuildDashboard() {
         ${next24.length > 8 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('next24')">Ver todas (${next24.length}) →</div>` : ''}
       </div>
     </div>
+
+    ${stale.length ? `<div class="pj-dash-stale" style="margin-top:18px;">
+      <div class="pj-dash-section-title">
+        <span>🧊 Tarefas paradas</span>
+        <span class="pj-dash-section-count">${stale.length} sem mudança recente</span>
+      </div>
+      <div class="pj-dash-stale-list">
+        ${stale.slice(0, 6).map(({t, info}) => {
+          const list = pjLists.find(l => l.id === t.listId);
+          const sub = list?.name || '';
+          const assignees = (t.assignees||[]).slice(0,2).map(uid => pjAvatarHtml(uid)).join('');
+          return `<div class="pj-dash-task-row" data-task-id="${t.id}" onclick="pjOpenTask('${t.id}')">
+            <span class="pj-stale-pill ${info.severity}">🧊 ${info.days}d</span>
+            <span class="pj-dash-task-title">${escHtml(t.title || '(sem título)')}</span>
+            <span class="pj-dash-task-sub">${escHtml(sub)}</span>
+            <span style="flex:1"></span>
+            <span class="pj-task-assignees">${assignees}</span>
+          </div>`;
+        }).join('')}
+      </div>
+      ${stale.length > 6 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('stale')">Ver todas (${stale.length}) →</div>` : ''}
+    </div>` : ''}
 
     <div class="pj-dash-grid" style="margin-top:24px;${isAdminView ? '' : 'grid-template-columns:1fr;'}">
       <div class="pj-dash-col">
@@ -12233,6 +12256,7 @@ function pjBuildAll() {
     next24: '⏭ Próximas 24h',
     doneToday: '✅ Concluídas hoje',
     noDate: '📋 Sem data',
+    stale:  '🧊 Paradas',
   };
   const f = pjDashFilter;
   const titleSuffix = f && filterLabels[f]
@@ -12249,6 +12273,7 @@ function pjBuildAll() {
     else if (f === 'today') tasks = tasks.filter(t => t.dueDate === today);
     else if (f === 'next24') tasks = tasks.filter(t => t.dueDate === tomorrow);
     else if (f === 'noDate') tasks = tasks.filter(t => !t.dueDate);
+    else if (f === 'stale') tasks = tasks.filter(t => pjStaleInfo(t));
   }
 
   if (!tasks.length) h += `<div class="empty-state" style="padding:40px 24px;">
@@ -12511,6 +12536,7 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
       ${subtaskCount?`<span class="pj-subtask-count">↳ ${subtaskCount}</span>`:''}
       ${pjTimerBtnHtml(t)}
       ${(Array.isArray(t.tags) && t.tags.length) ? `<span class="pj-list-tags">${pjTaskTagsHtml(t,{small:true})}</span>` : ''}
+      ${pjStalePillHtml(t)}
     </div>`,
     assignee: `<div class="pj-list-cell">${assigneeHtml}</div>`,
     due:      `<div class="pj-list-cell">${dueLabel?`<span class="pj-task-due ${due.cls}">${dueLabel}</span>`:`<span class="pj-cell-empty">—</span>`}</div>`,
@@ -13191,12 +13217,13 @@ function pjBuildKanban(listId, statuses, tasks) {
       const due = t.dueDate ? pjDueCls(t.dueDate) : null;
       const assigneeHtml = (t.assignees||[]).slice(0,3).map(uid => pjAvatarHtml(uid)).join('');
       const tagsHtml = pjTaskTagsHtml(t, { small: true });
+      const staleHtml = pjStalePillHtml(t);
       h += `<div class="pj-card" draggable="true" data-priority="${t.priority||'low'}"
                ondragstart="pjKanbanDragStart(event,'${t.id}')"
                ondragend="pjKanbanDragEnd(event)"
                onclick="pjOpenTask('${t.id}')">
           <div class="pj-card-title">${escHtml(t.title)}</div>
-          ${tagsHtml ? `<div class="pj-card-tags">${tagsHtml}</div>` : ''}
+          ${tagsHtml || staleHtml ? `<div class="pj-card-tags">${tagsHtml}${staleHtml}</div>` : ''}
           <div class="pj-card-footer">
             ${t.priority&&t.priority!=='low' ? `<span class="pj-priority ${t.priority}">${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}</span>` : ''}
             ${due ? `<span class="pj-task-due ${due.cls}">${due.label}</span>` : ''}
@@ -13764,7 +13791,7 @@ let pjDashFilter = null; // 'overdue' | 'today' | 'next24' | 'doneToday' | 'noDa
 
 function pjSetDashFilter(filter) {
   pjDashFilter = filter;
-  if (filter === 'doneToday' || filter === 'overdue' || filter === 'today' || filter === 'next24' || filter === 'noDate') {
+  if (filter === 'doneToday' || filter === 'overdue' || filter === 'today' || filter === 'next24' || filter === 'noDate' || filter === 'stale') {
     pjNavigate('all');
   } else {
     pjRenderMain();
@@ -17935,6 +17962,45 @@ function pjIsDone(task) {
   return st ? pjStatusBucket(st) === 'closed' : false;
 }
 function pjDateStr(d) { return d.toISOString().split('T')[0]; }
+
+// ── Detector de tarefas paradas ──────────────────────────────────────
+// Retorna null se a tarefa está OK, ou { days, severity, threshold } se parada.
+// Threshold varia por prioridade (urgent=2d, high=4d, normal=6d, low=10d).
+// Não marca tarefas fechadas, em status "pending" inicial (recém-criadas) ou em campos
+// vazios. Severidade: mild = 1×threshold, moderate = 2×, severe = 3×+.
+function pjStaleInfo(task) {
+  if (!task || pjIsDone(task)) return null;
+  if (task.archived) return null;
+  // Pega último timestamp de atividade
+  const last = (task.updatedAt?.toMillis ? task.updatedAt.toMillis()
+              : task.updatedAt?.toDate ? task.updatedAt.toDate().getTime()
+              : (typeof task.updatedAt === 'number' ? task.updatedAt : null))
+              || (task.createdAt?.toMillis ? task.createdAt.toMillis()
+              : task.createdAt?.toDate ? task.createdAt.toDate().getTime()
+              : (typeof task.createdAt === 'number' ? task.createdAt : null));
+  if (!last) return null;
+  const days = Math.floor((Date.now() - last) / 86400000);
+  const thresholds = { urgent: 2, high: 4, normal: 6, low: 10 };
+  const threshold = thresholds[task.priority || 'normal'] || 6;
+  if (days < threshold) return null;
+  // Pula tarefas em status do bucket "pending" se tiverem <2× threshold (provavelmente é backlog deliberado)
+  const list = pjLists.find(l => l.id === task.listId);
+  const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
+  const st = statuses.find(s => s.id === task.statusId);
+  if (st && pjStatusBucket(st) === 'pending' && days < threshold * 2) return null;
+  let severity = 'mild';
+  if (days >= threshold * 3) severity = 'severe';
+  else if (days >= threshold * 2) severity = 'moderate';
+  return { days, severity, threshold };
+}
+
+function pjStalePillHtml(task) {
+  const info = pjStaleInfo(task);
+  if (!info) return '';
+  const label = info.days === 1 ? '1d sem mudança' : `parada há ${info.days}d`;
+  return `<span class="pj-stale-pill ${info.severity}" title="Última mudança há ${info.days} dias — talvez precise de atenção">🧊 ${label}</span>`;
+}
+
 function pjDueCls(dateStr) {
   const today = pjDateStr(new Date());
   if (dateStr < today) return {cls:'overdue', label:'Atrasada'};

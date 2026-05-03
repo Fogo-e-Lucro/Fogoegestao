@@ -4434,6 +4434,36 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-tag-picker-foot {
   border-top:1px solid var(--border); padding:6px 12px;
 }
+
+/* ── Stale pill (tarefas paradas) ── */
+.pj-stale-pill {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:1px 8px; border-radius:999px;
+  font-size:10.5px; font-weight:600;
+  background:color-mix(in srgb, #38bdf8 14%, transparent);
+  color:#0ea5e9; border:1px solid color-mix(in srgb, #38bdf8 35%, transparent);
+  white-space:nowrap; line-height:1.4;
+}
+.pj-stale-pill.moderate {
+  background:color-mix(in srgb, #f97316 14%, transparent);
+  color:#f97316; border-color:color-mix(in srgb, #f97316 40%, transparent);
+}
+.pj-stale-pill.severe {
+  background:color-mix(in srgb, #ef4444 16%, transparent);
+  color:#ef4444; border-color:color-mix(in srgb, #ef4444 45%, transparent);
+  animation:pjStalePulse 2.4s ease-in-out infinite;
+}
+@keyframes pjStalePulse {
+  0%, 100% { box-shadow:0 0 0 0 rgba(239,68,68,.0); }
+  50%      { box-shadow:0 0 0 4px rgba(239,68,68,.18); }
+}
+.pj-dash-stale {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:14px 16px;
+}
+.pj-dash-stale-list {
+  display:flex; flex-direction:column; gap:2px; margin-top:8px;
+}
 .pj-comment-replies { margin-top:6px; }
 .pj-comment-actions {
   display:flex; align-items:center; gap:6px; margin-top:4px;
