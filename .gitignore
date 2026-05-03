@@ -1,0 +1,16 @@
+# Backend / scripts (não vão pro GitHub Pages)
+relatorio.js
+firebase-key.json
+*-key.json
+.env
+.env.*
+
+# Node (caso algum script local crie)
+node_modules/
+package-lock.json
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.swp
