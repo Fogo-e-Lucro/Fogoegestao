@@ -5836,3 +5836,106 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .pj-status-pill-label { max-width:80px; font-size:11px; }
   .pj-status-pill { padding:3px 8px 3px 7px; }
 }
+
+/* ── Modo Foco (distração-zero) ─────────────────────────────── */
+.pj-focus-toggle {
+  appearance:none; border:0; background:transparent;
+  color:var(--muted); cursor:pointer;
+  width:28px; height:28px; border-radius:8px;
+  display:inline-flex; align-items:center; justify-content:center;
+  transition: background .15s ease, color .15s ease, transform .15s ease;
+  margin-right:4px;
+}
+.pj-focus-toggle:hover { background:var(--hover); color:var(--text); }
+.pj-focus-toggle.active {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+}
+
+/* Pill flutuante para sair do foco — só visível em focus mode */
+.pj-focus-exit-pill {
+  display:none;
+  position:fixed; top:14px; right:14px;
+  z-index: 1000;
+  appearance:none; cursor:pointer;
+  border:1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 92%, var(--accent) 8%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 14px 8px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  align-items:center; gap:7px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.18);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity .22s ease, transform .22s ease, background .15s ease;
+}
+.pj-focus-exit-pill kbd {
+  font-family: inherit;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--hover);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-weight: 600;
+  margin-left: 2px;
+}
+.pj-focus-exit-pill:hover {
+  background: color-mix(in srgb, var(--card) 80%, var(--accent) 20%);
+}
+
+/* Estado focus mode ATIVO ───────────────────────────────────── */
+/* Desktop: colapsa largura da sidebar para liberar o flexbox */
+body.pj-focus .pj-sidebar {
+  width: 0 !important;
+  min-width: 0 !important;
+  border-right: 0 !important;
+  overflow: hidden;
+  pointer-events: none;
+  transition: width .28s cubic-bezier(.4,0,.2,1), min-width .28s cubic-bezier(.4,0,.2,1);
+}
+body.pj-focus .pj-main {
+  max-width: 1100px;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  transition: max-width .28s cubic-bezier(.4,0,.2,1);
+}
+body.pj-focus .pj-fab,
+body.pj-focus .pj-drawer-toggle,
+body.pj-focus .pj-notif-bell,
+body.pj-focus .pj-notif-panel,
+body.pj-focus .pj-drawer-backdrop {
+  display: none !important;
+}
+body.pj-focus .pj-focus-exit-pill {
+  display: inline-flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+/* Esconde elementos puramente decorativos no header das views */
+body.pj-focus .pj-dash-greeting,
+body.pj-focus .pj-dash-quick-quote,
+body.pj-focus .pj-dash-celebrate-banner {
+  display: none !important;
+}
+/* Remove sombras/borders extras do main pra ficar mais limpo */
+body.pj-focus .pj-main { background: var(--bg); }
+body.pj-focus { overflow-x: hidden; }
+
+/* Mobile: na sidebar fixed o drawer toggle some, então sidebar já fica inacessível.
+   Só ajusta a posição e tamanho do pill de saída. */
+@media (max-width: 700px) {
+  .pj-focus-exit-pill { top: 10px; right: 10px; padding: 7px 12px 7px 10px; font-size: 11.5px; }
+  .pj-focus-exit-pill kbd { display: none; }
+}
+
+/* Respeita prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  body.pj-focus .pj-sidebar,
+  body.pj-focus .pj-main,
+  .pj-focus-exit-pill { transition: none !important; }
+}

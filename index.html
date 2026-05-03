@@ -1360,6 +1360,9 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             <!-- Bell row -->
             <div class="pj-sidebar-bell-row">
               <span class="pj-sidebar-bell-label">Gestão Central</span>
+              <button class="pj-focus-toggle" id="pjFocusToggle" onclick="pjToggleFocus()" title="Modo foco — esconde tudo menos a tarefa atual (Shift+F)">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
+              </button>
               <button class="pj-notif-bell" id="pjNotifBell" onclick="pjToggleNotifPanel(event)" title="Notificações">
                 <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M10 2a6 6 0 00-6 6v2.586l-.707.707A1 1 0 003 13h14a1 1 0 00.707-1.707L17 10.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
                 <span class="pj-notif-count" id="pjNotifCount">0</span>
@@ -1481,6 +1484,13 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
       </div>
     </div>
   </div><!-- /tab-base -->
+
+  <!-- Modo Foco: pill flutuante para sair (visível só quando focus mode ativo) -->
+  <button class="pj-focus-exit-pill" id="pjFocusExitPill" onclick="pjToggleFocus()" title="Sair do modo foco (Esc)">
+    <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+    Sair do foco
+    <kbd>Esc</kbd>
+  </button>
 
   <!-- Quick-add FAB (visível em todas as abas para usuários logados) -->
   <button class="pj-fab" id="pjFab" onclick="pjOpenFabModal()" title="Criar tarefa rápida" style="display:none;">＋</button>
@@ -13953,6 +13963,69 @@ function pjFireDesktopNotif(title, body, taskId) {
 // Implementação extraída pra mobile.js (carregado no <head>).
 // Funções globais expostas: pjToggleDrawer, pjCloseDrawer,
 // pjInitDrawerAutoClose, pjInitPullToRefresh, pjInitSwipeComplete.
+
+// ── Modo Foco (distração-zero) ──────────────────────────────
+// Esconde sidebar, FAB, drawer toggle, badges e sininho de notificação.
+// Persiste em localStorage. Atalho Shift+F (toggle) e Esc (sair).
+const PJ_FOCUS_KEY = 'pj_focus_mode';
+let pjFocusActive = false;
+
+function pjFocusApply() {
+  document.body.classList.toggle('pj-focus', pjFocusActive);
+  const btn = document.getElementById('pjFocusToggle');
+  if (btn) btn.classList.toggle('active', pjFocusActive);
+  // Fecha drawer mobile se estiver aberto ao entrar em foco
+  if (pjFocusActive) {
+    try { if (typeof pjCloseDrawer === 'function') pjCloseDrawer(); } catch(_) {}
+    try { if (typeof pjCloseNotifPanel === 'function') pjCloseNotifPanel(); } catch(_) {}
+  }
+}
+
+function pjToggleFocus() {
+  pjFocusActive = !pjFocusActive;
+  try { localStorage.setItem(PJ_FOCUS_KEY, pjFocusActive ? '1' : '0'); } catch(_) {}
+  pjFocusApply();
+  if (typeof pjHaptic === 'function') pjHaptic('light');
+  if (typeof showToast === 'function') {
+    showToast('info', '🎯', pjFocusActive ? 'Modo foco ativado · Shift+F p/ sair' : 'Modo foco desativado');
+  }
+}
+
+function pjFocusInit() {
+  try {
+    if (localStorage.getItem(PJ_FOCUS_KEY) === '1') pjFocusActive = true;
+  } catch(_) {}
+  pjFocusApply();
+  // Atalhos de teclado
+  document.addEventListener('keydown', e => {
+    // Ignora se digitando em input/textarea/contenteditable
+    const tag = (e.target?.tagName || '').toLowerCase();
+    const isEditing = tag === 'input' || tag === 'textarea' || e.target?.isContentEditable;
+    // Esc sai do foco (sem bloquear outros usos de Esc se algo capturou antes)
+    if (pjFocusActive && e.key === 'Escape' && !isEditing) {
+      // Só sai se não há modal aberto (modais consomem Esc primeiro)
+      const hasOpenModal = document.querySelector('.pj-modal-overlay.open, .pj-fab-modal-overlay.open, .pj-tags-backdrop, .pj-quick-actions-backdrop');
+      if (!hasOpenModal) {
+        e.preventDefault();
+        pjToggleFocus();
+      }
+    }
+    // Shift+F (sem outros modificadores) toggle foco
+    if (!isEditing && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey
+        && (e.key === 'F' || e.key === 'f')) {
+      e.preventDefault();
+      pjToggleFocus();
+    }
+  });
+}
+window.pjToggleFocus = pjToggleFocus;
+window.pjFocusInit = pjFocusInit;
+// Inicializa quando DOM pronto (idempotente: outros initializers podem chamar antes)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', pjFocusInit, { once: true });
+} else {
+  pjFocusInit();
+}
 
 // Detecta nova atribuição em tasks atualizadas via realtime
 function pjMaybeNotifyAssignment(prevTask, newTask) {
