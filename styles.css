@@ -5465,6 +5465,30 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-askai-bubble .pj-askai-table tr:last-child td { border-bottom:none; }
 .pj-askai-bubble .pj-askai-table tr:hover td { background:color-mix(in srgb, var(--accent) 6%, transparent); }
 
+/* Ações executáveis nas respostas da IA */
+.pj-askai-actions {
+  display:flex; flex-wrap:wrap; gap:6px;
+  margin-top:10px; padding-top:10px;
+  border-top:1px dashed color-mix(in srgb, var(--accent) 22%, var(--border));
+}
+.pj-askai-action-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  background:color-mix(in srgb, var(--accent) 10%, var(--bg2));
+  border:1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  color:var(--text); font-size:12px; font-weight:600;
+  padding:6px 11px; border-radius:999px; cursor:pointer;
+  transition:transform .12s ease, background .15s ease, border-color .15s ease;
+  line-height:1.2;
+}
+.pj-askai-action-btn:hover {
+  background:color-mix(in srgb, var(--accent) 18%, var(--bg2));
+  border-color:var(--accent);
+  transform:translateY(-1px);
+}
+.pj-askai-action-btn:active { transform:translateY(0); }
+.pj-askai-action-btn svg { opacity:.65; transition:transform .12s ease, opacity .15s ease; }
+.pj-askai-action-btn:hover svg { opacity:1; transform:translateX(2px); }
+
 .pj-askai-suggest {
   display:flex; flex-wrap:wrap; gap:6px;
 }
@@ -5514,6 +5538,7 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .pj-askai-bubble { max-width:90%; font-size:13px; }
   .pj-askai-suggest { gap:4px; }
   .pj-askai-chip { padding:5px 10px; font-size:11px; }
+  .pj-askai-action-btn { font-size:11px; padding:5px 9px; }
 }
 
 /* ──────────────────────────────────────────────────────────

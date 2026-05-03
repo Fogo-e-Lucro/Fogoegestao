@@ -14677,7 +14677,23 @@ function pjAskAiRenderMsgs() {
   }
   box.innerHTML = window.pjAskAiHistory.map((m, idx) => {
     const cls = m.role === 'user' ? 'user' : 'bot';
-    const content = m.role === 'user' ? `<p>${escHtml(m.text).replace(/\n/g,'<br>')}</p>` : pjAskAiMarkdown(m.text);
+    let content;
+    let actionsHtml = '';
+    if (m.role === 'user') {
+      content = `<p>${escHtml(m.text).replace(/\n/g,'<br>')}</p>`;
+    } else {
+      const split = pjAskAiSplitActions(m.text);
+      content = pjAskAiMarkdown(split.text);
+      if (split.actions.length) {
+        actionsHtml = `<div class="pj-askai-actions">
+          ${split.actions.map((a, i) => `
+            <button class="pj-askai-action-btn" type="button" onclick="pjAskAiRunAction(${idx},${i})">
+              <span>${escHtml(a.label || 'Ação')}</span>
+              <svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3l5 5-5 5"/></svg>
+            </button>`).join('')}
+        </div>`;
+      }
+    }
     const copyBtn = (m.role === 'bot' && !m.pending)
       ? `<button class="pj-askai-copy" type="button" onclick="pjAskAiCopy(${idx},this)" title="Copiar resposta" aria-label="Copiar">
            <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="10" rx="1.5"/><path d="M7 4V2.5A.5.5 0 0 1 7.5 2h5a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5H11"/></svg>
@@ -14685,10 +14701,67 @@ function pjAskAiRenderMsgs() {
       : '';
     return `<div class="pj-askai-msg ${cls}">
       <div class="pj-askai-avatar">${m.role==='user'?'🧑':'🤖'}</div>
-      <div class="pj-askai-bubble ${m.pending?'pending':''}">${content}${copyBtn}</div>
+      <div class="pj-askai-bubble ${m.pending?'pending':''}">${content}${actionsHtml}${copyBtn}</div>
     </div>`;
   }).join('');
   box.scrollTop = box.scrollHeight;
+}
+
+// Extrai bloco <ACTIONS>JSON</ACTIONS> da resposta. Devolve { text, actions }.
+function pjAskAiSplitActions(raw) {
+  const text = raw || '';
+  const m = text.match(/<ACTIONS>\s*([\s\S]*?)\s*<\/ACTIONS>/i);
+  if (!m) return { text, actions: [] };
+  let actions = [];
+  try {
+    const parsed = JSON.parse(m[1]);
+    if (Array.isArray(parsed)) actions = parsed.slice(0, 4);
+  } catch(_) { actions = []; }
+  return { text: text.replace(m[0], '').trim(), actions };
+}
+
+// Executa uma ação proposta pela IA. Faz match flexível por nome.
+function pjAskAiRunAction(msgIdx, actIdx) {
+  const m = window.pjAskAiHistory?.[msgIdx];
+  if (!m) return;
+  const split = pjAskAiSplitActions(m.text);
+  const a = split.actions[actIdx];
+  if (!a) return;
+  try {
+    if (a.type === 'open_task' && a.taskId) {
+      const t = pjAllTasks.find(x => x.id === a.taskId);
+      if (!t) {
+        if (typeof showToast === 'function') showToast('warn','⚠️','Tarefa não encontrada');
+        return;
+      }
+      if (typeof pjOpenTask === 'function') pjOpenTask(a.taskId);
+      return;
+    }
+    if (a.type === 'navigate' && a.view) {
+      const allowedViews = ['dashboard','inbox','all','workload','byclient','timeline','archived','gantt'];
+      if (!allowedViews.includes(a.view)) {
+        if (typeof showToast === 'function') showToast('warn','⚠️','Vista inválida');
+        return;
+      }
+      // Aplica filtros opcionais (best-effort)
+      const f = a.filter || {};
+      if (f.clienteName && typeof setRestaurante === 'function') {
+        // Tenta casar com nome do cliente do restaurante (case-insensitive, contém)
+        const target = String(f.clienteName).toLowerCase();
+        // setRestaurante recebe o NOME exato salvo. Tenta encontrar via _bdClientes ou lista de restaurantes.
+        const cli = (typeof _bdClientes !== 'undefined' ? _bdClientes : []).find(x => (x.nome||x.razaoSocial||'').toLowerCase().includes(target));
+        if (cli) setRestaurante(cli.nome || cli.razaoSocial);
+      }
+      pjNavigate(a.view);
+      // Mostra um toast amigável
+      if (typeof showToast === 'function') showToast('ok','🤖', 'Aplicado: ' + (a.label || a.view));
+      return;
+    }
+    if (typeof showToast === 'function') showToast('warn','⚠️','Tipo de ação não suportado');
+  } catch(e) {
+    console.warn('[askai] action error', e);
+    if (typeof showToast === 'function') showToast('error','❌','Erro ao executar ação');
+  }
 }
 
 async function pjAskAiCopy(idx, btnEl) {
@@ -14741,6 +14814,18 @@ Use APENAS os dados fornecidos abaixo. Se não houver dado suficiente para respo
 Quando der números, indique o período de referência. Para relatórios, use tabelas markdown.
 Hoje é ${ctx.today}. ${me ? `O usuário é "${me}".` : ''}
 Resumo do snapshot: ${ctx.counts.tasks} tarefas, ${ctx.counts.lists} listas, ${ctx.counts.members} membros, ${ctx.counts.clientes} clientes${ctx.counts.truncatedTasks?` (${ctx.counts.truncatedTasks} tarefas mais antigas/concluídas omitidas)`:''}.
+
+AÇÕES EXECUTÁVEIS (opcional): Quando fizer sentido, ao FINAL da resposta, adicione um bloco <ACTIONS>...</ACTIONS> contendo um JSON array com botões que ajudam o usuário a navegar/agir no app. Exemplos:
+[
+  {"label":"Ver caixa de entrada","type":"navigate","view":"inbox"},
+  {"label":"Todas as tarefas","type":"navigate","view":"all"},
+  {"label":"Ver dashboard","type":"navigate","view":"dashboard"},
+  {"label":"Por cliente","type":"navigate","view":"byclient"},
+  {"label":"Workload da equipe","type":"navigate","view":"workload"},
+  {"label":"Filtrar Tio Pirilampo","type":"navigate","view":"all","filter":{"clienteName":"Tio Pirilampo"}},
+  {"label":"Abrir tarefa: Criar arte","type":"open_task","taskId":"<id>"}
+]
+Tipos suportados: "navigate" (view: dashboard|inbox|all|workload|byclient|timeline|archived; com filter.clienteName opcional) e "open_task" (taskId obrigatório, da lista de tarefas no contexto). Máx 4 ações. NÃO invente IDs nem nomes — use só IDs/nomes reais do JSON. Se não couber ação útil, omita o bloco.
 
 DADOS (JSON):
 ${JSON.stringify(ctx)}`;
