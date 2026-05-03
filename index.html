@@ -12248,6 +12248,7 @@ function pjBuildListPage(listId) {
   let tasks = (pjTasks[listId] || []).filter(t => !pjIsArchived(t));
   const view = pjViewMode[listId] || 'list';
   const sp = pjSpaces.find(s => s.id === list.spaceId);
+  const _viewIsAdmin = (typeof userIsAdmin === 'function') ? userIsAdmin() : true;
 
   let h = `<div class="pj-view-header">
     <div class="pj-view-title">
@@ -12259,8 +12260,8 @@ function pjBuildListPage(listId) {
       <button class="${view==='kanban'?'active':''}" onclick="pjSetView('${listId}','kanban')">⊞ Kanban</button>
       ${(list.customFields||[]).some(f=>f.type==='address') ? `<button class="${view==='map'?'active':''}" onclick="pjSetView('${listId}','map')">📍 Mapa</button>` : ''}
     </div>
-    <button class="pj-icon-btn pj-icon-btn-lg" title="Editar status" onclick="pjOpenStatusEditor('${listId}')">🏷️</button>
-    <button class="pj-icon-btn pj-icon-btn-lg" title="Campos personalizados" onclick="pjOpenFieldsEditor('${listId}')">📋</button>
+    ${_viewIsAdmin ? `<button class="pj-icon-btn pj-icon-btn-lg" title="Editar status" onclick="pjOpenStatusEditor('${listId}')">🏷️</button>
+    <button class="pj-icon-btn pj-icon-btn-lg" title="Campos personalizados" onclick="pjOpenFieldsEditor('${listId}')">📋</button>` : ''}
     <button class="pj-btn pj-btn-primary" style="font-size:12px;padding:6px 14px;" onclick="pjQuickCreateTask('${listId}')">＋ Tarefa</button>
   </div>` + pjBuildFilterBar(list) + pjBuildBulkBar() + `<div class="pj-view-body" style="padding-top:8px;">`;
 
@@ -12345,7 +12346,7 @@ function pjTaskColumnRowHtml(t, fields, gridTpl) {
     <div class="pj-list-cell">${assigneeHtml}</div>
     <div class="pj-list-cell">${dueLabel?`<span class="pj-task-due ${due.cls}">${dueLabel}</span>`:`<span class="pj-cell-empty">—</span>`}</div>
     <div class="pj-list-cell">${prio}</div>
-    <div class="pj-list-cell"><span class="pj-status-pill" style="background:${st.color}1f;color:${st.color}">${escHtml(st.name)}</span></div>
+    <div class="pj-list-cell"><button type="button" class="pj-status-dot" style="--c:${st.color}" onclick="event.stopPropagation();pjOpenStatusMenu(event,'${t.id}')" title="${escHtml(st.name)} — clique pra trocar"></button></div>
     ${fields.map(f => {
       const v = t.customFieldValues?.[f.id] || '';
       return `<div class="pj-list-cell">${v?escHtml(String(v)):'<span class="pj-cell-empty">—</span>'}</div>`;
@@ -13229,7 +13230,7 @@ function pjTaskRowHtml(t) {
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
       ${t.priority&&t.priority!=='low'?`<span class="pj-priority ${t.priority}">${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}</span>`:''}
-      <span class="pj-status-pill" style="background:${st.color}1f;color:${st.color}">${escHtml(st.name)}</span>
+      <button type="button" class="pj-status-dot" style="--c:${st.color}" onclick="event.stopPropagation();pjOpenStatusMenu(event,'${t.id}')" title="${escHtml(st.name)} — clique pra trocar"></button>
       ${due?`<span class="pj-task-due ${due.cls}">${due.label}</span>`:''}
       <div class="pj-task-assignees">${assigneeHtml}</div>
     </div>
@@ -13675,6 +13676,72 @@ async function pjToggleTaskDone(taskId) {
   try {
     const upd = { statusId: newStatusId, updatedAt:pjNow() };
     if (!isDone) upd.completedAt = pjNow();
+    await pjC('pj_tasks').doc(taskId).update(upd);
+  } catch(e){}
+}
+
+// Atualiza statusId da tarefa (local + Firestore). Suporta undo.
+// Mantém completedAt sincronizado com o bucket (closed → seta; outros → limpa).
+async function pjChangeTaskStatus(taskId, newStatusId) {
+  const t = pjAllTasks.find(x => x.id === taskId);
+  if (!t || t.statusId === newStatusId) return;
+  const list = pjLists.find(l => l.id === t.listId);
+  const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
+  const newSt = statuses.find(s => s.id === newStatusId);
+  if (!newSt) return;
+  const newBucket = pjStatusBucket(newSt);
+  const wasClosed = pjIsDone(t);
+  const willClose = newBucket === 'closed';
+
+  // Snapshot pra undo
+  const prevStatusId = t.statusId;
+  const prevCompletedAt = t.completedAt;
+  const prevArchived = t.archived;
+  if (typeof appPushUndo === 'function') {
+    appPushUndo({
+      describe: `mudar status pra ${newSt.name}`,
+      undo: async () => {
+        const tt = pjAllTasks.find(x => x.id === taskId); if (!tt) return;
+        tt.statusId = prevStatusId;
+        if (prevCompletedAt === undefined) delete tt.completedAt; else tt.completedAt = prevCompletedAt;
+        if (prevArchived === undefined) delete tt.archived; else tt.archived = prevArchived;
+        tt.updatedAt = { toMillis:()=>Date.now() };
+        pjAllTasks = pjAllTasks.map(x => x.id===tt.id ? tt : x);
+        if (pjTasks[tt.listId]) pjTasks[tt.listId] = pjTasks[tt.listId].map(x => x.id===tt.id ? tt : x);
+        pjRenderMain(); pjRenderSidebar();
+        try {
+          const upd = { statusId: prevStatusId, updatedAt: pjNow() };
+          if (prevCompletedAt === undefined) upd.completedAt = firebase.firestore.FieldValue.delete();
+          await pjC('pj_tasks').doc(taskId).update(upd);
+        } catch(e){}
+      }
+    });
+  }
+
+  // Atualiza local
+  t.statusId = newStatusId;
+  t.updatedAt = { toMillis: () => Date.now() };
+  if (willClose && !wasClosed) {
+    t.completedAt = Date.now();
+  } else if (!willClose && wasClosed) {
+    delete t.completedAt;
+    delete t.archived;
+  }
+  if (pjTasks[t.listId]) pjTasks[t.listId] = pjTasks[t.listId].map(x => x.id === t.id ? t : x);
+  pjAllTasks = pjAllTasks.map(x => x.id === t.id ? t : x);
+  // Recorrência: ao concluir, gera próxima ocorrência
+  if (willClose && !wasClosed && t.recurrence?.pattern && t.dueDate) pjSpawnNextRecurrence(t);
+  pjRenderMain(); pjRenderSidebar();
+  if (willClose && !wasClosed) pjFireWebhook('task.completed', pjTaskPayload(t));
+
+  // Persiste
+  try {
+    const upd = { statusId: newStatusId, updatedAt: pjNow() };
+    if (willClose && !wasClosed) upd.completedAt = pjNow();
+    else if (!willClose && wasClosed) {
+      upd.completedAt = firebase.firestore.FieldValue.delete();
+      upd.archived = false;
+    }
     await pjC('pj_tasks').doc(taskId).update(upd);
   } catch(e){}
 }
@@ -14813,6 +14880,21 @@ function pjShowPopupMenu(ev, items, current, onSelect) {
   const menu = document.createElement('div');
   menu.className = 'pj-popup-menu';
   items.forEach((o, idx) => {
+    // Cabeçalho de seção (não selecionável)
+    if (o.header) {
+      const h = document.createElement('div');
+      h.className = 'pj-popup-header';
+      h.textContent = o.label || '';
+      menu.appendChild(h);
+      return;
+    }
+    // Divisor visual
+    if (o.divider) {
+      const d = document.createElement('div');
+      d.className = 'pj-popup-divider';
+      menu.appendChild(d);
+      return;
+    }
     const item = document.createElement('div');
     item.className = 'pj-popup-item' + (current===o.id?' active':'');
     item.innerHTML = `
@@ -14852,19 +14934,38 @@ function pjOpenRecurrenceMenu(ev, taskId) {
 }
 
 function pjOpenStatusMenu(ev, taskId) {
+  if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
   const t = pjAllTasks.find(x => x.id === taskId);
   if (!t) return;
   const list = pjLists.find(l => l.id === t.listId);
   const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
   const cur = t.statusId || statuses[0].id;
-  const items = statuses.map(s => ({ id: s.id, label: s.name, icon: '●', color: s.color }));
-  items.push({ id:'__edit__', label:'Editar status desta lista…', icon:'✏️' });
+  const BUCKET_LABELS = { pending:'Não iniciado', active:'Ativo', closed:'Fechado' };
+  const groups = { pending: [], active: [], closed: [] };
+  statuses.forEach(s => {
+    const b = pjStatusBucket(s);
+    (groups[b] || groups.active).push(s);
+  });
+  const items = [];
+  ['pending', 'active', 'closed'].forEach(b => {
+    if (!groups[b].length) return;
+    if (items.length) items.push({ divider: true });
+    items.push({ header: true, label: BUCKET_LABELS[b] });
+    groups[b].forEach(s => {
+      items.push({ id: s.id, label: s.name, icon: '●', color: s.color });
+    });
+  });
+  // Admin pode editar os status da lista direto pelo menu
+  const _isAdmin = (typeof userIsAdmin === 'function') ? userIsAdmin() : true;
+  if (_isAdmin) {
+    items.push({ divider: true });
+    items.push({ id:'__edit__', label:'Editar status desta lista…', icon:'✏️' });
+  }
   pjShowPopupMenu(ev, items, cur, async (id) => {
     if (id === '__edit__') { if (list) pjOpenStatusEditor(list.id); return; }
-    await pjUpdateTask(taskId, { statusId: id });
+    await pjChangeTaskStatus(taskId, id);
     const t2 = pjAllTasks.find(x => x.id === taskId);
     if (t2 && pjCurrentTaskId === taskId) pjRenderTaskModal({ ...t2 });
-    if (pjCurrentView.type === 'list' || pjCurrentView.type === 'kanban' || pjCurrentView.type === 'inbox') pjRenderMain();
   });
 }
 
@@ -16336,14 +16437,27 @@ async function pjSaveFields(listId) {
 }
 
 function pjOpenStatusEditor(listId) {
+  // Admin only
+  if (typeof userIsAdmin === 'function' && !userIsAdmin()) {
+    if (typeof showToast === 'function') showToast('Apenas admins podem editar status.', 'warn');
+    return;
+  }
   const list = pjLists.find(l=>l.id===listId); if(!list)return;
   const statuses = list.statuses || [...PJ_DEFAULT_STATUSES];
+  const bucketSelect = (sid, current) => `
+    <select class="pj-status-bucket-select" data-sid="${sid}" title="Categoria do status">
+      <option value="pending" ${current==='pending'?'selected':''}>● Não iniciado</option>
+      <option value="active"  ${current==='active' ?'selected':''}>● Ativo</option>
+      <option value="closed"  ${current==='closed' ?'selected':''}>● Fechado</option>
+    </select>`;
   let html = `<h3>🏷️ Editar Status — ${escHtml(list.name)}</h3>
+    <p class="pj-status-hint">A <b>categoria</b> define se a tarefa conta como pendente, ativa ou fechada (afeta dashboard, KPIs e swipe).</p>
     <div class="pj-status-list" id="pjStatusEditList">
     ${statuses.map((s,i)=>`
       <div class="pj-status-row">
         <input type="color" class="pj-status-color-input" value="${pjToHex(s.color)}" title="Escolher cor">
         <input class="pj-status-name-input" value="${escHtml(s.name)}" data-sid="${s.id}" onchange="pjStatusNameChanged('${listId}',this)">
+        ${bucketSelect(s.id, pjStatusBucket(s))}
         <button class="pj-status-order-btn" onclick="pjMoveStatusRow(this,-1)" title="Mover para cima">▲</button>
         <button class="pj-status-order-btn" onclick="pjMoveStatusRow(this,1)" title="Mover para baixo">▼</button>
         <button class="pj-status-del" onclick="pjDeleteStatus('${listId}','${s.id}')">×</button>
@@ -16363,6 +16477,11 @@ function pjAddStatus(listId) {
     <div class="pj-status-row">
       <input type="color" class="pj-status-color-input" value="#6366f1" title="Escolher cor">
       <input class="pj-status-name-input" value="Novo status" data-sid="${id}" onchange="pjStatusNameChanged(null,this)">
+      <select class="pj-status-bucket-select" data-sid="${id}" title="Categoria do status">
+        <option value="pending">● Não iniciado</option>
+        <option value="active" selected>● Ativo</option>
+        <option value="closed">● Fechado</option>
+      </select>
       <button class="pj-status-order-btn" onclick="pjMoveStatusRow(this,-1)" title="Mover para cima">▲</button>
       <button class="pj-status-order-btn" onclick="pjMoveStatusRow(this,1)" title="Mover para baixo">▼</button>
       <button class="pj-status-del" onclick="this.parentElement.remove()">×</button>
@@ -16374,11 +16493,13 @@ async function pjSaveStatuses(listId) {
     id: row.querySelector('.pj-status-name-input').dataset.sid,
     name: row.querySelector('.pj-status-name-input').value.trim(),
     color: row.querySelector('.pj-status-color-input').value,
+    bucket: row.querySelector('.pj-status-bucket-select')?.value || 'active',
   })).filter(s=>s.name);
   await pjC('pj_lists').doc(listId).update({statuses});
   const l = pjLists.find(x=>x.id===listId); if(l) l.statuses=statuses;
   pjCloseFormModal();
   if (pjCurrentView.id===listId) pjRenderMain();
+  pjRenderSidebar();
 }
 // Converte cor (hex/rgb) para hex válido para input type=color
 function pjToHex(c) {
@@ -16390,10 +16511,48 @@ function pjToHex(c) {
 }
 async function pjDeleteStatus(listId, statusId) {
   const list = pjLists.find(l=>l.id===listId); if(!list)return;
-  const statuses = (list.statuses||[...PJ_DEFAULT_STATUSES]).filter(s=>s.id!==statusId);
-  list.statuses = statuses;
-  // Re-render editor
-  pjOpenStatusEditor(listId);
+  const remaining = (list.statuses||[...PJ_DEFAULT_STATUSES]).filter(s=>s.id!==statusId);
+  if (!remaining.length) {
+    if (typeof showToast === 'function') showToast('A lista precisa ter pelo menos um status.', 'warn');
+    return;
+  }
+  // Verifica se há tarefas usando este status
+  const affected = (Array.isArray(pjAllTasks) ? pjAllTasks : [])
+    .filter(t => t.listId === listId && t.statusId === statusId);
+  const finishDelete = async (moveToId) => {
+    if (moveToId && affected.length) {
+      // Move tarefas afetadas pro status escolhido (uma a uma para manter completedAt sincronizado)
+      for (const t of affected) {
+        try { await pjChangeTaskStatus(t.id, moveToId); } catch(e){}
+      }
+    }
+    list.statuses = remaining;
+    try { await pjC('pj_lists').doc(listId).update({ statuses: remaining }); } catch(e){}
+    pjOpenStatusEditor(listId);
+  };
+  if (!affected.length) {
+    return finishDelete(null);
+  }
+  // Pergunta pra qual status mover, agrupado por bucket
+  const BUCKET_LABELS = { pending:'Não iniciado', active:'Ativo', closed:'Fechado' };
+  const groups = { pending: [], active: [], closed: [] };
+  remaining.forEach(s => {
+    const b = pjStatusBucket(s);
+    (groups[b] || groups.active).push(s);
+  });
+  const items = [];
+  items.push({ header:true, label:`${affected.length} tarefa(s) usam este status — mover pra:` });
+  ['pending','active','closed'].forEach(b => {
+    if (!groups[b].length) return;
+    items.push({ divider: true });
+    items.push({ header: true, label: BUCKET_LABELS[b] });
+    groups[b].forEach(s => items.push({ id: s.id, label: s.name, icon: '●', color: s.color }));
+  });
+  // Posiciona o popup perto do botão clicado (event vem do click handler)
+  const ev = window.event;
+  pjShowPopupMenu(ev, items, null, (newId) => {
+    if (newId) finishDelete(newId);
+  });
 }
 function pjStatusNameChanged(listId, input) {} // handled on save
 function pjMoveStatusRow(btn, dir) {

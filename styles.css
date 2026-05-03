@@ -3361,6 +3361,43 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 }
 .pj-status-pill::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.9; }
 .pj-status-pill:hover { transform:scale(1.04); }
+
+/* Bolinha colorida clicável que mostra status da tarefa.
+   Hit-zone (botão) tem 28px pra ser tocável; círculo visível tem 12px. */
+.pj-status-dot {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:28px; height:28px; border-radius:50%;
+  background:transparent; border:none; padding:0;
+  cursor:pointer; flex-shrink:0;
+  transition:background .15s;
+  position:relative;
+}
+.pj-status-dot::before {
+  content:''; width:12px; height:12px; border-radius:50%;
+  background:var(--c, #94a3b8);
+  box-shadow:0 0 0 2px color-mix(in srgb, var(--c, #94a3b8) 25%, transparent);
+  transition:transform .15s, box-shadow .15s;
+}
+.pj-status-dot:hover { background:color-mix(in srgb, var(--c, #94a3b8) 12%, transparent); }
+.pj-status-dot:hover::before { transform:scale(1.15); box-shadow:0 0 0 3px color-mix(in srgb, var(--c, #94a3b8) 35%, transparent); }
+.pj-status-dot:active::before { transform:scale(0.95); }
+/* Mobile: hit-zone permanece 28px (touch-friendly), círculo um pouco maior */
+@media (max-width:640px) {
+  .pj-status-dot::before { width:14px; height:14px; }
+}
+
+/* Cabeçalho de seção no popup menu (usado pelos buckets do menu de status) */
+.pj-popup-header {
+  font-size:10px; font-weight:700; text-transform:uppercase;
+  color:var(--text3); letter-spacing:.5px;
+  padding:8px 12px 4px; margin-top:2px;
+  pointer-events:none;
+}
+.pj-popup-header:first-child { margin-top:0; }
+.pj-popup-divider {
+  height:1px; background:var(--border); margin:4px 0;
+  pointer-events:none;
+}
 .pj-add-task-row {
   display:flex; align-items:center; gap:7px;
   padding:8px 12px; margin:4px 2px;
@@ -4703,6 +4740,22 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-status-color-input::-webkit-color-swatch-wrapper { padding:2px; }
 .pj-status-color-input::-webkit-color-swatch { border-radius:4px; border:none; }
 .pj-status-color-input::-moz-color-swatch { border-radius:4px; border:none; }
+.pj-status-bucket-select {
+  flex-shrink:0; height:28px; padding:0 6px;
+  border:1px solid var(--border); border-radius:6px;
+  background:var(--bg2); color:var(--text);
+  font-size:12px; cursor:pointer;
+  max-width:140px;
+}
+.pj-status-bucket-select:focus { outline:none; border-color:var(--accent); }
+.pj-status-hint {
+  font-size:12px; color:var(--text3);
+  margin:-4px 0 10px; line-height:1.4;
+}
+@media (max-width:520px) {
+  .pj-status-row { flex-wrap:wrap; }
+  .pj-status-bucket-select { max-width:none; flex:1 1 100%; order:99; }
+}
 
 /* Members panel */
 .pj-member-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
