@@ -1512,7 +1512,13 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
       <h3>🪄 Nova tarefa rápida</h3>
       <form onsubmit="return pjFabSubmit(event)">
         <label>Título</label>
-        <input type="text" id="pjFabTitle" placeholder="Ex: Revisar copy da campanha" maxlength="200" required>
+        <div class="pj-fab-title-row">
+          <input type="text" id="pjFabTitle" placeholder="Ex: Revisar copy da campanha amanhã às 9h" maxlength="200" required>
+          <button type="button" class="pj-voice-btn" id="pjFabVoiceBtn" onclick="pjVoiceStart('pjFabTitle', this)" title="Ditar (Web Speech)" aria-label="Ditar">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"/></svg>
+          </button>
+          <button type="button" class="pj-ai-extract-btn" id="pjFabAiBtn" onclick="pjFabExtractWithAi()" title="Extrair lista, prioridade, prazo e responsável via IA">✨ IA</button>
+        </div>
         <label>Lista</label>
         <select id="pjFabListSelect"></select>
         <div class="pj-fab-modal-footer">
@@ -14027,15 +14033,22 @@ function pjOpenFabModal() {
     sel.innerHTML = opts || '<option value="">Nenhuma lista disponível</option>';
   }
   overlay.classList.add('open');
+  // Reset extras da IA e configura voice button
+  _pjFabExtractedExtras = null;
+  try { if (typeof pjVoiceUiSetup === 'function') pjVoiceUiSetup(); } catch(_) {}
   setTimeout(() => document.getElementById('pjFabTitle')?.focus(), 50);
 }
 function pjCloseFabModal() {
+  try { if (typeof pjVoiceStop === 'function') pjVoiceStop(); } catch(_) {}
+  _pjFabExtractedExtras = null;
   document.getElementById('pjFabModal')?.classList.remove('open');
   const inp = document.getElementById('pjFabTitle');
   if (inp) inp.value = '';
 }
 async function pjFabSubmit(ev) {
   if (ev) ev.preventDefault();
+  // Para gravação se ainda estiver rodando
+  try { if (typeof pjVoiceStop === 'function') pjVoiceStop(); } catch(_) {}
   const title = (document.getElementById('pjFabTitle')?.value || '').trim();
   const listId = document.getElementById('pjFabListSelect')?.value;
   if (!title || !listId) return;
@@ -14045,10 +14058,19 @@ async function pjFabSubmit(ev) {
   const stId = statuses[0].id;
   const uid = _auth?.currentUser?.uid || _currentUser?.uid;
   const id = (typeof pjId==='function') ? pjId() : ('tk_'+Date.now());
+  // Aplica extras da IA (se houver)
+  const extras = _pjFabExtractedExtras || {};
+  _pjFabExtractedExtras = null;
+  const assignees = (extras.assigneeUids && extras.assigneeUids.length)
+    ? extras.assigneeUids
+    : (uid ? [uid] : []);
   const localTask = {
     id, title, description:'', listId, spaceId:list.spaceId,
-    statusId:stId, assignees:uid?[uid]:[], dueDate:null, startDate:null,
-    priority:'normal', parentTaskId:null, customFieldValues:{},
+    statusId:stId, assignees, dueDate: extras.dueDate || null, startDate:null,
+    dueTime: extras.dueTime || null,
+    priority: extras.priority || 'normal',
+    clientId: extras.clientId || null,
+    parentTaskId:null, customFieldValues:{},
     createdBy:uid, order: Date.now(),
     createdAt:{ toMillis:()=>Date.now() }, updatedAt:{ toMillis:()=>Date.now() },
   };
@@ -14065,6 +14087,189 @@ async function pjFabSubmit(ev) {
   } catch(e) {}
   // Abre o modal da tarefa pra editar mais detalhes
   setTimeout(() => { if (typeof pjOpenTask === 'function') pjOpenTask(id); }, 100);
+}
+
+// ── Voice-to-task (Web Speech API + extração via IA) ──
+// Usa webkitSpeechRecognition (Chrome/Safari) ou SpeechRecognition (Firefox/outros).
+// Live transcription preenche o input alvo. Botão pulsa enquanto grava.
+let _pjVoiceRec = null;
+let _pjVoiceTargetInput = null;
+let _pjVoiceTargetBtn = null;
+
+function pjVoiceSupported() {
+  return typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+
+function pjVoiceStart(inputId, btn) {
+  if (_pjVoiceRec) { pjVoiceStop(); return; }
+  if (!pjVoiceSupported()) {
+    if (typeof showToast === 'function') showToast('warn','🎤','Seu navegador não suporta ditado por voz. Use Chrome/Edge/Safari.');
+    return;
+  }
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new SR();
+  rec.lang = 'pt-BR';
+  rec.continuous = true;
+  rec.interimResults = true;
+  let baseValue = input.value.trim();
+  if (baseValue) baseValue += ' ';
+  rec.onresult = (ev) => {
+    let interim = '', finalT = '';
+    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+      const r = ev.results[i];
+      if (r.isFinal) finalT += r[0].transcript;
+      else interim += r[0].transcript;
+    }
+    if (finalT) baseValue += finalT.trim() + ' ';
+    input.value = (baseValue + interim).trim();
+  };
+  rec.onerror = (ev) => {
+    console.warn('[voice] error:', ev.error);
+    if (typeof showToast === 'function') {
+      const msg = ev.error === 'not-allowed' ? 'Permissão de microfone negada.'
+                : ev.error === 'no-speech' ? 'Nada foi captado. Tente de novo.'
+                : 'Erro no ditado: ' + ev.error;
+      showToast('warn','🎤', msg);
+    }
+    pjVoiceStop();
+  };
+  rec.onend = () => { if (_pjVoiceRec === rec) pjVoiceStop(); };
+  try { rec.start(); } catch(e) { console.warn(e); return; }
+  _pjVoiceRec = rec;
+  _pjVoiceTargetInput = input;
+  _pjVoiceTargetBtn = btn;
+  if (btn) btn.classList.add('recording');
+  if (typeof pjHaptic === 'function') pjHaptic('light');
+}
+
+function pjVoiceStop() {
+  if (_pjVoiceRec) {
+    try { _pjVoiceRec.stop(); } catch(_) {}
+    _pjVoiceRec = null;
+  }
+  if (_pjVoiceTargetBtn) _pjVoiceTargetBtn.classList.remove('recording');
+  _pjVoiceTargetInput = null;
+  _pjVoiceTargetBtn = null;
+  if (typeof pjHaptic === 'function') pjHaptic('light');
+}
+
+// Esconde botão de voz se não suportado (chamado em pjOpenFabModal)
+function pjVoiceUiSetup() {
+  const btn = document.getElementById('pjFabVoiceBtn');
+  if (btn && !pjVoiceSupported()) btn.style.display = 'none';
+}
+
+// Extrai metadados da tarefa via Claude usando contexto do workspace
+async function pjFabExtractWithAi() {
+  const input = document.getElementById('pjFabTitle');
+  const btn = document.getElementById('pjFabAiBtn');
+  const listSelect = document.getElementById('pjFabListSelect');
+  if (!input || !btn) return;
+  const text = (input.value || '').trim();
+  if (!text || text.length < 4) {
+    if (typeof showToast === 'function') showToast('warn','✨','Digite ou dite algo primeiro.');
+    return;
+  }
+  const key = (typeof getClaudeKey === 'function' ? getClaudeKey() : '')
+            || localStorage.getItem('claude_api_key')
+            || localStorage.getItem('anthropicKey')
+            || localStorage.getItem('claudeApiKey') || '';
+  if (!key) {
+    if (typeof showToast === 'function') showToast('warn','🔑','Configure a API key do Claude em ⚙️ Configurações.');
+    return;
+  }
+  // Constrói contexto compacto
+  const lists = pjLists.map(l => ({ id: l.id, name: l.name }));
+  const members = (pjMembers || []).filter(m => m.name || m.email)
+                                   .map(m => ({ uid: m.uid, name: m.name || m.email }));
+  // Clientes vêm de `restaurantes` (objeto legado) — extrai nomes únicos
+  let clients = [];
+  try {
+    if (typeof restaurantes !== 'undefined' && restaurantes) {
+      clients = Object.keys(restaurantes).map(name => ({ id: name, name }));
+    }
+  } catch(_) {}
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = pjDateStr(today);
+  const sysPrompt = `Você extrai metadados estruturados de uma frase em português brasileiro descrevendo uma tarefa.
+Retorne APENAS JSON válido (sem markdown, sem comentários) com este shape:
+{
+  "title": string (frase limpa, sem datas/menções a pessoas/cliente — só a ação),
+  "listId": string|null (id da lista mais provável, do conjunto fornecido),
+  "priority": "urgent"|"high"|"normal"|"low"|null,
+  "dueDate": string|null (formato YYYY-MM-DD, calculado a partir de hoje=${todayStr}),
+  "dueTime": string|null (HH:mm 24h),
+  "assigneeUids": [string] (uids dos responsáveis mencionados),
+  "clientId": string|null
+}
+Hoje é ${todayStr}. "Amanhã"=+1d, "depois de amanhã"=+2d, "segunda"="próxima segunda" etc.
+"urgente"/"o quanto antes"/"asap"→urgent. "importante"/"prioridade alta"→high. "tranquilo"/"baixa"→low. Default: normal.
+Listas disponíveis: ${JSON.stringify(lists)}
+Membros: ${JSON.stringify(members)}
+Clientes: ${JSON.stringify(clients)}
+Se algo não tem certeza, retorne null. Não invente.`;
+  btn.disabled = true;
+  const origLabel = btn.textContent;
+  btn.textContent = '⏳';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 400,
+        system: sysPrompt,
+        messages: [{ role: 'user', content: text }],
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `Erro ${res.status}`);
+    }
+    const data = await res.json();
+    const raw = (data.content?.[0]?.text || '').trim();
+    // Extrai JSON (tolerante a ```json ... ``` wrappers)
+    let jsonStr = raw;
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (m) jsonStr = m[0];
+    const parsed = JSON.parse(jsonStr);
+    pjFabApplyAiExtraction(parsed);
+    if (typeof showToast === 'function') showToast('success','✨','Campos preenchidos pela IA.');
+    if (typeof pjHaptic === 'function') pjHaptic('success');
+  } catch (e) {
+    console.warn('[ai-extract]', e);
+    if (typeof showToast === 'function') showToast('error','❌', 'IA não conseguiu extrair: ' + (e.message||''));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origLabel;
+  }
+}
+
+// Aplica resultado da IA — guarda extras pra criar a task com tudo preenchido
+let _pjFabExtractedExtras = null;
+function pjFabApplyAiExtraction(r) {
+  if (!r || typeof r !== 'object') return;
+  const titleEl = document.getElementById('pjFabTitle');
+  const listSel = document.getElementById('pjFabListSelect');
+  if (r.title && titleEl) titleEl.value = r.title;
+  if (r.listId && listSel) {
+    const opt = Array.from(listSel.options).find(o => o.value === r.listId);
+    if (opt) listSel.value = r.listId;
+  }
+  _pjFabExtractedExtras = {
+    priority: ['urgent','high','normal','low'].includes(r.priority) ? r.priority : null,
+    dueDate: typeof r.dueDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(r.dueDate) ? r.dueDate : null,
+    dueTime: typeof r.dueTime === 'string' && /^\d{1,2}:\d{2}$/.test(r.dueTime) ? r.dueTime : null,
+    assigneeUids: Array.isArray(r.assigneeUids) ? r.assigneeUids.filter(u => typeof u === 'string') : null,
+    clientId: typeof r.clientId === 'string' && r.clientId ? r.clientId : null,
+  };
 }
 
 // ── Notificações desktop (Notification API) ──
