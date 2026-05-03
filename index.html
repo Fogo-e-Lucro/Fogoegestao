@@ -12063,25 +12063,18 @@ function pjBuildDashboard() {
   // Chip indicando visão pessoal pra membros
   const viewChip = isAdminView ? '' : `<span class="pj-dash-filter-chip" title="Mostrando apenas suas tarefas">👤 Visão pessoal</span>`;
 
-  return `
-  <div class="pj-dash-wrap">
-    <div class="pj-dash-header">
-      <div>
-        <div class="pj-dash-greet">${greet}, ${escHtml(firstName)}! 👋 ${viewChip} ${clientChip}</div>
-        <div class="pj-dash-date">${dateStr}</div>
-      </div>
-      ${isAdminView ? `<button class="pj-wa-trigger-btn" onclick="pjOpenDailyReport()" style="font-size:12px;">
-        📱 Relatório do dia
-      </button>` : ''}
-    </div>
-
+  // ── Widgets como blocos isolados (para layout customizável) ──
+  const widgets = {};
+  widgets.kpis = `<div class="pj-dash-widget" data-widget="kpis">
     <div class="pj-dash-kpis">
       ${kpi('📋', isAdminView ? 'Tarefas ativas' : 'Suas ativas', allActive.length, 'var(--accent)', `${noDate.length} sem data`, 'all')}
       ${kpi('🔴', isAdminView ? 'Atrasadas' : 'Suas atrasadas', overdue.length, overdue.length ? '#ef4444' : '#22c55e', overdue.length ? 'requer atenção' : 'tudo em dia!', 'overdue')}
       ${kpi('📅', isAdminView ? 'Vencem hoje' : 'Suas pra hoje', todayT.length, '#f97316', `${todayT.filter(t=>t.dueTime).length} com horário`, 'today')}
       ${kpi('✅', isAdminView ? 'Concluídas hoje' : 'Você concluiu hoje', doneToday.length, '#22c55e', `7 dias →`, 'doneToday', pjSparkline(last7, '#22c55e'))}
     </div>
+  </div>`;
 
+  widgets.trio = `<div class="pj-dash-widget" data-widget="trio">
     <div class="pj-dash-trio">
       <div class="pj-dash-col">
         <div class="pj-dash-section-title">
@@ -12091,7 +12084,6 @@ function pjBuildDashboard() {
         <div class="pj-dash-task-list">${overdueRows}</div>
         ${overdue.length > 8 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('overdue')">Ver todas (${overdue.length}) →</div>` : ''}
       </div>
-
       <div class="pj-dash-col">
         <div class="pj-dash-section-title">
           <span>📅 Hoje</span>
@@ -12100,7 +12092,6 @@ function pjBuildDashboard() {
         <div class="pj-dash-task-list">${todayRows}</div>
         ${todayT.length > 8 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('today')">Ver todas (${todayT.length}) →</div>` : ''}
       </div>
-
       <div class="pj-dash-col">
         <div class="pj-dash-section-title">
           <span>⏭ Próximas 24h</span>
@@ -12110,8 +12101,10 @@ function pjBuildDashboard() {
         ${next24.length > 8 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('next24')">Ver todas (${next24.length}) →</div>` : ''}
       </div>
     </div>
+  </div>`;
 
-    ${stale.length ? `<div class="pj-dash-stale" style="margin-top:18px;">
+  widgets.stale = stale.length ? `<div class="pj-dash-widget" data-widget="stale">
+    <div class="pj-dash-stale" style="margin-top:18px;">
       <div class="pj-dash-section-title">
         <span>🧊 Tarefas paradas</span>
         <span class="pj-dash-section-count">${stale.length} sem mudança recente</span>
@@ -12131,25 +12124,144 @@ function pjBuildDashboard() {
         }).join('')}
       </div>
       ${stale.length > 6 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('stale')">Ver todas (${stale.length}) →</div>` : ''}
-    </div>` : ''}
+    </div>
+  </div>` : '';
 
-    <div class="pj-dash-grid" style="margin-top:24px;${isAdminView ? '' : 'grid-template-columns:1fr;'}">
-      <div class="pj-dash-col">
-        <div class="pj-dash-section-title">
-          <span>⚡ ${isAdminView ? 'Atividade recente' : 'Suas conclusões recentes'}</span>
-          <span class="pj-dash-section-count">últimas 24h</span>
-        </div>
-        <div class="pj-dash-task-list">${recentRows}</div>
+  widgets.activity = `<div class="pj-dash-widget" data-widget="activity">
+    <div class="pj-dash-col">
+      <div class="pj-dash-section-title">
+        <span>⚡ ${isAdminView ? 'Atividade recente' : 'Suas conclusões recentes'}</span>
+        <span class="pj-dash-section-count">últimas 24h</span>
       </div>
-      ${isAdminView ? `<div class="pj-dash-col">
-        <div class="pj-dash-section-title">
-          <span>👥 Equipe</span>
-          <span class="pj-dash-section-count">${pjMembers.filter(m=>m.uid).length} membros</span>
-        </div>
-        <div class="pj-dash-members" style="grid-template-columns:1fr;">${memberCards || '<div class="pj-dash-empty">Nenhum membro encontrado</div>'}</div>
-      </div>` : ''}
+      <div class="pj-dash-task-list">${recentRows}</div>
     </div>
   </div>`;
+
+  widgets.team = isAdminView ? `<div class="pj-dash-widget" data-widget="team">
+    <div class="pj-dash-col">
+      <div class="pj-dash-section-title">
+        <span>👥 Equipe</span>
+        <span class="pj-dash-section-count">${pjMembers.filter(m=>m.uid).length} membros</span>
+      </div>
+      <div class="pj-dash-members" style="grid-template-columns:1fr;">${memberCards || '<div class="pj-dash-empty">Nenhum membro encontrado</div>'}</div>
+    </div>
+  </div>` : '';
+
+  // Aplica layout customizável (visibilidade + ordem)
+  const layout = pjGetDashLayout();
+  const widgetsHtml = layout
+    .filter(w => w.visible && widgets[w.id])
+    .map(w => widgets[w.id])
+    .join('');
+
+  return `
+  <div class="pj-dash-wrap">
+    <div class="pj-dash-header">
+      <div>
+        <div class="pj-dash-greet">${greet}, ${escHtml(firstName)}! 👋 ${viewChip} ${clientChip}</div>
+        <div class="pj-dash-date">${dateStr}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="pj-dash-customize-btn" onclick="pjOpenDashCustomize()" title="Personalizar dashboard">🎨 Personalizar</button>
+        ${isAdminView ? `<button class="pj-wa-trigger-btn" onclick="pjOpenDailyReport()" style="font-size:12px;">
+          📱 Relatório do dia
+        </button>` : ''}
+      </div>
+    </div>
+    ${widgetsHtml}
+  </div>`;
+}
+
+// ── Dashboard customizável: layout (ordem + visibilidade) ─────
+const PJ_DASH_DEFAULT_LAYOUT = [
+  { id:'kpis',     visible:true, label:'📊 Cards de KPIs (4 números no topo)' },
+  { id:'trio',     visible:true, label:'📋 Atrasadas / Hoje / Próximas 24h' },
+  { id:'stale',    visible:true, label:'🧊 Tarefas paradas (com IA)' },
+  { id:'activity', visible:true, label:'⚡ Atividade recente (últimas 24h)' },
+  { id:'team',     visible:true, label:'👥 Equipe (admin)' },
+];
+
+function pjGetDashLayout() {
+  let saved = [];
+  try { saved = JSON.parse(localStorage.getItem('pj_dash_layout')||'[]') || []; } catch(_) {}
+  const known = new Set(saved.map(w => w?.id).filter(Boolean));
+  const merged = [];
+  saved.forEach(w => {
+    const def = PJ_DASH_DEFAULT_LAYOUT.find(d => d.id === w?.id);
+    if (def) merged.push({ ...def, ...w });
+  });
+  PJ_DASH_DEFAULT_LAYOUT.forEach(d => { if (!known.has(d.id)) merged.push({ ...d }); });
+  return merged;
+}
+function pjSaveDashLayout(layout) {
+  try { localStorage.setItem('pj_dash_layout', JSON.stringify(layout)); } catch(_) {}
+}
+function pjResetDashLayout() {
+  try { localStorage.removeItem('pj_dash_layout'); } catch(_) {}
+  pjOpenDashCustomize();
+  if (pjCurrentView?.type === 'dashboard') pjRenderMain();
+}
+function pjToggleDashWidget(id) {
+  const layout = pjGetDashLayout();
+  const w = layout.find(x => x.id === id);
+  if (w) w.visible = !w.visible;
+  pjSaveDashLayout(layout);
+  if (pjCurrentView?.type === 'dashboard') pjRenderMain();
+  pjOpenDashCustomize(); // re-render painel pra refletir
+}
+function pjMoveDashWidget(id, dir) {
+  const layout = pjGetDashLayout();
+  const idx = layout.findIndex(x => x.id === id);
+  const newIdx = idx + dir;
+  if (idx < 0 || newIdx < 0 || newIdx >= layout.length) return;
+  [layout[idx], layout[newIdx]] = [layout[newIdx], layout[idx]];
+  pjSaveDashLayout(layout);
+  if (pjCurrentView?.type === 'dashboard') pjRenderMain();
+  pjOpenDashCustomize();
+}
+function pjOpenDashCustomize() {
+  const layout = pjGetDashLayout();
+  let host = document.getElementById('pjDashCustomizeHost');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'pjDashCustomizeHost';
+    document.body.appendChild(host);
+  }
+  host.innerHTML = `
+    <div class="pj-dash-customize-overlay" onclick="if(event.target===this)pjCloseDashCustomize()">
+      <div class="pj-dash-customize-modal">
+        <div class="pj-dash-customize-head">
+          <div>
+            <h3 style="margin:0;font-size:16px;">🎨 Personalizar Dashboard</h3>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Mostrar/esconder widgets e reordenar. Salvo só no seu dispositivo.</div>
+          </div>
+          <button onclick="pjCloseDashCustomize()" class="pj-dash-customize-close" title="Fechar">×</button>
+        </div>
+        <div class="pj-dash-customize-list">
+          ${layout.map((w,i) => `
+            <div class="pj-dash-customize-item${w.visible?'':' off'}">
+              <span class="pj-dash-customize-grip" title="Use as setas para reordenar">≡</span>
+              <span class="pj-dash-customize-label">${w.label}</span>
+              <div class="pj-dash-customize-actions">
+                <button onclick="pjMoveDashWidget('${w.id}',-1)" ${i===0?'disabled':''} title="Subir">↑</button>
+                <button onclick="pjMoveDashWidget('${w.id}',1)" ${i===layout.length-1?'disabled':''} title="Descer">↓</button>
+                <label class="pj-dash-toggle" title="Mostrar/esconder">
+                  <input type="checkbox" ${w.visible?'checked':''} onchange="pjToggleDashWidget('${w.id}')">
+                  <span class="pj-dash-toggle-slider"></span>
+                </label>
+              </div>
+            </div>`).join('')}
+        </div>
+        <div class="pj-dash-customize-footer">
+          <button onclick="pjResetDashLayout()" class="pj-dash-customize-reset">↺ Restaurar padrão</button>
+          <button onclick="pjCloseDashCustomize()" class="pj-dash-customize-done">✓ Concluído</button>
+        </div>
+      </div>
+    </div>`;
+}
+function pjCloseDashCustomize() {
+  const host = document.getElementById('pjDashCustomizeHost');
+  if (host) host.innerHTML = '';
 }
 
 // Skeleton loading do dashboard
