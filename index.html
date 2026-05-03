@@ -11732,18 +11732,22 @@ function pjBuildDashboard() {
   const now = new Date();
   const tomorrow = pjDateStr(new Date(now.getTime() + 86400000));
 
+  // Detecta visão: admin vê tudo; membro vê só tarefas atribuídas a ele
+  const uid = _auth?.currentUser?.uid || _currentUser?.uid;
+  const isAdminView = (typeof userIsAdmin === 'function') ? userIsAdmin() : true;
+  const mineFilter = (t) => isAdminView ? true : (t.assignees||[]).includes(uid);
+
   // Aplica filtro de cliente ativo se houver
-  const baseTasks = pjFilterByActiveClient(pjVisibleTasks());
+  const baseTasks = pjFilterByActiveClient(pjVisibleTasks()).filter(mineFilter);
   const allActive = baseTasks.filter(t => !pjIsDone(t) && !t.parentTaskId);
   const overdue   = allActive.filter(t => t.dueDate && t.dueDate < today);
   const todayT    = allActive.filter(t => t.dueDate === today);
   const next24    = allActive.filter(t => t.dueDate === tomorrow);
-  const doneToday = pjFilterByActiveClient(pjVisibleTasks(false)).filter(t => pjIsDone(t) && t.completedAt?.toMillis && (now - new Date(t.completedAt.toMillis())) < 86400000);
+  const doneToday = pjFilterByActiveClient(pjVisibleTasks(false)).filter(mineFilter).filter(t => pjIsDone(t) && t.completedAt?.toMillis && (now - new Date(t.completedAt.toMillis())) < 86400000);
   const noDate    = allActive.filter(t => !t.dueDate);
 
   const hours = now.getHours();
   const greet = hours < 12 ? 'Bom dia' : hours < 18 ? 'Boa tarde' : 'Boa noite';
-  const uid = _auth?.currentUser?.uid || _currentUser?.uid;
   const me = pjMembers.find(m => m.uid === uid);
   const firstName = (me?.name || 'time').split(' ')[0];
 
@@ -11751,8 +11755,8 @@ function pjBuildDashboard() {
   const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   const dateStr = `${dows[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]}`;
 
-  // Sparkline 7 dias (conclusões da equipe)
-  const last7 = pjLast7Completions();
+  // Sparkline 7 dias — equipe se admin, pessoal se membro
+  const last7 = pjLast7Completions(isAdminView ? null : uid);
 
   // ── KPI cards ──
   const kpi = (icon, label, value, color, sub, filter, spark) => `
@@ -11847,7 +11851,7 @@ function pjBuildDashboard() {
   }).join('') || '<div class="pj-dash-empty">Sem tarefas para amanhã</div>';
 
   // ── Atividade recente ──
-  const recent = pjRecentActivity(7);
+  const recent = pjRecentActivity(7, isAdminView ? null : uid);
   const recentRows = recent.map(({task, ts}) => {
     const aUid = (task.assignees||[])[0];
     const member = pjMembers.find(m => m.uid === aUid);
@@ -11865,12 +11869,14 @@ function pjBuildDashboard() {
   const clientChip = (typeof activeRestaurante !== 'undefined' && activeRestaurante)
     ? `<span class="pj-dash-filter-chip">🏪 ${escHtml(activeRestaurante)} <button onclick="setRestaurante(null)" title="Remover filtro">×</button></span>`
     : '';
+  // Chip indicando visão pessoal pra membros
+  const viewChip = isAdminView ? '' : `<span class="pj-dash-filter-chip" title="Mostrando apenas suas tarefas">👤 Visão pessoal</span>`;
 
   return `
   <div class="pj-dash-wrap">
     <div class="pj-dash-header">
       <div>
-        <div class="pj-dash-greet">${greet}, ${escHtml(firstName)}! 👋 ${clientChip}</div>
+        <div class="pj-dash-greet">${greet}, ${escHtml(firstName)}! 👋 ${viewChip} ${clientChip}</div>
         <div class="pj-dash-date">${dateStr}</div>
       </div>
       <button class="pj-wa-trigger-btn" onclick="pjOpenDailyReport()" style="font-size:12px;">
@@ -11879,10 +11885,10 @@ function pjBuildDashboard() {
     </div>
 
     <div class="pj-dash-kpis">
-      ${kpi('📋','Tarefas ativas', allActive.length, 'var(--accent)', `${noDate.length} sem data`, 'all')}
-      ${kpi('🔴','Atrasadas', overdue.length, overdue.length ? '#ef4444' : '#22c55e', overdue.length ? 'requer atenção' : 'tudo em dia!', 'overdue')}
-      ${kpi('📅','Vencem hoje', todayT.length, '#f97316', `${todayT.filter(t=>t.dueTime).length} com horário`, 'today')}
-      ${kpi('✅','Concluídas hoje', doneToday.length, '#22c55e', `7 dias →`, 'doneToday', pjSparkline(last7, '#22c55e'))}
+      ${kpi('📋', isAdminView ? 'Tarefas ativas' : 'Suas ativas', allActive.length, 'var(--accent)', `${noDate.length} sem data`, 'all')}
+      ${kpi('🔴', isAdminView ? 'Atrasadas' : 'Suas atrasadas', overdue.length, overdue.length ? '#ef4444' : '#22c55e', overdue.length ? 'requer atenção' : 'tudo em dia!', 'overdue')}
+      ${kpi('📅', isAdminView ? 'Vencem hoje' : 'Suas pra hoje', todayT.length, '#f97316', `${todayT.filter(t=>t.dueTime).length} com horário`, 'today')}
+      ${kpi('✅', isAdminView ? 'Concluídas hoje' : 'Você concluiu hoje', doneToday.length, '#22c55e', `7 dias →`, 'doneToday', pjSparkline(last7, '#22c55e'))}
     </div>
 
     <div class="pj-dash-trio">
@@ -11914,21 +11920,21 @@ function pjBuildDashboard() {
       </div>
     </div>
 
-    <div class="pj-dash-grid" style="margin-top:24px;">
+    <div class="pj-dash-grid" style="margin-top:24px;${isAdminView ? '' : 'grid-template-columns:1fr;'}">
       <div class="pj-dash-col">
         <div class="pj-dash-section-title">
-          <span>⚡ Atividade recente</span>
+          <span>⚡ ${isAdminView ? 'Atividade recente' : 'Suas conclusões recentes'}</span>
           <span class="pj-dash-section-count">últimas 24h</span>
         </div>
         <div class="pj-dash-task-list">${recentRows}</div>
       </div>
-      <div class="pj-dash-col">
+      ${isAdminView ? `<div class="pj-dash-col">
         <div class="pj-dash-section-title">
           <span>👥 Equipe</span>
           <span class="pj-dash-section-count">${pjMembers.filter(m=>m.uid).length} membros</span>
         </div>
         <div class="pj-dash-members" style="grid-template-columns:1fr;">${memberCards || '<div class="pj-dash-empty">Nenhum membro encontrado</div>'}</div>
-      </div>
+      </div>` : ''}
     </div>
   </div>`;
 }
@@ -13447,11 +13453,12 @@ function pjSparkline(values, color) {
 }
 
 // Conclusões dos últimos 7 dias por dia (índice 0 = 6 dias atrás, 6 = hoje)
-function pjLast7Completions() {
+function pjLast7Completions(uidFilter) {
   const buckets = [0,0,0,0,0,0,0];
   const now = Date.now();
   pjAllTasks.forEach(t => {
     if (!pjIsDone(t)) return;
+    if (uidFilter && !(t.assignees||[]).includes(uidFilter)) return;
     const ts = t.completedAt?.toMillis ? t.completedAt.toMillis() : (typeof t.completedAt==='number'?t.completedAt:null);
     if (!ts) return;
     const days = Math.floor((now - ts) / 86400000);
@@ -13461,11 +13468,12 @@ function pjLast7Completions() {
 }
 
 // Atividade recente — últimas N conclusões (24h)
-function pjRecentActivity(limit = 6) {
+function pjRecentActivity(limit = 6, uidFilter) {
   const now = Date.now();
   const items = [];
   pjAllTasks.forEach(t => {
     if (!pjIsDone(t)) return;
+    if (uidFilter && !(t.assignees||[]).includes(uidFilter)) return;
     const ts = t.completedAt?.toMillis ? t.completedAt.toMillis() : (typeof t.completedAt==='number'?t.completedAt:null);
     if (!ts || (now - ts) > 86400000) return;
     items.push({ task:t, ts });
