@@ -1347,8 +1347,13 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
   <div class="tab-panel active" id="tab-projetos">
     <div class="pj-wrap">
       <div class="pj-notif-panel" id="pjNotifPanel"></div>
+      <!-- Hamburger (mobile only) -->
+      <button class="pj-drawer-toggle" id="pjDrawerToggle" onclick="pjToggleDrawer()" aria-label="Menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" width="20" height="20"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="pj-drawer-backdrop" id="pjDrawerBackdrop" onclick="pjCloseDrawer()"></div>
       <!-- Sidebar -->
-      <div class="pj-sidebar">
+      <div class="pj-sidebar" id="pjSidebar">
         <div class="pj-sidebar-scroll">
           <div class="pj-sidebar-top">
             <!-- Bell row -->
@@ -2886,6 +2891,10 @@ if (_DEV_BYPASS) {
     if (fab) fab.style.display = 'flex';
     // Pull-to-refresh em mobile
     if (typeof pjInitPullToRefresh === 'function') pjInitPullToRefresh();
+    // Drawer auto-close em mobile
+    if (typeof pjInitDrawerAutoClose === 'function') pjInitDrawerAutoClose();
+    // Swipe-to-complete em tarefas (mobile)
+    if (typeof pjInitSwipeComplete === 'function') pjInitSwipeComplete();
   }, 0);
 }
 
@@ -2949,6 +2958,10 @@ _auth.onAuthStateChanged(async user => {
   setTimeout(() => { if (typeof pjRequestDesktopNotif === 'function') pjRequestDesktopNotif(); }, 3000);
   // Pull-to-refresh em mobile
   if (typeof pjInitPullToRefresh === 'function') pjInitPullToRefresh();
+  // Drawer auto-close em mobile
+  if (typeof pjInitDrawerAutoClose === 'function') pjInitDrawerAutoClose();
+  // Swipe-to-complete em tarefas (mobile)
+  if (typeof pjInitSwipeComplete === 'function') pjInitSwipeComplete();
 });
 
 function setSyncStatus(s) {
@@ -11755,7 +11768,7 @@ function pjBuildDashboard() {
     const due = new Date(t.dueDate + 'T00:00:00');
     const diff = Math.round((now - due) / 86400000);
     const assignees = (t.assignees||[]).slice(0,2).map(uid => pjAvatarHtml(uid)).join('');
-    return `<div class="pj-dash-task-row" onclick="pjOpenTask('${t.id}')">
+    return `<div class="pj-dash-task-row" data-task-id="${t.id}" onclick="pjOpenTask('${t.id}')">
       <div class="pj-dash-task-dot" style="background:#ef4444"></div>
       <div class="pj-dash-task-info">
         <div class="pj-dash-task-title">${escHtml(t.title||'Sem título')}</div>
@@ -11771,7 +11784,7 @@ function pjBuildDashboard() {
     const pColors = { urgent:'#ef4444', high:'#f97316', normal:'#6366f1', low:'#94a3b8' };
     const dot = pColors[t.priority||'normal'];
     const assignees = (t.assignees||[]).slice(0,2).map(uid => pjAvatarHtml(uid)).join('');
-    return `<div class="pj-dash-task-row" onclick="pjOpenTask('${t.id}')">
+    return `<div class="pj-dash-task-row" data-task-id="${t.id}" onclick="pjOpenTask('${t.id}')">
       <div class="pj-dash-task-dot" style="background:${dot}"></div>
       <div class="pj-dash-task-info">
         <div class="pj-dash-task-title">${escHtml(t.title||'Sem título')}</div>
@@ -11787,7 +11800,7 @@ function pjBuildDashboard() {
     const pColors = { urgent:'#ef4444', high:'#f97316', normal:'#6366f1', low:'#94a3b8' };
     const dot = pColors[t.priority||'normal'];
     const assignees = (t.assignees||[]).slice(0,2).map(uid => pjAvatarHtml(uid)).join('');
-    return `<div class="pj-dash-task-row" onclick="pjOpenTask('${t.id}')">
+    return `<div class="pj-dash-task-row" data-task-id="${t.id}" onclick="pjOpenTask('${t.id}')">
       <div class="pj-dash-task-dot" style="background:${dot}"></div>
       <div class="pj-dash-task-info">
         <div class="pj-dash-task-title">${escHtml(t.title||'Sem título')}</div>
@@ -13138,7 +13151,7 @@ function pjTaskRowHtml(t) {
   const due = t.dueDate ? pjDueCls(t.dueDate) : null;
   const subtaskCount = (pjAllTasks.filter(s => s.parentTaskId === t.id) || []).length;
   const assigneeHtml = (t.assignees||[]).slice(0,3).map(uid=>pjAvatarHtml(uid)).join('');
-  return `<div class="pj-task-row ${done?'done-row':''}" data-priority="${t.priority||'low'}"
+  return `<div class="pj-task-row ${done?'done-row':''}" data-priority="${t.priority||'low'}" data-task-id="${t.id}"
     draggable="true"
     ondragstart="pjListDragStart(event,'${t.id}')"
     ondragend="pjListDragEnd(event)"
@@ -13512,6 +13525,139 @@ function pjFireDesktopNotif(title, body, taskId) {
 }
 
 // ── Pull-to-refresh (mobile) ──
+// ── Drawer (sidebar mobile) ──
+function pjToggleDrawer() {
+  const sb = document.getElementById('pjSidebar');
+  const bd = document.getElementById('pjDrawerBackdrop');
+  const tg = document.getElementById('pjDrawerToggle');
+  if (!sb || !bd) return;
+  const open = !sb.classList.contains('open');
+  sb.classList.toggle('open', open);
+  bd.classList.toggle('open', open);
+  if (tg) tg.setAttribute('aria-expanded', open ? 'true' : 'false');
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+function pjCloseDrawer() {
+  const sb = document.getElementById('pjSidebar');
+  const bd = document.getElementById('pjDrawerBackdrop');
+  const tg = document.getElementById('pjDrawerToggle');
+  if (sb) sb.classList.remove('open');
+  if (bd) bd.classList.remove('open');
+  if (tg) tg.setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = '';
+}
+// Auto-fecha drawer ao clicar em itens de navegação (mobile)
+function pjInitDrawerAutoClose() {
+  if (window._pjDrawerInit) return;
+  window._pjDrawerInit = true;
+  const sb = document.getElementById('pjSidebar');
+  if (!sb) return;
+  // Move toggle e backdrop pra body (escapar do transform do .tab-panel que captura position:fixed)
+  const tg = document.getElementById('pjDrawerToggle');
+  const bd = document.getElementById('pjDrawerBackdrop');
+  if (tg && tg.parentElement !== document.body) document.body.appendChild(tg);
+  if (bd && bd.parentElement !== document.body) document.body.appendChild(bd);
+  // Esconde toggle quando não está na aba projetos
+  function syncDrawerVisibility() {
+    const onProjetos = document.getElementById('tab-projetos')?.classList.contains('active');
+    if (tg) tg.style.visibility = onProjetos ? '' : 'hidden';
+    if (!onProjetos) pjCloseDrawer();
+  }
+  syncDrawerVisibility();
+  // Observa mudanças de classe nas tab-panels
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    new MutationObserver(syncDrawerVisibility).observe(p, { attributes:true, attributeFilter:['class'] });
+  });
+  sb.addEventListener('click', (e) => {
+    if (!matchMedia('(max-width:900px)').matches) return;
+    const t = e.target.closest('.pj-nav-btn, .pj-list-row, .pj-add-space-btn');
+    if (t) setTimeout(pjCloseDrawer, 80);
+  });
+  // Edge swipe pra abrir (touch da borda esquerda)
+  let sx = 0, sy = 0, edge = false;
+  document.addEventListener('touchstart', (e) => {
+    if (!matchMedia('(max-width:900px)').matches) return;
+    if (sb.classList.contains('open')) return;
+    const t = e.touches[0];
+    if (t.clientX < 18) { sx = t.clientX; sy = t.clientY; edge = true; }
+  }, { passive: true });
+  document.addEventListener('touchmove', (e) => {
+    if (!edge) return;
+    const t = e.touches[0];
+    const dx = t.clientX - sx, dy = Math.abs(t.clientY - sy);
+    if (dx > 40 && dy < 30) { edge = false; pjToggleDrawer(); }
+  }, { passive: true });
+  document.addEventListener('touchend', () => { edge = false; }, { passive: true });
+}
+
+// ── Swipe-to-complete em tarefas (mobile) ──
+function pjInitSwipeComplete() {
+  if (window._pjSwipeInit) return;
+  window._pjSwipeInit = true;
+  const isTouch = matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window;
+  if (!isTouch) return;
+
+  const THRESHOLD = 90;          // px pra disparar conclusão
+  const MAX_SWIPE = 160;         // teto visual
+  let row = null, taskId = null, sx = 0, sy = 0, dx = 0, locked = false, axis = null;
+
+  function reset(snap) {
+    if (!row) return;
+    if (snap) {
+      row.classList.add('snap-back');
+      row.style.transform = '';
+      setTimeout(() => row?.classList.remove('snap-back', 'swiping'), 250);
+    }
+    row = null; taskId = null; sx = sy = dx = 0; locked = false; axis = null;
+  }
+
+  document.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    const target = e.target.closest('[data-task-id]');
+    if (!target) return;
+    // Não interceptar swipe sobre elementos interativos
+    if (e.target.closest('.pj-task-check, .pj-row-check, .pj-sel-circle, button, input, textarea, a')) return;
+    row = target; taskId = target.getAttribute('data-task-id');
+    const t = e.touches[0]; sx = t.clientX; sy = t.clientY; dx = 0; axis = null;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!row) return;
+    const t = e.touches[0];
+    const ddx = t.clientX - sx, ddy = t.clientY - sy;
+    if (axis === null) {
+      if (Math.abs(ddx) < 8 && Math.abs(ddy) < 8) return;
+      axis = Math.abs(ddx) > Math.abs(ddy) ? 'x' : 'y';
+      if (axis === 'y') { row = null; return; }
+      row.classList.add('swiping');
+    }
+    if (axis !== 'x') return;
+    if (ddx < 0) { row.style.transform = ''; dx = 0; return; }
+    dx = Math.min(MAX_SWIPE, ddx);
+    row.style.transform = `translateX(${dx}px)`;
+    if (e.cancelable) e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchend', () => {
+    if (!row) return;
+    if (dx >= THRESHOLD && taskId) {
+      // Anima saída e marca como concluída
+      const r = row, id = taskId;
+      r.style.transform = `translateX(110%)`;
+      r.style.opacity = '0';
+      r.classList.add('fly-out');
+      setTimeout(() => {
+        if (typeof pjToggleTaskDone === 'function') pjToggleTaskDone(id);
+      }, 280);
+      row = null; taskId = null; dx = 0; axis = null;
+    } else {
+      reset(true);
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchcancel', () => reset(true), { passive: true });
+}
+
 function pjInitPullToRefresh() {
   if (window._pjPtrInit) return;
   window._pjPtrInit = true;
