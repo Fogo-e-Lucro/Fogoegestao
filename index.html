@@ -3731,6 +3731,48 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-dash-progress-wrap { height:6px; background:color-mix(in srgb, var(--text) 8%, transparent); border-radius:4px; overflow:hidden; }
 .pj-dash-progress-bar { height:100%; background:linear-gradient(90deg,#22c55e,#16a34a); border-radius:3px; transition:width .4s ease; box-shadow:0 0 12px rgba(34,197,94,.4); }
 
+/* ── KPI clicável + sparkline ── */
+.pj-dash-kpi { cursor:pointer; }
+.pj-dash-kpi:hover .pj-dash-kpi-arrow { opacity:1; transform:translateX(2px); }
+.pj-dash-kpi-arrow { opacity:0; transition:opacity .15s, transform .15s; font-size:14px; color:var(--text3); margin-left:6px; }
+.pj-dash-kpi-spark { margin-top:8px; height:24px; width:100%; }
+.pj-dash-kpi-spark path { fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+.pj-dash-kpi-spark .area { stroke:none; opacity:.18; }
+
+/* ── Filter chip on dashboard ── */
+.pj-dash-filter-chip { display:inline-flex; align-items:center; gap:6px; padding:5px 10px 5px 12px; background:color-mix(in srgb, var(--accent) 14%, transparent); border:1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius:20px; font-size:12px; font-weight:600; color:var(--accent); margin-left:10px; backdrop-filter:blur(6px); }
+.pj-dash-filter-chip button { background:none; border:none; color:inherit; font-size:14px; cursor:pointer; padding:0; line-height:1; opacity:.7; }
+.pj-dash-filter-chip button:hover { opacity:1; }
+
+/* ── Skeleton loading ── */
+@keyframes pjSkelShimmer { 0% { background-position:-200px 0; } 100% { background-position:200px 0; } }
+.pj-skel { background:linear-gradient(90deg, color-mix(in srgb, var(--text) 6%, transparent) 0%, color-mix(in srgb, var(--text) 12%, transparent) 50%, color-mix(in srgb, var(--text) 6%, transparent) 100%); background-size:400px 100%; animation:pjSkelShimmer 1.2s infinite linear; border-radius:6px; display:inline-block; }
+.pj-skel-line { height:12px; margin:6px 0; }
+.pj-skel-kpi { height:90px; border-radius:14px; }
+
+/* ── Próximas 24h / Atividade ── */
+.pj-dash-trio { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
+@media(max-width:1100px) { .pj-dash-trio { grid-template-columns:1fr; } }
+.pj-activity-row { display:flex; gap:10px; padding:8px 10px; border-radius:10px; transition:background .12s; cursor:pointer; }
+.pj-activity-row:hover { background:color-mix(in srgb, var(--text) 6%, transparent); }
+.pj-activity-icon { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; background:color-mix(in srgb, #22c55e 18%, transparent); }
+.pj-activity-info { flex:1; min-width:0; font-size:12px; color:var(--text2); line-height:1.4; }
+.pj-activity-info b { color:var(--text); }
+.pj-activity-time { font-size:10.5px; color:var(--text3); margin-top:2px; }
+
+/* ── Quick-add FAB ── */
+.pj-fab { position:fixed; right:24px; bottom:24px; width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--accent2,#a855f7)); color:#fff; border:none; font-size:26px; cursor:pointer; box-shadow:0 10px 28px color-mix(in srgb, var(--accent) 40%, transparent), 0 4px 10px rgba(0,0,0,.2); z-index:4500; display:flex; align-items:center; justify-content:center; transition:transform .15s, box-shadow .15s; }
+.pj-fab:hover { transform:scale(1.06) rotate(8deg); box-shadow:0 14px 36px color-mix(in srgb, var(--accent) 55%, transparent), 0 6px 14px rgba(0,0,0,.25); }
+.pj-fab:active { transform:scale(.96); }
+.pj-fab-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(6px); z-index:5500; display:none; align-items:center; justify-content:center; padding:20px; animation:pjFadeIn .2s ease; }
+.pj-fab-modal-overlay.open { display:flex; }
+.pj-fab-modal { background:var(--card); border:1px solid var(--border); border-radius:16px; max-width:480px; width:100%; padding:22px; box-shadow:0 24px 80px rgba(0,0,0,.5); }
+.pj-fab-modal h3 { margin:0 0 16px; font-size:16px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px; }
+.pj-fab-modal label { display:block; font-size:11px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:.04em; margin:10px 0 4px; }
+.pj-fab-modal input, .pj-fab-modal select { width:100%; padding:10px 12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13.5px; font-family:var(--font); outline:none; box-sizing:border-box; }
+.pj-fab-modal input:focus, .pj-fab-modal select:focus { border-color:var(--accent); }
+.pj-fab-modal-footer { display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
+
 /* ── WhatsApp Daily Report Preview ── */
 .pj-wa-modal { position:fixed; inset:0; background:rgba(0,0,0,.65); backdrop-filter:blur(6px); z-index:5000; display:flex; align-items:center; justify-content:center; padding:24px; animation:pjFadeIn .2s ease; }
 .pj-wa-card { background:var(--card); border:1px solid var(--border); border-radius:18px; max-width:540px; width:100%; max-height:92vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 24px 80px rgba(0,0,0,.6); }
@@ -6328,6 +6370,24 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
     </div>
   </div><!-- /tab-base -->
 
+  <!-- Quick-add FAB (visível em todas as abas para usuários logados) -->
+  <button class="pj-fab" id="pjFab" onclick="pjOpenFabModal()" title="Criar tarefa rápida" style="display:none;">＋</button>
+  <div class="pj-fab-modal-overlay" id="pjFabModal" onclick="if(event.target===this)pjCloseFabModal()" onkeydown="if(event.key==='Escape')pjCloseFabModal()">
+    <div class="pj-fab-modal">
+      <h3>🪄 Nova tarefa rápida</h3>
+      <form onsubmit="return pjFabSubmit(event)">
+        <label>Título</label>
+        <input type="text" id="pjFabTitle" placeholder="Ex: Revisar copy da campanha" maxlength="200" required>
+        <label>Lista</label>
+        <select id="pjFabListSelect"></select>
+        <div class="pj-fab-modal-footer">
+          <button type="button" class="pj-btn" onclick="pjCloseFabModal()">Cancelar</button>
+          <button type="submit" class="pj-btn pj-btn-primary">Criar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Pomodoro Widget -->
   <div class="pj-pomo-widget" id="pjPomoWidget" style="display:none;">
     <div class="pj-pomo-header">
@@ -7718,6 +7778,9 @@ if (_DEV_BYPASS) {
         switchTab('projetos', document.getElementById('tabProjetos'));
       }
     }, 50);
+    // FAB visível em modo dev
+    const fab = document.getElementById('pjFab');
+    if (fab) fab.style.display = 'flex';
   }, 0);
 }
 
@@ -7775,6 +7838,10 @@ _auth.onAuthStateChanged(async user => {
       switchTab('projetos', document.getElementById('tabProjetos'));
     }
   }, 50);
+  // Mostra FAB e pede permissão de notificações desktop (uma vez)
+  const fab = document.getElementById('pjFab');
+  if (fab) fab.style.display = 'flex';
+  setTimeout(() => { if (typeof pjRequestDesktopNotif === 'function') pjRequestDesktopNotif(); }, 3000);
 });
 
 function setSyncStatus(s) {
@@ -16033,6 +16100,7 @@ async function pjLoadAllTasks() {
     if (!pjTasks[t.listId]) pjTasks[t.listId] = [];
     pjTasks[t.listId].push(t);
   });
+  window._pjLoadedOnce = true;
   pjStartRealtime();
 }
 
@@ -16496,12 +16564,25 @@ function pjRenderMain() {
 
 // ── Dashboard ───────────────────────────────────────────
 function pjBuildDashboard() {
+  // Skeleton: enquanto Firestore não carregou nada e há um listener ativo
+  if (!pjAllTasks.length && !pjMembers.length && (typeof pjUnsubs === 'undefined' || !pjUnsubs?.length)) {
+    // primeiro carregamento, ainda sem realtime
+  }
+  if (!pjAllTasks.length && pjUnsubs && pjUnsubs.length && !window._pjLoadedOnce) {
+    return pjBuildDashboardSkeleton();
+  }
+
   const today = pjDateStr(new Date());
   const now = new Date();
-  const allActive = pjVisibleTasks().filter(t => !pjIsDone(t) && !t.parentTaskId);
+  const tomorrow = pjDateStr(new Date(now.getTime() + 86400000));
+
+  // Aplica filtro de cliente ativo se houver
+  const baseTasks = pjFilterByActiveClient(pjVisibleTasks());
+  const allActive = baseTasks.filter(t => !pjIsDone(t) && !t.parentTaskId);
   const overdue   = allActive.filter(t => t.dueDate && t.dueDate < today);
   const todayT    = allActive.filter(t => t.dueDate === today);
-  const doneToday = pjVisibleTasks(false).filter(t => pjIsDone(t) && t.completedAt?.toMillis && (now - new Date(t.completedAt.toMillis())) < 86400000);
+  const next24    = allActive.filter(t => t.dueDate === tomorrow);
+  const doneToday = pjFilterByActiveClient(pjVisibleTasks(false)).filter(t => pjIsDone(t) && t.completedAt?.toMillis && (now - new Date(t.completedAt.toMillis())) < 86400000);
   const noDate    = allActive.filter(t => !t.dueDate);
 
   const hours = now.getHours();
@@ -16514,12 +16595,21 @@ function pjBuildDashboard() {
   const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   const dateStr = `${dows[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]}`;
 
+  // Sparkline 7 dias (conclusões da equipe)
+  const last7 = pjLast7Completions();
+
   // ── KPI cards ──
-  const kpi = (icon, label, value, color, sub) => `
-    <div class="pj-dash-kpi" style="border-top:3px solid ${color}">
-      <div class="pj-dash-kpi-top"><span class="pj-dash-kpi-icon">${icon}</span><span class="pj-dash-kpi-val" style="color:${color}">${value}</span></div>
+  const kpi = (icon, label, value, color, sub, filter, spark) => `
+    <div class="pj-dash-kpi" style="border-top:3px solid ${color}" onclick="pjSetDashFilter('${filter||''}')" title="Clique para ver">
+      <div class="pj-dash-kpi-top"><span class="pj-dash-kpi-icon">${icon}</span>
+        <span style="display:flex;align-items:center;">
+          <span class="pj-dash-kpi-val" style="color:${color}">${value}</span>
+          <span class="pj-dash-kpi-arrow">→</span>
+        </span>
+      </div>
       <div class="pj-dash-kpi-label">${label}</div>
       ${sub ? `<div class="pj-dash-kpi-sub">${sub}</div>` : ''}
+      ${spark ? spark : ''}
     </div>`;
 
   // ── Equipe ──
@@ -16584,11 +16674,47 @@ function pjBuildDashboard() {
     </div>`;
   }).join('') || '<div class="pj-dash-empty">Sem tarefas para hoje</div>';
 
+  // ── Próximas 24h (amanhã) ──
+  const next24Rows = next24.slice(0,8).map(t => {
+    const list = pjLists.find(l => l.id === t.listId);
+    const pColors = { urgent:'#ef4444', high:'#f97316', normal:'#6366f1', low:'#94a3b8' };
+    const dot = pColors[t.priority||'normal'];
+    const assignees = (t.assignees||[]).slice(0,2).map(uid => pjAvatarHtml(uid)).join('');
+    return `<div class="pj-dash-task-row" onclick="pjOpenTask('${t.id}')">
+      <div class="pj-dash-task-dot" style="background:${dot}"></div>
+      <div class="pj-dash-task-info">
+        <div class="pj-dash-task-title">${escHtml(t.title||'Sem título')}</div>
+        <div class="pj-dash-task-meta">${escHtml(list?.name||'')}${t.dueTime ? ' · 🕐 ' + t.dueTime : ''}</div>
+      </div>
+      <div style="display:flex;gap:2px;flex-shrink:0;">${assignees}</div>
+    </div>`;
+  }).join('') || '<div class="pj-dash-empty">Sem tarefas para amanhã</div>';
+
+  // ── Atividade recente ──
+  const recent = pjRecentActivity(7);
+  const recentRows = recent.map(({task, ts}) => {
+    const aUid = (task.assignees||[])[0];
+    const member = pjMembers.find(m => m.uid === aUid);
+    const who = member?.name?.split(' ')[0] || 'Alguém';
+    return `<div class="pj-activity-row" onclick="pjOpenTask('${task.id}')">
+      <div class="pj-activity-icon">✅</div>
+      <div class="pj-activity-info">
+        <div><b>${escHtml(who)}</b> concluiu <b>${escHtml(task.title||'tarefa')}</b></div>
+        <div class="pj-activity-time">${pjRelativeTime(ts)}</div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="pj-dash-empty">Sem conclusões nas últimas 24h</div>';
+
+  // ── Filter chip de cliente ativo ──
+  const clientChip = (typeof activeRestaurante !== 'undefined' && activeRestaurante)
+    ? `<span class="pj-dash-filter-chip">🏪 ${escHtml(activeRestaurante)} <button onclick="setRestaurante(null)" title="Remover filtro">×</button></span>`
+    : '';
+
   return `
   <div class="pj-dash-wrap">
     <div class="pj-dash-header">
       <div>
-        <div class="pj-dash-greet">${greet}, ${escHtml(firstName)}! 👋</div>
+        <div class="pj-dash-greet">${greet}, ${escHtml(firstName)}! 👋 ${clientChip}</div>
         <div class="pj-dash-date">${dateStr}</div>
       </div>
       <button class="pj-wa-trigger-btn" onclick="pjOpenDailyReport()" style="font-size:12px;">
@@ -16597,20 +16723,20 @@ function pjBuildDashboard() {
     </div>
 
     <div class="pj-dash-kpis">
-      ${kpi('📋','Tarefas ativas', allActive.length, 'var(--accent)', `${noDate.length} sem data`)}
-      ${kpi('🔴','Atrasadas', overdue.length, overdue.length ? '#ef4444' : '#22c55e', overdue.length ? 'requer atenção' : 'tudo em dia!')}
-      ${kpi('📅','Vencem hoje', todayT.length, '#f97316', `${todayT.filter(t=>t.dueTime).length} com horário`)}
-      ${kpi('✅','Concluídas hoje', doneToday.length, '#22c55e', `da equipe toda`)}
+      ${kpi('📋','Tarefas ativas', allActive.length, 'var(--accent)', `${noDate.length} sem data`, 'all')}
+      ${kpi('🔴','Atrasadas', overdue.length, overdue.length ? '#ef4444' : '#22c55e', overdue.length ? 'requer atenção' : 'tudo em dia!', 'overdue')}
+      ${kpi('📅','Vencem hoje', todayT.length, '#f97316', `${todayT.filter(t=>t.dueTime).length} com horário`, 'today')}
+      ${kpi('✅','Concluídas hoje', doneToday.length, '#22c55e', `7 dias →`, 'doneToday', pjSparkline(last7, '#22c55e'))}
     </div>
 
-    <div class="pj-dash-grid">
+    <div class="pj-dash-trio">
       <div class="pj-dash-col">
         <div class="pj-dash-section-title">
           <span>🔴 Atrasadas</span>
           <span class="pj-dash-section-count">${overdue.length}</span>
         </div>
         <div class="pj-dash-task-list">${overdueRows}</div>
-        ${overdue.length > 8 ? `<div class="pj-dash-see-all" onclick="pjNavigate('all')">Ver todas (${overdue.length}) →</div>` : ''}
+        ${overdue.length > 8 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('overdue')">Ver todas (${overdue.length}) →</div>` : ''}
       </div>
 
       <div class="pj-dash-col">
@@ -16619,15 +16745,56 @@ function pjBuildDashboard() {
           <span class="pj-dash-section-count">${todayT.length}</span>
         </div>
         <div class="pj-dash-task-list">${todayRows}</div>
-        ${todayT.length > 8 ? `<div class="pj-dash-see-all" onclick="pjNavigate('inbox')">Ver todas (${todayT.length}) →</div>` : ''}
+        ${todayT.length > 8 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('today')">Ver todas (${todayT.length}) →</div>` : ''}
+      </div>
+
+      <div class="pj-dash-col">
+        <div class="pj-dash-section-title">
+          <span>⏭ Próximas 24h</span>
+          <span class="pj-dash-section-count">${next24.length}</span>
+        </div>
+        <div class="pj-dash-task-list">${next24Rows}</div>
+        ${next24.length > 8 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('next24')">Ver todas (${next24.length}) →</div>` : ''}
       </div>
     </div>
 
-    <div class="pj-dash-section-title" style="margin-top:28px;">
-      <span>👥 Equipe</span>
-      <span class="pj-dash-section-count">${pjMembers.filter(m=>m.uid).length} membros</span>
+    <div class="pj-dash-grid" style="margin-top:24px;">
+      <div class="pj-dash-col">
+        <div class="pj-dash-section-title">
+          <span>⚡ Atividade recente</span>
+          <span class="pj-dash-section-count">últimas 24h</span>
+        </div>
+        <div class="pj-dash-task-list">${recentRows}</div>
+      </div>
+      <div class="pj-dash-col">
+        <div class="pj-dash-section-title">
+          <span>👥 Equipe</span>
+          <span class="pj-dash-section-count">${pjMembers.filter(m=>m.uid).length} membros</span>
+        </div>
+        <div class="pj-dash-members" style="grid-template-columns:1fr;">${memberCards || '<div class="pj-dash-empty">Nenhum membro encontrado</div>'}</div>
+      </div>
     </div>
-    <div class="pj-dash-members">${memberCards || '<div class="pj-dash-empty">Nenhum membro encontrado</div>'}</div>
+  </div>`;
+}
+
+// Skeleton loading do dashboard
+function pjBuildDashboardSkeleton() {
+  const skLine = (w) => `<span class="pj-skel pj-skel-line" style="width:${w}"></span>`;
+  const skKpi = `<div class="pj-skel pj-skel-kpi" style="width:100%;"></div>`;
+  const skRow = `<div style="display:flex;gap:10px;padding:10px;align-items:center;">
+    <span class="pj-skel" style="width:8px;height:8px;border-radius:50%;"></span>
+    <div style="flex:1;">${skLine('70%')}<br/>${skLine('40%')}</div>
+  </div>`;
+  return `<div class="pj-dash-wrap">
+    <div class="pj-dash-header">
+      <div>${skLine('220px')}<br/>${skLine('140px')}</div>
+    </div>
+    <div class="pj-dash-kpis">${skKpi}${skKpi}${skKpi}${skKpi}</div>
+    <div class="pj-dash-trio">
+      <div class="pj-dash-col">${skLine('120px')}${skRow}${skRow}${skRow}</div>
+      <div class="pj-dash-col">${skLine('100px')}${skRow}${skRow}${skRow}</div>
+      <div class="pj-dash-col">${skLine('140px')}${skRow}${skRow}${skRow}</div>
+    </div>
   </div>`;
 }
 
@@ -16856,14 +17023,37 @@ async function pjSendDailyReport() {
 
 function pjBuildAll() {
   const today = pjDateStr(new Date());
-  let h = `<div class="pj-view-header"><div class="pj-view-title">☰ Todas as tarefas</div></div><div class="pj-view-body">`;
-  const active = pjVisibleTasks().filter(t => !pjIsDone(t));
-  if (!active.length) h += `<div class="empty-state" style="padding:40px 24px;">
+  const tomorrow = pjDateStr(new Date(Date.now() + 86400000));
+  const filterLabels = {
+    overdue: '🔴 Atrasadas',
+    today:  '📅 Vencem hoje',
+    next24: '⏭ Próximas 24h',
+    doneToday: '✅ Concluídas hoje',
+    noDate: '📋 Sem data',
+  };
+  const f = pjDashFilter;
+  const titleSuffix = f && filterLabels[f]
+    ? ` <span class="pj-dash-filter-chip">${filterLabels[f]} <button onclick="pjClearDashFilter()" title="Limpar">×</button></span>`
+    : '';
+  let h = `<div class="pj-view-header"><div class="pj-view-title">☰ Todas as tarefas${titleSuffix}</div></div><div class="pj-view-body">`;
+
+  let tasks;
+  if (f === 'doneToday') {
+    tasks = pjFilterByActiveClient(pjVisibleTasks(false)).filter(t => pjIsDone(t) && t.completedAt?.toMillis && (Date.now() - t.completedAt.toMillis()) < 86400000);
+  } else {
+    tasks = pjFilterByActiveClient(pjVisibleTasks()).filter(t => !pjIsDone(t));
+    if (f === 'overdue') tasks = tasks.filter(t => t.dueDate && t.dueDate < today);
+    else if (f === 'today') tasks = tasks.filter(t => t.dueDate === today);
+    else if (f === 'next24') tasks = tasks.filter(t => t.dueDate === tomorrow);
+    else if (f === 'noDate') tasks = tasks.filter(t => !t.dueDate);
+  }
+
+  if (!tasks.length) h += `<div class="empty-state" style="padding:40px 24px;">
     <div class="empty-state-icon">🎯</div>
-    <div class="empty-state-text">Nenhuma tarefa ativa</div>
-    <div class="empty-state-sub">Crie tarefas para organizar o trabalho da sua equipe</div>
+    <div class="empty-state-text">${f ? 'Nada por aqui' : 'Nenhuma tarefa ativa'}</div>
+    <div class="empty-state-sub">${f ? 'Não há tarefas com esse filtro.' : 'Crie tarefas para organizar o trabalho da sua equipe'}</div>
   </div>`;
-  else active.forEach(t => { h += pjTaskRowHtml(t); });
+  else tasks.forEach(t => { h += pjTaskRowHtml(t); });
   return h + '</div>';
 }
 
@@ -18053,6 +18243,167 @@ function pjConfettiBurst(originX, originY) {
   tick();
 }
 
+// ── Dashboard filter state (KPIs clicáveis) ──
+let pjDashFilter = null; // 'overdue' | 'today' | 'next24' | 'doneToday' | 'noDate' | null
+
+function pjSetDashFilter(filter) {
+  pjDashFilter = filter;
+  if (filter === 'doneToday' || filter === 'overdue' || filter === 'today' || filter === 'next24' || filter === 'noDate') {
+    pjNavigate('all');
+  } else {
+    pjRenderMain();
+  }
+}
+function pjClearDashFilter() {
+  pjDashFilter = null;
+  pjRenderMain();
+}
+
+// Resolve cliente de uma task via custom field 'client'
+function pjResolveTaskClient(t) {
+  try {
+    const fields = pjLists.find(l => l.id === t.listId)?.customFields || [];
+    const clientField = fields.find(f => f.type === 'client' || /client/i.test(f.name||''));
+    if (clientField) return t.customFieldValues?.[clientField.id] || null;
+  } catch(e) {}
+  return null;
+}
+
+// Aplica filtro de cliente ativo (activeRestaurante) sobre lista de tasks
+function pjFilterByActiveClient(tasks) {
+  if (typeof activeRestaurante === 'undefined' || !activeRestaurante) return tasks;
+  return tasks.filter(t => pjResolveTaskClient(t) === activeRestaurante);
+}
+
+// Sparkline SVG inline — pega array numérico, retorna SVG path
+function pjSparkline(values, color) {
+  if (!values || values.length < 2) return '';
+  const w = 100, h = 24;
+  const max = Math.max(...values, 1);
+  const step = w / (values.length - 1);
+  const pts = values.map((v, i) => [i*step, h - (v/max)*(h-3) - 1]);
+  const linePath = pts.map((p,i) => (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const areaPath = linePath + ` L ${w} ${h} L 0 ${h} Z`;
+  return `<svg class="pj-dash-kpi-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <path class="area" d="${areaPath}" fill="${color}"/>
+    <path d="${linePath}" stroke="${color}"/>
+  </svg>`;
+}
+
+// Conclusões dos últimos 7 dias por dia (índice 0 = 6 dias atrás, 6 = hoje)
+function pjLast7Completions() {
+  const buckets = [0,0,0,0,0,0,0];
+  const now = Date.now();
+  pjAllTasks.forEach(t => {
+    if (!pjIsDone(t)) return;
+    const ts = t.completedAt?.toMillis ? t.completedAt.toMillis() : (typeof t.completedAt==='number'?t.completedAt:null);
+    if (!ts) return;
+    const days = Math.floor((now - ts) / 86400000);
+    if (days >= 0 && days < 7) buckets[6 - days]++;
+  });
+  return buckets;
+}
+
+// Atividade recente — últimas N conclusões (24h)
+function pjRecentActivity(limit = 6) {
+  const now = Date.now();
+  const items = [];
+  pjAllTasks.forEach(t => {
+    if (!pjIsDone(t)) return;
+    const ts = t.completedAt?.toMillis ? t.completedAt.toMillis() : (typeof t.completedAt==='number'?t.completedAt:null);
+    if (!ts || (now - ts) > 86400000) return;
+    items.push({ task:t, ts });
+  });
+  items.sort((a,b) => b.ts - a.ts);
+  return items.slice(0, limit);
+}
+
+function pjRelativeTime(ts) {
+  const diff = Date.now() - ts;
+  const s = Math.floor(diff/1000);
+  if (s < 60) return 'agora';
+  const m = Math.floor(s/60);
+  if (m < 60) return `há ${m}min`;
+  const h = Math.floor(m/60);
+  if (h < 24) return `há ${h}h`;
+  const d = Math.floor(h/24);
+  return `há ${d}d`;
+}
+
+// ── Quick-add FAB ──
+function pjOpenFabModal() {
+  const overlay = document.getElementById('pjFabModal');
+  if (!overlay) return;
+  // Popular lista de listas
+  const sel = document.getElementById('pjFabListSelect');
+  if (sel) {
+    const opts = pjLists
+      .filter(l => typeof userIsAdmin !== 'function' || userIsAdmin() || (typeof userCanSeeSpace==='function' && userCanSeeSpace(l.spaceId)))
+      .map(l => {
+        const sp = pjSpaces.find(s => s.id === l.spaceId);
+        return `<option value="${l.id}">${escHtml((sp?.name||'')+' › '+l.name)}</option>`;
+      }).join('');
+    sel.innerHTML = opts || '<option value="">Nenhuma lista disponível</option>';
+  }
+  overlay.classList.add('open');
+  setTimeout(() => document.getElementById('pjFabTitle')?.focus(), 50);
+}
+function pjCloseFabModal() {
+  document.getElementById('pjFabModal')?.classList.remove('open');
+  const inp = document.getElementById('pjFabTitle');
+  if (inp) inp.value = '';
+}
+async function pjFabSubmit(ev) {
+  if (ev) ev.preventDefault();
+  const title = (document.getElementById('pjFabTitle')?.value || '').trim();
+  const listId = document.getElementById('pjFabListSelect')?.value;
+  if (!title || !listId) return;
+  const list = pjLists.find(l => l.id === listId);
+  if (!list) return;
+  const statuses = list.statuses || PJ_DEFAULT_STATUSES;
+  const stId = statuses[0].id;
+  const uid = _auth?.currentUser?.uid || _currentUser?.uid;
+  const id = (typeof pjId==='function') ? pjId() : ('tk_'+Date.now());
+  const localTask = {
+    id, title, description:'', listId, spaceId:list.spaceId,
+    statusId:stId, assignees:uid?[uid]:[], dueDate:null, startDate:null,
+    priority:'normal', parentTaskId:null, customFieldValues:{},
+    createdBy:uid, order: Date.now(),
+    createdAt:{ toMillis:()=>Date.now() }, updatedAt:{ toMillis:()=>Date.now() },
+  };
+  if (!pjTasks[listId]) pjTasks[listId] = [];
+  pjTasks[listId].push(localTask);
+  pjAllTasks = Object.values(pjTasks).flat();
+  pjCloseFabModal();
+  if (typeof showToast === 'function') showToast(`✓ "${title}" criada`, 'ok');
+  pjRenderMain();
+  try {
+    const docData = { ...localTask, createdAt: pjNow(), updatedAt: pjNow() };
+    delete docData.id;
+    await pjC('pj_tasks').doc(id).set(docData);
+  } catch(e) {}
+  // Abre o modal da tarefa pra editar mais detalhes
+  setTimeout(() => { if (typeof pjOpenTask === 'function') pjOpenTask(id); }, 100);
+}
+
+// ── Notificações desktop (Notification API) ──
+function pjRequestDesktopNotif() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    try { Notification.requestPermission(); } catch(e) {}
+  }
+}
+function pjFireDesktopNotif(title, body, taskId) {
+  try {
+    if (!('Notification' in window)) return;
+    if (Notification.permission !== 'granted') return;
+    if (document.visibilityState === 'visible' && document.hasFocus()) return; // só quando aba fora de foco
+    const n = new Notification(title, { body: body||'', icon:'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><text y="26" font-size="26">🎯</text></svg>', tag:`fg-${taskId||Date.now()}` });
+    n.onclick = () => { window.focus(); if (taskId && typeof pjOpenTask==='function') pjOpenTask(taskId); n.close(); };
+    setTimeout(() => n.close(), 8000);
+  } catch(e) {}
+}
+
 // Detecta nova atribuição em tasks atualizadas via realtime
 function pjMaybeNotifyAssignment(prevTask, newTask) {
   const uid = _auth.currentUser?.uid || _currentUser?.uid;
@@ -18063,12 +18414,10 @@ function pjMaybeNotifyAssignment(prevTask, newTask) {
   const isAssigned = newAssignees.includes(uid);
   if (!wasAssigned && isAssigned) {
     pjPlayMentionSound();
-    pjAddNotification({
-      type:'mention',
-      title:`Você foi atribuído à "${newTask.title||''}"`,
-      subtitle: pjLists.find(l=>l.id===newTask.listId)?.name || '',
-      taskId: newTask.id
-    });
+    const title = `Você foi atribuído à "${newTask.title||''}"`;
+    const subtitle = pjLists.find(l=>l.id===newTask.listId)?.name || '';
+    pjAddNotification({ type:'mention', title, subtitle, taskId: newTask.id });
+    pjFireDesktopNotif(title, subtitle, newTask.id);
   }
 }
 
