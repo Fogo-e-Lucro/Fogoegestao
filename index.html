@@ -13956,7 +13956,49 @@ function pjAfterStatusChange(task, prevStatusId, newStatusId) {
     delete task.completedAt;
     delete task.archived;
   }
+  // Log da mudança de status (se realmente mudou)
+  if (prevStatusId !== newStatusId) {
+    try {
+      pjLogActivity(task.id, {
+        type: 'status',
+        fromName: prevSt?.name || null,
+        toName:   newSt?.name  || null,
+        fromColor: prevSt?.color || null,
+        toColor:   newSt?.color  || null,
+      });
+    } catch(_) {}
+  }
   return { willClose, wasClosed };
+}
+
+// ── Histórico de atividade (log de mudanças por tarefa) ────────────
+// Cada entrada: { ts, by:uid, type:'status|priority|assignee|due|title|created|reopened', ...details }
+// Persiste em task.activity (cap 60) via Firestore arrayUnion. Não bloqueia UI.
+function pjLogActivity(taskId, entry) {
+  try {
+    const task = pjAllTasks.find(t => t.id === taskId);
+    if (!task) return;
+    const uid = (typeof _currentUser !== 'undefined' && _currentUser?.uid)
+              || (typeof _auth !== 'undefined' && _auth?.currentUser?.uid)
+              || 'system';
+    const e = { ts: Date.now(), by: uid, ...entry };
+    if (!Array.isArray(task.activity)) task.activity = [];
+    task.activity.push(e);
+    if (task.activity.length > 60) task.activity = task.activity.slice(-60);
+    // Persiste em background — Firestore arrayUnion mantém histórico cumulativo
+    try {
+      if (typeof firebase !== 'undefined' && firebase?.firestore?.FieldValue) {
+        pjC('pj_tasks').doc(taskId).update({
+          activity: firebase.firestore.FieldValue.arrayUnion(e)
+        }).catch(()=>{});
+      }
+    } catch(_) {}
+    // Re-renderiza atividade no modal se for a tarefa aberta
+    if (typeof pjCurrentTaskId !== 'undefined' && pjCurrentTaskId === taskId
+        && typeof pjRenderActivity === 'function') {
+      try { pjRenderActivity(); } catch(_) {}
+    }
+  } catch(_) {}
 }
 
 async function pjToggleTaskDone(taskId) {
@@ -14004,6 +14046,18 @@ async function pjToggleTaskDone(taskId) {
   else { delete t.completedAt; delete t.archived; }
   if (pjTasks[t.listId]) pjTasks[t.listId] = pjTasks[t.listId].map(x => x.id===t.id ? t : x);
   pjAllTasks = pjAllTasks.map(x => x.id===t.id ? t : x);
+  // Log da mudança (concluiu / reabriu)
+  try {
+    const prevSt = statuses.find(s => s.id === prevStatusId);
+    const newSt  = statuses.find(s => s.id === newStatusId);
+    pjLogActivity(t.id, {
+      type: 'status',
+      fromName: prevSt?.name || null,
+      toName:   newSt?.name  || null,
+      fromColor: prevSt?.color || null,
+      toColor:   newSt?.color  || null,
+    });
+  } catch(_) {}
   // Recorrência: ao concluir, gera próxima ocorrência
   if (!isDone && t.recurrence?.pattern && t.dueDate) pjSpawnNextRecurrence(t);
   // Celebração: confete + som ao concluir tarefa urgente ou alta
@@ -14077,6 +14131,17 @@ async function pjChangeTaskStatus(taskId, newStatusId) {
   }
   if (pjTasks[t.listId]) pjTasks[t.listId] = pjTasks[t.listId].map(x => x.id === t.id ? t : x);
   pjAllTasks = pjAllTasks.map(x => x.id === t.id ? t : x);
+  // Log da mudança de status
+  try {
+    const prevSt = statuses.find(s => s.id === prevStatusId);
+    pjLogActivity(t.id, {
+      type: 'status',
+      fromName: prevSt?.name || null,
+      toName:   newSt?.name  || null,
+      fromColor: prevSt?.color || null,
+      toColor:   newSt?.color  || null,
+    });
+  } catch(_) {}
   // Recorrência: ao concluir, gera próxima ocorrência
   if (willClose && !wasClosed && t.recurrence?.pattern && t.dueDate) pjSpawnNextRecurrence(t);
   pjRenderMain(); pjRenderSidebar();
@@ -16291,11 +16356,92 @@ function pjRenderActivityComment(c, isReply) {
     </div>
   </div>`;
 }
+// Renderiza uma entrada do log de mudanças (status, prioridade, atribuição, etc)
+function pjRenderActivityLogItem(a) {
+  if (!a) return '';
+  const m = pjMembers.find(x => x.uid === a.by);
+  const who = m?.name || m?.email || 'Alguém';
+  const time = a.ts ? pjRelTime(new Date(a.ts)) : '';
+  const PRIO_LABEL = { urgent:'Urgente', high:'Alta', medium:'Média', low:'Baixa' };
+
+  let icon = '✏️';
+  let body = '';
+
+  if (a.type === 'status') {
+    icon = '🔀';
+    const fromTxt = a.fromName ? `<span class="pj-log-pill" style="--c:${a.fromColor||'#94a3b8'}">${escHtml(a.fromName)}</span>` : '<em>—</em>';
+    const toTxt   = a.toName   ? `<span class="pj-log-pill" style="--c:${a.toColor||'#94a3b8'}">${escHtml(a.toName)}</span>`     : '<em>—</em>';
+    body = `mudou status de ${fromTxt} pra ${toTxt}`;
+  } else if (a.type === 'priority') {
+    icon = '🚩';
+    const fromTxt = a.from ? `<span class="pj-priority ${a.from}">${PRIO_LABEL[a.from]||a.from}</span>` : '<em>nenhuma</em>';
+    const toTxt   = a.to   ? `<span class="pj-priority ${a.to}">${PRIO_LABEL[a.to]||a.to}</span>`         : '<em>nenhuma</em>';
+    body = `mudou prioridade de ${fromTxt} pra ${toTxt}`;
+  } else if (a.type === 'due') {
+    icon = '📅';
+    const fromTxt = a.from ? `<strong>${escHtml(typeof pjFmtDateShort==='function' ? pjFmtDateShort(a.from) : a.from)}</strong>` : '<em>sem data</em>';
+    const toTxt   = a.to   ? `<strong>${escHtml(typeof pjFmtDateShort==='function' ? pjFmtDateShort(a.to)   : a.to)}</strong>`   : '<em>sem data</em>';
+    body = `mudou vencimento de ${fromTxt} pra ${toTxt}`;
+  } else if (a.type === 'duetime') {
+    icon = '🕐';
+    const fromTxt = a.from ? `<strong>${escHtml(a.from)}</strong>` : '<em>—</em>';
+    const toTxt   = a.to   ? `<strong>${escHtml(a.to)}</strong>`   : '<em>—</em>';
+    body = `ajustou horário de ${fromTxt} pra ${toTxt}`;
+  } else if (a.type === 'title') {
+    icon = '✏️';
+    body = `renomeou para <strong>${escHtml(a.to||'(vazio)')}</strong>`;
+  } else if (a.type === 'assignee') {
+    icon = '👤';
+    const added = (a.added||[]).map(uid => {
+      const mm = pjMembers.find(x => x.uid === uid);
+      return `<strong>${escHtml(mm?.name || mm?.email || 'alguém')}</strong>`;
+    });
+    const removed = (a.removed||[]).map(uid => {
+      const mm = pjMembers.find(x => x.uid === uid);
+      return `<strong>${escHtml(mm?.name || mm?.email || 'alguém')}</strong>`;
+    });
+    const parts = [];
+    if (added.length)   parts.push(`atribuiu para ${added.join(', ')}`);
+    if (removed.length) parts.push(`removeu ${removed.join(', ')}`);
+    body = parts.join(' e ') || 'mexeu nas atribuições';
+  } else if (a.type === 'created') {
+    icon = '✨';
+    body = 'criou a tarefa';
+  } else {
+    body = `fez uma alteração (${escHtml(a.type||'')})`;
+  }
+
+  return `<div class="pj-activity-log-item" title="${time}">
+    <span class="pj-activity-log-icon" aria-hidden="true">${icon}</span>
+    <span class="pj-activity-log-body">
+      <strong>${escHtml(who)}</strong> ${body}
+    </span>
+    <span class="pj-activity-log-time">${time}</span>
+  </div>`;
+}
+
 function pjRenderActivity() {
   const el = document.getElementById('pjActivityList');
   if (!el) return;
   const top = pjComments.filter(c => !c.parentId);
-  const items = top.map(c => pjRenderActivityComment(c, false)).join('');
+  // Mescla: comentários top-level + log de mudanças (task.activity), ordenado por ts
+  const task = pjAllTasks.find(x => x.id === pjCurrentTaskId);
+  const activityLog = Array.isArray(task?.activity) ? task.activity : [];
+  const merged = [
+    ...top.map(c => ({
+      _kind: 'comment',
+      _ts: c.createdAt?.toMillis ? c.createdAt.toMillis()
+         : (c.createdAt?.toDate ? c.createdAt.toDate().getTime() : 0),
+      data: c
+    })),
+    ...activityLog.map(a => ({ _kind:'log', _ts: a.ts || 0, data: a })),
+  ].sort((a, b) => (a._ts || 0) - (b._ts || 0));
+
+  const items = merged.map(it => {
+    if (it._kind === 'comment') return pjRenderActivityComment(it.data, false);
+    return pjRenderActivityLogItem(it.data);
+  }).join('');
+
   el.innerHTML = items || `<div class="pj-activity-empty">
     <span class="pj-activity-empty-icon">💬</span>
     <span class="pj-activity-empty-title">Sem atividade ainda</span>
@@ -16634,9 +16780,16 @@ function pjShowReactionPicker(ev, commentId) {
 
 // ── Task CRUD ───────────────────────────────────────────
 async function pjUpdateTask(taskId, data) {
-  // Snapshot do statusId anterior pra detectar transição de bucket
+  // Snapshot pra log de atividade + transição de bucket
   const _prevTask = pjAllTasks.find(t => t.id === taskId);
   const _prevStatusId = _prevTask?.statusId;
+  const _prev = {
+    priority:  _prevTask?.priority  || null,
+    dueDate:   _prevTask?.dueDate   || null,
+    dueTime:   _prevTask?.dueTime   || null,
+    title:     _prevTask?.title     || '',
+    assignees: Array.isArray(_prevTask?.assignees) ? [..._prevTask.assignees] : [],
+  };
   // Optimistic local update
   const idx = pjAllTasks.findIndex(t=>t.id===taskId);
   if (idx >= 0) pjAllTasks[idx] = {...pjAllTasks[idx], ...data};
@@ -16650,6 +16803,30 @@ async function pjUpdateTask(taskId, data) {
     const tNow = pjAllTasks.find(x => x.id === taskId);
     _stTrans = pjAfterStatusChange(tNow, _prevStatusId, data.statusId);
   }
+  // Log de mudanças por campo (não inclui status — pjAfterStatusChange já loga)
+  try {
+    if ('priority' in data && data.priority !== _prev.priority) {
+      pjLogActivity(taskId, { type:'priority', from:_prev.priority, to:data.priority || null });
+    }
+    if ('dueDate' in data && data.dueDate !== _prev.dueDate) {
+      pjLogActivity(taskId, { type:'due', from:_prev.dueDate, to:data.dueDate || null });
+    }
+    if ('dueTime' in data && data.dueTime !== _prev.dueTime) {
+      pjLogActivity(taskId, { type:'duetime', from:_prev.dueTime, to:data.dueTime || null });
+    }
+    if ('title' in data && (data.title || '') !== _prev.title) {
+      pjLogActivity(taskId, { type:'title', from:_prev.title, to:data.title || '' });
+    }
+    if ('assignees' in data && Array.isArray(data.assignees)) {
+      const prevSet = new Set(_prev.assignees);
+      const newSet  = new Set(data.assignees);
+      const added   = data.assignees.filter(u => !prevSet.has(u));
+      const removed = _prev.assignees.filter(u => !newSet.has(u));
+      if (added.length || removed.length) {
+        pjLogActivity(taskId, { type:'assignee', added, removed });
+      }
+    }
+  } catch(_) {}
   // Fire webhook for status change
   if (data.statusId) {
     const t = pjAllTasks.find(x => x.id === taskId);

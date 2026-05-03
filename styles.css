@@ -4267,6 +4267,39 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   margin-left:24px; padding-left:10px;
   border-left:2px solid var(--border);
 }
+
+/* Log de mudanças (status, prioridade, atribuição, etc) — entrada compacta */
+.pj-activity-log-item {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 4px; border-bottom:1px dashed var(--border);
+  font-size:12px; color:var(--text2); line-height:1.4;
+}
+.pj-activity-log-item:last-child { border-bottom:none; }
+.pj-activity-log-icon {
+  flex:0 0 auto; width:22px; height:22px; border-radius:50%;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--bg2); border:1px solid var(--border);
+  font-size:11px;
+}
+.pj-activity-log-body { flex:1; min-width:0; }
+.pj-activity-log-body strong { color:var(--text); font-weight:600; }
+.pj-activity-log-body em { color:var(--text3); font-style:italic; }
+.pj-activity-log-time {
+  font-size:10px; color:var(--text3); white-space:nowrap;
+  background:var(--bg2); padding:2px 6px; border-radius:10px;
+  border:1px solid var(--border); flex:0 0 auto;
+}
+.pj-log-pill {
+  display:inline-flex; align-items:center; gap:4px;
+  background:color-mix(in srgb, var(--c, #94a3b8) 14%, transparent);
+  color:var(--text); border:1px solid color-mix(in srgb, var(--c, #94a3b8) 40%, var(--border));
+  padding:1px 8px; border-radius:999px; font-size:11px; font-weight:600;
+  line-height:1.4;
+}
+.pj-log-pill::before {
+  content:''; width:6px; height:6px; border-radius:50%;
+  background:var(--c, #94a3b8); flex:0 0 auto;
+}
 .pj-comment-replies { margin-top:6px; }
 .pj-comment-actions {
   display:flex; align-items:center; gap:6px; margin-top:4px;
