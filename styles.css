@@ -2950,9 +2950,11 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   content:''; position:absolute; left:0; right:0; bottom:0; height:1px;
   background:linear-gradient(90deg, var(--border) 0%, transparent 100%);
 }
-.pj-status-dot {
+.pj-status-group-dot {
+  display:inline-block;
   width:11px; height:11px; border-radius:50%; flex-shrink:0;
-  box-shadow:0 0 0 3px color-mix(in srgb, currentColor 15%, transparent);
+  background:var(--c, #94a3b8);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--c, #94a3b8) 22%, transparent);
 }
 .pj-status-group-name { font-size:12px; font-weight:700; color:var(--text); letter-spacing:.02em; }
 .pj-status-group-count {
