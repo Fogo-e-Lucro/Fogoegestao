@@ -2137,6 +2137,8 @@ function appPresenceStartHeartbeat() {
     if (u && typeof _db !== 'undefined') {
       try { _db.collection('app_presence').doc(u.uid).set({ lastSeen: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }); } catch(e) {}
     }
+    // Cleanup de listeners pra não vazar leituras se a aba só recarrega
+    try { if (typeof pjCleanupListeners === 'function') pjCleanupListeners(); } catch(_){}
   });
 }
 
@@ -2548,6 +2550,7 @@ function signInWithGoogle() {
 
 function signOutUser() {
   if (!confirm('Sair da conta?')) return;
+  try { if (typeof pjCleanupListeners === 'function') pjCleanupListeners(); } catch(_){}
   _auth.signOut();
 }
 
@@ -2902,6 +2905,8 @@ _auth.onAuthStateChanged(async user => {
   if (_DEV_BYPASS) return; // Ignora estado real do Firebase em dev bypass
   if (!user) {
     _currentUser = null;
+    // Cleanup listeners para evitar leituras fantasma após logout
+    try { if (typeof pjCleanupListeners === 'function') pjCleanupListeners(); } catch(_){}
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('userChip').style.display = 'none';
     return;
@@ -11290,6 +11295,18 @@ async function _pjHydratePhotos() {
   } catch(e) { /* silencia */ }
 }
 
+// Desmonta todos os listeners de pj_* (chamado em signout/beforeunload)
+function pjCleanupListeners() {
+  if (Array.isArray(pjUnsubs)) {
+    pjUnsubs.forEach(u => { try { u && u(); } catch(_){} });
+    pjUnsubs = [];
+  }
+  try { window._pjRealtimeUnsub && window._pjRealtimeUnsub(); } catch(_){}
+  window._pjRealtimeUnsub = null;
+  try { window._pjQueueUnsub && window._pjQueueUnsub(); } catch(_){}
+  window._pjQueueUnsub = null;
+}
+
 function pjSetupRealtime() {
   const myUid = _auth.currentUser?.uid || _currentUser?.uid;
   // Listen for member changes (new members, login completions, role updates)
@@ -11307,24 +11324,24 @@ function pjSetupRealtime() {
       try { pjRenderTaskModal(); } catch(_) {}
     }
     if (pjCurrentView && (pjCurrentView.type === 'list' || pjCurrentView.type === 'kanban')) {
-      try { pjRenderMain(); } catch(_) {}
+      pjScheduleRender();
     }
   }, ()=>{});
   pjUnsubs.push(unsubMembers);
   // Listen for spaces/folders/lists changes too
   const unsubSpaces = pjC('pj_spaces').orderBy('order').onSnapshot(snap => {
     pjSpaces = snap.docs.map(d => ({id:d.id,...d.data()}));
-    try { pjRenderSidebar(); } catch(_) {}
+    pjScheduleSidebar();
   }, ()=>{});
   pjUnsubs.push(unsubSpaces);
   const unsubFolders = pjC('pj_folders').onSnapshot(snap => {
     pjFolders = snap.docs.map(d => ({id:d.id,...d.data()}));
-    try { pjRenderSidebar(); } catch(_) {}
+    pjScheduleSidebar();
   }, ()=>{});
   pjUnsubs.push(unsubFolders);
   const unsubLists = pjC('pj_lists').onSnapshot(snap => {
     pjLists = snap.docs.map(d => ({id:d.id,...d.data()}));
-    try { pjRenderSidebar(); } catch(_) {}
+    pjScheduleSidebar();
   }, ()=>{});
   pjUnsubs.push(unsubLists);
   // Listen for task changes across all lists
@@ -11353,8 +11370,8 @@ function pjSetupRealtime() {
       pjTasks[t.listId].push(t);
     });
     pjUpdateInboxCount();
-    if (pjCurrentView.type === 'list' || pjCurrentView.type === 'kanban') pjRenderMain();
-    if (pjCurrentView.type === 'inbox' || pjCurrentView.type === 'all' || pjCurrentView.type === 'dashboard') pjRenderMain();
+    if (pjCurrentView.type === 'list' || pjCurrentView.type === 'kanban') pjScheduleRender();
+    if (pjCurrentView.type === 'inbox' || pjCurrentView.type === 'all' || pjCurrentView.type === 'dashboard') pjScheduleRender();
   }, ()=>{});
   pjUnsubs.push(unsub);
 }
@@ -11663,6 +11680,24 @@ function pjRenderSidebarUser() {
 }
 
 // ── Main render router ──────────────────────────────────
+// ── Render scheduling (debounce + rAF) ──
+// Coalesces múltiplos updates do Firestore em 1 render por frame
+let _pjRenderTimer = null, _pjSidebarTimer = null;
+function pjScheduleRender() {
+  if (_pjRenderTimer) return;
+  _pjRenderTimer = setTimeout(() => {
+    _pjRenderTimer = null;
+    requestAnimationFrame(() => { try { pjRenderMain(); } catch(_){} });
+  }, 80);
+}
+function pjScheduleSidebar() {
+  if (_pjSidebarTimer) return;
+  _pjSidebarTimer = setTimeout(() => {
+    _pjSidebarTimer = null;
+    requestAnimationFrame(() => { try { pjRenderSidebar(); } catch(_){} });
+  }, 80);
+}
+
 function pjRenderMain() {
   const el = document.getElementById('pjMain');
   if (!el) return;
