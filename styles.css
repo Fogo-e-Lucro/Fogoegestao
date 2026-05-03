@@ -2952,9 +2952,10 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 }
 .pj-status-group-dot {
   display:inline-block;
-  width:11px; height:11px; border-radius:50%; flex-shrink:0;
+  width:14px; height:14px; border-radius:50%; flex-shrink:0;
   background:var(--c, #94a3b8);
-  box-shadow:0 0 0 3px color-mix(in srgb, var(--c, #94a3b8) 22%, transparent);
+  box-shadow:0 0 0 4px color-mix(in srgb, var(--c, #94a3b8) 22%, transparent);
+  margin-right:2px;
 }
 .pj-status-group-name { font-size:12px; font-weight:700; color:var(--text); letter-spacing:.02em; }
 .pj-status-group-count {
