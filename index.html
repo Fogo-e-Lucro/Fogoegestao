@@ -16153,6 +16153,14 @@ function pjBuildTimeMetrics() {
   // Lead/Cycle time + custo
   const leadMs = [], cycleMs = [];
   let totalCostMs = 0;
+  // Cycle por status: agrega tempo gasto em cada status a partir do activity log
+  const statusTimes = {}; // name -> { color, durations: [] }
+  const addStatusDur = (name, color, ms) => {
+    if (!name || !Number.isFinite(ms) || ms <= 0) return;
+    if (!statusTimes[name]) statusTimes[name] = { color: color || '#6366f1', durations: [] };
+    statusTimes[name].durations.push(ms);
+    if (color) statusTimes[name].color = color; // mais recente vence
+  };
   pjAllTasks.forEach(t => {
     if (!pjIsDone(t) || !t.completedAt) return;
     const completed = typeof t.completedAt === 'number' ? t.completedAt : t.completedAt.toMillis?.();
@@ -16164,6 +16172,24 @@ function pjBuildTimeMetrics() {
     if (t.startedAt) {
       const started = typeof t.startedAt === 'number' ? t.startedAt : t.startedAt.toMillis?.();
       if (started) cycleMs.push(completed - started);
+    }
+    // Calcula tempo por status a partir do activity log
+    const events = (t.activity || [])
+      .filter(e => e.type === 'status' && e.ts && e.toName)
+      .sort((a,b) => a.ts - b.ts);
+    if (events.length) {
+      const createdMs = typeof t.createdAt === 'number' ? t.createdAt : t.createdAt?.toMillis?.();
+      // Status inicial: createdAt → primeira mudança (fromName do primeiro evento)
+      if (createdMs && events[0].fromName) {
+        addStatusDur(events[0].fromName, events[0].fromColor, events[0].ts - createdMs);
+      }
+      // Intervalos entre mudanças (toName do evento i até ts do evento i+1)
+      for (let i = 0; i < events.length - 1; i++) {
+        addStatusDur(events[i].toName, events[i].toColor, events[i+1].ts - events[i].ts);
+      }
+      // Status final: último evento → completedAt
+      const last = events[events.length - 1];
+      addStatusDur(last.toName, last.toColor, completed - last.ts);
     }
   });
   const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
@@ -16182,6 +16208,33 @@ function pjBuildTimeMetrics() {
     costByUser[uid] = cost;
     totalCost += cost;
   });
+  // Tempo por status (HTML)
+  const statusEntries = Object.entries(statusTimes)
+    .map(([name, {color, durations}]) => ({
+      name, color,
+      avg: avg(durations),
+      med: median(durations),
+      count: durations.length,
+      max: Math.max(...durations),
+    }))
+    .sort((a,b) => b.avg - a.avg);
+  const totalAvgStatus = statusEntries.reduce((a,b) => a + b.avg, 0);
+  const cycleHtml = statusEntries.map(s => {
+    const pct = totalAvgStatus ? Math.round((s.avg/totalAvgStatus)*100) : 0;
+    const bottleneck = pct >= 35;
+    return `<div class="pj-cycle-row${bottleneck?' bottleneck':''}">
+      <div class="pj-cycle-status">
+        <span class="pj-cycle-dot" style="--c:${s.color}"></span>
+        <span class="pj-cycle-name">${escHtml(s.name)}</span>
+        ${bottleneck ? '<span class="pj-cycle-warn" title="Esse status concentra muito tempo do ciclo — possível gargalo">⚠ gargalo</span>' : ''}
+      </div>
+      <div class="pj-cycle-bar"><div class="pj-cycle-bar-fill" style="width:${Math.max(2,pct)}%;background:${s.color};"></div></div>
+      <div class="pj-cycle-meta">
+        <strong>${fmtDays(s.avg)}</strong> média · ${fmtDays(s.med)} mediana · ${s.count} medi${s.count!==1?'ções':'ção'}
+      </div>
+    </div>`;
+  }).join('');
+
   const costHtml = Object.keys(byUser).sort((a,b)=>(costByUser[b]||0)-(costByUser[a]||0)).map(uid => {
     const m = findMember(uid);
     const rate = costRates[uid] || 0;
@@ -16219,6 +16272,11 @@ function pjBuildTimeMetrics() {
         <div class="pj-tm-kpi-val">${fmtDays(median(cycleMs))}</div>
         <div class="pj-tm-kpi-sub">valor do meio — mais confiável</div>
       </div>
+    </div>
+    <div class="pj-tm-section">
+      <div class="pj-tm-h">⏳ Tempo por status (cycle time)</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Quanto tempo as tarefas concluídas ficaram em cada status. Útil pra detectar gargalos no fluxo. Status com ≥35% do tempo total ganham alerta de gargalo.</div>
+      ${cycleHtml || '<div style="color:var(--text3);font-size:13px;">Sem histórico de mudanças de status ainda. Conclua algumas tarefas (passando por mudanças de status) pra ver dados aqui.</div>'}
     </div>
     <div class="pj-tm-section">
       <div class="pj-tm-h">Por colaborador</div>

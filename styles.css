@@ -6122,3 +6122,66 @@ body.pj-focus { overflow-x: hidden; }
   .pj-heat-col { grid-template-rows: repeat(7, 12px); }
   .pj-heat-grid, .pj-heat-months { grid-template-columns: repeat(12, 12px); }
 }
+
+/* ── Cycle time por status ────────────────────────────────── */
+.pj-cycle-row {
+  display: grid;
+  grid-template-columns: 200px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  transition: background .12s ease;
+}
+.pj-cycle-row:hover { background: var(--hover); }
+.pj-cycle-row.bottleneck {
+  background: color-mix(in srgb, #f97316 6%, transparent);
+}
+.pj-cycle-row.bottleneck:hover {
+  background: color-mix(in srgb, #f97316 12%, transparent);
+}
+.pj-cycle-status {
+  display: flex; align-items: center; gap: 8px;
+  min-width: 0;
+}
+.pj-cycle-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--c, #6366f1);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--c, #6366f1) 25%, transparent);
+  flex: 0 0 auto;
+}
+.pj-cycle-name {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pj-cycle-warn {
+  font-size: 10px; font-weight: 700;
+  padding: 1px 6px; border-radius: 4px;
+  background: color-mix(in srgb, #f97316 18%, transparent);
+  color: #f97316;
+  white-space: nowrap;
+}
+.pj-cycle-bar {
+  height: 8px; border-radius: 4px;
+  background: color-mix(in srgb, var(--text3) 12%, transparent);
+  overflow: hidden;
+  min-width: 80px;
+}
+.pj-cycle-bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width .35s cubic-bezier(.4,0,.2,1);
+}
+.pj-cycle-meta {
+  font-size: 11.5px; color: var(--text3);
+  white-space: nowrap;
+}
+.pj-cycle-meta strong { color: var(--text2); font-weight: 700; }
+
+@media (max-width: 700px) {
+  .pj-cycle-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .pj-cycle-bar { min-width: 0; }
+}
