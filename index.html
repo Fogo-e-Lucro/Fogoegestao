@@ -16307,6 +16307,141 @@ function pjTimerBtnHtml(t) {
 }
 
 // ── Métricas de tempo (admin-only) ──────────────────────
+// ── SLA por cliente/prioridade ────────────────────────────
+const PJ_SLA_DEFAULTS = { urgent: 1, high: 3, normal: 7, low: 14 };
+const PJ_SLA_PRIO_COLORS = { urgent:'#ef4444', high:'#f97316', normal:'#3b82f6', low:'#10b981' };
+const PJ_SLA_PRIO_LABELS = { urgent:'Urgente', high:'Alta', normal:'Normal', low:'Baixa' };
+const PJ_SLA_PRIO_ORDER = ['urgent','high','normal','low'];
+
+function pjGetSlaThresholds() {
+  let thr = { ...PJ_SLA_DEFAULTS };
+  try {
+    const stored = JSON.parse(localStorage.getItem('pj_sla_thresholds')||'{}') || {};
+    thr = { ...thr, ...stored };
+  } catch(e) {}
+  return thr;
+}
+function pjSetSlaThreshold(prio, value) {
+  let thr = {};
+  try { thr = JSON.parse(localStorage.getItem('pj_sla_thresholds')||'{}') || {}; } catch(e) {}
+  const v = parseFloat(value);
+  if (!Number.isFinite(v) || v < 0) return;
+  thr[prio] = v;
+  localStorage.setItem('pj_sla_thresholds', JSON.stringify(thr));
+  if (pjCurrentView?.type === 'timemetrics') pjRenderMain();
+}
+function pjResetSlaThresholds() {
+  localStorage.removeItem('pj_sla_thresholds');
+  if (pjCurrentView?.type === 'timemetrics') pjRenderMain();
+}
+
+function pjBuildSlaSection() {
+  const thr = pjGetSlaThresholds();
+  const getMs = (v) => typeof v === 'number' ? v : (v?.toMillis ? v.toMillis() : 0);
+
+  const completed = pjAllTasks.filter(t => pjIsDone(t) && t.completedAt && t.createdAt);
+
+  const byClient = {};
+  const byPrio = {};
+  PJ_SLA_PRIO_ORDER.forEach(p => byPrio[p] = { ok:0, total:0, totalMs:0 });
+
+  completed.forEach(t => {
+    const prio = t.priority || 'normal';
+    if (!(prio in thr)) return;
+    const created = getMs(t.createdAt);
+    const done = getMs(t.completedAt);
+    if (!created || !done) return;
+    const ms = done - created;
+    if (ms < 0) return;
+    const days = ms / 86400000;
+    const ok = days <= thr[prio];
+
+    const cid = pjResolveTaskClient(t) || t.clientId || '__none__';
+    if (!byClient[cid]) byClient[cid] = { byPrio: {}, totalOk: 0, total: 0, totalMs: 0 };
+    if (!byClient[cid].byPrio[prio]) byClient[cid].byPrio[prio] = { ok:0, total:0, totalMs:0 };
+    byClient[cid].byPrio[prio].total++;
+    byClient[cid].byPrio[prio].totalMs += ms;
+    byClient[cid].total++;
+    byClient[cid].totalMs += ms;
+    if (ok) {
+      byClient[cid].byPrio[prio].ok++;
+      byClient[cid].totalOk++;
+    }
+
+    byPrio[prio].total++;
+    byPrio[prio].totalMs += ms;
+    if (ok) byPrio[prio].ok++;
+  });
+
+  const thresholdsHtml = PJ_SLA_PRIO_ORDER.map(p => `
+    <label class="pj-sla-thr" style="--c:${PJ_SLA_PRIO_COLORS[p]}" title="Limite em dias para ${PJ_SLA_PRIO_LABELS[p].toLowerCase()}">
+      <span class="pj-sla-thr-dot"></span>
+      <span class="pj-sla-thr-name">${PJ_SLA_PRIO_LABELS[p]}</span>
+      <input type="number" min="0" step="0.5" value="${thr[p]}" class="pj-sla-thr-input" onchange="pjSetSlaThreshold('${p}', this.value)">
+      <span class="pj-sla-thr-unit">d</span>
+    </label>`).join('');
+
+  const cls = (pct) => pct >= 80 ? 'good' : pct >= 50 ? 'warn' : 'bad';
+
+  const prioOverallHtml = PJ_SLA_PRIO_ORDER.filter(p => byPrio[p].total).map(p => {
+    const o = byPrio[p];
+    const pct = Math.round((o.ok/o.total)*100);
+    const avgDays = o.totalMs / o.total / 86400000;
+    return `<div class="pj-sla-prio-row ${cls(pct)}">
+      <span class="pj-sla-dot" style="--c:${PJ_SLA_PRIO_COLORS[p]}"></span>
+      <span class="pj-sla-prio-name">${PJ_SLA_PRIO_LABELS[p]}</span>
+      <span class="pj-sla-bar"><span class="pj-sla-bar-fill" style="width:${pct}%;background:${PJ_SLA_PRIO_COLORS[p]}"></span></span>
+      <span class="pj-sla-pct">${pct}%</span>
+      <span class="pj-sla-meta">${o.ok}/${o.total} no SLA · média ${avgDays.toFixed(1)}d (limite ${thr[p]}d)</span>
+    </div>`;
+  }).join('');
+
+  const clientIds = Object.keys(byClient).sort((a,b) => byClient[b].total - byClient[a].total);
+  const clientsHtml = clientIds.map(cid => {
+    const c = byClient[cid];
+    const pct = Math.round((c.totalOk/c.total)*100);
+    const avgDays = c.totalMs / c.total / 86400000;
+    const display = cid === '__none__' ? '(sem cliente)' : cid;
+    const prioBreakdown = PJ_SLA_PRIO_ORDER.filter(p => c.byPrio[p]?.total).map(p => {
+      const cp = c.byPrio[p];
+      const cpct = cp.total ? Math.round((cp.ok/cp.total)*100) : 0;
+      return `<span class="pj-sla-mini" style="--c:${PJ_SLA_PRIO_COLORS[p]}" title="${PJ_SLA_PRIO_LABELS[p]}: ${cp.ok}/${cp.total} no SLA (${cpct}%)">
+        <span class="pj-sla-mini-dot"></span>${PJ_SLA_PRIO_LABELS[p][0]} ${cp.ok}/${cp.total}
+      </span>`;
+    }).join('');
+    return `<div class="pj-sla-client-row ${cls(pct)}">
+      <div class="pj-sla-client-head">
+        <span class="pj-sla-client-name">${escHtml(display)}</span>
+        <span class="pj-sla-client-pct">${pct}%</span>
+      </div>
+      <div class="pj-sla-bar"><span class="pj-sla-bar-fill" style="width:${pct}%"></span></div>
+      <div class="pj-sla-client-meta">
+        ${c.totalOk}/${c.total} no SLA · média ${avgDays.toFixed(1)}d
+        <span class="pj-sla-client-mini">${prioBreakdown}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (!completed.length) {
+    return `<div class="pj-sla-thresholds-row">
+      <div class="pj-sla-thr-label-main">Limites SLA (dias):</div>
+      ${thresholdsHtml}
+      <button class="pj-sla-reset-btn" onclick="pjResetSlaThresholds()" title="Restaurar padrão">↺</button>
+    </div>
+    <div style="color:var(--text3);font-size:13px;padding:12px 0;">Nenhuma tarefa concluída ainda. Conclua tarefas (com prioridade definida) para ver dados de SLA.</div>`;
+  }
+
+  return `<div class="pj-sla-thresholds-row">
+    <div class="pj-sla-thr-label-main">Limites SLA (dias):</div>
+    ${thresholdsHtml}
+    <button class="pj-sla-reset-btn" onclick="pjResetSlaThresholds()" title="Restaurar padrão">↺</button>
+  </div>
+  <div class="pj-sla-overall-h">Por prioridade (geral)</div>
+  ${prioOverallHtml || '<div style="color:var(--text3);font-size:13px;">Sem dados.</div>'}
+  <div class="pj-sla-overall-h" style="margin-top:14px;">Por cliente</div>
+  <div class="pj-sla-clients">${clientsHtml || '<div style="color:var(--text3);font-size:13px;">Sem dados.</div>'}</div>`;
+}
+
 // ── Burndown/Burnup chart (últimos 30 dias, SVG inline) ───
 function pjBuildBurndownSvg() {
   const DAYS = 30;
@@ -16593,6 +16728,11 @@ function pjBuildTimeMetrics() {
       <div class="pj-tm-h">📉 Burndown / Burnup — últimos 30 dias</div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Burndown (laranja) = quantas tarefas ainda estão abertas em cada dia. Burnup verde = total já concluído. Linha tracejada cinza = ideal teórico (queda linear do escopo).</div>
       ${pjBuildBurndownSvg()}
+    </div>
+    <div class="pj-tm-section">
+      <div class="pj-tm-h">🎯 SLA por cliente e prioridade</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">% de tarefas concluídas dentro do limite (criação → conclusão). Verde ≥ 80% · amarelo 50–79% · vermelho &lt; 50%. Limites são salvos por dispositivo.</div>
+      ${pjBuildSlaSection()}
     </div>
     <div class="pj-tm-section">
       <div class="pj-tm-h">⏳ Tempo por status (cycle time)</div>
