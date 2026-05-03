@@ -11098,12 +11098,27 @@ let pjNotifPanelOpen = false;
 
 const PJ_SPACE_COLORS = ['#6366f1','#8b5cf6','#ec4899','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#ef4444','#64748b'];
 const PJ_PRIORITIES = [{id:'urgent',label:'Urgente'},{id:'high',label:'Alta'},{id:'normal',label:'Normal'},{id:'low',label:'Baixa'}];
+// Buckets: 'pending' (não iniciado), 'active' (em andamento), 'closed' (fechado)
+// Buckets afetam KPIs do dashboard ("ativas" = não-closed) e swipe-pra-concluir.
 const PJ_DEFAULT_STATUSES = [
-  {id:'todo',name:'A Fazer',color:'#64748b'},
-  {id:'inprog',name:'Em Andamento',color:'#6366f1'},
-  {id:'review',name:'Revisão',color:'#f97316'},
-  {id:'done',name:'Concluído',color:'#22c55e'},
+  {id:'todo',   name:'A Fazer',      color:'#64748b', bucket:'pending'},
+  {id:'inprog', name:'Em Andamento', color:'#6366f1', bucket:'active'},
+  {id:'review', name:'Revisão',      color:'#f97316', bucket:'active'},
+  {id:'done',   name:'Concluído',    color:'#22c55e', bucket:'closed'},
 ];
+
+// Inferência de bucket pra dados antigos (statuses sem bucket)
+// Mantém compat com listas criadas antes desse modelo.
+function pjStatusBucket(status) {
+  if (!status) return 'active';
+  if (status.bucket) return status.bucket;
+  // Fallback por id/nome
+  const id = (status.id || '').toLowerCase();
+  const nm = (status.name || '').toLowerCase();
+  if (id === 'todo' || nm.includes('fazer') || nm.includes('iniciar') || nm.includes('planeja')) return 'pending';
+  if (id === 'done' || nm.includes('conclu') || nm.includes('aprovad') || nm.includes('agendad') || nm.includes('fechad') || nm.includes('respondid')) return 'closed';
+  return 'active';
+}
 
 // ── Firestore helpers ───────────────────────────────────
 const pjC = n => _db.collection(n);
@@ -12509,7 +12524,8 @@ async function pjBulkArchive() {
     // Marca como concluída e arquivada (completedAt > 30d para entrar em pjIsArchived)
     const list = pjLists.find(l => l.id === t.listId);
     const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
-    const doneStatus = statuses.find(s => s.id === 'done' || s.name.toLowerCase().includes('conclu')) || statuses[statuses.length-1];
+    // Bulk arquivar → 1º status do bucket 'closed' (compat: pjStatusBucket).
+    const doneStatus = statuses.find(s => pjStatusBucket(s) === 'closed') || statuses[statuses.length-1];
     t.statusId = doneStatus.id;
     t.archived = true;
     t.completedAt = t.completedAt || Date.now();
@@ -13601,8 +13617,12 @@ async function pjToggleTaskDone(taskId) {
   if (!t) return;
   const list = pjLists.find(l => l.id === t.listId);
   const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
-  const doneStatus = statuses.find(s => s.id === 'done' || s.name.toLowerCase().includes('conclu')) || statuses[statuses.length-1];
-  const firstStatus = statuses[0];
+  // 1º status do bucket 'closed' (ex: 'Concluído', 'Aprovado'); fallback: último da lista.
+  const doneStatus = statuses.find(s => pjStatusBucket(s) === 'closed') || statuses[statuses.length-1];
+  // Reabrir → 1º status NÃO fechado (preferindo 'pending'); fallback: primeiro da lista.
+  const firstStatus = statuses.find(s => pjStatusBucket(s) === 'pending')
+                   || statuses.find(s => pjStatusBucket(s) !== 'closed')
+                   || statuses[0];
   const isDone = pjIsDone(t);
   const newStatusId = isDone ? firstStatus.id : doneStatus.id;
   // Snapshot p/ undo
@@ -16438,7 +16458,9 @@ function pjIsDone(task) {
   const list = pjLists.find(l=>l.id===task.listId);
   const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
   const st = statuses.find(s=>s.id===task.statusId);
-  return st ? (st.id==='done'||st.name.toLowerCase().includes('conclu')) : false;
+  // Tarefa "concluída" = status pertence ao bucket 'closed'
+  // (compat: pjStatusBucket infere bucket pra dados antigos)
+  return st ? pjStatusBucket(st) === 'closed' : false;
 }
 function pjDateStr(d) { return d.toISOString().split('T')[0]; }
 function pjDueCls(dateStr) {
