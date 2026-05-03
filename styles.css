@@ -3010,6 +3010,40 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   margin-bottom:6px;
 }
 .pj-list-th-row > div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* Cabeçalho de coluna draggable */
+.pj-list-th-cell {
+  position:relative;
+  display:flex; align-items:center; gap:6px;
+  cursor:grab; user-select:none;
+  padding:2px 4px; border-radius:6px;
+  transition:background .15s, color .15s;
+}
+.pj-list-th-cell:hover { background:color-mix(in srgb, var(--accent) 8%, transparent); color:var(--text); }
+.pj-list-th-cell:active { cursor:grabbing; }
+.pj-list-th-cell.dragging { opacity:.4; }
+.pj-list-th-cell .pj-th-grip {
+  font-size:11px; color:var(--text3);
+  opacity:0; transition:opacity .15s;
+  letter-spacing:-1px;
+}
+.pj-list-th-cell:hover .pj-th-grip { opacity:.8; }
+.pj-list-th-cell .pj-th-label { overflow:hidden; text-overflow:ellipsis; }
+.pj-list-th-cell.drop-before::before,
+.pj-list-th-cell.drop-after::after {
+  content:''; position:absolute; top:-2px; bottom:-2px;
+  width:2px; background:var(--accent);
+  box-shadow:0 0 8px var(--accent);
+  border-radius:2px;
+  pointer-events:none;
+}
+.pj-list-th-cell.drop-before::before { left:-6px; }
+.pj-list-th-cell.drop-after::after  { right:-6px; }
+/* Estado vazio (todas colunas ocultas) */
+.pj-empty-cols {
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+  padding:48px 24px; color:var(--text3);
+}
+.pj-empty-cols-text { font-size:13px; }
 .pj-list-tr {
   display:grid; align-items:center; gap:12px;
   padding:10px 12px 10px 14px;

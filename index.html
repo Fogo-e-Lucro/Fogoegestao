@@ -12240,6 +12240,149 @@ function pjBuildAll() {
   return h + '</div>';
 }
 
+// ── Colunas configuráveis (drag&drop + esconder, por usuário) ────
+// Registry de colunas built-in + custom fields da lista.
+function pjListColumns(list) {
+  const fields = (list && list.customFields) || [];
+  return [
+    { id:'title',    label:'Tarefa',      width:'minmax(220px,2fr)' },
+    { id:'assignee', label:'Responsável', width:'150px' },
+    { id:'due',      label:'Vencimento',  width:'130px' },
+    { id:'priority', label:'Prioridade',  width:'100px' },
+    { id:'status',   label:'Status',      width:'120px' },
+    ...fields.map(f => ({ id:`cf:${f.id}`, label:f.name || 'Campo', width:'140px', field:f })),
+  ];
+}
+function pjColPrefsKey(listId) {
+  const uid = (typeof _currentUser !== 'undefined' && _currentUser && _currentUser.uid) || 'guest';
+  return `pjColPrefs:${uid}:${listId}`;
+}
+function pjGetColPrefs(listId) {
+  try {
+    const raw = localStorage.getItem(pjColPrefsKey(listId));
+    if (!raw) return { order: [], hidden: [] };
+    const o = JSON.parse(raw) || {};
+    return { order: Array.isArray(o.order)?o.order:[], hidden: Array.isArray(o.hidden)?o.hidden:[] };
+  } catch(e) { return { order: [], hidden: [] }; }
+}
+function pjSaveColPrefs(listId, prefs) {
+  try { localStorage.setItem(pjColPrefsKey(listId), JSON.stringify(prefs)); } catch(e){}
+}
+function pjResetColPrefs(listId) {
+  try { localStorage.removeItem(pjColPrefsKey(listId)); } catch(e){}
+}
+// Aplica prefs (ordem + esconder) ao registry; cols novas ficam no fim na ordem original.
+function pjApplyColPrefs(allCols, listId) {
+  const prefs = pjGetColPrefs(listId);
+  const hidden = new Set(prefs.hidden || []);
+  const idMap = new Map(allCols.map(c => [c.id, c]));
+  const out = [];
+  (prefs.order || []).forEach(id => {
+    if (idMap.has(id) && !hidden.has(id)) {
+      out.push(idMap.get(id));
+      idMap.delete(id);
+    }
+  });
+  allCols.forEach(c => {
+    if (idMap.has(c.id) && !hidden.has(c.id)) out.push(c);
+  });
+  return out;
+}
+
+// Drag&drop horizontal no cabeçalho
+let _pjDragColId = null;
+function pjColHeadDragStart(e, colId) {
+  _pjDragColId = colId;
+  try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', colId); } catch(_) {}
+  e.currentTarget.classList.add('dragging');
+}
+function pjColHeadDragOver(e) {
+  if (!_pjDragColId) return;
+  const cell = e.target.closest('.pj-list-th-cell');
+  if (!cell) return;
+  e.preventDefault();
+  document.querySelectorAll('.pj-list-th-cell.drop-before, .pj-list-th-cell.drop-after')
+    .forEach(el => el.classList.remove('drop-before','drop-after'));
+  if (cell.dataset.colId === _pjDragColId) return;
+  const r = cell.getBoundingClientRect();
+  const after = (e.clientX - r.left) > r.width / 2;
+  cell.classList.add(after ? 'drop-after' : 'drop-before');
+}
+function pjColHeadDrop(e, listId) {
+  if (!_pjDragColId) return;
+  const cell = e.target.closest('.pj-list-th-cell');
+  if (!cell) { pjColHeadDragEnd(); return; }
+  e.preventDefault();
+  const draggedId = _pjDragColId;
+  const targetId = cell.dataset.colId;
+  document.querySelectorAll('.pj-list-th-cell.drop-before, .pj-list-th-cell.drop-after')
+    .forEach(el => el.classList.remove('drop-before','drop-after'));
+  if (!targetId || targetId === draggedId) { pjColHeadDragEnd(); return; }
+  const list = pjLists.find(l => l.id === listId); if (!list) return;
+  const allCols = pjListColumns(list);
+  const visible = pjApplyColPrefs(allCols, listId).map(c => c.id);
+  const filtered = visible.filter(x => x !== draggedId);
+  let idx = filtered.indexOf(targetId);
+  if (idx < 0) idx = filtered.length;
+  const r = cell.getBoundingClientRect();
+  const insertAfter = (e.clientX - r.left) > r.width / 2;
+  filtered.splice(insertAfter ? idx+1 : idx, 0, draggedId);
+  // Mantém colunas ocultas na ordem (no fim) pra preservar ordem absoluta caso reaparecerem.
+  const prefs = pjGetColPrefs(listId);
+  const hiddenOnly = (prefs.order || []).filter(id => (prefs.hidden || []).includes(id) && !filtered.includes(id));
+  prefs.order = [...filtered, ...hiddenOnly];
+  pjSaveColPrefs(listId, prefs);
+  _pjDragColId = null;
+  pjRenderMain();
+}
+function pjColHeadDragEnd() {
+  document.querySelectorAll('.pj-list-th-cell.dragging, .pj-list-th-cell.drop-before, .pj-list-th-cell.drop-after')
+    .forEach(el => el.classList.remove('dragging','drop-before','drop-after'));
+  _pjDragColId = null;
+}
+
+// Popup: mostrar/esconder colunas (clica e fica aberto pra alternar várias)
+function pjOpenColumnsMenu(ev, listId) {
+  if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+  const list = pjLists.find(l => l.id === listId); if (!list) return;
+  const allCols = pjListColumns(list);
+  const prefs = pjGetColPrefs(listId);
+  const hidden = new Set(prefs.hidden || []);
+  // Ordena cols na ordem visual atual (pra menu refletir o que tá vendo)
+  const orderedIds = pjApplyColPrefs(allCols, listId).map(c => c.id);
+  const hiddenAtEnd = allCols.map(c => c.id).filter(id => hidden.has(id));
+  const sortedCols = [...orderedIds, ...hiddenAtEnd]
+    .map(id => allCols.find(c => c.id === id))
+    .filter(Boolean);
+  const items = [{ header:true, label:'Mostrar colunas' }];
+  sortedCols.forEach(c => {
+    items.push({ id: c.id, label: c.label, icon: hidden.has(c.id) ? '☐' : '☑' });
+  });
+  items.push({ divider:true });
+  items.push({ id:'__reset__', label:'Restaurar padrão', icon:'↺' });
+  // Captura a posição do trigger pra reabrir após render
+  const triggerEl = ev?.currentTarget || ev?.target;
+  const reopen = () => {
+    if (!triggerEl || !document.body.contains(triggerEl)) return;
+    pjOpenColumnsMenu({ currentTarget: triggerEl, target: triggerEl, stopPropagation:()=>{} }, listId);
+  };
+  pjShowPopupMenu(ev, items, null, (id) => {
+    if (id === '__reset__') {
+      pjResetColPrefs(listId);
+      pjRenderMain();
+      setTimeout(reopen, 60);
+      return;
+    }
+    const p = pjGetColPrefs(listId);
+    const hs = new Set(p.hidden || []);
+    if (hs.has(id)) hs.delete(id); else hs.add(id);
+    p.hidden = [...hs];
+    pjSaveColPrefs(listId, p);
+    pjRenderMain();
+    setTimeout(reopen, 60);
+  });
+}
+
 // ── List View ───────────────────────────────────────────
 function pjBuildListPage(listId) {
   const list = pjLists.find(l => l.id === listId);
@@ -12260,6 +12403,7 @@ function pjBuildListPage(listId) {
       <button class="${view==='kanban'?'active':''}" onclick="pjSetView('${listId}','kanban')">⊞ Kanban</button>
       ${(list.customFields||[]).some(f=>f.type==='address') ? `<button class="${view==='map'?'active':''}" onclick="pjSetView('${listId}','map')">📍 Mapa</button>` : ''}
     </div>
+    ${view==='list' ? `<button class="pj-icon-btn pj-icon-btn-lg" title="Mostrar/ocultar colunas" onclick="pjOpenColumnsMenu(event,'${listId}')">👁️</button>` : ''}
     ${_viewIsAdmin ? `<button class="pj-icon-btn pj-icon-btn-lg" title="Editar status" onclick="pjOpenStatusEditor('${listId}')">🏷️</button>
     <button class="pj-icon-btn pj-icon-btn-lg" title="Campos personalizados" onclick="pjOpenFieldsEditor('${listId}')">📋</button>` : ''}
     <button class="pj-btn pj-btn-primary" style="font-size:12px;padding:6px 14px;" onclick="pjQuickCreateTask('${listId}')">＋ Tarefa</button>
@@ -12271,21 +12415,30 @@ function pjBuildListPage(listId) {
   if (view === 'kanban') return h + pjBuildKanban(listId, statuses, tasks) + '</div>';
   if (view === 'map')    return h + pjBuildMapView(listId, tasks) + '</div>';
 
-  // List view — colunas separadas + agrupado por status
+  // List view — colunas separadas + agrupado por status (com prefs de ordem/ocultar por usuário)
+  const allCols = pjListColumns(list);
+  const cols = pjApplyColPrefs(allCols, listId);
   const fields = list.customFields || [];
-  const cols = ['28px', 'minmax(220px,2fr)', '150px', '130px', '100px', '120px'];
-  fields.forEach(()=>cols.push('140px'));
-  const gridTpl = cols.join(' ');
+  if (!cols.length) {
+    h += `<div class="pj-empty-cols">
+      <div class="pj-empty-cols-text">Todas as colunas estão ocultas.</div>
+      <button class="pj-btn pj-btn-secondary" onclick="pjResetColPrefs('${listId}');pjRenderMain()">Restaurar padrão</button>
+    </div></div>`;
+    return h + '</div>';
+  }
+  const gridTpl = ['28px', ...cols.map(c => c.width)].join(' ');
 
   h += `<div class="pj-list-table">
-    <div class="pj-list-th-row" style="grid-template-columns:${gridTpl}">
+    <div class="pj-list-th-row" style="grid-template-columns:${gridTpl}"
+         ondragover="pjColHeadDragOver(event)"
+         ondrop="pjColHeadDrop(event,'${listId}')">
       <div></div>
-      <div>Tarefa</div>
-      <div>Responsável</div>
-      <div>Vencimento</div>
-      <div>Prioridade</div>
-      <div>Status</div>
-      ${fields.map(f=>`<div>${escHtml(f.name)}</div>`).join('')}
+      ${cols.map(c => `<div class="pj-list-th-cell" data-col-id="${c.id}" draggable="true"
+        ondragstart="pjColHeadDragStart(event,'${c.id}')"
+        ondragend="pjColHeadDragEnd()"
+        title="Arraste pra reordenar">
+        <span class="pj-th-grip" aria-hidden="true">⠿</span><span class="pj-th-label">${escHtml(c.label)}</span>
+      </div>`).join('')}
     </div>`;
 
   statuses.forEach(st => {
@@ -12305,15 +12458,15 @@ function pjBuildListPage(listId) {
     </div>
     <div class="pj-status-zone ${collapsed?'collapsed':''}" data-list-id="${listId}" data-status-id="${st.id}"
          ondragover="pjListDragOver(event)" ondragleave="pjListDragLeave(event)" ondrop="pjListDrop(event,'${listId}','${st.id}')">`;
-    stTasks.forEach(t => { h += pjTaskColumnRowHtml(t, fields, gridTpl); });
+    stTasks.forEach(t => { h += pjTaskColumnRowHtml(t, cols, gridTpl); });
     h += `<div class="pj-add-task-row" onclick="event.stopPropagation();pjQuickCreateTask('${listId}','${st.id}')">＋ Adicionar tarefa</div></div>`;
   });
   h += `</div>`;
   return h + '</div>';
 }
 
-// Row colunizada (List view com custom fields)
-function pjTaskColumnRowHtml(t, fields, gridTpl) {
+// Row colunizada (List view com custom fields) — cols = array ordenado de descritores
+function pjTaskColumnRowHtml(t, cols, gridTpl) {
   const list = pjLists.find(l => l.id === t.listId);
   const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
   const st = statuses.find(s => s.id === (t.statusId||statuses[0].id)) || statuses[0];
@@ -12330,27 +12483,35 @@ function pjTaskColumnRowHtml(t, fields, gridTpl) {
   const recur = t.recurrence?.pattern ? `<span class="pj-recur-badge" title="${pjRecurrenceLabel(t.recurrence)}">🔁</span>` : '';
 
   const selected = pjSelected.has(t.id);
+  const cellMap = {
+    title: `<div class="pj-list-cell title">
+      <div class="pj-sel-circle ${selected?'checked':''}" onclick="event.stopPropagation();pjToggleSelect('${t.id}',event)" title="Selecionar">${selected?'✓':''}</div>
+      <span class="pj-list-title-text ${done?'done':''}">${escHtml(t.title||'(sem título)')}</span>
+      ${recur}
+      ${subtaskCount?`<span class="pj-subtask-count">↳ ${subtaskCount}</span>`:''}
+      ${pjTimerBtnHtml(t)}
+    </div>`,
+    assignee: `<div class="pj-list-cell">${assigneeHtml}</div>`,
+    due:      `<div class="pj-list-cell">${dueLabel?`<span class="pj-task-due ${due.cls}">${dueLabel}</span>`:`<span class="pj-cell-empty">—</span>`}</div>`,
+    priority: `<div class="pj-list-cell">${prio}</div>`,
+    status:   `<div class="pj-list-cell"><button type="button" class="pj-status-dot" style="--c:${st.color}" onclick="event.stopPropagation();pjOpenStatusMenu(event,'${t.id}')" title="${escHtml(st.name)} — clique pra trocar"></button></div>`,
+  };
+  const cellsHtml = cols.map(c => {
+    if (cellMap[c.id]) return cellMap[c.id];
+    if (c.id.startsWith('cf:') && c.field) {
+      const v = t.customFieldValues?.[c.field.id] || '';
+      return `<div class="pj-list-cell">${v?escHtml(String(v)):'<span class="pj-cell-empty">—</span>'}</div>`;
+    }
+    return `<div class="pj-list-cell"><span class="pj-cell-empty">—</span></div>`;
+  }).join('');
+
   return `<div class="pj-list-tr ${done?'done-row':''} ${selected?'selected':''}" data-priority="${t.priority||'low'}" data-task-id="${t.id}"
        draggable="true"
        ondragstart="pjListDragStart(event,'${t.id}')"
        ondragend="pjListDragEnd(event)"
        style="grid-template-columns:${gridTpl}" onclick="pjOpenTask('${t.id}')">
     <div class="pj-task-check ${done?'done':''}" onclick="event.stopPropagation();pjToggleTaskDone('${t.id}')" title="${done?'Reabrir':'Concluir'}">${done?'✓':''}</div>
-    <div class="pj-list-cell title">
-      <div class="pj-sel-circle ${selected?'checked':''}" onclick="event.stopPropagation();pjToggleSelect('${t.id}',event)" title="Selecionar">${selected?'✓':''}</div>
-      <span class="pj-list-title-text ${done?'done':''}">${escHtml(t.title||'(sem título)')}</span>
-      ${recur}
-      ${subtaskCount?`<span class="pj-subtask-count">↳ ${subtaskCount}</span>`:''}
-      ${pjTimerBtnHtml(t)}
-    </div>
-    <div class="pj-list-cell">${assigneeHtml}</div>
-    <div class="pj-list-cell">${dueLabel?`<span class="pj-task-due ${due.cls}">${dueLabel}</span>`:`<span class="pj-cell-empty">—</span>`}</div>
-    <div class="pj-list-cell">${prio}</div>
-    <div class="pj-list-cell"><button type="button" class="pj-status-dot" style="--c:${st.color}" onclick="event.stopPropagation();pjOpenStatusMenu(event,'${t.id}')" title="${escHtml(st.name)} — clique pra trocar"></button></div>
-    ${fields.map(f => {
-      const v = t.customFieldValues?.[f.id] || '';
-      return `<div class="pj-list-cell">${v?escHtml(String(v)):'<span class="pj-cell-empty">—</span>'}</div>`;
-    }).join('')}
+    ${cellsHtml}
   </div>`;
 }
 
