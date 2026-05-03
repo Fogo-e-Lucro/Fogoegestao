@@ -3044,6 +3044,94 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   padding:48px 24px; color:var(--text3);
 }
 .pj-empty-cols-text { font-size:13px; }
+
+/* ───── Celebração ao concluir ───── */
+.pj-celebrate-overlay {
+  position:fixed; inset:0; z-index:9999;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(8,12,24,.55); backdrop-filter:blur(4px);
+  opacity:0; pointer-events:none;
+  transition:opacity .25s ease;
+}
+.pj-celebrate-overlay.open { opacity:1; pointer-events:auto; }
+.pj-celebrate-card {
+  background:var(--card, #16181f);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:28px 32px;
+  min-width:280px; max-width:88vw;
+  text-align:center;
+  box-shadow:0 24px 60px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.04);
+  transform:scale(.85) translateY(8px);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  animation: pjCelebPop .55s cubic-bezier(.34,1.56,.64,1);
+}
+.pj-celebrate-overlay.open .pj-celebrate-card { transform:scale(1) translateY(0); }
+@keyframes pjCelebPop {
+  0% { transform:scale(.5) translateY(20px); opacity:0; }
+  60% { transform:scale(1.06) translateY(-4px); opacity:1; }
+  100% { transform:scale(1) translateY(0); opacity:1; }
+}
+.pj-celebrate-emoji {
+  font-size:54px; line-height:1; margin-bottom:8px;
+  animation: pjCelebBounce 1s ease-in-out infinite;
+}
+.pj-celebrate-emoji.big {
+  font-size:72px;
+  animation: pjCelebBounce .9s ease-in-out infinite, pjCelebGlow 2s ease-in-out infinite;
+}
+@keyframes pjCelebBounce {
+  0%,100% { transform:translateY(0) rotate(-3deg); }
+  50%     { transform:translateY(-6px) rotate(3deg); }
+}
+@keyframes pjCelebGlow {
+  0%,100% { filter: drop-shadow(0 0 12px rgba(250,204,21,.45)); }
+  50%     { filter: drop-shadow(0 0 22px rgba(250,204,21,.85)); }
+}
+.pj-celebrate-title {
+  font-size:24px; font-weight:800;
+  color:var(--text, #f4f4f5);
+  letter-spacing:.5px;
+  margin-bottom:8px;
+  background:linear-gradient(90deg, #fbbf24, #ef4444, #ec4899);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.pj-celebrate-text {
+  font-size:14px; color:var(--text2, #d4d4d8);
+  line-height:1.55; margin-bottom:14px;
+}
+.pj-celebrate-text b { color:var(--text); font-weight:700; }
+.pj-celebrate-bar {
+  height:8px; border-radius:99px;
+  background:color-mix(in srgb, var(--accent) 12%, transparent);
+  overflow:hidden;
+}
+.pj-celebrate-bar-fill {
+  height:100%;
+  background:linear-gradient(90deg, #6366f1, #22c55e);
+  border-radius:99px;
+  transition:width .6s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+.pj-celebrate-frac {
+  margin-top:6px;
+  font-size:11px; font-weight:600; color:var(--text3);
+  letter-spacing:.5px;
+}
+.pj-celebrate-alldone .pj-celebrate-title {
+  font-size:28px;
+  background:linear-gradient(90deg, #fbbf24, #22c55e, #06b6d4);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.pj-celebrate-alldone .pj-btn { margin-top:16px; }
+@media (max-width:520px) {
+  .pj-celebrate-card { padding:22px 20px; min-width:0; width:88vw; }
+  .pj-celebrate-emoji { font-size:48px; }
+  .pj-celebrate-emoji.big { font-size:64px; }
+  .pj-celebrate-title { font-size:22px; }
+}
 .pj-list-tr {
   display:grid; align-items:center; gap:12px;
   padding:10px 12px 10px 14px;

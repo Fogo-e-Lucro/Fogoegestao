@@ -13589,6 +13589,137 @@ function pjConfettiBurst(originX, originY) {
   tick();
 }
 
+// ── Gamificação: parabéns ao concluir + palmas ao terminar o dia ──
+function pjGetMyTodayProgress() {
+  const uid = (typeof _currentUser !== 'undefined' && _currentUser && _currentUser.uid) || null;
+  if (!uid) return { total:0, completed:0, remaining:0, isMine:false };
+  const today = pjDateStr(new Date());
+  const myToday = (pjAllTasks||[]).filter(t =>
+    !pjIsArchived(t) &&
+    !t.parentTaskId &&
+    Array.isArray(t.assignees) && t.assignees.includes(uid) &&
+    t.dueDate === today
+  );
+  const completed = myToday.filter(t => pjIsDone(t)).length;
+  return { total: myToday.length, completed, remaining: myToday.length - completed, isMine:true };
+}
+
+// Chamado quando uma tarefa transiciona pra fechado.
+let _pjCelebTimer = null;
+function pjOnTaskClosed(t) {
+  const uid = (typeof _currentUser !== 'undefined' && _currentUser && _currentUser.uid) || null;
+  if (!uid || !t) return;
+  const today = pjDateStr(new Date());
+  const isMine = Array.isArray(t.assignees) && t.assignees.includes(uid);
+  const isToday = t.dueDate === today;
+  // Só celebra se a tarefa fechada era minha E pra hoje
+  if (!isMine || !isToday) return;
+  const prog = pjGetMyTodayProgress();
+  if (prog.total === 0) return;
+  if (prog.remaining === 0) pjCelebrateAllDone(prog.total);
+  else pjCelebrateProgress(prog);
+}
+
+function pjEnsureCelebrateOverlay() {
+  let o = document.getElementById('pjCelebrateOverlay');
+  if (o) return o;
+  o = document.createElement('div');
+  o.id = 'pjCelebrateOverlay';
+  o.className = 'pj-celebrate-overlay';
+  o.innerHTML = `<div class="pj-celebrate-card" role="dialog" aria-live="polite"></div>`;
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+  document.body.appendChild(o);
+  return o;
+}
+
+function pjCelebrateProgress(prog) {
+  const overlay = pjEnsureCelebrateOverlay();
+  const card = overlay.querySelector('.pj-celebrate-card');
+  const pct = Math.round((prog.completed / prog.total) * 100);
+  card.className = 'pj-celebrate-card pj-celebrate-progress';
+  card.innerHTML = `
+    <div class="pj-celebrate-emoji">🎉</div>
+    <div class="pj-celebrate-title">PARABÉNS!</div>
+    <div class="pj-celebrate-text">
+      Você já concluiu <b>${prog.completed}</b> ${prog.completed===1?'tarefa':'tarefas'} hoje.<br>
+      ${prog.remaining===1?'Falta apenas':'Faltam apenas'} <b>${prog.remaining}</b> ${prog.remaining===1?'tarefa':'tarefas'}!
+    </div>
+    <div class="pj-celebrate-bar"><div class="pj-celebrate-bar-fill" style="width:${pct}%"></div></div>
+    <div class="pj-celebrate-frac">${prog.completed} / ${prog.total}</div>
+  `;
+  overlay.classList.add('open');
+  if (typeof pjPlayCelebrationSound === 'function') pjPlayCelebrationSound();
+  clearTimeout(_pjCelebTimer);
+  _pjCelebTimer = setTimeout(() => overlay.classList.remove('open'), 2600);
+}
+
+function pjCelebrateAllDone(total) {
+  const overlay = pjEnsureCelebrateOverlay();
+  const card = overlay.querySelector('.pj-celebrate-card');
+  card.className = 'pj-celebrate-card pj-celebrate-alldone';
+  card.innerHTML = `
+    <div class="pj-celebrate-emoji big">🏆</div>
+    <div class="pj-celebrate-title">TUDO PRONTO!</div>
+    <div class="pj-celebrate-text">
+      Você terminou <b>todas as ${total} ${total===1?'tarefa':'tarefas'}</b> do dia.<br>
+      Que dia produtivo! 👏👏👏
+    </div>
+    <button class="pj-btn pj-btn-primary" type="button" onclick="document.getElementById('pjCelebrateOverlay')?.classList.remove('open')">Aproveitar 🎈</button>
+  `;
+  overlay.classList.add('open');
+  if (typeof pjConfettiBurst === 'function') pjConfettiBurst(window.innerWidth/2, window.innerHeight/3);
+  pjPlayApplauseSound();
+  clearTimeout(_pjCelebTimer);
+  _pjCelebTimer = setTimeout(() => overlay.classList.remove('open'), 7000);
+}
+
+// Som de palmas (sintetizado via Web Audio — sem arquivo externo)
+function pjPlayApplauseSound() {
+  try {
+    if (typeof lsRaw === 'function' && lsRaw('pj_sound','1') === '0') return;
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const now = ctx.currentTime;
+    // 18 palmas curtas, levemente aleatórias (timing/freq/volume)
+    const duration = 1.8;
+    const claps = 18;
+    for (let i = 0; i < claps; i++) {
+      const t = (i / claps) * duration + Math.random() * 0.05;
+      const len = 0.07;
+      const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * len), ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let j = 0; j < data.length; j++) {
+        const env = Math.exp(-j / (ctx.sampleRate * 0.012));
+        data[j] = (Math.random()*2-1) * env;
+      }
+      const src = ctx.createBufferSource(); src.buffer = buf;
+      const flt = ctx.createBiquadFilter();
+      flt.type = 'bandpass';
+      flt.frequency.value = 1600 + Math.random()*1400;
+      flt.Q.value = 0.7;
+      const g = ctx.createGain();
+      g.gain.value = 0.16 + Math.random()*0.1;
+      src.connect(flt); flt.connect(g); g.connect(ctx.destination);
+      src.start(now + t);
+    }
+    // Acorde final de vitória
+    const chord = [523.25, 659.25, 783.99, 1046.5];
+    chord.forEach(f => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'triangle'; o.frequency.value = f;
+      const tStart = now + duration + 0.05;
+      g.gain.setValueAtTime(0.0001, tStart);
+      g.gain.exponentialRampToValueAtTime(0.16, tStart + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.0001, tStart + 0.7);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(tStart); o.stop(tStart + 0.8);
+    });
+    setTimeout(() => { try { ctx.close(); } catch(_){} }, 3500);
+  } catch(e) { /* silencioso */ }
+}
+
 // ── Dashboard filter state (KPIs clicáveis) ──
 let pjDashFilter = null; // 'overdue' | 'today' | 'next24' | 'doneToday' | 'noDate' | null
 
@@ -13833,6 +13964,8 @@ async function pjToggleTaskDone(taskId) {
     pjPlayCelebrationSound();
   }
   pjRenderMain(); pjRenderSidebar();
+  // Pop-up de progresso do dia (parabéns / tudo pronto)
+  if (!isDone) { try { pjOnTaskClosed(t); } catch(e) {} }
   if (!isDone) pjFireWebhook('task.completed', pjTaskPayload(t));
   try {
     const upd = { statusId: newStatusId, updatedAt:pjNow() };
@@ -13893,6 +14026,8 @@ async function pjChangeTaskStatus(taskId, newStatusId) {
   // Recorrência: ao concluir, gera próxima ocorrência
   if (willClose && !wasClosed && t.recurrence?.pattern && t.dueDate) pjSpawnNextRecurrence(t);
   pjRenderMain(); pjRenderSidebar();
+  // Pop-up de progresso do dia (parabéns / tudo pronto)
+  if (willClose && !wasClosed) { try { pjOnTaskClosed(t); } catch(e) {} }
   if (willClose && !wasClosed) pjFireWebhook('task.completed', pjTaskPayload(t));
 
   // Persiste
