@@ -5097,20 +5097,24 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .pj-view-header > div[style*="margin-left"] { gap:6px !important; }
 }
 
-/* ≤480px: esconde tabs do header (já estão acessíveis pelo drawer ☰)
-   pra liberar todo espaço pro nome do usuário */
+/* ≤480px: tabs viram só ícones (🎯 / ⊞) pra liberar espaço pro nome
+   sem tirar acesso a Métricas, Bots, Equipe etc. (Ferramentas ▾) */
 @media (max-width:480px) {
   .app-logo-text { display:none; } /* só o ícone 🔥 fica */
-  /* Tabs principais somem no celular — drawer (☰) já dá acesso a tudo */
-  .main-tabs { display:none !important; }
+  /* Esconde labels textuais das tabs principais — só emoji + setinha do dropdown */
+  .main-tab .main-tab-label { display:none; }
+  .main-tab { padding:6px 8px !important; font-size:14px !important; min-height:32px; }
+  .main-tabs { gap:1px; }
   .pj-dash-greet { font-size:16px !important; }
   .pj-dash-kpi-val { font-size:22px !important; }
-  .user-chip { max-width:none; font-size:12px; }
+  /* Chip volta a ter limite pra dividir espaço com tabs */
+  .user-chip { max-width:48%; font-size:12px; }
 }
 
 /* Fine-tuning pra telas bem pequenas (iPhone SE / Android entry) */
 @media (max-width:380px) {
   .pj-dash-wrap { padding:10px !important; }
   .pj-dash-col { padding:12px !important; }
-  .main-tab { padding:5px 7px !important; }
+  .main-tab { padding:5px 6px !important; font-size:13px !important; }
+  .user-chip { max-width:42%; }
 }

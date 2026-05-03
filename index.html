@@ -62,11 +62,11 @@
   <div style="display:flex;align-items:center;gap:10px;">
     <div class="sync-dot syncing" id="syncStatus" title="Conectando..."></div>
     <div class="main-tabs">
-      <button class="main-tab" id="tabProjetos" onclick="switchTab('projetos',this)">🎯 Gestão Central</button>
+      <button class="main-tab" id="tabProjetos" onclick="switchTab('projetos',this)">🎯 <span class="main-tab-label">Gestão Central</span></button>
       <!-- Ferramentas dropdown (todas as outras abas) -->
       <div class="main-tab-more" id="tabMoreWrap">
         <button class="main-tab" id="tabMoreBtn" onclick="toggleTabMoreMenu(event)">
-          ⊞ Ferramentas <span style="font-size:10px;opacity:.7;">▾</span>
+          ⊞ <span class="main-tab-label">Ferramentas</span> <span style="font-size:10px;opacity:.7;">▾</span>
         </button>
         <div class="main-tab-more-menu" id="tabMoreMenu">
           <button class="main-tab-more-item" id="tabEntrada" onclick="switchTab('entrada',this);closeTabMoreMenu()">✏️ Criar Post</button>
