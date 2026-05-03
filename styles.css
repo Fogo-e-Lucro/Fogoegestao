@@ -5939,3 +5939,77 @@ body.pj-focus { overflow-x: hidden; }
   body.pj-focus .pj-main,
   .pj-focus-exit-pill { transition: none !important; }
 }
+
+/* ── List view → card mode em telas estreitas ────────────────
+   Em <600px o grid é convertido em cards stackados (mais legível
+   com o polegar). O cabeçalho da tabela some, célula vazia ("—") é
+   ocultada, e o checkbox de conclusão vai pro canto superior esquerdo.
+*/
+@media (max-width: 600px) {
+  /* Esconde header da tabela */
+  .pj-list-th-row { display: none !important; }
+
+  /* Card */
+  .pj-list-tr {
+    display: flex !important;        /* override do display:grid base */
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    padding: 14px 14px 14px 44px !important;  /* espaço pra check absoluto, override do 900px rule */
+    border-radius: 12px;
+    margin-bottom: 8px;
+    grid-template-columns: none !important;   /* anula grid-template inline */
+    grid-template-areas: none !important;     /* anula areas do 900px rule */
+  }
+  /* Reset áreas do 900px rule pras células */
+  .pj-list-tr .pj-task-check,
+  .pj-list-tr > .pj-list-cell:nth-child(2),
+  .pj-list-tr > .pj-list-cell:not(:nth-child(2)):not(:nth-child(1)) {
+    grid-area: auto !important;
+    grid-column: auto !important;
+    padding-left: 0 !important;
+  }
+  .pj-list-tr:hover { transform: none; } /* sem hover lift no toque */
+
+  /* Checkbox absoluto no canto */
+  .pj-list-tr .pj-task-check {
+    position: absolute;
+    left: 12px;
+    top: 14px;
+    z-index: 1;
+  }
+  .pj-list-tr .pj-sel-circle { opacity: 1; } /* sempre visível em mobile */
+
+  /* Título ocupa linha inteira */
+  .pj-list-tr .pj-list-cell.title {
+    flex: 1 0 100%;
+    width: 100%;
+    font-size: 14.5px;
+    line-height: 1.35;
+    white-space: normal;
+  }
+  .pj-list-tr .pj-list-title-text {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: break-word;
+  }
+
+  /* Demais células ficam em linha de meta-info */
+  .pj-list-tr .pj-list-cell:not(.title) {
+    flex: 0 0 auto;
+    font-size: 12px;
+    min-width: 0;
+  }
+
+  /* Esconde células que só contêm "—" (campo vazio) */
+  .pj-list-tr .pj-list-cell:not(.title):has(> .pj-cell-empty:only-child) {
+    display: none !important;
+  }
+
+  /* Melhora touch target do título */
+  .pj-list-tr { min-height: 56px; }
+
+  /* Status group e botão "+ Adicionar tarefa" continuam normais.
+     Filter bar mantém comportamento padrão. */
+}
