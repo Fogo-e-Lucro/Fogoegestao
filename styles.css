@@ -6186,6 +6186,25 @@ body.pj-focus { overflow-x: hidden; }
   .pj-cycle-bar { min-width: 0; }
 }
 
+/* ── Burndown / Burnup chart ──────────────────────────────── */
+.pj-burnchart-wrap {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  color: var(--text2);
+  overflow-x: auto;
+}
+.pj-burnchart {
+  width: 100%;
+  height: auto;
+  display: block;
+  min-width: 480px;
+}
+
+@media (max-width: 700px) {
+  .pj-burnchart-wrap { font-size: 11px; }
+}
+
 /* ── PWA install button ──────────────────────────────────── */
 .pj-install-btn {
   background: linear-gradient(135deg,

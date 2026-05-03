@@ -16307,6 +16307,104 @@ function pjTimerBtnHtml(t) {
 }
 
 // ── Métricas de tempo (admin-only) ──────────────────────
+// ── Burndown/Burnup chart (últimos 30 dias, SVG inline) ───
+function pjBuildBurndownSvg() {
+  const DAYS = 30;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const start = new Date(today);
+  start.setDate(today.getDate() - (DAYS - 1));
+
+  // Pré-calcula timestamps das tarefas
+  const tasks = pjAllTasks.map(t => {
+    const created = (typeof t.createdAt === 'number' ? t.createdAt : t.createdAt?.toMillis?.()) || null;
+    const completed = pjIsDone(t)
+      ? (typeof t.completedAt === 'number' ? t.completedAt : t.completedAt?.toMillis?.()) || null
+      : null;
+    return { created, completed };
+  }).filter(t => t.created);
+
+  // Para cada dia, calcula: scope (criadas até esse dia), done (concluídas até esse dia), open = scope - done
+  const series = [];
+  for (let i = 0; i < DAYS; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const endOfDay = d.getTime() + 86399999;
+    let scope = 0, done = 0;
+    tasks.forEach(t => {
+      if (t.created <= endOfDay) {
+        scope++;
+        if (t.completed && t.completed <= endOfDay) done++;
+      }
+    });
+    series.push({ date: new Date(d), scope, done, open: scope - done });
+  }
+
+  if (!series.length || !series[series.length-1].scope) {
+    return `<div style="color:var(--text3);font-size:13px;padding:16px;text-align:center;">Sem dados suficientes para o gráfico.</div>`;
+  }
+
+  const W = 720, H = 240, PAD_L = 38, PAD_R = 16, PAD_T = 14, PAD_B = 26;
+  const innerW = W - PAD_L - PAD_R;
+  const innerH = H - PAD_T - PAD_B;
+  const maxY = Math.max(...series.map(s => s.scope), 1);
+  const xAt = (i) => PAD_L + (i / (DAYS - 1)) * innerW;
+  const yAt = (v) => PAD_T + innerH - (v / maxY) * innerH;
+
+  const path = (key, smooth) => series.map((s,i) => `${i?'L':'M'}${xAt(i).toFixed(1)},${yAt(s[key]).toFixed(1)}`).join(' ');
+  const openPath = path('open');
+  const donePath = path('done');
+  const scopePath = path('scope');
+
+  // Ideal burndown: linha do scope inicial (primeiro dia) até 0 no último dia
+  const startScope = series[0].scope;
+  const endScope = series[series.length - 1].scope;
+  // Ideal = começa em endScope (scope atual) e cai linear até 0 (mais útil que partir do scope inicial)
+  const idealStart = endScope; // começa hoje em scope total
+  const idealPath = `M${xAt(0)},${yAt(idealStart)} L${xAt(DAYS-1)},${yAt(0)}`;
+
+  // Y axis ticks
+  const ticks = 4;
+  let yTicks = '';
+  for (let i = 0; i <= ticks; i++) {
+    const v = Math.round((maxY * i) / ticks);
+    const y = yAt(v);
+    yTicks += `<line x1="${PAD_L}" y1="${y}" x2="${W-PAD_R}" y2="${y}" stroke="currentColor" stroke-opacity=".08"/>
+               <text x="${PAD_L-6}" y="${y+3}" text-anchor="end" font-size="9" fill="currentColor" opacity=".5">${v}</text>`;
+  }
+
+  // X labels (a cada 5 dias)
+  let xLabels = '';
+  for (let i = 0; i < DAYS; i += 5) {
+    const d = series[i].date;
+    const lbl = d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}).replace('.','');
+    xLabels += `<text x="${xAt(i)}" y="${H-8}" text-anchor="middle" font-size="9" fill="currentColor" opacity=".5">${lbl}</text>`;
+  }
+
+  // Áreas finais
+  const last = series[series.length - 1];
+  const summary = `<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text2);margin-top:10px;justify-content:center;">
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f97316;margin-right:5px;vertical-align:middle;"></span>Abertas hoje: <strong>${last.open}</strong></span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#10b981;margin-right:5px;vertical-align:middle;"></span>Concluídas: <strong>${last.done}</strong></span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#6366f1;margin-right:5px;vertical-align:middle;"></span>Escopo total: <strong>${last.scope}</strong></span>
+  </div>`;
+
+  return `<div class="pj-burnchart-wrap">
+    <svg viewBox="0 0 ${W} ${H}" class="pj-burnchart" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Gráfico de burndown e burnup">
+      ${yTicks}
+      ${xLabels}
+      <!-- Ideal line -->
+      <path d="${idealPath}" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <!-- Burnup scope -->
+      <path d="${scopePath}" fill="none" stroke="#6366f1" stroke-width="2" stroke-opacity=".65"/>
+      <!-- Burnup done -->
+      <path d="${donePath}" fill="none" stroke="#10b981" stroke-width="2.2"/>
+      <!-- Burndown open -->
+      <path d="${openPath}" fill="none" stroke="#f97316" stroke-width="2.4"/>
+    </svg>
+    ${summary}
+  </div>`;
+}
+
 function pjBuildTimeMetrics() {
   if (typeof userIsAdmin === 'function' && !userIsAdmin()) {
     return `<div class="pj-view-header"><div class="pj-view-title">⏱ Métricas de tempo</div></div>
@@ -16490,6 +16588,11 @@ function pjBuildTimeMetrics() {
         <div class="pj-tm-kpi-val">${fmtDays(median(cycleMs))}</div>
         <div class="pj-tm-kpi-sub">valor do meio — mais confiável</div>
       </div>
+    </div>
+    <div class="pj-tm-section">
+      <div class="pj-tm-h">📉 Burndown / Burnup — últimos 30 dias</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Burndown (laranja) = quantas tarefas ainda estão abertas em cada dia. Burnup verde = total já concluído. Linha tracejada cinza = ideal teórico (queda linear do escopo).</div>
+      ${pjBuildBurndownSvg()}
     </div>
     <div class="pj-tm-section">
       <div class="pj-tm-h">⏳ Tempo por status (cycle time)</div>
