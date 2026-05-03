@@ -1,10 +1,33 @@
 /* ─────────────────────────────────────────────────────────────
    Fogo & Gestão — Mobile UX
-   Drawer (sidebar off-canvas), pull-to-refresh, swipe-to-complete.
+   Drawer (sidebar off-canvas), pull-to-refresh, swipe gestures, haptic.
    Carregado via <script src="mobile.js"> em index.html.
    Funções expostas globalmente: pjToggleDrawer, pjCloseDrawer,
-   pjInitDrawerAutoClose, pjInitPullToRefresh, pjInitSwipeComplete.
+   pjInitDrawerAutoClose, pjInitPullToRefresh, pjInitSwipeComplete,
+   pjHaptic, pjShowTaskQuickActions.
    ───────────────────────────────────────────────────────────── */
+
+// ── Haptic feedback ──────────────────────────────────────────
+// Patterns curtos pra confirmar ações em iOS/Android (Web Vibration API).
+// iOS Safari não suporta navigator.vibrate; chama silencioso (no-op).
+function pjHaptic(kind) {
+  if (typeof navigator === 'undefined' || !navigator.vibrate) return;
+  // Respeita prefer-reduced-motion como sinal de "menos feedback"
+  try {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  } catch(_) {}
+  const patterns = {
+    light:   10,
+    medium:  20,
+    heavy:   35,
+    success: [12, 40, 18],
+    error:   [40, 30, 40],
+    warn:    [25, 25, 25],
+  };
+  const p = patterns[kind] || 10;
+  try { navigator.vibrate(p); } catch(_) {}
+}
+window.pjHaptic = pjHaptic;
 
 // ── Drawer (sidebar mobile) ──
 function pjToggleDrawer() {
@@ -71,15 +94,17 @@ function pjInitDrawerAutoClose() {
   document.addEventListener('touchend', () => { edge = false; }, { passive: true });
 }
 
-// ── Swipe-to-complete em tarefas (mobile) ──
+// ── Swipe gestures em tarefas (mobile) ──
+// Direita > THRESHOLD = concluir.   Esquerda > THRESHOLD = abrir ações rápidas.
 function pjInitSwipeComplete() {
   if (window._pjSwipeInit) return;
   window._pjSwipeInit = true;
   const isTouch = matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window;
   if (!isTouch) return;
 
-  const THRESHOLD = 90;          // px pra disparar conclusão
+  const THRESHOLD = 90;          // px pra disparar ação
   const MAX_SWIPE = 160;         // teto visual
+  let hapticBuzzed = false;      // já vibrou ao cruzar threshold?
   let row = null, taskId = null, sx = 0, sy = 0, dx = 0, locked = false, axis = null;
 
   function reset(snap) {
@@ -87,9 +112,10 @@ function pjInitSwipeComplete() {
     if (snap) {
       row.classList.add('snap-back');
       row.style.transform = '';
-      setTimeout(() => row?.classList.remove('snap-back', 'swiping'), 250);
+      setTimeout(() => row?.classList.remove('snap-back', 'swiping', 'swiping-left', 'swiping-right'), 250);
     }
     row = null; taskId = null; sx = sy = dx = 0; locked = false; axis = null;
+    hapticBuzzed = false;
   }
 
   document.addEventListener('touchstart', (e) => {
@@ -100,6 +126,7 @@ function pjInitSwipeComplete() {
     if (e.target.closest('.pj-task-check, .pj-row-check, .pj-sel-circle, button, input, textarea, a')) return;
     row = target; taskId = target.getAttribute('data-task-id');
     const t = e.touches[0]; sx = t.clientX; sy = t.clientY; dx = 0; axis = null;
+    hapticBuzzed = false;
   }, { passive: true });
 
   document.addEventListener('touchmove', (e) => {
@@ -113,16 +140,26 @@ function pjInitSwipeComplete() {
       row.classList.add('swiping');
     }
     if (axis !== 'x') return;
-    if (ddx < 0) { row.style.transform = ''; dx = 0; return; }
-    dx = Math.min(MAX_SWIPE, ddx);
+    // Aceita os dois sentidos: dx pode ser positivo (→ concluir) ou negativo (← ações)
+    dx = Math.max(-MAX_SWIPE, Math.min(MAX_SWIPE, ddx));
+    row.classList.toggle('swiping-right', dx > 0);
+    row.classList.toggle('swiping-left',  dx < 0);
     row.style.transform = `translateX(${dx}px)`;
+    // Buzz curto ao cruzar threshold
+    if (!hapticBuzzed && Math.abs(dx) >= THRESHOLD) {
+      hapticBuzzed = true;
+      pjHaptic('light');
+    } else if (hapticBuzzed && Math.abs(dx) < THRESHOLD) {
+      hapticBuzzed = false;
+    }
     if (e.cancelable) e.preventDefault();
   }, { passive: false });
 
   document.addEventListener('touchend', () => {
     if (!row) return;
     if (dx >= THRESHOLD && taskId) {
-      // Anima saída e marca como concluída
+      // → concluir
+      pjHaptic('success');
       const r = row, id = taskId;
       r.style.transform = `translateX(110%)`;
       r.style.opacity = '0';
@@ -130,7 +167,13 @@ function pjInitSwipeComplete() {
       setTimeout(() => {
         if (typeof pjToggleTaskDone === 'function') pjToggleTaskDone(id);
       }, 280);
-      row = null; taskId = null; dx = 0; axis = null;
+      row = null; taskId = null; dx = 0; axis = null; hapticBuzzed = false;
+    } else if (dx <= -THRESHOLD && taskId) {
+      // ← ações rápidas
+      pjHaptic('medium');
+      const id = taskId;
+      reset(true);
+      setTimeout(() => pjShowTaskQuickActions(id), 200);
     } else {
       reset(true);
     }
@@ -138,6 +181,85 @@ function pjInitSwipeComplete() {
 
   document.addEventListener('touchcancel', () => reset(true), { passive: true });
 }
+
+// ── Quick actions bottom sheet (chamado por swipe esquerdo) ──
+function pjShowTaskQuickActions(taskId) {
+  if (!taskId) return;
+  // Fecha sheet anterior
+  document.querySelectorAll('.pj-quick-actions-backdrop').forEach(el => el.remove());
+  const allTasks = (typeof pjAllTasks !== 'undefined') ? pjAllTasks : [];
+  const task = allTasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  const bd = document.createElement('div');
+  bd.className = 'pj-quick-actions-backdrop';
+  bd.onclick = (e) => { if (e.target === bd) close(); };
+
+  const sheet = document.createElement('div');
+  sheet.className = 'pj-quick-actions-sheet';
+  const safeTitle = (task.title || '(sem título)').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  sheet.innerHTML = `
+    <div class="pj-quick-actions-grip"></div>
+    <div class="pj-quick-actions-title">${safeTitle}</div>
+    <button class="pj-quick-action" data-act="open">
+      <span class="pj-quick-ic">📂</span>
+      <span class="pj-quick-label">Abrir tarefa</span>
+    </button>
+    <button class="pj-quick-action" data-act="assign">
+      <span class="pj-quick-ic">👤</span>
+      <span class="pj-quick-label">Atribuir / Reatribuir</span>
+    </button>
+    <button class="pj-quick-action" data-act="snooze1">
+      <span class="pj-quick-ic">💤</span>
+      <span class="pj-quick-label">Adiar pra amanhã</span>
+    </button>
+    <button class="pj-quick-action" data-act="snooze7">
+      <span class="pj-quick-ic">📅</span>
+      <span class="pj-quick-label">Adiar uma semana</span>
+    </button>
+    <button class="pj-quick-action" data-act="priority">
+      <span class="pj-quick-ic">🚩</span>
+      <span class="pj-quick-label">Mudar prioridade</span>
+    </button>
+    <button class="pj-quick-action danger" data-act="delete">
+      <span class="pj-quick-ic">🗑️</span>
+      <span class="pj-quick-label">Excluir</span>
+    </button>
+    <button class="pj-quick-action cancel" data-act="cancel">Cancelar</button>
+  `;
+  bd.appendChild(sheet);
+  document.body.appendChild(bd);
+  // anim in
+  requestAnimationFrame(() => bd.classList.add('open'));
+
+  function close() {
+    bd.classList.remove('open');
+    setTimeout(() => bd.remove(), 200);
+  }
+  function snoozeDays(d) {
+    const date = new Date();
+    date.setDate(date.getDate() + d);
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth()+1).padStart(2,'0');
+    const dd = String(date.getDate()).padStart(2,'0');
+    const iso = `${yyyy}-${mm}-${dd}`;
+    if (typeof pjUpdateTask === 'function') pjUpdateTask(taskId, { dueDate: iso });
+    if (typeof showToast === 'function') showToast('ok','💤', `Adiado pra ${dd}/${mm}`);
+  }
+  sheet.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-act]'); if (!btn) return;
+    const act = btn.getAttribute('data-act');
+    pjHaptic('light');
+    if (act === 'open')      { close(); if (typeof pjOpenTask === 'function') pjOpenTask(taskId); }
+    else if (act === 'assign')  { close(); if (typeof pjOpenAssignModal === 'function') pjOpenAssignModal(taskId); }
+    else if (act === 'snooze1') { close(); snoozeDays(1); }
+    else if (act === 'snooze7') { close(); snoozeDays(7); }
+    else if (act === 'priority'){ close(); if (typeof pjOpenPriorityMenu === 'function') pjOpenPriorityMenu(e, taskId); }
+    else if (act === 'delete')  { close(); if (typeof pjDeleteTask === 'function') pjDeleteTask(taskId); }
+    else if (act === 'cancel')  { close(); }
+  });
+}
+window.pjShowTaskQuickActions = pjShowTaskQuickActions;
 
 // ── Pull-to-refresh (mobile) ──
 function pjInitPullToRefresh() {
@@ -182,16 +304,20 @@ function pjInitPullToRefresh() {
     currentPull = 0;
   }
 
+  let _ptrHaptic = false;
   function onTouchMove(e) {
     if (!pulling || refreshing) return;
     const t = e.touches[0];
     const dy = t.clientY - startY;
-    if (dy <= 0) { ind.classList.remove('active','ready'); ind.style.transform = ''; return; }
+    if (dy <= 0) { ind.classList.remove('active','ready'); ind.style.transform = ''; _ptrHaptic = false; return; }
     // Resistance
     currentPull = Math.min(MAX_PULL, dy * 0.5);
     ind.classList.add('active');
-    if (currentPull >= THRESHOLD) ind.classList.add('ready');
+    const ready = currentPull >= THRESHOLD;
+    if (ready) ind.classList.add('ready');
     else ind.classList.remove('ready');
+    if (ready && !_ptrHaptic) { pjHaptic('light'); _ptrHaptic = true; }
+    if (!ready) _ptrHaptic = false;
     const y = currentPull;
     ind.style.transform = `translateX(-50%) translateY(${y}px)`;
     // Prevent default browser pull (Chrome iOS rubber band)

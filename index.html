@@ -14408,6 +14408,9 @@ async function pjToggleTaskDone(taskId) {
     }
     pjConfettiBurst(ox, oy);
     pjPlayCelebrationSound();
+    if (typeof pjHaptic === 'function') pjHaptic('success');
+  } else if (typeof pjHaptic === 'function') {
+    pjHaptic(isDone ? 'light' : 'medium');
   }
   pjRenderMain(); pjRenderSidebar();
   // Pop-up de progresso do dia (parabéns / tudo pronto)
