@@ -1422,6 +1422,10 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
               Pergunte à IA
               <span class="pj-askai-pill">novo</span>
             </button>
+            <button class="pj-nav-btn pj-admin-only" id="pjBtnTags" onclick="pjOpenTagsManager()" title="Gerenciar tags do workspace">
+              <span class="pj-nav-ic">🏷️</span>
+              Tags
+            </button>
           </div>
           <div class="pj-divider"></div>
           <div id="pjSpacesList"></div>
@@ -11082,6 +11086,7 @@ function _applyShareTabs(allowedTabs) {
 
 // ── State ──────────────────────────────────────────────
 let pjSpaces = [], pjFolders = [], pjLists = [], pjMembers = [];
+let pjTags = [];         // workspace-level tags: [{id, name, color}]
 let pjTasks = {};        // listId → [tasks]
 let pjAllTasks = [];     // flat array for inbox/all views
 let pjComments = [];     // current task comments
@@ -11150,15 +11155,17 @@ async function pjInit() {
 async function pjLoadAll() {
   const uid = _auth.currentUser?.uid || _currentUser?.uid;
   if (!uid) return;
-  const [sSnap, fSnap, lSnap, mSnap] = await Promise.all([
+  const [sSnap, fSnap, lSnap, mSnap, tagSnap] = await Promise.all([
     pjC('pj_spaces').orderBy('order').get(),
     pjC('pj_folders').get(),
     pjC('pj_lists').get(),
     pjC('pj_members').get(),
+    pjC('pj_tags').get().catch(() => null),
   ]);
   pjSpaces  = sSnap.docs.map(d => ({id:d.id,...d.data()}));
   pjFolders = fSnap.docs.map(d => ({id:d.id,...d.data()}));
   pjLists   = lSnap.docs.map(d => ({id:d.id,...d.data()}));
+  pjTags    = tagSnap ? tagSnap.docs.map(d => ({id:d.id, ...d.data()})) : [];
   // Deduplicate by email: prefer entry with real uid over pending; delete duplicates from Firestore
   const rawMembers = mSnap.docs.map(d => ({id:d.id,...d.data()}));
   const byEmailMap = new Map();
@@ -12503,6 +12510,7 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
       ${recur}
       ${subtaskCount?`<span class="pj-subtask-count">↳ ${subtaskCount}</span>`:''}
       ${pjTimerBtnHtml(t)}
+      ${(Array.isArray(t.tags) && t.tags.length) ? `<span class="pj-list-tags">${pjTaskTagsHtml(t,{small:true})}</span>` : ''}
     </div>`,
     assignee: `<div class="pj-list-cell">${assigneeHtml}</div>`,
     due:      `<div class="pj-list-cell">${dueLabel?`<span class="pj-task-due ${due.cls}">${dueLabel}</span>`:`<span class="pj-cell-empty">—</span>`}</div>`,
@@ -13182,11 +13190,13 @@ function pjBuildKanban(listId, statuses, tasks) {
     stTasks.forEach(t => {
       const due = t.dueDate ? pjDueCls(t.dueDate) : null;
       const assigneeHtml = (t.assignees||[]).slice(0,3).map(uid => pjAvatarHtml(uid)).join('');
+      const tagsHtml = pjTaskTagsHtml(t, { small: true });
       h += `<div class="pj-card" draggable="true" data-priority="${t.priority||'low'}"
                ondragstart="pjKanbanDragStart(event,'${t.id}')"
                ondragend="pjKanbanDragEnd(event)"
                onclick="pjOpenTask('${t.id}')">
           <div class="pj-card-title">${escHtml(t.title)}</div>
+          ${tagsHtml ? `<div class="pj-card-tags">${tagsHtml}</div>` : ''}
           <div class="pj-card-footer">
             ${t.priority&&t.priority!=='low' ? `<span class="pj-priority ${t.priority}">${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}</span>` : ''}
             ${due ? `<span class="pj-task-due ${due.cls}">${due.label}</span>` : ''}
@@ -13999,6 +14009,334 @@ function pjLogActivity(taskId, entry) {
       try { pjRenderActivity(); } catch(_) {}
     }
   } catch(_) {}
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// TAGS — workspace-level, livres, coloridas. Independentes de status/prioridade.
+// Persistidas em pj_tags (Firestore). task.tags = [tagId, ...].
+// ──────────────────────────────────────────────────────────────────────
+
+const PJ_TAG_COLORS = ['#6366f1','#8b5cf6','#ec4899','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#ef4444','#64748b','#a855f7','#0ea5e9'];
+
+function pjTagRandColor() {
+  return PJ_TAG_COLORS[Math.floor(Math.random()*PJ_TAG_COLORS.length)];
+}
+
+async function pjCreateTag(name, color) {
+  const cleanName = (name||'').trim();
+  if (!cleanName) return null;
+  // Dedup por nome (case-insensitive)
+  const existing = pjTags.find(t => t.name.toLowerCase() === cleanName.toLowerCase());
+  if (existing) return existing;
+  const id = pjId();
+  const tag = { id, name: cleanName, color: color || pjTagRandColor(), createdAt: Date.now() };
+  pjTags.push(tag);
+  try { await pjC('pj_tags').doc(id).set(tag); } catch(_) {}
+  return tag;
+}
+
+async function pjUpdateTag(tagId, data) {
+  const idx = pjTags.findIndex(t => t.id === tagId);
+  if (idx < 0) return;
+  pjTags[idx] = { ...pjTags[idx], ...data };
+  try { await pjC('pj_tags').doc(tagId).update(data); } catch(_) {}
+  // Re-render UI ativa
+  if (typeof pjRenderMain === 'function') pjRenderMain();
+}
+
+async function pjDeleteTag(tagId) {
+  if (!confirm('Excluir essa tag? Ela será removida de todas as tarefas.')) return;
+  pjTags = pjTags.filter(t => t.id !== tagId);
+  try { await pjC('pj_tags').doc(tagId).delete(); } catch(_) {}
+  // Remove de todas as tarefas que tinham essa tag
+  const affected = pjAllTasks.filter(t => Array.isArray(t.tags) && t.tags.includes(tagId));
+  for (const task of affected) {
+    task.tags = (task.tags||[]).filter(x => x !== tagId);
+    try {
+      await pjC('pj_tasks').doc(task.id).update({
+        tags: firebase.firestore.FieldValue.arrayRemove(tagId)
+      });
+    } catch(_) {}
+  }
+  if (typeof pjRenderMain === 'function') pjRenderMain();
+  if (typeof showToast === 'function') showToast('Tag excluída', 'ok');
+}
+
+async function pjAddTagToTask(taskId, tagId) {
+  const task = pjAllTasks.find(t => t.id === taskId);
+  if (!task) return;
+  if (!Array.isArray(task.tags)) task.tags = [];
+  if (task.tags.includes(tagId)) return;
+  task.tags.push(tagId);
+  try {
+    await pjC('pj_tasks').doc(taskId).update({
+      tags: firebase.firestore.FieldValue.arrayUnion(tagId),
+      updatedAt: pjNow()
+    });
+  } catch(_) {}
+  if (typeof pjRenderMain === 'function') pjRenderMain();
+  if (typeof pjCurrentTaskId !== 'undefined' && pjCurrentTaskId === taskId
+      && typeof pjRenderTaskModal === 'function') {
+    const t = pjAllTasks.find(x => x.id === taskId);
+    if (t) pjRenderTaskModal(t);
+  }
+}
+
+async function pjRemoveTagFromTask(taskId, tagId) {
+  const task = pjAllTasks.find(t => t.id === taskId);
+  if (!task) return;
+  task.tags = (task.tags||[]).filter(x => x !== tagId);
+  try {
+    await pjC('pj_tasks').doc(taskId).update({
+      tags: firebase.firestore.FieldValue.arrayRemove(tagId),
+      updatedAt: pjNow()
+    });
+  } catch(_) {}
+  if (typeof pjRenderMain === 'function') pjRenderMain();
+  if (typeof pjCurrentTaskId !== 'undefined' && pjCurrentTaskId === taskId
+      && typeof pjRenderTaskModal === 'function') {
+    const t = pjAllTasks.find(x => x.id === taskId);
+    if (t) pjRenderTaskModal(t);
+  }
+}
+
+// HTML pra renderizar uma pill compacta de uma tag
+function pjTagPillHtml(tag, opts = {}) {
+  if (!tag) return '';
+  const removable = opts.removable && opts.taskId;
+  const cls = 'pj-tag-pill' + (opts.small ? ' small' : '');
+  const closeBtn = removable
+    ? `<button class="pj-tag-pill-x" type="button" onclick="event.stopPropagation();pjRemoveTagFromTask('${opts.taskId}','${tag.id}')" title="Remover">×</button>`
+    : '';
+  return `<span class="${cls}" style="--c:${tag.color}" title="${escHtml(tag.name)}">
+    <span class="pj-tag-pill-dot"></span>
+    <span class="pj-tag-pill-label">${escHtml(tag.name)}</span>
+    ${closeBtn}
+  </span>`;
+}
+
+function pjTaskTagsHtml(task, opts = {}) {
+  if (!task || !Array.isArray(task.tags) || !task.tags.length) return '';
+  const tags = task.tags.map(id => pjTags.find(t => t.id === id)).filter(Boolean);
+  if (!tags.length) return '';
+  return tags.map(t => pjTagPillHtml(t, opts)).join('');
+}
+
+// ── Manager (modal admin) ────────────────────────────────────────────
+function pjOpenTagsManager() {
+  if (typeof userIsAdmin === 'function' && !userIsAdmin()) {
+    if (typeof showToast === 'function') showToast('Acesso restrito a administradores.', 'warn');
+    return;
+  }
+  let backdrop = document.getElementById('pjTagsBackdrop');
+  if (!backdrop) {
+    backdrop = document.createElement('div');
+    backdrop.id = 'pjTagsBackdrop';
+    backdrop.className = 'pj-tags-backdrop';
+    backdrop.onclick = (e) => { if (e.target === backdrop) pjCloseTagsManager(); };
+    document.body.appendChild(backdrop);
+  }
+  backdrop.innerHTML = `<div class="pj-tags-modal" role="dialog">
+    <div class="pj-tags-modal-head">
+      <h3>🏷️ Tags do workspace</h3>
+      <button class="pj-icon-btn" onclick="pjCloseTagsManager()" title="Fechar">×</button>
+    </div>
+    <div class="pj-tags-modal-body">
+      <div class="pj-tags-create">
+        <input id="pjNewTagName" type="text" placeholder="Nome da tag (ex: design, urgente-cliente)" maxlength="40"
+          onkeydown="if(event.key==='Enter'){pjTagsManagerCreate()}">
+        <div class="pj-tag-color-row" id="pjNewTagColors"></div>
+        <button class="pj-btn pj-btn-primary" onclick="pjTagsManagerCreate()">＋ Criar</button>
+      </div>
+      <div class="pj-tags-list" id="pjTagsList"></div>
+    </div>
+  </div>`;
+  backdrop.classList.add('open');
+  // Render colors
+  pjTagsManagerSelectedColor = pjTagRandColor();
+  pjRenderTagColorPicker('pjNewTagColors', pjTagsManagerSelectedColor, (c) => {
+    pjTagsManagerSelectedColor = c;
+    pjRenderTagColorPicker('pjNewTagColors', c, arguments.callee);
+  });
+  pjRenderTagsManagerList();
+  setTimeout(() => document.getElementById('pjNewTagName')?.focus(), 50);
+}
+
+let pjTagsManagerSelectedColor = '#6366f1';
+
+function pjRenderTagColorPicker(elId, selected, onPick) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.innerHTML = PJ_TAG_COLORS.map(c =>
+    `<button class="pj-tag-color-btn ${c===selected?'selected':''}" type="button"
+      style="background:${c}" data-color="${c}" title="${c}"></button>`
+  ).join('');
+  el.querySelectorAll('button').forEach(btn => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      const c = btn.getAttribute('data-color');
+      el.querySelectorAll('button').forEach(b => b.classList.toggle('selected', b===btn));
+      if (typeof onPick === 'function') onPick(c);
+    };
+  });
+}
+
+function pjRenderTagsManagerList() {
+  const el = document.getElementById('pjTagsList');
+  if (!el) return;
+  if (!pjTags.length) {
+    el.innerHTML = `<div class="pj-tags-empty">Nenhuma tag ainda. Crie a primeira acima.</div>`;
+    return;
+  }
+  // Conta uso de cada tag
+  const useCount = {};
+  pjAllTasks.forEach(t => {
+    (t.tags||[]).forEach(id => { useCount[id] = (useCount[id]||0) + 1; });
+  });
+  const sorted = [...pjTags].sort((a,b)=> a.name.localeCompare(b.name, 'pt-BR'));
+  el.innerHTML = sorted.map(tag => `
+    <div class="pj-tags-row" data-tag-id="${tag.id}">
+      ${pjTagPillHtml(tag)}
+      <span class="pj-tags-count">${useCount[tag.id] || 0} tarefa${(useCount[tag.id]||0)===1?'':'s'}</span>
+      <span style="flex:1"></span>
+      <button class="pj-icon-btn" onclick="pjEditTagInline('${tag.id}')" title="Editar">✏️</button>
+      <button class="pj-icon-btn" onclick="pjDeleteTag('${tag.id}').then(()=>pjRenderTagsManagerList())" title="Excluir">🗑️</button>
+    </div>
+  `).join('');
+}
+
+async function pjTagsManagerCreate() {
+  const inp = document.getElementById('pjNewTagName');
+  if (!inp) return;
+  const name = inp.value.trim();
+  if (!name) { inp.focus(); return; }
+  await pjCreateTag(name, pjTagsManagerSelectedColor);
+  inp.value = '';
+  pjTagsManagerSelectedColor = pjTagRandColor();
+  pjRenderTagColorPicker('pjNewTagColors', pjTagsManagerSelectedColor, (c) => {
+    pjTagsManagerSelectedColor = c;
+  });
+  pjRenderTagsManagerList();
+  if (typeof showToast === 'function') showToast('Tag criada', 'ok');
+}
+
+function pjEditTagInline(tagId) {
+  const tag = pjTags.find(t => t.id === tagId);
+  if (!tag) return;
+  const newName = prompt('Novo nome da tag:', tag.name);
+  if (newName === null) return;
+  const trimmed = newName.trim();
+  if (!trimmed || trimmed === tag.name) return;
+  pjUpdateTag(tagId, { name: trimmed }).then(() => pjRenderTagsManagerList());
+}
+
+function pjCloseTagsManager() {
+  const bd = document.getElementById('pjTagsBackdrop');
+  if (bd) bd.classList.remove('open');
+}
+
+// ── Picker (popover dentro do modal de task) ──────────────────────────
+function pjOpenTagPicker(taskId, anchorEl) {
+  // Fecha picker existente
+  document.querySelectorAll('.pj-tag-picker').forEach(el => el.remove());
+  const task = pjAllTasks.find(t => t.id === taskId);
+  if (!task) return;
+  const taskTagIds = new Set(task.tags || []);
+
+  const pop = document.createElement('div');
+  pop.className = 'pj-tag-picker';
+  pop.innerHTML = `
+    <input class="pj-tag-picker-search" type="text" placeholder="Buscar ou criar nova..." id="pjTagPickerInput">
+    <div class="pj-tag-picker-list" id="pjTagPickerList"></div>
+    <div class="pj-tag-picker-foot">
+      <span style="color:var(--text3);font-size:11px;">Enter cria; clique pra alternar</span>
+    </div>
+  `;
+  document.body.appendChild(pop);
+
+  // Posiciona próximo ao anchor
+  const r = anchorEl?.getBoundingClientRect?.();
+  if (r) {
+    const top = Math.min(window.innerHeight - 320, r.bottom + 6);
+    const left = Math.min(window.innerWidth - 280, r.left);
+    pop.style.top = top + 'px';
+    pop.style.left = left + 'px';
+  } else {
+    pop.style.top = '50%'; pop.style.left = '50%';
+    pop.style.transform = 'translate(-50%,-50%)';
+  }
+
+  // Fecha ao clicar fora
+  setTimeout(() => {
+    const off = (e) => {
+      if (!pop.contains(e.target) && e.target !== anchorEl) {
+        pop.remove();
+        document.removeEventListener('click', off, true);
+      }
+    };
+    document.addEventListener('click', off, true);
+  }, 50);
+
+  function renderList(filter) {
+    const list = document.getElementById('pjTagPickerList');
+    if (!list) return;
+    const q = (filter||'').toLowerCase();
+    const filtered = pjTags.filter(t => !q || t.name.toLowerCase().includes(q))
+                          .sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+    const exact = pjTags.find(t => t.name.toLowerCase() === q);
+    let html = '';
+    if (q && !exact) {
+      html += `<div class="pj-tag-picker-item create" onclick="pjTagPickerCreate('${taskId}', this.dataset.q)" data-q="${escHtml(q)}">
+        <span class="pj-tag-pill-dot" style="--c:#94a3b8"></span>
+        <span>Criar tag <strong>${escHtml(filter)}</strong></span>
+      </div>`;
+    }
+    if (!filtered.length && !q) {
+      html += `<div class="pj-tag-picker-empty">Nenhuma tag criada ainda.<br>Digite acima e dê Enter.</div>`;
+    }
+    html += filtered.map(t => {
+      const on = taskTagIds.has(t.id);
+      return `<div class="pj-tag-picker-item ${on?'on':''}" onclick="pjTagPickerToggle('${taskId}','${t.id}',this)">
+        ${pjTagPillHtml(t)}
+        <span style="flex:1"></span>
+        ${on ? '<span class="pj-tag-picker-check">✓</span>' : ''}
+      </div>`;
+    }).join('');
+    list.innerHTML = html;
+  }
+  renderList('');
+  const inp = document.getElementById('pjTagPickerInput');
+  inp?.focus();
+  inp?.addEventListener('input', () => renderList(inp.value));
+  inp?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const q = inp.value.trim();
+      if (!q) return;
+      pjTagPickerCreate(taskId, q);
+    } else if (e.key === 'Escape') {
+      pop.remove();
+    }
+  });
+}
+
+async function pjTagPickerCreate(taskId, name) {
+  const tag = await pjCreateTag(name);
+  if (!tag) return;
+  await pjAddTagToTask(taskId, tag.id);
+  // Re-render list
+  const inp = document.getElementById('pjTagPickerInput');
+  if (inp) { inp.value = ''; inp.dispatchEvent(new Event('input')); inp.focus(); }
+}
+
+async function pjTagPickerToggle(taskId, tagId, rowEl) {
+  const task = pjAllTasks.find(t => t.id === taskId);
+  if (!task) return;
+  const has = (task.tags||[]).includes(tagId);
+  if (has) await pjRemoveTagFromTask(taskId, tagId);
+  else await pjAddTagToTask(taskId, tagId);
+  // Refresh picker list state
+  if (rowEl) rowEl.classList.toggle('on', !has);
 }
 
 async function pjToggleTaskDone(taskId) {
@@ -16107,6 +16445,12 @@ function pjRenderTaskModal(task) {
     </div>
     <div class="pj-meta-item" onclick="pjPomoOpen('${task.id}')" title="Iniciar sessão Pomodoro nesta tarefa">
       🍅 Pomodoro
+    </div>
+    <div class="pj-meta-item pj-meta-tags" onclick="pjOpenTagPicker('${task.id}',this)" title="Tags da tarefa">
+      <span>🏷️</span>
+      ${(Array.isArray(task.tags) && task.tags.length)
+        ? pjTaskTagsHtml(task, { small:true, removable:true, taskId: task.id })
+        : '<span style="color:var(--text3);font-size:12px;">Tags</span>'}
     </div>`;
 
   // Custom fields
