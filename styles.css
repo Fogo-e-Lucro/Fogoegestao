@@ -6185,3 +6185,23 @@ body.pj-focus { overflow-x: hidden; }
   }
   .pj-cycle-bar { min-width: 0; }
 }
+
+/* ── PWA install button ──────────────────────────────────── */
+.pj-install-btn {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent) 18%, transparent),
+    color-mix(in srgb, var(--accent) 8%, transparent)) !important;
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent) !important;
+  color: var(--accent) !important;
+  font-weight: 600;
+}
+.pj-install-btn:hover {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent) 28%, transparent),
+    color-mix(in srgb, var(--accent) 14%, transparent)) !important;
+}
+
+/* Em modo standalone, esconde elementos que só fazem sentido no browser */
+@media (display-mode: standalone) {
+  .pj-install-btn { display: none !important; }
+}

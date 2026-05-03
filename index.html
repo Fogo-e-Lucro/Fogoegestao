@@ -2,9 +2,18 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
 <link rel="stylesheet" href="styles.css">
+<!-- PWA -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fogo & Gestão">
+<meta name="mobile-web-app-capable" content="yes">
 <script src="mobile.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -1447,6 +1456,10 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           <button class="pj-add-space-btn pj-admin-only pj-demo-btn" id="pjDemoBtn" onclick="pjToggleDemo()">
             <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
             Carregar Demo
+          </button>
+          <button class="pj-add-space-btn pj-install-btn" id="pjInstallBtn" onclick="pjTriggerInstall()" style="display:none;" title="Instalar como app">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 9.293a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            Instalar app
           </button>
         </div>
       </div>
@@ -19414,6 +19427,64 @@ window.bdUploadCustomImage = async function(cid, fid, input) {
     const r = orig.apply(this, arguments);
     if (tab === 'base') { setTimeout(() => { bdInit(); bdSchemaInit(); }, 100); }
     return r;
+  };
+})();
+
+// ── PWA: Service Worker + install prompt ──────────────────────
+(function pjPWAInit() {
+  // Registra SW só em https/localhost (file:// não suporta)
+  if ('serviceWorker' in navigator
+      && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('[SW] registered:', reg.scope))
+        .catch(err => console.warn('[SW] registration failed:', err));
+    });
+  }
+
+  // Captura o evento beforeinstallprompt (Chrome/Edge/Android)
+  let _deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    _deferredPrompt = e;
+    pjShowInstallButton(true);
+  });
+  window.addEventListener('appinstalled', () => {
+    _deferredPrompt = null;
+    pjShowInstallButton(false);
+    if (typeof showToast === 'function') showToast('success', '🎉', 'App instalado!');
+  });
+
+  // Detecta se já está rodando como app instalado
+  const isStandalone = matchMedia('(display-mode: standalone)').matches
+                    || navigator.standalone === true;
+
+  // Botão visível apenas quando há prompt disponível e não está instalado
+  window.pjShowInstallButton = function(show) {
+    const btn = document.getElementById('pjInstallBtn');
+    if (!btn) return;
+    btn.style.display = (show && !isStandalone) ? '' : 'none';
+  };
+
+  window.pjTriggerInstall = async function() {
+    if (!_deferredPrompt) {
+      // Fallback: mostra instruções manuais
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const msg = isIOS
+        ? 'Toque no ícone de compartilhar e escolha "Adicionar à Tela de Início".'
+        : 'Use o menu do navegador → "Instalar app" ou "Adicionar à tela inicial".';
+      if (typeof showToast === 'function') showToast('info', '📲', msg);
+      else alert(msg);
+      return;
+    }
+    _deferredPrompt.prompt();
+    const result = await _deferredPrompt.userChoice;
+    _deferredPrompt = null;
+    pjShowInstallButton(false);
+    if (typeof pjHaptic === 'function') pjHaptic('light');
+    if (result.outcome === 'accepted' && typeof showToast === 'function') {
+      showToast('success', '🎉', 'Instalando…');
+    }
   };
 })();
 
