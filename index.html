@@ -12948,6 +12948,7 @@ function pjBuildWorkload() {
     <div class="pj-view-header-meta">${totalCount} tarefas abertas</div>
   </div>
   <div class="pj-view-body pj-view-body-sm">
+    ${pjBuildActivityHeatmap(members)}
     <div class="pj-workload-grid">`;
   members.forEach(m => {
     const myTasks = openTasks.filter(t => (t.assignees||[]).includes(m.uid));
@@ -12975,6 +12976,118 @@ function pjBuildWorkload() {
   });
   h += `</div></div>`;
   return h;
+}
+
+// ── Heatmap de atividade (estilo GitHub) ────────────────
+// Mostra últimas 12 semanas: cada coluna = semana, cada linha = dia da semana.
+// Intensidade baseada em tasks com completedAt nesse dia. Hover mostra tooltip.
+function pjBuildActivityHeatmap(members) {
+  const WEEKS = 12;
+  const today = new Date(); today.setHours(0,0,0,0);
+  // Começa numa segunda-feira (semana ISO) WEEKS-1 semanas atrás
+  const dow = today.getDay(); // 0=dom .. 6=sáb
+  const daysToMonday = dow === 0 ? 6 : dow - 1;
+  const start = new Date(today);
+  start.setDate(today.getDate() - daysToMonday - (WEEKS-1)*7);
+
+  // Mapa de uid -> set de uids dos membros válidos (pra filtragem rápida)
+  const memberIds = new Set((members||[]).map(m => m.uid));
+
+  // Agrega: dateStr -> count (todos os membros)
+  const counts = {};
+  pjAllTasks.forEach(t => {
+    const ms = t.completedAt?.toMillis ? t.completedAt.toMillis()
+             : t.completedAt?.toDate ? t.completedAt.toDate().getTime()
+             : (typeof t.completedAt === 'number' ? t.completedAt : null);
+    if (!ms) return;
+    // Inclui se algum dos assignees é membro válido (ou se não tem assignee, ainda conta como atividade do workspace)
+    if (memberIds.size && (t.assignees||[]).length) {
+      const has = (t.assignees||[]).some(uid => memberIds.has(uid));
+      if (!has) return;
+    }
+    const d = new Date(ms); d.setHours(0,0,0,0);
+    if (d < start || d > today) return;
+    const k = pjDateStr(d);
+    counts[k] = (counts[k]||0) + 1;
+  });
+
+  const allCounts = Object.values(counts);
+  const maxCount = allCounts.length ? Math.max(...allCounts) : 0;
+  const total = allCounts.reduce((a,b) => a+b, 0);
+  // Quantos dias com pelo menos 1 conclusão (engagement signal)
+  const activeDays = allCounts.length;
+
+  // Threshold pra intensidade (4 níveis)
+  const thr = (n) => {
+    if (!n) return 0;
+    if (maxCount <= 4) return Math.min(n, 4);
+    if (n >= maxCount * 0.75) return 4;
+    if (n >= maxCount * 0.50) return 3;
+    if (n >= maxCount * 0.25) return 2;
+    return 1;
+  };
+
+  // Renderiza colunas (semanas) com 7 dias cada
+  const dayShortLabels = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom']; // ordem exibida
+  let cellsHtml = '';
+  for (let w=0; w<WEEKS; w++) {
+    cellsHtml += '<div class="pj-heat-col">';
+    for (let d=0; d<7; d++) {
+      const cell = new Date(start);
+      cell.setDate(start.getDate() + w*7 + d);
+      const isFuture = cell > today;
+      const k = pjDateStr(cell);
+      const c = counts[k] || 0;
+      const lvl = isFuture ? -1 : thr(c);
+      const labelDate = cell.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+      const tip = isFuture
+        ? `${labelDate}`
+        : `${labelDate}: ${c} concluída${c!==1?'s':''}`;
+      cellsHtml += `<div class="pj-heat-cell ${isFuture?'future':'lvl-'+lvl}" title="${tip}"></div>`;
+    }
+    cellsHtml += '</div>';
+  }
+
+  // Mês labels (em cima, alinhado com primeira coluna do mês)
+  let monthLabels = '';
+  let lastMonth = -1;
+  for (let w=0; w<WEEKS; w++) {
+    const cell = new Date(start);
+    cell.setDate(start.getDate() + w*7);
+    const m = cell.getMonth();
+    const label = m !== lastMonth ? cell.toLocaleDateString('pt-BR',{month:'short'}).replace('.','') : '';
+    lastMonth = m;
+    monthLabels += `<div class="pj-heat-month">${label}</div>`;
+  }
+
+  return `<div class="pj-activity-heatmap">
+    <div class="pj-heat-head">
+      <div class="pj-heat-title">🔥 Atividade da equipe · últimas ${WEEKS} semanas</div>
+      <div class="pj-heat-stats">
+        <span><strong>${total}</strong> conclusões</span>
+        <span class="sep">·</span>
+        <span><strong>${activeDays}</strong> dias ativos</span>
+      </div>
+    </div>
+    <div class="pj-heat-grid-wrap">
+      <div class="pj-heat-day-labels">
+        <span>Seg</span><span></span><span>Qua</span><span></span><span>Sex</span><span></span><span>Dom</span>
+      </div>
+      <div class="pj-heat-grid-inner">
+        <div class="pj-heat-months">${monthLabels}</div>
+        <div class="pj-heat-grid">${cellsHtml}</div>
+      </div>
+    </div>
+    <div class="pj-heat-legend">
+      <span>Menos</span>
+      <div class="pj-heat-cell lvl-0"></div>
+      <div class="pj-heat-cell lvl-1"></div>
+      <div class="pj-heat-cell lvl-2"></div>
+      <div class="pj-heat-cell lvl-3"></div>
+      <div class="pj-heat-cell lvl-4"></div>
+      <span>Mais</span>
+    </div>
+  </div>`;
 }
 
 // ── Visão Mapa ─────────────────────────────────────────
