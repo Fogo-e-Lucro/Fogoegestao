@@ -12507,7 +12507,7 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
     assignee: `<div class="pj-list-cell">${assigneeHtml}</div>`,
     due:      `<div class="pj-list-cell">${dueLabel?`<span class="pj-task-due ${due.cls}">${dueLabel}</span>`:`<span class="pj-cell-empty">—</span>`}</div>`,
     priority: `<div class="pj-list-cell">${prio}</div>`,
-    status:   `<div class="pj-list-cell"><button type="button" class="pj-status-dot" style="--c:${st.color}" onclick="event.stopPropagation();pjOpenStatusMenu(event,'${t.id}')" title="${escHtml(st.name)} — clique pra trocar"></button></div>`,
+    status:   `<div class="pj-list-cell"><button type="button" class="pj-status-pill" style="--c:${st.color}" onclick="event.stopPropagation();pjOpenStatusMenu(event,'${t.id}')" title="Clique pra trocar"><span class="pj-status-pill-dot"></span><span class="pj-status-pill-label">${escHtml(st.name)}</span><svg viewBox="0 0 12 12" width="10" height="10" class="pj-status-pill-arrow" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5l3 3 3-3"/></svg></button></div>`,
   };
   const cellsHtml = cols.map(c => {
     if (cellMap[c.id]) return cellMap[c.id];
@@ -13243,10 +13243,13 @@ async function pjKanbanDrop(e, listId, statusId) {
     const i = pjTasks[lid].findIndex(t => t.id === taskId);
     if (i >= 0) { task = pjTasks[lid][i]; pjTasks[lid].splice(i,1); break; }
   }
+  let stTrans = { willClose:false, wasClosed:false };
   if (task) {
+    const _prevStatusId = task.statusId;
     task.statusId = statusId;
     task.listId = listId;
     pjMaybeMarkStarted(task);
+    stTrans = pjAfterStatusChange(task, _prevStatusId, statusId);
     if (!pjTasks[listId]) pjTasks[listId] = [];
     pjTasks[listId].push(task);
     pjAllTasks = Object.values(pjTasks).flat();
@@ -13257,6 +13260,11 @@ async function pjKanbanDrop(e, listId, statusId) {
   try {
     const upd = { statusId, listId, updatedAt:pjNow() };
     if (task?.startedAt && !task._syncedStarted) { upd.startedAt = task.startedAt; task._syncedStarted = true; }
+    if (stTrans.willClose && !stTrans.wasClosed) upd.completedAt = pjNow();
+    else if (!stTrans.willClose && stTrans.wasClosed) {
+      upd.completedAt = firebase.firestore.FieldValue.delete();
+      upd.archived = firebase.firestore.FieldValue.delete();
+    }
     await pjC('pj_tasks').doc(taskId).update(upd);
   } catch(err){}
 }
@@ -13324,10 +13332,13 @@ async function pjListDrop(e, listId, statusId) {
     const i = pjTasks[lid].findIndex(t => t.id === taskId);
     if (i >= 0) { task = pjTasks[lid][i]; pjTasks[lid].splice(i,1); break; }
   }
+  let stTrans = { willClose:false, wasClosed:false };
   if (task) {
+    const _prevStatusId = task.statusId;
     task.statusId = statusId;
     task.listId = listId;
     pjMaybeMarkStarted(task);
+    stTrans = pjAfterStatusChange(task, _prevStatusId, statusId);
     if (!pjTasks[listId]) pjTasks[listId] = [];
     pjTasks[listId].push(task);
     pjAllTasks = Object.values(pjTasks).flat();
@@ -13337,6 +13348,11 @@ async function pjListDrop(e, listId, statusId) {
   try {
     const upd = { statusId, listId, updatedAt:pjNow() };
     if (task?.startedAt) upd.startedAt = task.startedAt;
+    if (stTrans.willClose && !stTrans.wasClosed) upd.completedAt = pjNow();
+    else if (!stTrans.willClose && stTrans.wasClosed) {
+      upd.completedAt = firebase.firestore.FieldValue.delete();
+      upd.archived = firebase.firestore.FieldValue.delete();
+    }
     await pjC('pj_tasks').doc(taskId).update(upd);
   } catch(err){}
 }
@@ -13916,6 +13932,31 @@ function pjMaybeNotifyAssignment(prevTask, newTask) {
     pjAddNotification({ type:'mention', title, subtitle, taskId: newTask.id });
     pjFireDesktopNotif(title, subtitle, newTask.id);
   }
+}
+
+// Helper: dispara efeitos quando status muda (completedAt, recorrência, popup, webhook).
+// Use em paths que não passam por pjToggleTaskDone/pjChangeTaskStatus (kanban drop,
+// list drop, pjUpdateTask). Devolve { willClose, wasClosed } pra quem precise persistir.
+function pjAfterStatusChange(task, prevStatusId, newStatusId) {
+  if (!task) return { willClose:false, wasClosed:false };
+  const list = pjLists.find(l => l.id === task.listId);
+  const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
+  const newSt = statuses.find(s => s.id === newStatusId);
+  const prevSt = statuses.find(s => s.id === prevStatusId);
+  const willClose = !!(newSt && pjStatusBucket(newSt) === 'closed');
+  const wasClosed = !!(prevSt && pjStatusBucket(prevSt) === 'closed');
+  if (willClose && !wasClosed) {
+    if (!task.completedAt) task.completedAt = Date.now();
+    if (task.recurrence?.pattern && task.dueDate) {
+      try { pjSpawnNextRecurrence(task); } catch(_) {}
+    }
+    try { pjOnTaskClosed(task); } catch(_) {}
+    try { pjFireWebhook('task.completed', pjTaskPayload(task)); } catch(_) {}
+  } else if (!willClose && wasClosed) {
+    delete task.completedAt;
+    delete task.archived;
+  }
+  return { willClose, wasClosed };
 }
 
 async function pjToggleTaskDone(taskId) {
@@ -16486,6 +16527,9 @@ function pjShowReactionPicker(ev, commentId) {
 
 // ── Task CRUD ───────────────────────────────────────────
 async function pjUpdateTask(taskId, data) {
+  // Snapshot do statusId anterior pra detectar transição de bucket
+  const _prevTask = pjAllTasks.find(t => t.id === taskId);
+  const _prevStatusId = _prevTask?.statusId;
   // Optimistic local update
   const idx = pjAllTasks.findIndex(t=>t.id===taskId);
   if (idx >= 0) pjAllTasks[idx] = {...pjAllTasks[idx], ...data};
@@ -16493,17 +16537,30 @@ async function pjUpdateTask(taskId, data) {
     const i = pjTasks[lid].findIndex(t => t.id === taskId);
     if (i >= 0) pjTasks[lid][i] = { ...pjTasks[lid][i], ...data };
   }
+  // Transição de status: completedAt + popup + recorrência + webhook task.completed
+  let _stTrans = { willClose:false, wasClosed:false };
+  if (data.statusId && data.statusId !== _prevStatusId) {
+    const tNow = pjAllTasks.find(x => x.id === taskId);
+    _stTrans = pjAfterStatusChange(tNow, _prevStatusId, data.statusId);
+  }
   // Fire webhook for status change
   if (data.statusId) {
     const t = pjAllTasks.find(x => x.id === taskId);
-    if (t) pjFireWebhook('task.status_changed', { ...pjTaskPayload(t), previousStatusId: undefined });
+    if (t) pjFireWebhook('task.status_changed', { ...pjTaskPayload(t), previousStatusId: _prevStatusId });
   }
   // Fire webhook for assignee change
   if (data.assignees) {
     const t = pjAllTasks.find(x => x.id === taskId);
     if (t) pjFireWebhook('task.assigned', pjTaskPayload(t));
   }
-  try { await pjC('pj_tasks').doc(taskId).update({...data, updatedAt:pjNow()}); } catch(e){}
+  // Persistência: inclui completedAt/archived se houve transição
+  const persist = {...data, updatedAt:pjNow()};
+  if (_stTrans.willClose && !_stTrans.wasClosed) persist.completedAt = pjNow();
+  else if (!_stTrans.willClose && _stTrans.wasClosed) {
+    persist.completedAt = firebase.firestore.FieldValue.delete();
+    persist.archived = firebase.firestore.FieldValue.delete();
+  }
+  try { await pjC('pj_tasks').doc(taskId).update(persist); } catch(e){}
 }
 // ── Address Autocomplete (Google Places → fallback Nominatim) ──────────────────
 let _pjAddrDebounce = null;

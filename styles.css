@@ -5502,3 +5502,46 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .pj-askai-suggest { gap:4px; }
   .pj-askai-chip { padding:5px 10px; font-size:11px; }
 }
+
+/* ──────────────────────────────────────────────────────────
+   Status pill na list view — substitui a bolinha pequena
+   por um botão claramente clicável (cor do status + label + chevron)
+   ────────────────────────────────────────────────────────── */
+.pj-status-pill {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 10px 4px 8px;
+  border-radius:999px;
+  font-size:11.5px; font-weight:600;
+  cursor:pointer;
+  background:color-mix(in srgb, var(--c) 14%, var(--bg2));
+  color:color-mix(in srgb, var(--c) 75%, var(--text));
+  border:1px solid color-mix(in srgb, var(--c) 30%, var(--border));
+  transition: background .15s ease, border-color .15s ease, transform .1s ease;
+  max-width:100%;
+}
+.pj-status-pill:hover {
+  background:color-mix(in srgb, var(--c) 22%, var(--bg2));
+  border-color:color-mix(in srgb, var(--c) 50%, var(--border));
+  transform:translateY(-1px);
+}
+.pj-status-pill:active { transform:translateY(0); }
+.pj-status-pill-dot {
+  width:8px; height:8px; border-radius:50%;
+  background:var(--c);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 25%, transparent);
+  flex:0 0 auto;
+}
+.pj-status-pill-label {
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  max-width:120px;
+}
+.pj-status-pill-arrow {
+  opacity:.55; flex:0 0 auto;
+  transition:opacity .15s ease, transform .15s ease;
+}
+.pj-status-pill:hover .pj-status-pill-arrow { opacity:.9; transform:translateY(1px); }
+
+@media (max-width: 700px) {
+  .pj-status-pill-label { max-width:80px; font-size:11px; }
+  .pj-status-pill { padding:3px 8px 3px 7px; }
+}
