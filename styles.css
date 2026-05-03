@@ -3634,7 +3634,8 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-dash-date { font-size:13px; color:var(--text3); margin-top:4px; }
 .pj-dash-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; margin-bottom:24px; }
 @media(max-width:1100px) { .pj-dash-kpis { grid-template-columns:repeat(2,1fr); } }
-@media(max-width:560px)  { .pj-dash-kpis { grid-template-columns:1fr; } }
+/* Mobile mantém 2x2 — 1 coluna fica gigante e força scroll absurdo */
+@media(max-width:380px)  { .pj-dash-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } }
 .pj-dash-kpi {
   position:relative; overflow:hidden;
   background:linear-gradient(135deg,
@@ -5002,4 +5003,109 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .bd-wrap { flex-direction:column; height:auto; }
   .bd-sidebar { width:100%; min-width:0; max-height:280px; }
   .bd-grid { grid-template-columns:1fr; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   Polimento mobile (≤640px) — header sem corte, dashboard
+   compacto, listas/inbox sem desperdício de espaço.
+   ───────────────────────────────────────────────────────── */
+@media (max-width:640px) {
+  /* HEADER: linha única, sem subtitle, tudo apertado */
+  .app-header {
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    align-items:center !important;
+    gap:6px !important;
+    padding:8px 10px 8px 56px !important; /* 56px = espaço pro hamburger */
+    min-height:52px;
+  }
+  .app-logo { gap:6px; min-width:0; flex:0 1 auto; overflow:hidden; }
+  .app-logo > div:not(.app-logo-icon) { min-width:0; overflow:hidden; }
+  .app-logo-icon { width:28px; height:28px; font-size:14px; border-radius:8px; flex-shrink:0; }
+  .app-logo-text { font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .app-logo-sub { display:none; } /* subtítulo somem no celular */
+  /* Grupo da direita (tabs + sync + avatar) com scroll horizontal interno se preciso */
+  .app-header > div:not(.app-logo) {
+    margin-left:auto;
+    flex:0 1 auto;
+    min-width:0;
+    gap:6px !important;
+  }
+  .main-tabs { padding:2px; gap:2px; }
+  .main-tab { padding:6px 10px !important; font-size:11.5px !important; min-height:34px; }
+  .main-tab svg { display:none; }
+  .user-chip { align-self:auto; padding:4px 8px; font-size:12px; flex-shrink:0; }
+  .sync-dot { width:8px; height:8px; flex-shrink:0; }
+  /* Esconde botões secundários do header (theme picker, uazapi status, presença):
+     no mobile o espaço fica pra tabs + avatar; configs ficam disponíveis no menu de perfil */
+  .app-header .theme-picker-btn,
+  .app-header .app-uazapi-status,
+  .app-header .app-presence { display:none !important; }
+
+  /* CLIENTE BAR (sticky com dropdown) */
+  .restaurant-sticky { padding:8px 10px; gap:8px; }
+  .restaurant-sticky label { font-size:11px; }
+
+  /* CONTEÚDO geral */
+  .app-content { padding:10px !important; }
+
+  /* DASHBOARD compacto */
+  .pj-dash-wrap { padding:12px !important; }
+  .pj-dash-header { margin-bottom:14px !important; gap:8px !important; }
+  .pj-dash-greet { font-size:17px !important; }
+  .pj-dash-date { font-size:11px; margin-top:2px; }
+  .pj-dash-filter-chip { font-size:10.5px; padding:3px 8px 3px 9px; margin-left:0; }
+  .pj-dash-filter-chip button { font-size:13px; }
+  .pj-dash-kpis { gap:8px !important; margin-bottom:14px; grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .pj-dash-kpi { padding:12px 12px !important; border-radius:14px; }
+  .pj-dash-kpi-icon { font-size:16px; }
+  .pj-dash-kpi-val { font-size:24px !important; }
+  .pj-dash-kpi-arrow { display:none; }
+  .pj-dash-kpi-label { font-size:10px !important; letter-spacing:.04em; }
+  .pj-dash-kpi-sub { font-size:10px; margin-top:2px; }
+  .pj-dash-kpi-spark { height:18px; margin-top:6px; }
+  .pj-dash-trio, .pj-dash-grid { gap:12px !important; }
+  .pj-dash-col { padding:14px !important; border-radius:14px; }
+  .pj-dash-section-title { margin-bottom:8px !important; font-size:11px !important; }
+  .pj-dash-section-count { font-size:10px; padding:1px 6px; }
+  .pj-dash-task-row { padding:8px 8px !important; gap:8px; }
+  .pj-dash-task-title { font-size:12.5px; }
+  .pj-dash-task-meta { font-size:10.5px; }
+  .pj-dash-empty { font-size:11.5px; padding:10px 0; }
+  .pj-dash-see-all { font-size:11px; padding:6px 8px; }
+  .pj-dash-member { padding:14px !important; border-radius:14px; }
+  .pj-dash-member-name { font-size:12.5px; }
+  .pj-dash-member-role { font-size:10px; }
+  .pj-dash-member-stats { gap:6px; font-size:10.5px; }
+
+  /* INBOX (Caixa de Entrada) */
+  .pj-view-header { padding:10px 12px !important; gap:8px !important; flex-wrap:wrap; }
+  .pj-view-title { font-size:16px !important; }
+  .pj-wa-trigger-btn { padding:7px 12px !important; font-size:11.5px !important; }
+  .pj-inbox-section { margin-bottom:14px; }
+  .pj-inbox-section-title { font-size:12px; padding:6px 4px; gap:6px; }
+  .pj-inbox-count-badge { font-size:10px; padding:1px 6px; }
+
+  /* LISTAS de tarefa (cards) */
+  .pj-task-row { padding:10px 12px; gap:8px; }
+  .pj-list-tr { padding:10px !important; }
+
+  /* RELATÓRIO DO DIA / botões trigger no header de lista */
+  .pj-view-header > div[style*="margin-left"] { gap:6px !important; }
+}
+
+/* ≤480px: esconde texto da logo (deixa só 🔥), tabs ainda mais compactos */
+@media (max-width:480px) {
+  .app-logo-text { display:none; } /* só o ícone 🔥 fica */
+  .main-tab { padding:5px 9px !important; font-size:11px !important; }
+  .main-tab#tabProjetos { padding:5px 8px !important; }
+  .pj-dash-greet { font-size:16px !important; }
+  .pj-dash-kpi-val { font-size:22px !important; }
+}
+
+/* Fine-tuning pra telas bem pequenas (iPhone SE / Android entry) */
+@media (max-width:380px) {
+  .pj-dash-wrap { padding:10px !important; }
+  .pj-dash-col { padding:12px !important; }
+  .main-tab { padding:5px 7px !important; }
 }
