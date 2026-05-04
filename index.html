@@ -17736,6 +17736,10 @@ function pjSpawnNextRecurrence(t) {
 // ── Task Modal ──────────────────────────────────────────
 async function pjOpenTask(taskId) {
   pjCurrentTaskId = taskId;
+  // CRÍTICO: zera comentários da tarefa anterior ANTES de tudo, pra
+  // não vazar histórico de uma tarefa pra outra enquanto o snapshot
+  // novo do Firestore não chega (ou se a query falhar silenciosamente).
+  pjComments = [];
   if (typeof appCoEditStart === 'function') appCoEditStart('task:'+taskId);
   const overlay = document.getElementById('pjTaskOverlay');
   overlay.classList.add('open');
@@ -17750,13 +17754,20 @@ async function pjOpenTask(taskId) {
     task = {id:snap.id,...snap.data()};
   }
   pjRenderTaskModal(task);
-  // Real-time comments
-  if (pjCommentUnsub) pjCommentUnsub();
+  // Real-time comments — fecha listener anterior e abre o novo
+  if (pjCommentUnsub) { try { pjCommentUnsub(); } catch(_){} pjCommentUnsub = null; }
   pjCommentUnsub = pjC('pj_comments').where('taskId','==',taskId).orderBy('createdAt','asc')
     .onSnapshot(snap => {
-      pjComments = snap.docs.map(d => ({id:d.id,...d.data()}));
+      // Confere se ainda estamos na mesma tarefa — se usuário trocou de
+      // tarefa enquanto o snapshot estava em trânsito, ignora.
+      if (pjCurrentTaskId !== taskId) return;
+      // Defesa extra: filtra por taskId mesmo já vindo da query (nunca mistura)
+      pjComments = snap.docs.map(d => ({id:d.id,...d.data()}))
+        .filter(c => c.taskId === taskId);
       pjRenderActivity();
-    }, () => {});
+    }, (err) => {
+      console.warn('[pj] erro listener comentários:', err);
+    });
 }
 
 function pjRenderTaskModal(task) {
@@ -18057,7 +18068,7 @@ function pjRenderActivityComment(c, isReply) {
     ? `<div class="pj-reactions">${Object.entries(reactions).map(([emo, uids]) =>
         uids.length ? `<button class="pj-reaction ${uids.includes(uid)?'mine':''}" onclick="pjToggleReaction('${c.id}','${emo}')">${emo} ${uids.length}</button>` : ''
       ).join('')}</div>` : '';
-  const replies = pjComments.filter(x => x.parentId === c.id);
+  const replies = pjComments.filter(x => x.parentId === c.id && x.taskId === pjCurrentTaskId);
   const repliesHtml = replies.length
     ? `<div class="pj-comment-replies">${replies.map(r => pjRenderActivityComment(r, true)).join('')}</div>` : '';
   return `<div class="pj-activity-item ${isReply?'reply':''}">
@@ -18142,9 +18153,13 @@ function pjRenderActivityLogItem(a) {
 function pjRenderActivity() {
   const el = document.getElementById('pjActivityList');
   if (!el) return;
-  const top = pjComments.filter(c => !c.parentId);
+  // CRÍTICO: filtra por tarefa atual ANTES de tudo, pra blindar contra
+  // comentário de outra tarefa vazar (ex: snapshot atrasado, optimistic
+  // push antigo, etc).
+  const tid = pjCurrentTaskId;
+  const top = pjComments.filter(c => !c.parentId && c.taskId === tid);
   // Mescla: comentários top-level + log de mudanças (task.activity), ordenado por ts
-  const task = pjAllTasks.find(x => x.id === pjCurrentTaskId);
+  const task = pjAllTasks.find(x => x.id === tid);
   const activityLog = Array.isArray(task?.activity) ? task.activity : [];
   const merged = [
     ...top.map(c => ({
@@ -18331,7 +18346,10 @@ function pjCloseTaskModal() {
   pjCurrentTaskId = null;
   document.getElementById('pjTaskOverlay').classList.remove('open');
   document.body.classList.remove('pj-task-open');
-  if (pjCommentUnsub) { pjCommentUnsub(); pjCommentUnsub = null; }
+  // Fecha listener e zera comentários — evita vazar histórico pra próxima tarefa
+  if (pjCommentUnsub) { try { pjCommentUnsub(); } catch(_){} pjCommentUnsub = null; }
+  pjComments = [];
+  pjReplyTo = null;
   clearTimeout(pjModalSaveTimer);
 }
 
