@@ -3317,6 +3317,34 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-filter-btn-danger { color:#ef4444; }
 .pj-filter-btn-danger:hover { background:rgba(239,68,68,.08); border-color:#ef4444; color:#ef4444; }
 
+/* Botão "Filtros" agrupado — só no mobile */
+.pj-filter-mobile-only { display:none; }
+.pj-filter-desktop-only { display:contents; }
+.pj-filter-badge {
+  display:inline-block; min-width:18px; padding:1px 5px;
+  margin-left:4px; border-radius:9px;
+  background:var(--accent); color:#fff;
+  font-size:10px; font-weight:700; line-height:14px;
+  text-align:center;
+}
+/* Sheet de filtros (mobile) — usa pjOpenFormModal */
+.pj-filter-sheet-list { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.pj-filter-sheet-row {
+  display:flex; align-items:center; gap:12px;
+  width:100%; padding:14px;
+  background:var(--bg); border:1px solid transparent;
+  border-radius:10px; cursor:pointer;
+  font-family:inherit; color:var(--text); font-size:14px;
+  transition:background .12s, border-color .12s;
+}
+.pj-filter-sheet-row:hover { background:var(--bg2); border-color:var(--border); }
+.pj-filter-sheet-icon { font-size:18px; width:24px; flex-shrink:0; }
+.pj-filter-sheet-label { font-weight:600; flex:1; text-align:left; }
+.pj-filter-sheet-value {
+  font-size:13px; font-weight:500;
+  color:var(--text3); flex-shrink:0;
+}
+
 /* Bulk bar */
 .pj-bulk-bar {
   display:flex; align-items:center; gap:8px;
@@ -4945,6 +4973,9 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .pj-filter-search { min-width:140px; flex:1 1 100%; }
   .pj-filter-sel { font-size:12px; padding:6px 24px 6px 10px; }
   .pj-filter-btn { font-size:12px; padding:6px 10px; }
+  /* Mobile: agrupa filtros num botão único */
+  .pj-filter-desktop-only { display:none !important; }
+  .pj-filter-mobile-only { display:inline-flex !important; align-items:center; }
   .pj-bulk-bar { flex-wrap:wrap; padding:6px 10px; }
   .pj-workload-row { grid-template-columns:1fr; }
   .pj-cal-grid { grid-template-columns:repeat(7, minmax(50px, 1fr)); overflow-x:auto; }
@@ -5743,9 +5774,30 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .pj-inbox-section-title { font-size:12px; padding:6px 4px; gap:6px; }
   .pj-inbox-count-badge { font-size:10px; padding:1px 6px; }
 
-  /* LISTAS de tarefa (cards) */
-  .pj-task-row { padding:10px 12px; gap:8px; }
+  /* LISTAS de tarefa (cards) — modo limpo no mobile:
+     só título + status (dot pequeno) + vencimento. Esconde prioridade/avatares. */
+  .pj-task-row { padding:12px 14px; gap:10px; }
   .pj-list-tr { padding:10px !important; }
+  .pj-task-row .pj-priority { display:none !important; }
+  .pj-task-row .pj-task-assignees { display:none !important; }
+  /* Status dot fica menor mas continua clicável */
+  .pj-task-row .pj-status-dot { width:14px !important; height:14px !important; }
+  /* Vencimento mais compacto */
+  .pj-task-row .pj-task-due { font-size:11px !important; padding:2px 6px !important; }
+  /* Indica que a linha é tocável (chevron sutil à direita) */
+  .pj-task-row::after {
+    content:"›"; color:var(--text3); font-size:18px;
+    margin-left:auto; padding-left:4px;
+    flex-shrink:0; opacity:.5;
+  }
+  .pj-task-row > div:last-child { gap:6px !important; }
+  /* Título pega até 2 linhas pra evitar truncar */
+  .pj-task-row .pj-task-title-text {
+    white-space:normal !important;
+    overflow:visible !important;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+    line-height:1.35;
+  }
 
   /* RELATÓRIO DO DIA / botões trigger no header de lista */
   .pj-view-header > div[style*="margin-left"] { gap:6px !important; }

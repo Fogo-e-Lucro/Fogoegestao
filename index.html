@@ -12993,18 +12993,78 @@ function pjBuildFilterBar(list) {
   const fb = (label, active, fn, extra='') =>
     `<button class="pj-filter-btn${active?' pj-filter-active-btn':''}" onclick="${fn}" ${extra}>${escHtml(label)} <span style="font-size:9px;opacity:.5;margin-left:2px;">▾</span></button>`;
 
+  // Conta filtros ativos pra mostrar badge no botão mobile
+  const activeCount =
+    (f.assignee?1:0) + (f.priority?1:0) + (f.due?1:0) + (f.client?1:0) +
+    ((f.sort && f.sort!=='order')?1:0);
+
   return `<div class="pj-filter-bar">
     <input class="pj-filter-search" placeholder="🔍 Buscar tarefas..." value="${escHtml(f.search||'')}"
       oninput="pjSetFilter('search',this.value)">
-    ${fb(assigneeLabel, !!f.assignee, 'pjFilterPopAssignee(event)')}
-    ${fb(priorityLabel, !!f.priority, 'pjFilterPopPriority(event)')}
-    ${fb(dueLabel,      !!f.due,      'pjFilterPopDue(event)')}
-    ${fb(clientLabel,   !!f.client,   'pjFilterPopClient(event)')}
-    ${fb(sortLabel, !!(f.sort&&f.sort!=='order'), 'pjFilterPopSort(event)')}
-    <button class="pj-filter-btn" onclick="pjOpenViewsMenu(event)" title="Visões salvas">⭐ Visões</button>
+    <!-- Filtros individuais (desktop) -->
+    <span class="pj-filter-desktop-only">
+      ${fb(assigneeLabel, !!f.assignee, 'pjFilterPopAssignee(event)')}
+      ${fb(priorityLabel, !!f.priority, 'pjFilterPopPriority(event)')}
+      ${fb(dueLabel,      !!f.due,      'pjFilterPopDue(event)')}
+      ${fb(clientLabel,   !!f.client,   'pjFilterPopClient(event)')}
+      ${fb(sortLabel, !!(f.sort&&f.sort!=='order'), 'pjFilterPopSort(event)')}
+      <button class="pj-filter-btn" onclick="pjOpenViewsMenu(event)" title="Visões salvas">⭐ Visões</button>
+    </span>
+    <!-- Botão único agrupando filtros (mobile) -->
+    <button class="pj-filter-btn pj-filter-mobile-only ${activeCount>0?'pj-filter-active-btn':''}" onclick="pjOpenFiltersSheet()">
+      ⚙ Filtros${activeCount>0?` <span class="pj-filter-badge">${activeCount}</span>`:''}
+    </button>
     ${active ? `<button class="pj-filter-btn pj-filter-btn-danger" onclick="pjClearFilter()" title="Limpar filtros">✕ Limpar</button>` : ''}
   </div>`;
 }
+
+// Abre modal centralizado com todos os filtros agrupados (usado no mobile)
+function pjOpenFiltersSheet() {
+  const f = pjFilter;
+  const assigneeLabel = f.assignee ? (pjMembers.find(m => m.uid === f.assignee)?.name || '?') : 'Qualquer';
+  const priorityLabel = f.priority ? (PJ_PRIORITIES.find(p => p.id === f.priority)?.label || f.priority) : 'Qualquer';
+  const dueLabel      = f.due ? ({overdue:'Atrasadas',today:'Hoje',week:'7 dias',none:'Sem data'}[f.due] || f.due) : 'Qualquer';
+  const clientLabel   = f.client || 'Qualquer';
+  const sortLabel     = (f.sort && f.sort !== 'order') ? ({due:'Vencimento',priority:'Prioridade',title:'A→Z'}[f.sort]||f.sort) : 'Padrão';
+  const row = (icon, label, value, fn) => `
+    <button class="pj-filter-sheet-row" onclick="pjCloseFormModal();setTimeout(()=>${fn},80)">
+      <span class="pj-filter-sheet-icon">${icon}</span>
+      <span class="pj-filter-sheet-label">${label}</span>
+      <span class="pj-filter-sheet-value">${escHtml(value)} ▸</span>
+    </button>`;
+  const html = `
+    <h3>⚙ Filtros</h3>
+    <div class="pj-filter-sheet-list">
+      ${row('👤','Responsável', assigneeLabel, "pjFilterPopAssigneeFromSheet()")}
+      ${row('⚑','Prioridade',  priorityLabel, "pjFilterPopPriorityFromSheet()")}
+      ${row('📅','Vencimento',  dueLabel,      "pjFilterPopDueFromSheet()")}
+      ${row('🏢','Cliente',     clientLabel,   "pjFilterPopClientFromSheet()")}
+      ${row('↕','Ordenar',      sortLabel,     "pjFilterPopSortFromSheet()")}
+      ${row('⭐','Visões salvas','Abrir',       "pjOpenViewsMenuFromSheet()")}
+    </div>
+    <div class="pj-form-actions">
+      <button class="pj-btn pj-btn-secondary" onclick="pjClearFilter();pjCloseFormModal()">Limpar tudo</button>
+      <button class="pj-btn pj-btn-primary" onclick="pjCloseFormModal()">Fechar</button>
+    </div>`;
+  pjOpenFormModal(html);
+}
+
+// Wrappers que ancoram o popup no botão "Filtros" do filter bar (já que vem de modal)
+function _pjFilterAnchorBtn() {
+  return document.querySelector('.pj-filter-mobile-only')
+      || document.querySelector('.pj-filter-bar')
+      || document.body;
+}
+function _pjFakeEv() {
+  const el = _pjFilterAnchorBtn();
+  return { currentTarget: el, stopPropagation: () => {} };
+}
+function pjFilterPopAssigneeFromSheet() { pjFilterPopAssignee(_pjFakeEv()); }
+function pjFilterPopPriorityFromSheet() { pjFilterPopPriority(_pjFakeEv()); }
+function pjFilterPopDueFromSheet()      { pjFilterPopDue(_pjFakeEv()); }
+function pjFilterPopClientFromSheet()   { pjFilterPopClient(_pjFakeEv()); }
+function pjFilterPopSortFromSheet()     { pjFilterPopSort(_pjFakeEv()); }
+function pjOpenViewsMenuFromSheet()     { pjOpenViewsMenu(_pjFakeEv()); }
 function pjApplyFilter(tasks) {
   const f = pjFilter;
   const today = pjDateStr(new Date());
