@@ -3055,22 +3055,11 @@ function setSyncStatus(s) {
 // without clobbering data other users may have added.
 let _deletedPostIds = new Set();
 let _deletedClientIds = new Set();
-// Generate a stable client ID
+// Generate a stable client ID (uso legado — clientes_base usa o ID auto do Firestore)
 function _newClientId() { return 'c_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8); }
-// Ensure every in-memory client has an ID (for legacy entries created before refactor)
-function _ensureClientIds() {
-  let mutated = false;
-  Object.entries(clients).forEach(([name, v]) => {
-    if (!v || typeof v !== 'object') { clients[name] = { id: _newClientId(), name }; mutated = true; return; }
-    if (!v.id) { v.id = _newClientId(); mutated = true; }
-    if (!v.name) { v.name = name; mutated = true; }
-  });
-  if (mutated) { try { localStorage.setItem('roteiros_clients', JSON.stringify(clients)); } catch(_) {} }
-}
 async function _pushToCloud() {
   setSyncStatus('syncing');
   try {
-    _ensureClientIds();
     const batch = _db.batch();
     // Upsert all current posts (no full-collection wipe — preserves other users' additions)
     posts.forEach(post => {
@@ -3088,33 +3077,6 @@ async function _pushToCloud() {
     await batch.commit();
     setSyncStatus('ok');
   } catch(e) { console.warn('Firestore push error:', e); setSyncStatus('err'); }
-}
-
-// Migração: doc legado `config/clients` → coleção `clients`. Roda 1x.
-async function _migrateLegacyClientsDoc() {
-  try {
-    const flag = localStorage.getItem('clients_migrated_v1');
-    if (flag === '1') return;
-    const legacy = await _db.collection('config').doc('clients').get();
-    if (!legacy.exists) { localStorage.setItem('clients_migrated_v1','1'); return; }
-    const data = legacy.data() || {};
-    const batch = _db.batch();
-    let count = 0;
-    Object.entries(data).forEach(([k, v]) => {
-      if (!k || k.startsWith('__deleted__')) return;
-      // Sai cedo se já existe na nova coleção (idempotente)
-      const id = (v && v.id) || _newClientId();
-      const entry = { id, name: k };
-      if (v?.color) entry.color = v.color;
-      if (v?.logo) entry.logo = v.logo;
-      entry.createdAt = Date.now();
-      entry.updatedAt = Date.now();
-      batch.set(_db.collection('clients').doc(id), entry, { merge: true });
-      count++;
-    });
-    if (count) await batch.commit();
-    localStorage.setItem('clients_migrated_v1','1');
-  } catch(e) { console.warn('Migration warning:', e); }
 }
 
 function schedulePush() {
@@ -3149,7 +3111,9 @@ async function loadFromCloud() {
   } catch(e) { console.warn('Firestore load failed, using localStorage:', e); setSyncStatus('err'); }
 }
 
-function saveClients() { localStorage.setItem('roteiros_clients', JSON.stringify(clients)); schedulePush(); }
+// `clients` agora é um cache derivado de clientes_base — basta gravar local pra render rápido.
+// Mutação real acontece em clientes_base (setClientColor, setClientLogoFile, etc).
+function saveClients() { try { localStorage.setItem('roteiros_clients', JSON.stringify(clients)); } catch(_){} }
 function getClientColor(name) {
   if (!name) return null;
   // Fonte primária: Base de Dados (clientes_base)
@@ -3251,34 +3215,26 @@ function importData(e) {
    RESTAURANT FILTER
 ═══════════════════════════════════════════════════════ */
 function getRestaurants() {
-  // Fonte primária: Base de Dados (Firestore clientes_base) — guarda contra TDZ
+  // Fonte única: clientes_base. Inclui restaurantes referenciados em posts antigos
+  // como fallback (assim posts pré-BD não somem da listagem).
   let fromBD = [];
   try {
     if (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes)) {
       fromBD = _bdClientes.map(c => c.nome).filter(Boolean);
     }
   } catch(e) { fromBD = []; }
-  // Fallback: posts e clients antigos (compatibilidade)
   const fromPosts = posts.map(p => p.restaurante).filter(Boolean);
-  const fromClients = Object.keys(clients);
-  return [...new Set([...fromBD, ...fromPosts, ...fromClients])].sort();
+  return [...new Set([...fromBD, ...fromPosts])].sort();
 }
 
-// Lista canônica de clientes — fonte única de verdade vinda da Base de Dados.
-// Quando a BD atualiza (Firestore real-time), tudo que usa essa função reflete.
-// Inclui legacy (clients) só como fallback temporário pra compatibilidade.
+// Lista canônica de clientes — fonte única: clientes_base.
 function getCanonicalClientNames() {
-  let fromBD = [];
   try {
     if (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes)) {
-      fromBD = _bdClientes.map(c => c.nome).filter(Boolean);
+      return [...new Set(_bdClientes.map(c => c.nome).filter(Boolean))].sort();
     }
-  } catch(e) { fromBD = []; }
-  // Se BD ainda não carregou, cai no legacy. Quando BD carrega, ela domina.
-  if (fromBD.length === 0) {
-    try { return Object.keys(clients || {}).sort(); } catch(e) { return []; }
-  }
-  return [...new Set(fromBD)].sort();
+  } catch(e) {}
+  return [];
 }
 
 // Reconstrói a variável local `clients` a partir de `_bdClientes` (fonte única de verdade).
@@ -3395,49 +3351,54 @@ function confirmarNovoRestaurante() {
   const input = document.getElementById('restaurante');
   const name = input.value.trim();
   if (!name) { input.focus(); return; }
-  if (!clients[name]) {
-    clients[name] = {
-      id: _newClientId(),
-      name,
+  // Cadastra direto na fonte única (clientes_base). Listener real-time atualiza tudo.
+  const exists = (typeof _bdClientes !== 'undefined' && _bdClientes.find(c => (c.nome||c.razaoSocial) === name));
+  if (!exists && typeof _db !== 'undefined') {
+    _db.collection('clientes_base').add({
+      nome: name,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      createdBy: getCurrentEmail() || null
-    };
-    saveClients();
+      createdBy: (typeof getCurrentEmail === 'function' ? getCurrentEmail() : null) || null,
+    }).catch(e => console.warn('Falha ao criar cliente em clientes_base:', e));
   }
   populateRestauranteSelect(name);
   const wrap = document.getElementById('novoRestauranteWrap');
   if (wrap) wrap.style.display = 'none';
-  showToast('success','✅','Cliente cadastrado');
+  showToast('success','✅','Cliente cadastrado no Banco de Dados');
 }
 
-// Renomeia cliente em batch: cliente + todos os posts referenciando o nome antigo.
+// Renomeia cliente em clientes_base + atualiza posts referenciando o nome antigo.
 async function renameClient(oldName, newName) {
   newName = (newName||'').trim();
   if (!oldName || !newName || oldName === newName) return false;
-  if (!clients[oldName]) return false;
-  if (clients[newName]) {
+  const bd = _findBdClienteByName(oldName);
+  if (!bd) return false;
+  if (_findBdClienteByName(newName)) {
     showToast('warn','⚠️','Já existe um cliente com esse nome.');
     return false;
   }
-  const c = clients[oldName];
-  c.name = newName;
-  c.updatedAt = Date.now();
-  clients[newName] = c;
-  delete clients[oldName];
+  try {
+    if (typeof _db !== 'undefined') {
+      await _db.collection('clientes_base').doc(bd.id).update({ nome: newName, updatedAt: Date.now() });
+    }
+  } catch(e) { console.warn('rename failed:', e); showToast('danger','❌','Erro ao renomear cliente'); return false; }
   posts.forEach(p => { if (p.restaurante === oldName) p.restaurante = newName; });
   if (activeRestaurante === oldName) activeRestaurante = newName;
-  saveClients(); savePosts();
+  savePosts();
   try { renderAll(); } catch(_) {}
   showToast('success','✏️',`Cliente renomeado para "${newName}"`);
   return true;
 }
 
-// Atualiza campos opcionais (instagram, telefone, notas, etc.)
+// Atualiza campos opcionais (instagram, telefone, notas, etc.) em clientes_base.
 function updateClientFields(name, fields) {
-  if (!clients[name]) return;
-  Object.assign(clients[name], fields, { updatedAt: Date.now() });
-  saveClients();
+  const bd = _findBdClienteByName(name);
+  if (!bd || typeof _db === 'undefined') return;
+  // Mapeia nomes legados pra schema do BD
+  const map = { phone:'telefone', address:'endereco', website:'site', notes:'observacoes', segment:'segmento', priority:'prioridade', color:'cor', logo:'logoUrl' };
+  const payload = { updatedAt: Date.now() };
+  Object.entries(fields||{}).forEach(([k,v]) => { payload[map[k] || k] = v; });
+  _db.collection('clientes_base').doc(bd.id).update(payload).catch(e => console.warn('updateClientFields failed:', e));
 }
 
 function renderRestaurantChips() {
@@ -4143,18 +4104,16 @@ if (typeof firebase !== 'undefined' && firebase.auth) {
   });
 }
 
-/* AI Config Modal */
+/* AI Config Modal — fonte: clientes_base (campo aiConfig) */
 function openAiConfig() {
-  // Populate client selector com todos os restaurantes (posts + clients obj)
   const sel = document.getElementById('aiClienteSelect');
-  const fromPosts = getRestaurants();
-  const fromClients = Object.keys(clients);
-  const allNames = [...new Set([...fromPosts, ...fromClients])].sort();
+  // Lista canônica vem do BD (clientes_base)
+  const allNames = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : [];
   sel.innerHTML = '<option value="">— Selecione um cliente —</option>' +
     allNames.map(n => `<option value="${escHtml(n)}">${escHtml(n)}</option>`).join('');
   // Pre-select if form has a restaurante
   const formRest = document.getElementById('restaurante')?.value.trim();
-  if (formRest && clients[formRest]) {
+  if (formRest && _findBdClienteByName(formRest)) {
     sel.value = formRest;
     loadAiConfigForClient(formRest);
   } else {
@@ -4169,7 +4128,8 @@ function loadAiConfigForClient(name) {
   const saveBtn = document.getElementById('aiSaveBtn');
   const hint = document.getElementById('aiClienteHint');
   if (!name) { fields.style.display='none'; saveBtn.style.display='none'; hint.style.display='none'; return; }
-  const cfg = clients[name]?.aiConfig || {};
+  const bd = _findBdClienteByName(name);
+  const cfg = (bd && bd.aiConfig) || {};
   document.getElementById('aiTomVoz').value           = cfg.tomVoz || '';
   document.getElementById('aiExGanchos').value        = cfg.exGanchos || '';
   document.getElementById('aiExLegendas').value       = cfg.exLegendas || '';
@@ -4184,19 +4144,26 @@ function closeAiConfig() {
 function saveAiConfig() {
   const name = document.getElementById('aiClienteSelect').value;
   if (!name) return;
-  if (!clients[name]) clients[name] = {};
-  clients[name].aiConfig = {
+  const bd = _findBdClienteByName(name);
+  if (!bd || typeof _db === 'undefined') {
+    showToast('danger','❌','Cliente não encontrado no Banco de Dados.');
+    return;
+  }
+  const aiConfig = {
     tomVoz:           document.getElementById('aiTomVoz').value.trim(),
     exGanchos:        document.getElementById('aiExGanchos').value.trim(),
     exLegendas:       document.getElementById('aiExLegendas').value.trim(),
     instrucoesExtras: document.getElementById('aiInstrucoesExtras').value.trim(),
   };
-  saveClients();
-  closeAiConfig();
-  showToast('success','🧠',`Estilo da IA salvo para ${name}!`);
+  _db.collection('clientes_base').doc(bd.id)
+    .update({ aiConfig, updatedAt: Date.now() })
+    .then(() => { closeAiConfig(); showToast('success','🧠',`Estilo da IA salvo para ${name}!`); })
+    .catch(e => { console.warn('saveAiConfig failed:', e); showToast('danger','❌','Erro ao salvar.'); });
 }
 function getAiConfigForClient(name) {
-  return (name && clients[name]?.aiConfig) || {};
+  if (!name) return {};
+  const bd = _findBdClienteByName(name);
+  return (bd && bd.aiConfig) || {};
 }
 function buildAiStyleBlock() {
   const name = document.getElementById('restaurante')?.value.trim() || '';
@@ -4547,13 +4514,16 @@ function undoDelete() {
 function deleteClient(name) {
   const clientPosts = posts.filter(p => p.restaurante === name);
   const savedPosts = [...clientPosts];
-  const savedClientData = clients[name] ? { ...clients[name] } : null;
+  const bd = _findBdClienteByName(name);
+  const savedClientData = bd ? { ...bd } : (clients[name] ? { ...clients[name] } : null);
   clientPosts.forEach(p => _deletedPostIds.add(p.id));
   posts = posts.filter(p => p.restaurante !== name);
-  if (savedClientData?.id) _deletedClientIds.add(savedClientData.id);
-  delete clients[name];
+  // Remove do BD (fonte única). O listener real-time vai limpar `clients[name]` automaticamente.
+  if (bd && typeof _db !== 'undefined') {
+    _db.collection('clientes_base').doc(bd.id).delete().catch(e => console.warn('delete BD failed:', e));
+  }
   if (activeRestaurante === name) activeRestaurante = null;
-  savePosts(); saveClients(); renderAll();
+  savePosts(); renderAll();
   // Undo toast
   const tc = document.getElementById('toastContainer');
   const t = document.createElement('div');
@@ -4571,8 +4541,13 @@ function undoDeleteClient() {
   clearTimeout(window._undoClientTimer);
   posts = [...posts, ...window._undoClient.posts];
   window._undoClient.posts.forEach(p => _deletedPostIds.delete(p.id));
-  if (window._undoClient.clientData?.id) _deletedClientIds.delete(window._undoClient.clientData.id);
-  if (window._undoClient.clientData) { clients[window._undoClient.name] = window._undoClient.clientData; saveClients(); }
+  // Recria o doc no clientes_base usando o ID salvo (preserva referências)
+  const cd = window._undoClient.clientData;
+  if (cd && cd.id && typeof _db !== 'undefined') {
+    const { id, ...rest } = cd;
+    _db.collection('clientes_base').doc(id).set({ ...rest, updatedAt: Date.now() }, { merge: true })
+      .catch(e => console.warn('undoDeleteClient failed:', e));
+  }
   savePosts(); renderAll(); window._undoClient = null;
   document.getElementById('undoClientToast')?.remove();
   showToast('success','↩️','Cliente restaurado!');
@@ -9806,8 +9781,15 @@ async function mtrLocRenderMap() {
   const key = getApiKey('google_places');
   if (!key) return;
 
-  // Collect clients with addresses
-  const withAddr = Object.values(clients || {}).filter(c => c && c.address && c.address.trim());
+  // Collect clients with addresses (fonte: clientes_base)
+  const withAddr = ((typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes)) ? _bdClientes : [])
+    .map(c => ({
+      id: c.id,
+      name: c.nome || c.razaoSocial || '',
+      address: c.endereco || c.address || '',
+      color: c.cor || c.color || null,
+    }))
+    .filter(c => c.address && c.address.trim());
 
   // Render list view
   const listEl = document.getElementById('mtrLocList');
@@ -14514,11 +14496,11 @@ async function pjFabExtractWithAi() {
   const lists = pjLists.map(l => ({ id: l.id, name: l.name }));
   const members = (pjMembers || []).filter(m => m.name || m.email)
                                    .map(m => ({ uid: m.uid, name: m.name || m.email }));
-  // Clientes vêm de `restaurantes` (objeto legado) — extrai nomes únicos
+  // Clientes vêm de clientes_base (fonte única)
   let clients = [];
   try {
-    if (typeof restaurantes !== 'undefined' && restaurantes) {
-      clients = Object.keys(restaurantes).map(name => ({ id: name, name }));
+    if (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes)) {
+      clients = _bdClientes.map(c => ({ id: c.id, name: c.nome || c.razaoSocial || '' })).filter(c => c.name);
     }
   } catch(_) {}
   const today = new Date(); today.setHours(0,0,0,0);
