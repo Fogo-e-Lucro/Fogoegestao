@@ -2322,8 +2322,8 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
   .mtr-funnel-arrow{transform:rotate(90deg);}
 }
 
-/* Esconde a barra global de cliente/IA quando estamos em Métricas (essa aba tem seleção própria) */
-body[data-active-tab="metricas"] .rest-bar { display:none; }
+/* Barra global de cliente removida — fonte única é a Base de Dados (aba Banco de Dados) */
+.rest-bar { display:none !important; }
 
 /* Customize sidebar */
 .mtr-cust-btn { padding:8px 14px;background:var(--card);border:1px solid var(--border);color:var(--text1);border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;font-family:inherit; }
@@ -5539,11 +5539,19 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .user-chip { align-self:auto; padding:3px 8px 3px 3px; font-size:11.5px; flex-shrink:1; min-width:0; max-width:55%; }
   .user-chip .user-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .sync-dot { width:8px; height:8px; flex-shrink:0; }
-  /* Esconde botões secundários do header (theme picker, uazapi status, presença):
-     no mobile o espaço fica pra tabs + avatar; configs ficam disponíveis no menu de perfil */
+  /* Botões secundários do header no mobile: visíveis mas compactos.
+     Mantém acesso a 🏢 Base de Dados, 🌙 Tema e ⚙️ Configurações. */
   .app-header .theme-picker-btn,
-  .app-header .app-uazapi-status,
+  .app-header .app-uazapi-status {
+    width:30px !important; height:30px !important;
+    flex-shrink:0; padding:0 !important;
+  }
+  .app-header .theme-picker-btn svg,
+  .app-header .app-uazapi-status svg { width:14px; height:14px; }
   .app-header .app-presence { display:none !important; }
+  /* User chip cede espaço pros ícones */
+  .user-chip { max-width:38% !important; }
+  .user-chip .user-name { display:none; } /* mobile: só avatar — espaço pros ícones */
 
   /* CLIENTE BAR (sticky com dropdown) */
   .restaurant-sticky { padding:8px 10px; gap:8px; }
@@ -5607,8 +5615,12 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .main-tabs { gap:1px; }
   .pj-dash-greet { font-size:16px !important; }
   .pj-dash-kpi-val { font-size:22px !important; }
-  /* Chip volta a ter limite pra dividir espaço com tabs */
-  .user-chip { max-width:48%; font-size:12px; }
+  /* Chip só com avatar (sem nome) pra liberar espaço pros ícones */
+  .user-chip { max-width:none; font-size:12px; padding:3px; }
+  .user-chip .user-name { display:none; }
+  /* Ícones do header ainda menores em telas bem estreitas */
+  .app-header .theme-picker-btn,
+  .app-header .app-uazapi-status { width:28px !important; height:28px !important; }
 }
 
 /* Fine-tuning pra telas bem pequenas (iPhone SE / Android entry) */

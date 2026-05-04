@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
 <link rel="stylesheet" href="styles.css">
+<!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
+<style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0f1117">
@@ -36,6 +38,20 @@
   <script async defer src="https://connect.facebook.net/pt_BR/sdk.js"></script>
 </head>
 <body>
+<script>
+  // Remove a barra global de Cliente em runtime (caso HTML antigo venha do cache)
+  (function killRestBar(){
+    const tryKill = () => {
+      const el = document.getElementById('restBar');
+      if (el) el.remove();
+      document.querySelectorAll('.rest-bar').forEach(n => n.remove());
+    };
+    tryKill();
+    document.addEventListener('DOMContentLoaded', tryKill);
+    // observa caso algum script tente reinjetar
+    new MutationObserver(tryKill).observe(document.documentElement, {childList:true, subtree:true});
+  })();
+</script>
 
 <!-- LOGIN SCREEN -->
 <div class="login-screen" id="loginScreen">
@@ -400,19 +416,11 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
   </div>
 </div>
 
-<!-- RESTAURANT BAR -->
-<div class="rest-bar" id="restBar">
-  <span class="rest-bar-label">Cliente</span>
-  <div style="position:relative;">
-    <button class="rest-selector-btn" id="restSelectorBtn" onclick="toggleRestDropdown()">
-      <span id="restSelectorLabel">Todos os clientes</span>
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="2 4 6 8 10 4"/></svg>
-    </button>
-    <div class="rest-dropdown" id="restDropdown"></div>
-  </div>
-  <div class="rest-bar-actions">
-    <button class="btn-data" onclick="openAiConfig()" title="Treinar estilo da IA">🧠 IA</button>
-  </div>
+<!-- RESTAURANT BAR removida — fonte única de clientes é a aba Banco de Dados.
+     Mantemos um stub oculto pra preservar referências de scripts (#restBar, #restSelectorLabel, #restDropdown). -->
+<div class="rest-bar" id="restBar" style="display:none !important" aria-hidden="true">
+  <span id="restSelectorLabel" style="display:none"></span>
+  <div id="restDropdown" style="display:none"></div>
 </div>
 
 <!-- TOASTS -->
@@ -3074,25 +3082,8 @@ async function _pushToCloud() {
       batch.delete(_db.collection('posts').doc(id));
     });
     _deletedPostIds.clear();
-    // Clients → coleção `clients` (uma doc por cliente). Resolve limite de 1MB.
-    // Skip logos > 700KB para caber no doc.
-    Object.values(clients).forEach(c => {
-      if (!c || !c.id) return;
-      const data = { id: c.id, name: c.name || '' };
-      if (c.color) data.color = c.color;
-      if (c.logo && typeof c.logo === 'string' && c.logo.length < 700 * 1024) data.logo = c.logo;
-      ['phone','instagram','notes','segment','priority','address','website','email'].forEach(f => {
-        if (c[f] != null && c[f] !== '') data[f] = c[f];
-      });
-      data.createdAt = c.createdAt || Date.now();
-      data.updatedAt = Date.now();
-      if (c.createdBy) data.createdBy = c.createdBy;
-      batch.set(_db.collection('clients').doc(c.id), data);
-    });
-    // Apply deletions
-    _deletedClientIds.forEach(id => {
-      batch.delete(_db.collection('clients').doc(id));
-    });
+    // Clientes: fonte única é a coleção `clientes_base` (módulo Banco de Dados).
+    // Não escrevemos mais em `clients` — apenas drenamos a fila de deletados legacy.
     _deletedClientIds.clear();
     await batch.commit();
     setSyncStatus('ok');
@@ -3152,25 +3143,9 @@ async function loadFromCloud() {
       setSyncStatus('ok');
       try { renderAll(); } catch(_) {}
     }, e => { console.warn('Posts listener error:', e); setSyncStatus('err'); });
-    // ── Realtime listener: clients (coleção `clients`, uma doc por cliente) ──
-    if (_clientsUnsub) { try { _clientsUnsub(); } catch(_) {} }
-    // Migra doc legado uma vez (assíncrono — listener pega o resultado)
-    _migrateLegacyClientsDoc();
-    _clientsUnsub = _db.collection('clients').onSnapshot(snap => {
-      const cloudClients = {};
-      snap.docs.forEach(d => {
-        const data = d.data() || {};
-        const name = data.name || d.id;
-        cloudClients[name] = { ...data, id: data.id || d.id, name };
-      });
-      // Preserva logos grandes só locais (não cabem no Firestore)
-      Object.entries(clients).forEach(([k, v]) => {
-        if (cloudClients[k] && v?.logo && !cloudClients[k].logo) cloudClients[k].logo = v.logo;
-      });
-      clients = cloudClients;
-      try { localStorage.setItem('roteiros_clients', JSON.stringify(clients)); } catch(_) {}
-      try { renderRestaurantChips(); renderCalendar(); populateRestauranteSelect(document.getElementById('restaurante')?.value || ''); } catch(_) {}
-    }, e => { console.warn('Clients listener error:', e); });
+    // Coleção legacy `clients` foi descontinuada — fonte única é `clientes_base`.
+    // O hook onClientesBaseChanged reconstrói a variável local `clients` a partir do BD.
+    if (_clientsUnsub) { try { _clientsUnsub(); _clientsUnsub = null; } catch(_) {} }
   } catch(e) { console.warn('Firestore load failed, using localStorage:', e); setSyncStatus('err'); }
 }
 
@@ -3200,19 +3175,45 @@ function getClientLogo(name) {
   // Fallback: sistema legado
   return clients[name]?.logo || null;
 }
-function setClientColor(name, color) {
-  if (!clients[name]) clients[name] = {};
-  clients[name].color = color;
-  saveClients(); renderRestaurantChips(); renderCalendar();
+// Helper: encontra o doc do cliente em clientes_base pelo nome
+function _findBdClienteByName(name) {
+  try {
+    if (typeof _bdClientes === 'undefined' || !Array.isArray(_bdClientes)) return null;
+    return _bdClientes.find(c => (c.nome||c.razaoSocial) === name) || null;
+  } catch(_) { return null; }
 }
+
+function setClientColor(name, color) {
+  // Atualização otimista local
+  if (!clients[name]) clients[name] = { name };
+  clients[name].color = color;
+  // Persiste em clientes_base (fonte única)
+  const bd = _findBdClienteByName(name);
+  if (bd && typeof _db !== 'undefined') {
+    _db.collection('clientes_base').doc(bd.id)
+      .update({ cor: color, updatedAt: Date.now() })
+      .catch(e => console.warn('cor update failed:', e));
+  }
+  try { renderRestaurantChips(); renderCalendar(); } catch(_) {}
+}
+
 function setClientLogoFile(name, ev) {
   const file = ev.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    if (!clients[name]) clients[name] = {};
-    clients[name].logo = e.target.result;
-    saveClients(); renderRestaurantChips();
-    showToast('success','🖼️','Logo salva!');
+    const dataUrl = e.target.result;
+    if (!clients[name]) clients[name] = { name };
+    clients[name].logo = dataUrl;
+    const bd = _findBdClienteByName(name);
+    if (bd && typeof _db !== 'undefined') {
+      _db.collection('clientes_base').doc(bd.id)
+        .update({ logoUrl: dataUrl, updatedAt: Date.now() })
+        .then(() => showToast('success','🖼️','Logo salva!'))
+        .catch(err => { console.warn('logo update failed:', err); showToast('warn','⚠️','Logo salva localmente; falhou no BD.'); });
+    } else {
+      showToast('success','🖼️','Logo salva localmente!');
+    }
+    try { renderRestaurantChips(); } catch(_) {}
   };
   reader.readAsDataURL(file);
   ev.target.value = '';
@@ -3280,9 +3281,41 @@ function getCanonicalClientNames() {
   return [...new Set(fromBD)].sort();
 }
 
+// Reconstrói a variável local `clients` a partir de `_bdClientes` (fonte única de verdade).
+// Mantém compatibilidade com código legacy que lê clients[name].color / .logo / etc.
+function _rebuildClientsFromBD() {
+  try {
+    if (typeof _bdClientes === 'undefined' || !Array.isArray(_bdClientes)) return;
+    const next = {};
+    _bdClientes.forEach(c => {
+      const name = c.nome || c.razaoSocial; if (!name) return;
+      next[name] = {
+        id: c.id,
+        name,
+        color: c.cor || c.color || null,
+        logo: c.logoUrl || c.fotoUrl || c.logo || null,
+        instagram: c.instagram || null,
+        phone: c.telefone || c.phone || null,
+        email: c.email || null,
+        address: c.endereco || c.address || null,
+        website: c.site || c.website || null,
+        notes: c.observacoes || c.notes || null,
+        segment: c.segmento || c.segment || null,
+        priority: c.prioridade || c.priority || null,
+        createdAt: c.createdAt || Date.now(),
+        updatedAt: c.updatedAt || Date.now(),
+      };
+    });
+    clients = next;
+    try { localStorage.setItem('roteiros_clients', JSON.stringify(clients)); } catch(_) {}
+  } catch(e) { console.warn('rebuildClientsFromBD failed:', e); }
+}
+
 // Hook chamado pelo listener da Base de Dados quando _bdClientes atualiza.
 // Re-renderiza tudo que mostra lista de cliente em qualquer aba ativa.
 function onClientesBaseChanged() {
+  // 0) Reconstrói o objeto local `clients` a partir do BD (fonte única)
+  _rebuildClientsFromBD();
   // 1) Dropdown de restaurante no calendário
   try { if (typeof populateRestauranteSelect === 'function') populateRestauranteSelect(); } catch(e) {}
   // 2) Aba de Projetos: filtros + tarefa aberta + view "Por Cliente"
