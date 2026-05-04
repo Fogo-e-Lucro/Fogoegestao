@@ -17463,7 +17463,7 @@ function pjRenderClientPicker() {
     </div>
     <div class="pj-form-actions">
       <button class="pj-btn pj-btn-secondary" onclick="pjCloseFormModal()">Fechar</button>
-      <button class="pj-btn pj-btn-primary" onclick="pjCloseFormModal();switchTab('base',document.getElementById('bdIconBtn'))">＋ Cadastrar novo</button>
+      <button class="pj-btn pj-btn-primary" onclick="pjGoToBdNewClient()">＋ Cadastrar novo</button>
     </div>`;
   pjOpenFormModal(html);
   setTimeout(() => {
@@ -17515,6 +17515,15 @@ async function pjPickClient(name) {
   if (t2 && pjCurrentTaskId === taskId) pjRenderTaskModal({ ...t2 });
   if (pjCurrentView.type === 'list' || pjCurrentView.type === 'kanban' || pjCurrentView.type === 'inbox') pjRenderMain();
   pjCloseFormModal();
+}
+
+// Vai pra aba BD e abre o cadastro de novo cliente — fecha tudo antes pra
+// não deixar modal de tarefa por baixo.
+function pjGoToBdNewClient() {
+  try { pjCloseFormModal(); } catch(_) {}
+  try { pjCloseTaskModal(); } catch(_) {}
+  try { switchTab('base', document.getElementById('bdIconBtn')); } catch(_) {}
+  try { setTimeout(() => bdNewCliente(), 200); } catch(_) {}
 }
 
 function pjOpenPriorityMenu(ev, taskId) {

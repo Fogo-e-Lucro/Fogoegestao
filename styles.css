@@ -4226,9 +4226,15 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 }
 .pj-cli-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
 .pj-cli-logo {
-  width:28px; height:28px; border-radius:7px; flex-shrink:0;
+  width:28px !important; height:28px !important; min-width:28px; max-width:28px;
+  border-radius:7px; flex-shrink:0;
   object-fit:cover; background:var(--bg2);
   border:1px solid var(--border);
+  display:block;
+}
+/* Defesa extra: qualquer img solta dentro do form modal nunca estoura */
+.pj-form-card img:not(.pj-cli-logo):not([style*="width"]) {
+  max-width:100%; max-height:200px; height:auto;
 }
 .pj-cli-name {
   flex:1; min-width:0; font-size:14px; font-weight:500; color:var(--text);
