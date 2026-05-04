@@ -3038,6 +3038,20 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 }
 .pj-list-th-cell.drop-before::before { left:-6px; }
 .pj-list-th-cell.drop-after::after  { right:-6px; }
+/* Botão + adicionar campo no cabeçalho */
+.pj-th-add-col {
+  display:flex; align-items:center; justify-content:center;
+  height:100%; cursor:pointer;
+  font-size:16px; font-weight:400;
+  color:var(--text3);
+  border-radius:6px;
+  transition:background .15s, color .15s;
+  user-select:none;
+}
+.pj-th-add-col:hover {
+  background:color-mix(in srgb, var(--accent) 12%, transparent);
+  color:var(--accent);
+}
 /* Estado vazio (todas colunas ocultas) */
 .pj-empty-cols {
   display:flex; flex-direction:column; align-items:center; gap:12px;

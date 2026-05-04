@@ -12695,6 +12695,42 @@ function pjOpenColumnsMenu(ev, listId) {
   });
 }
 
+// Botão + no cabeçalho: mostrar campos ocultos ou criar novo campo
+function pjOpenAddFieldMenu(ev, listId) {
+  if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+  const list = pjLists.find(l => l.id === listId); if (!list) return;
+  const allCols = pjListColumns(list);
+  const prefs   = pjGetColPrefs(listId);
+  const hidden  = new Set(prefs.hidden || []);
+  const hiddenCols = allCols.filter(c => hidden.has(c.id) && c.id !== 'title');
+  const items = [{ header:true, label:'Adicionar campo' }];
+  if (hiddenCols.length) {
+    items.push({ header:true, label:'Campos ocultos' });
+    hiddenCols.forEach(c => {
+      items.push({ id:`show:${c.id}`, label:c.label, icon:'👁️' });
+    });
+    items.push({ divider:true });
+  }
+  if (_viewIsAdmin) {
+    items.push({ id:'__new__', label:'Criar novo campo', icon:'＋' });
+  } else {
+    items.push({ id:'__cols__', label:'Gerenciar colunas', icon:'⚙️' });
+  }
+  pjShowPopupMenu(ev, items, null, (id) => {
+    if (id === '__new__') { pjOpenFieldsEditor(listId); return; }
+    if (id === '__cols__') { pjOpenColumnsMenu(ev, listId); return; }
+    if (id && id.startsWith('show:')) {
+      const colId = id.slice(5);
+      const p = pjGetColPrefs(listId);
+      const hs = new Set(p.hidden || []);
+      hs.delete(colId);
+      p.hidden = [...hs];
+      pjSaveColPrefs(listId, p);
+      pjRenderMain();
+    }
+  });
+}
+
 // ── List View ───────────────────────────────────────────
 function pjBuildListPage(listId) {
   const list = pjLists.find(l => l.id === listId);
@@ -12738,7 +12774,7 @@ function pjBuildListPage(listId) {
     </div></div>`;
     return h + '</div>';
   }
-  const gridTpl = ['28px', ...cols.map(c => c.width)].join(' ');
+  const gridTpl = ['28px', ...cols.map(c => c.width), '36px'].join(' ');
 
   h += `<div class="pj-list-table">
     <div class="pj-list-th-row" style="grid-template-columns:${gridTpl}"
@@ -12751,6 +12787,7 @@ function pjBuildListPage(listId) {
         title="Arraste pra reordenar">
         <span class="pj-th-grip" aria-hidden="true">⠿</span><span class="pj-th-label">${escHtml(c.label)}</span>
       </div>`).join('')}
+      <div class="pj-th-add-col" title="Adicionar campo" onclick="pjOpenAddFieldMenu(event,'${listId}')">＋</div>
     </div>`;
 
   statuses.forEach(st => {
