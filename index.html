@@ -3176,8 +3176,31 @@ async function loadFromCloud() {
 }
 
 function saveClients() { localStorage.setItem('roteiros_clients', JSON.stringify(clients)); schedulePush(); }
-function getClientColor(name) { return (name && clients[name]?.color) || null; }
-function getClientLogo(name) { return (name && clients[name]?.logo) || null; }
+function getClientColor(name) {
+  if (!name) return null;
+  // Fonte primária: Base de Dados (clientes_base)
+  try {
+    if (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes)) {
+      const bd = _bdClientes.find(c => c.nome === name);
+      if (bd?.cor) return bd.cor;
+    }
+  } catch(e) {}
+  // Fallback: sistema legado
+  return clients[name]?.color || null;
+}
+function getClientLogo(name) {
+  if (!name) return null;
+  // Fonte primária: Base de Dados (clientes_base)
+  try {
+    if (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes)) {
+      const bd = _bdClientes.find(c => c.nome === name);
+      if (bd?.logoUrl) return bd.logoUrl;
+      if (bd?.fotoUrl) return bd.fotoUrl;
+    }
+  } catch(e) {}
+  // Fallback: sistema legado
+  return clients[name]?.logo || null;
+}
 function setClientColor(name, color) {
   if (!clients[name]) clients[name] = {};
   clients[name].color = color;
@@ -19308,16 +19331,66 @@ window.bdRestoreAllSections = function() {
   if (_bdSelectedId) bdRenderDetail(_bdSelectedId);
 };
 
+// ── Gerenciar campos ocultos por seção ─────────────────────────────
+function _bdGetHiddenFields() {
+  try { return JSON.parse(localStorage.getItem('bd_hidden_fields') || '[]'); } catch { return []; }
+}
+function _bdSetHiddenFields(arr) {
+  localStorage.setItem('bd_hidden_fields', JSON.stringify(arr));
+}
+window.bdToggleField = function(field) {
+  const h = new Set(_bdGetHiddenFields());
+  if (h.has(field)) h.delete(field); else h.add(field);
+  _bdSetHiddenFields([...h]);
+  if (_bdSelectedId) bdRenderDetail(_bdSelectedId);
+};
+window.bdManageFields = function(ev, secId, fieldsJson) {
+  ev.stopPropagation();
+  const fields = JSON.parse(fieldsJson);
+  const hidden = new Set(_bdGetHiddenFields());
+  const items = fields.map(f => ({
+    id: `toggle:${f.key}`,
+    label: f.label,
+    icon: hidden.has(f.key) ? '👁️' : '✓',
+    checked: !hidden.has(f.key)
+  }));
+  // Constrói menu de checkboxes inline
+  const existing = document.getElementById('bd-field-mgr-popup');
+  if (existing) existing.remove();
+  const btn = ev.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  const popup = document.createElement('div');
+  popup.id = 'bd-field-mgr-popup';
+  popup.style.cssText = `position:fixed;z-index:9999;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);padding:10px 0;min-width:200px;top:${rect.bottom+6}px;left:${Math.min(rect.left, window.innerWidth-220)}px`;
+  popup.innerHTML = `<div style="padding:6px 14px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);margin-bottom:4px;">Campos visíveis</div>`
+    + fields.map(f => {
+      const vis = !hidden.has(f.key);
+      return `<label style="display:flex;align-items:center;gap:10px;padding:7px 14px;cursor:pointer;font-size:13px;color:var(--text1);" onclick="event.stopPropagation()">
+        <input type="checkbox" ${vis?'checked':''} onchange="bdToggleField('${f.key}')" style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer;">
+        ${f.label}
+      </label>`;
+    }).join('')
+    + `<div style="border-top:1px solid var(--border);margin-top:4px;padding:6px 14px 2px;"><button onclick="document.getElementById('bd-field-mgr-popup')?.remove()" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;">Fechar</button></div>`;
+  document.body.appendChild(popup);
+  const close = e => { if (!popup.contains(e.target) && e.target !== btn) { popup.remove(); document.removeEventListener('mousedown', close); } };
+  setTimeout(() => document.addEventListener('mousedown', close), 0);
+};
+
 function _bdSec(title, body, opts={}) {
   const open = opts.open ? 'open' : '';
   const secId = opts.id || _bdSecId(title);
   // Se a seção está oculta, não renderiza
   if (_bdGetHiddenSections().includes(secId)) return '';
   const safeName = String(title).replace(/'/g,"\\'");
+  // Botão de gerenciar campos (opcional)
+  const fieldsBtn = opts.fields
+    ? `<button class="bd-sec-hide-btn" title="Gerenciar campos" onclick="bdManageFields(event,'${secId}',${_bdEsc(JSON.stringify(opts.fields))})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px;border-radius:6px;line-height:1;">⚙️</button>`
+    : '';
   return `<div class="bd-section ${open}" data-sec-id="${secId}">
     <div class="bd-section-head" onclick="if(event.target.closest('.bd-sec-hide-btn'))return; this.parentElement.classList.toggle('open')">
       <div class="bd-section-title">${title}</div>
       <div style="display:flex;align-items:center;gap:8px;">
+        ${fieldsBtn}
         <button class="bd-sec-hide-btn" title="Ocultar esta seção" onclick="event.stopPropagation();bdHideSection('${secId}','${safeName}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px;border-radius:6px;line-height:1;">🗑️</button>
         <div class="bd-section-toggle">▶</div>
       </div>
@@ -19389,6 +19462,7 @@ function _bdRenderHiddenFooter() {
 }
 
 function _bdInput(c, field, label, opts={}) {
+  if (_bdGetHiddenFields().includes(field)) return '';
   const v = c[field]||'';
   const type = opts.type||'text';
   const copy = opts.copy !== false ? _bdCopyHtml(v) : '';
@@ -19399,6 +19473,7 @@ function _bdInput(c, field, label, opts={}) {
 }
 
 function _bdTextarea(c, field, label) {
+  if (_bdGetHiddenFields().includes(field)) return '';
   const v = c[field]||'';
   return `<div class="bd-field"><div class="bd-field-label">${label}</div><div class="bd-field-value">
     <textarea class="bd-field-textarea" onchange="bdSaveField('${c.id}','${field}',this.value)">${_bdEsc(v)}</textarea>
@@ -19460,6 +19535,16 @@ function _bdSectionIdent(c) {
 }
 
 function _bdSectionContato(c) {
+  const _F = [
+    {key:'endereco', label:'Endereço completo'},
+    {key:'cidade',   label:'Cidade'},
+    {key:'estado',   label:'Estado'},
+    {key:'cep',      label:'CEP'},
+    {key:'telefone', label:'Telefone'},
+    {key:'whatsapp', label:'WhatsApp'},
+    {key:'email',    label:'E-mail'},
+    {key:'site',     label:'Site'},
+  ];
   return _bdSec('📞 Contato & Endereço', `
     <div class="bd-grid">
       ${_bdInput(c,'endereco','Endereço completo')}
@@ -19471,10 +19556,19 @@ function _bdSectionContato(c) {
       ${_bdInput(c,'email','E-mail')}
       ${_bdInput(c,'site','Site')}
     </div>
-  `);
+  `, {fields: _F});
 }
 
 function _bdSectionRedes(c) {
+  const _F = [
+    {key:'ig',           label:'@ Instagram'},
+    {key:'gmbCategoria', label:'Categoria GMB'},
+    {key:'gmbHorario',   label:'Horário de funcionamento'},
+    {key:'gmbLink',      label:'Link Google Maps'},
+    {key:'ifoodUrl',     label:'iFood (URL)'},
+    {key:'rappiUrl',     label:'Rappi (URL)'},
+    {key:'igBio',        label:'Bio atual'},
+  ];
   return _bdSec('📱 Redes & Presença', `
     <div class="bd-grid">
       ${_bdInput(c,'ig','@ Instagram')}
@@ -19487,7 +19581,7 @@ function _bdSectionRedes(c) {
     <div class="bd-grid bd-grid-1" style="margin-top:10px;">
       ${_bdTextarea(c,'igBio','Bio atual')}
     </div>
-  `);
+  `, {fields: _F});
 }
 
 function _bdSectionEstrategia(c) {
@@ -19796,23 +19890,42 @@ function _bdSectionNotas(c) {
   `);
 }
 
+function _bdPickColor(clientId, color) {
+  // Atualiza todos os elementos visuais e salva no banco
+  const cid = CSS.escape(clientId);
+  const preview = document.querySelector(`#bd-cor-preview-${cid}`);
+  const input   = document.querySelector(`#bd-cor-input-${cid}`);
+  const label   = document.querySelector(`#bd-cor-label-${cid}`);
+  if (preview) preview.style.background = color;
+  if (input)   input.value = color;
+  if (label)   label.innerHTML = color;
+  // Atualiza classe active nas swatches
+  document.querySelectorAll(`#bd-cor-swatches-${cid} .bd-color-swatch`).forEach(sw => {
+    sw.classList.toggle('active', sw.dataset.cor === color);
+  });
+  bdSaveField(clientId, 'cor', color);
+}
+window._bdPickColor = _bdPickColor;
+
 function _bdSectionVisual(c) {
+  const safeId = c.id.replace(/[^a-zA-Z0-9_-]/g, '_');
   const swatches = BD_PALETA.map(col => {
     const active = (c.cor === col) ? 'active' : '';
-    return `<div class="bd-color-swatch ${active}" style="background:${col};" onclick="bdSaveField('${c.id}','cor','${col}')" title="${col}"></div>`;
+    return `<div class="bd-color-swatch ${active}" data-cor="${col}" style="background:${col};" onclick="_bdPickColor('${c.id}','${col}')" title="${col}"></div>`;
   }).join('');
   const currentCor = c.cor || '#6366f1';
   return _bdSec('🎨 Identificação visual', `
     <div class="bd-field-label">Cor de identificação</div>
-    <div class="bd-color-picker" style="margin-bottom:10px;">${swatches}</div>
+    <div class="bd-color-picker" id="bd-cor-swatches-${safeId}" style="margin-bottom:10px;">${swatches}</div>
     <div style="display:flex;align-items:center;gap:10px;">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-        <div style="width:32px;height:32px;border-radius:50%;background:${currentCor};border:2px solid var(--border);"></div>
+        <div id="bd-cor-preview-${safeId}" style="width:32px;height:32px;border-radius:50%;background:${currentCor};border:2px solid var(--border);"></div>
         <span style="font-size:12px;color:var(--text2);">Ou escolha qualquer cor:</span>
-        <input type="color" value="${currentCor}" onchange="bdSaveField('${c.id}','cor',this.value);this.previousElementSibling.previousElementSibling.style.background=this.value;"
+        <input type="color" id="bd-cor-input-${safeId}" value="${currentCor}"
+          oninput="_bdPickColor('${c.id}',this.value)"
           style="width:40px;height:32px;border:none;background:none;cursor:pointer;border-radius:6px;">
       </label>
-      <span style="font-size:12px;color:var(--text3);">Atual: <b>${currentCor}</b></span>
+      <span style="font-size:12px;color:var(--text3);">Atual: <b id="bd-cor-label-${safeId}">${currentCor}</b></span>
     </div>
     <div style="font-size:11px;color:var(--text3);margin-top:8px;">A cor aparece no avatar do cliente em todo o app.</div>
   `);
