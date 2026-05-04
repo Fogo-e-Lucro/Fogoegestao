@@ -88,6 +88,24 @@ body {
   color: #f8f8f8;
 }
 
+/* Botão "casinha" — atalho pra Gestão Central. Só aparece em mobile. */
+.app-home-btn {
+  display: none;
+  align-items: center; justify-content: center;
+  width: 34px; height: 34px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  color: #f8f8f8;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.app-home-btn:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.25); }
+.app-home-btn:active { transform: scale(.94); }
+.app-home-btn svg { display:block; }
+
 /* ── TABS ────────────────────────────────────────────── */
 .main-tabs {
   display: flex; gap: 3px;
@@ -5512,21 +5530,21 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .bd-back-mobile:hover { border-color:var(--accent); color:var(--accent); }
 
 @media (max-width:900px) {
-  .bd-wrap { flex-direction:column; height:auto; position:relative; }
-  .bd-sidebar { width:100%; min-width:0; max-height:none; }
+  .bd-wrap { flex-direction:column; height:auto; min-height:calc(100vh - 64px); position:relative; overflow:visible; }
+  .bd-sidebar { width:100%; min-width:0; max-height:none; height:auto; overflow:visible; }
   .bd-grid { grid-template-columns:1fr; }
 
   /* Toggle list/detail no mobile:
      - estado padrão: mostra lista, esconde detalhe
      - .bd-show-detail: esconde lista, mostra detalhe full-screen */
-  .bd-main { display:none; }
-  .bd-wrap.bd-show-detail .bd-sidebar { display:none; }
-  .bd-wrap.bd-show-detail .bd-main { display:block; }
+  .bd-wrap > .bd-main { display:none !important; }
+  .bd-wrap.bd-show-detail > .bd-sidebar { display:none !important; }
+  .bd-wrap.bd-show-detail > .bd-main { display:block !important; }
 
   .bd-back-mobile { display:inline-flex; }
 
   /* Lista ocupa toda a área disponível pra rolar tranquilo */
-  .bd-list { max-height:none; }
+  .bd-list { max-height:none; overflow:visible; }
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -5547,6 +5565,10 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .app-logo > div:not(.app-logo-icon) { min-width:0; overflow:hidden; }
   .app-logo-icon { width:28px; height:28px; border-radius:0; flex-shrink:0; }
   .app-logo-text { font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* Casinha aparece em mobile pra voltar pra Gestão Central */
+  .app-home-btn { display:inline-flex; width:32px; height:32px; }
+  /* Esconde casinha quando já estamos em Gestão Central — não tem pra onde voltar */
+  body[data-active-tab="projetos"] .app-home-btn { display:none; }
   .app-logo-sub { display:none; } /* subtítulo somem no celular */
   /* Grupo da direita (tabs + sync + avatar) com scroll horizontal interno se preciso */
   .app-header > div:not(.app-logo) {
