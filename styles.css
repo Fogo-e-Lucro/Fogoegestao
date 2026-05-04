@@ -1534,44 +1534,222 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
   .app-content { padding: 10px; }
   .user-chip { align-self: flex-end; }
 }
-/* ── Login Screen ── */
+/* ══════════════════════════════════════════════════════
+   LOGIN SCREEN — efeito UAU 🔥
+══════════════════════════════════════════════════════ */
+
+/* Keyframes */
+@keyframes fireOrb1 {
+  0%   { transform: translate(0,0) scale(1); }
+  33%  { transform: translate(80px,-60px) scale(1.15); }
+  66%  { transform: translate(-40px,80px) scale(.9); }
+  100% { transform: translate(0,0) scale(1); }
+}
+@keyframes fireOrb2 {
+  0%   { transform: translate(0,0) scale(1); }
+  33%  { transform: translate(-70px,50px) scale(1.2); }
+  66%  { transform: translate(60px,-80px) scale(.85); }
+  100% { transform: translate(0,0) scale(1); }
+}
+@keyframes fireOrb3 {
+  0%   { transform: translate(0,0) scale(1); }
+  50%  { transform: translate(40px,60px) scale(1.1); }
+  100% { transform: translate(0,0) scale(1); }
+}
+@keyframes fireGlow {
+  0%,100% { filter: drop-shadow(0 0 18px rgba(249,115,22,.5)) drop-shadow(0 0 40px rgba(220,38,38,.2)); }
+  50%      { filter: drop-shadow(0 0 36px rgba(249,115,22,.95)) drop-shadow(0 0 70px rgba(220,38,38,.5)); }
+}
+@keyframes logoBounce {
+  0%   { transform: translateY(-40px) scale(.8); opacity: 0; }
+  60%  { transform: translateY(6px) scale(1.05); opacity: 1; }
+  80%  { transform: translateY(-3px) scale(.98); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes fadeSlideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes borderSpin {
+  to { --angle: 360deg; }
+}
+@keyframes ember {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: .9; }
+  100% { transform: translateY(-110vh) translateX(var(--drift)) scale(0); opacity: 0; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+/* Tela base */
 .login-screen {
   position: fixed; inset: 0; z-index: 9999;
-  background: linear-gradient(145deg, #0f0f13 0%, #1a1025 50%, #0f1a1f 100%);
+  background: #0a0a0f;
   display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 0;
-  transition: opacity .4s ease;
+  flex-direction: column;
+  overflow: hidden;
+  transition: opacity .6s ease;
 }
 .login-screen.hidden { opacity: 0; pointer-events: none; }
-.login-box {
-  text-align: center; padding: 56px 48px; max-width: 400px; width: 90%;
-  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
-  border-radius: 24px; backdrop-filter: blur(12px);
+
+/* Orbs de fogo no fundo */
+.login-screen::before,
+.login-screen::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
 }
-.login-logo { margin-bottom: 20px; line-height: 1; }
-.login-logo img { width: 80px; height: 80px; object-fit: contain; filter: drop-shadow(0 4px 16px rgba(249,115,22,.4)); }
-.login-brand { font-size: 11px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: #f97316; margin-bottom: 8px; }
-.login-title { font-size: 26px; font-weight: 700; color: #f8f8f8; margin-bottom: 6px; letter-spacing: -.5px; }
-.login-sub { font-size: 13px; color: rgba(255,255,255,.4); margin-bottom: 40px; }
+.login-screen::before {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(234,88,12,.22) 0%, transparent 70%);
+  top: -150px; left: -150px;
+  animation: fireOrb1 12s ease-in-out infinite;
+}
+.login-screen::after {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(220,38,38,.18) 0%, transparent 70%);
+  bottom: -120px; right: -120px;
+  animation: fireOrb2 15s ease-in-out infinite;
+}
+/* terceiro orb via JS ou via wrapper */
+.login-orb3 {
+  position: absolute;
+  width: 350px; height: 350px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(251,146,60,.12) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  pointer-events: none;
+  animation: fireOrb3 9s ease-in-out infinite;
+}
+
+/* Card com borda gradiente animada */
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+.login-box {
+  position: relative;
+  text-align: center;
+  padding: 52px 44px;
+  max-width: 400px; width: 90%;
+  background: rgba(10,10,15,.85);
+  border-radius: 28px;
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  animation: fadeSlideUp .7s cubic-bezier(.22,1,.36,1) .1s both;
+  z-index: 1;
+}
+/* borda gradiente animada */
+.login-box::before {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 30px;
+  background: conic-gradient(from var(--angle), transparent 70%, #f97316 80%, #ef4444 85%, #f97316 90%, transparent);
+  animation: borderSpin 4s linear infinite;
+  z-index: -1;
+}
+.login-box::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  background: rgba(10,10,15,.88);
+  z-index: -1;
+}
+
+/* Ember particles */
+.login-ember {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: ember linear infinite;
+  background: radial-gradient(circle, #fb923c, #ef4444 60%, transparent);
+}
+
+/* Logo */
+.login-logo {
+  margin-bottom: 18px;
+  animation: logoBounce .7s cubic-bezier(.34,1.56,.64,1) .05s both;
+}
+.login-logo img {
+  width: 88px; height: 88px;
+  object-fit: contain;
+  animation: fireGlow 2.8s ease-in-out infinite;
+}
+
+/* Textos com entrada sequencial */
+.login-brand {
+  font-size: 11px; font-weight: 700; letter-spacing: 4px;
+  text-transform: uppercase; color: #f97316;
+  margin-bottom: 6px;
+  animation: fadeSlideUp .5s ease .3s both;
+}
+.login-title {
+  font-size: 27px; font-weight: 800; color: #f8f8f8;
+  margin-bottom: 4px; letter-spacing: -.5px;
+  background: linear-gradient(135deg, #fff 30%, #fdba74);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: fadeSlideUp .5s ease .4s both;
+}
+.login-sub {
+  font-size: 13px; color: rgba(255,255,255,.35);
+  margin-bottom: 36px;
+  animation: fadeSlideUp .5s ease .5s both;
+}
+
+/* Botões */
 .login-google-btn {
   display: flex; align-items: center; justify-content: center; gap: 12px;
-  width: 100%; padding: 14px 24px; border-radius: 12px;
+  width: 100%; padding: 14px 24px; border-radius: 14px;
   background: #fff; border: none; cursor: pointer;
   font-size: 15px; font-weight: 600; color: #1f1f1f;
-  transition: transform .15s ease, box-shadow .15s ease;
-  box-shadow: 0 4px 24px rgba(0,0,0,.4);
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+  box-shadow: 0 4px 24px rgba(0,0,0,.5);
+  animation: fadeSlideUp .5s ease .6s both;
 }
-.login-google-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,.5); }
-.login-google-btn:active { transform: translateY(0); }
+.login-google-btn:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 12px 36px rgba(0,0,0,.6); }
+.login-google-btn:active { transform: translateY(0) scale(.99); }
 .login-google-btn svg { flex-shrink: 0; }
-.login-error { margin-top: 16px; font-size: 12px; color: #ef4444; min-height: 18px; }
-.login-footer { margin-top: 32px; font-size: 11px; color: rgba(255,255,255,.2); }
-.login-divider { display:flex; align-items:center; gap:12px; margin:20px 0; color:rgba(255,255,255,.2); font-size:12px; }
-.login-divider::before,.login-divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.1); }
-.login-input { width:100%; padding:12px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:#f8f8f8; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:10px; }
-.login-input:focus { border-color:rgba(249,115,22,.5); }
-.login-email-btn { width:100%; padding:13px 24px; border-radius:12px; background:linear-gradient(135deg,#f97316,#ea580c); border:none; cursor:pointer; font-size:15px; font-weight:600; color:#fff; transition:transform .15s,box-shadow .15s; box-shadow:0 4px 24px rgba(249,115,22,.3); }
-.login-email-btn:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(249,115,22,.4); }
+
+.login-divider {
+  display:flex; align-items:center; gap:12px;
+  margin:18px 0; color:rgba(255,255,255,.18); font-size:12px;
+  animation: fadeSlideUp .5s ease .65s both;
+}
+.login-divider::before,.login-divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.08); }
+
+.login-input {
+  width:100%; padding:13px 16px; border-radius:12px;
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.05); color:#f8f8f8; font-size:14px;
+  outline:none; box-sizing:border-box; margin-bottom:10px;
+  transition: border-color .2s, background .2s;
+  animation: fadeSlideUp .5s ease .7s both;
+}
+.login-input:focus { border-color:rgba(249,115,22,.6); background:rgba(249,115,22,.05); }
+
+.login-email-btn {
+  width:100%; padding:14px 24px; border-radius:14px;
+  background: linear-gradient(135deg, #f97316, #dc2626);
+  border:none; cursor:pointer; font-size:15px; font-weight:700; color:#fff;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+  box-shadow: 0 4px 24px rgba(249,115,22,.35);
+  animation: fadeSlideUp .5s ease .75s both;
+}
+.login-email-btn:hover { transform:translateY(-3px) scale(1.01); box-shadow:0 12px 36px rgba(249,115,22,.5); }
+.login-email-btn:active { transform:translateY(0) scale(.99); }
+
+.login-error { margin-top: 14px; font-size: 12px; color: #ef4444; min-height: 18px; }
+.login-footer {
+  margin-top: 28px; font-size: 11px; color: rgba(255,255,255,.15);
+  animation: fadeSlideUp .5s ease .9s both;
+}
 .user-chip {
   display: flex; align-items: center; gap: 8px;
   padding: 4px 10px 4px 4px; border-radius: 20px;
