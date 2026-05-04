@@ -19180,6 +19180,16 @@ function bdSelectCliente(id) {
   _bdSelectedId = id;
   bdRenderList();
   bdRenderDetail(id);
+  // Mobile: troca pra view de detalhes (esconde lista)
+  try { document.querySelector('.bd-wrap')?.classList.add('bd-show-detail'); } catch(_) {}
+}
+
+// Volta da view de detalhes pra lista (mobile)
+function bdBackToList() {
+  _bdSelectedId = null;
+  try { document.querySelector('.bd-wrap')?.classList.remove('bd-show-detail'); } catch(_) {}
+  bdRenderList();
+  bdRenderDetail(null);
 }
 
 async function bdNewCliente() {
@@ -19190,6 +19200,8 @@ async function bdNewCliente() {
   try {
     const ref = await db.collection('clientes_base').add(data);
     _bdSelectedId = ref.id;
+    // Mobile: vai direto pra ficha do novo cliente
+    try { document.querySelector('.bd-wrap')?.classList.add('bd-show-detail'); } catch(_) {}
   } catch(e) { alert('Erro: '+e.message); }
 }
 
@@ -19304,6 +19316,10 @@ function bdRenderDetail(id) {
   const waLink = wa ? `https://wa.me/55${wa}` : '';
 
   main.innerHTML = `
+    <button class="bd-back-mobile" onclick="bdBackToList()" aria-label="Voltar para lista">
+      <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd"/></svg>
+      Voltar à lista
+    </button>
     <div class="bd-header" style="--bd-color:${cor};background:linear-gradient(135deg,${cor} 0%,rgba(0,0,0,.35) 100%);">
       <div class="bd-health-bar">Ficha ${health}% completa <div class="bd-health-bar-fill"><div style="width:${health}%"></div></div></div>
       <div class="bd-header-inner">

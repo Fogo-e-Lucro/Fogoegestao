@@ -5500,10 +5500,33 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   font-weight:600;
 }
 
+/* Botão voltar (visível só em mobile dentro da view de detalhes) */
+.bd-back-mobile {
+  display:none;
+  align-items:center; gap:6px;
+  background:var(--card); border:1px solid var(--border); color:var(--text1);
+  padding:8px 14px; border-radius:10px; font-size:13px; font-weight:600;
+  cursor:pointer; margin:12px 12px 4px; font-family:inherit;
+  transition:border-color .15s, color .15s, background .15s;
+}
+.bd-back-mobile:hover { border-color:var(--accent); color:var(--accent); }
+
 @media (max-width:900px) {
-  .bd-wrap { flex-direction:column; height:auto; }
-  .bd-sidebar { width:100%; min-width:0; max-height:280px; }
+  .bd-wrap { flex-direction:column; height:auto; position:relative; }
+  .bd-sidebar { width:100%; min-width:0; max-height:none; }
   .bd-grid { grid-template-columns:1fr; }
+
+  /* Toggle list/detail no mobile:
+     - estado padrão: mostra lista, esconde detalhe
+     - .bd-show-detail: esconde lista, mostra detalhe full-screen */
+  .bd-main { display:none; }
+  .bd-wrap.bd-show-detail .bd-sidebar { display:none; }
+  .bd-wrap.bd-show-detail .bd-main { display:block; }
+
+  .bd-back-mobile { display:inline-flex; }
+
+  /* Lista ocupa toda a área disponível pra rolar tranquilo */
+  .bd-list { max-height:none; }
 }
 
 /* ─────────────────────────────────────────────────────────
