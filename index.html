@@ -17137,33 +17137,35 @@ function pjShowPopupMenu(ev, items, current, onSelect) {
     menu.appendChild(item);
   });
   const rect = ev.currentTarget.getBoundingClientRect();
-  menu.style.position = 'fixed';
-  document.body.appendChild(menu);
-
-  // Calcula espaço disponível abaixo e acima do botão
   const GAP = 8;
   const vw = window.innerWidth;
-  const vh = window.innerHeight;
+  // Usa visualViewport no mobile (considera teclado virtual)
+  const vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
   const spaceBelow = vh - rect.bottom - GAP;
   const spaceAbove = rect.top - GAP;
+
+  // Define max-height ANTES de inserir no DOM, pra não ter flash
+  const maxH = Math.max(160, Math.max(spaceBelow, spaceAbove));
+  menu.style.maxHeight = maxH + 'px';
+  menu.style.position = 'fixed';
+  document.body.appendChild(menu);
 
   // Posição horizontal — alinha à esquerda, ajusta se sair da tela
   let left = rect.left;
   const menuW = Math.min(320, vw - 24);
   if (left + menuW > vw - GAP) left = Math.max(GAP, vw - menuW - GAP);
   menu.style.left = left + 'px';
+  menu.style.width = menuW + 'px';
 
-  // Posição vertical — prefere abrir pra baixo; se não couber, abre pra cima
-  const naturalH = menu.scrollHeight;
-  if (spaceBelow >= Math.min(naturalH, 200) || spaceBelow >= spaceAbove) {
-    // Abre pra baixo
+  // Posição vertical — prefere baixo se tiver mais espaço
+  if (spaceBelow >= spaceAbove || spaceBelow >= 160) {
     menu.style.top = (rect.bottom + GAP) + 'px';
-    menu.style.maxHeight = Math.max(120, spaceBelow) + 'px';
+    menu.style.maxHeight = Math.max(160, spaceBelow) + 'px';
   } else {
-    // Abre pra cima
-    const maxH = Math.max(120, spaceAbove);
-    menu.style.maxHeight = maxH + 'px';
-    menu.style.top = (rect.top - GAP - Math.min(naturalH, maxH)) + 'px';
+    menu.style.maxHeight = Math.max(160, spaceAbove) + 'px';
+    // Recalcula posição top após ter max-height definido
+    const actualH = Math.min(menu.scrollHeight, Math.max(160, spaceAbove));
+    menu.style.top = (rect.top - GAP - actualH) + 'px';
   }
   setTimeout(() => {
     const onDocClick = (e) => {
