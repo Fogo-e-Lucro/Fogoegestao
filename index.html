@@ -3111,6 +3111,9 @@ async function loadFromCloud() {
     // Coleção legacy `clients` foi descontinuada — fonte única é `clientes_base`.
     // O hook onClientesBaseChanged reconstrói a variável local `clients` a partir do BD.
     if (_clientsUnsub) { try { _clientsUnsub(); _clientsUnsub = null; } catch(_) {} }
+    // Inicia listener da Base de Dados imediatamente (não espera o usuário abrir a aba BD)
+    // Isso garante que dropdowns de cliente em tarefas, posts, etc. já tenham os dados.
+    try { if (typeof bdInit === 'function') bdInit(); } catch(_) {}
   } catch(e) { console.warn('Firestore load failed, using localStorage:', e); setSyncStatus('err'); }
 }
 
