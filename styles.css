@@ -1540,31 +1540,25 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 
 /* Keyframes */
 @keyframes fireOrb1 {
-  0%   { transform: translate(0,0) scale(1); }
-  33%  { transform: translate(80px,-60px) scale(1.15); }
-  66%  { transform: translate(-40px,80px) scale(.9); }
-  100% { transform: translate(0,0) scale(1); }
+  0%,100% { opacity: .7; transform: scale(1); }
+  50%     { opacity: 1;  transform: scale(1.25); }
 }
 @keyframes fireOrb2 {
-  0%   { transform: translate(0,0) scale(1); }
-  33%  { transform: translate(-70px,50px) scale(1.2); }
-  66%  { transform: translate(60px,-80px) scale(.85); }
-  100% { transform: translate(0,0) scale(1); }
+  0%,100% { opacity: .5; transform: scale(1); }
+  50%     { opacity: .9; transform: scale(1.2); }
 }
 @keyframes fireOrb3 {
-  0%   { transform: translate(0,0) scale(1); }
-  50%  { transform: translate(40px,60px) scale(1.1); }
-  100% { transform: translate(0,0) scale(1); }
+  0%,100% { opacity: .4; transform: translate(-50%,-50%) scale(1); }
+  50%     { opacity: .7; transform: translate(-50%,-50%) scale(1.15); }
 }
 @keyframes fireGlow {
   0%,100% { filter: drop-shadow(0 0 18px rgba(249,115,22,.5)) drop-shadow(0 0 40px rgba(220,38,38,.2)); }
   50%      { filter: drop-shadow(0 0 36px rgba(249,115,22,.95)) drop-shadow(0 0 70px rgba(220,38,38,.5)); }
 }
 @keyframes logoBounce {
-  0%   { transform: translateY(-40px) scale(.8); opacity: 0; }
-  60%  { transform: translateY(6px) scale(1.05); opacity: 1; }
-  80%  { transform: translateY(-3px) scale(.98); }
-  100% { transform: translateY(0) scale(1); }
+  0%   { transform: scale(.75); opacity: 0; }
+  70%  { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1);   opacity: 1; }
 }
 @keyframes fadeSlideUp {
   from { transform: translateY(24px); opacity: 0; }
@@ -1618,11 +1612,10 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
   position: absolute;
   width: 350px; height: 350px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(251,146,60,.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(251,146,60,.15) 0%, transparent 70%);
   top: 50%; left: 50%;
-  transform: translate(-50%,-50%);
   pointer-events: none;
-  animation: fireOrb3 9s ease-in-out infinite;
+  animation: fireOrb3 10s ease-in-out infinite;
 }
 
 /* Card com borda gradiente animada */
