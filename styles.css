@@ -4959,17 +4959,35 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 
 @media (max-width: 768px) {
   .pj-task-modal { width:100% !important; max-width:100vw !important; height:100vh !important; max-height:100vh !important; border-radius:0 !important; margin:0 !important; }
-  .pj-modal-body { flex-direction:column !important; overflow-y:auto !important; }
+  .pj-modal-body { flex-direction:column !important; overflow-y:auto !important; padding-bottom:16px !important; }
   .pj-modal-left { padding:16px !important; min-width:0 !important; }
   .pj-modal-right { width:100% !important; border-left:none !important; border-top:1px solid var(--border); max-height:none !important; overflow:visible !important; }
   .pj-meta-bar { flex-wrap:wrap !important; gap:6px !important; }
   .pj-meta-item { font-size:11px !important; padding:5px 8px !important; }
   .pj-modal-title-input { font-size:18px !important; }
-  /* Topbar não deve quebrar; "Salvar e fechar" some, fica só o ícone × */
+  /* Topbar fica compacta; botão "Salvar e fechar" do topo some no mobile (existe a bottombar) */
   .pj-modal-topbar { flex-wrap:wrap; gap:6px; padding:8px 10px !important; }
   .pj-modal-topbar > div[style*="margin-left:auto"] { gap:4px !important; }
   .pj-modal-topbar .pj-btn-primary { display:none !important; }
+  /* Bottom action bar visível com Fechar + Salvar e Fechar */
+  .pj-modal-bottombar { display:flex !important; }
 }
+
+/* Bottom action bar — escondida no desktop, mostra no mobile via media query acima */
+.pj-modal-bottombar {
+  display:none;
+  flex-shrink:0;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom)) 14px;
+  background:var(--card);
+  border-top:1px solid var(--border);
+  box-shadow:0 -8px 24px rgba(0,0,0,.25);
+  position:sticky; bottom:0; z-index:5;
+}
+.pj-modal-bottombar .pj-btn { flex:1; padding:13px 16px; font-size:14px; font-weight:600; }
+.pj-modal-bottombar .pj-btn-secondary { flex:0 0 auto; min-width:90px; }
 
 /* ── Mobile tap targets (≥44×44 conforme Apple HIG / Material) ── */
 @media (pointer:coarse), (max-width:768px) {
