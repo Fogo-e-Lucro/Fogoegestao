@@ -14256,8 +14256,11 @@ function pjClearDashFilter() {
   pjRenderMain();
 }
 
-// Resolve cliente de uma task via custom field 'client'
+// Resolve cliente de uma task: prioriza t.client (campo top-level),
+// fallback custom field do tipo 'client' (compatibilidade com tasks antigas).
 function pjResolveTaskClient(t) {
+  if (!t) return null;
+  if (t.client) return t.client;
   try {
     const fields = pjLists.find(l => l.id === t.listId)?.customFields || [];
     const clientField = fields.find(f => f.type === 'client' || /client/i.test(f.name||''));
@@ -17379,6 +17382,30 @@ async function pjTpClear(taskId) {
   if (t2 && pjCurrentTaskId === taskId) pjRenderTaskModal({ ...t2 });
 }
 
+function pjOpenClientMenu(ev, taskId) {
+  const t = pjAllTasks.find(x => x.id === taskId);
+  if (!t) return;
+  const cur = pjResolveTaskClient(t) || null;
+  const names = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : [];
+  const opts = [{ id:null, label:'Sem cliente', icon:'✕' }];
+  names.forEach(n => {
+    const color = (typeof getClientColor === 'function') ? getClientColor(n) : null;
+    opts.push({ id:n, label:n, icon:'🏪', color: color || undefined });
+  });
+  // Atalho pra cadastrar novo na Base de Dados
+  opts.push({ id:'__bd__', label:'＋ Cadastrar novo cliente…', icon:'🏢' });
+  pjShowPopupMenu(ev, opts, cur, async (id) => {
+    if (id === '__bd__') {
+      try { switchTab('base', document.getElementById('bdIconBtn')); } catch(_) {}
+      return;
+    }
+    await pjUpdateTask(taskId, { client: id || null });
+    const t2 = pjAllTasks.find(x => x.id === taskId);
+    if (t2 && pjCurrentTaskId === taskId) pjRenderTaskModal({ ...t2 });
+    if (pjCurrentView.type === 'list' || pjCurrentView.type === 'kanban' || pjCurrentView.type === 'inbox') pjRenderMain();
+  });
+}
+
 function pjOpenPriorityMenu(ev, taskId) {
   const t = pjAllTasks.find(x => x.id === taskId);
   if (!t) return;
@@ -17486,6 +17513,18 @@ function pjRenderTaskModal(task) {
     </div>
     <div class="pj-meta-item" onclick="pjOpenPriorityMenu(event,'${task.id}')">
       ${task.priority ? `<span class="pj-priority ${task.priority}">${PJ_PRIORITIES.find(p=>p.id===task.priority)?.label}</span>` : '🏳️ Prioridade'}
+    </div>
+    <div class="pj-meta-item" onclick="pjOpenClientMenu(event,'${task.id}')" title="Cliente associado (puxa da Base de Dados)">
+      ${(() => {
+        const cli = pjResolveTaskClient(task);
+        if (!cli) return '🏪 Cliente';
+        const logo = (typeof getClientLogo === 'function') ? getClientLogo(cli) : null;
+        const color = (typeof getClientColor === 'function') ? getClientColor(cli) : null;
+        const dot = logo
+          ? `<img src="${logo}" alt="" style="width:16px;height:16px;border-radius:4px;object-fit:cover;vertical-align:middle;margin-right:4px;">`
+          : `<span style="width:8px;height:8px;border-radius:50%;background:${color||'var(--accent)'};display:inline-block;margin-right:6px;vertical-align:middle;"></span>`;
+        return `${dot}${escHtml(cli)}`;
+      })()}
     </div>
     <div class="pj-meta-item" onclick="pjOpenRecurrenceMenu(event,'${task.id}')" title="Repete ao concluir">
       🔁 ${task.recurrence?.pattern ? pjRecurrenceLabel(task.recurrence) : 'Recorrência'}
