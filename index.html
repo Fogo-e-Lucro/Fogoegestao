@@ -5879,7 +5879,7 @@ function spOnWhenChange() {
 }
 
 // ── Upload: ImgBB (images) + Meta Direct (videos) ──
-function getSpImgbbKey() { return getApiKey('imagebb') || localStorage.getItem('imgbbKey') || ''; }
+function getSpImgbbKey() { return getApiKey('imagebb') || getApiKey('imgbb') || localStorage.getItem('imgbbKey') || ''; }
 function saveSpImgbb() {
   const val = document.getElementById('spImgbbKey').value.trim();
   if (!val) return;
@@ -17821,7 +17821,7 @@ async function pjCommentFileChosen(ev) {
   const file = ev.target.files?.[0];
   if (!file) return;
   if (file.size > 900*1024) {
-    if (typeof showToast === 'function') showToast('Arquivo muito grande (máx 900KB).','warn');
+    if (typeof showToast === 'function') showToast('warn', '⚠️', 'Arquivo muito grande (máx 900KB).');
     ev.target.value = '';
     return;
   }
@@ -17830,14 +17830,14 @@ async function pjCommentFileChosen(ev) {
   let url = null, dataUrl = null;
   if (isImg) {
     if (!getSpImgbbKey || !getSpImgbbKey()) {
-      if (typeof showToast === 'function') showToast('Configure a chave ImgBB em Social → APIs para anexar imagens.', 'warn');
+      if (typeof showToast === 'function') showToast('warn', '⚠️', 'Chave ImgBB não configurada. Vá em Configurações → ImgBB para ativar upload de imagens.');
       ev.target.value = '';
       return;
     }
     try {
       url = await uploadImage(file);
     } catch(e) {
-      if (typeof showToast === 'function') showToast('Falha no upload: ' + (e?.message||'erro'), 'warn');
+      if (typeof showToast === 'function') showToast('error', '❌', 'Falha no upload: ' + (e?.message||'erro desconhecido'));
       ev.target.value = '';
       return;
     }
