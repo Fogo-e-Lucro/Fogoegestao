@@ -3219,9 +3219,15 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   background:var(--card); border:1px solid var(--border);
   border-radius:14px;
   box-shadow:0 20px 60px rgba(0,0,0,.22), 0 4px 16px rgba(0,0,0,.1);
-  padding:5px; min-width:190px;
+  padding:5px; min-width:190px; max-width:min(320px, calc(100vw - 24px));
+  overflow-y:auto; overflow-x:hidden;
+  /* max-height definido via JS dinamicamente conforme espaço disponível */
   animation: pjPopIn .14s cubic-bezier(.4,0,.2,1);
+  /* Scrollbar discreta */
+  scrollbar-width:thin; scrollbar-color:var(--border) transparent;
 }
+.pj-popup-menu::-webkit-scrollbar { width:4px; }
+.pj-popup-menu::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
 @keyframes pjPopIn { from { opacity:0; transform:translateY(-6px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
 .pj-popup-label {
   font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;

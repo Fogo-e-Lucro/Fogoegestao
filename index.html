@@ -17138,13 +17138,33 @@ function pjShowPopupMenu(ev, items, current, onSelect) {
   });
   const rect = ev.currentTarget.getBoundingClientRect();
   menu.style.position = 'fixed';
-  menu.style.top  = (rect.bottom + 6) + 'px';
-  menu.style.left = rect.left + 'px';
   document.body.appendChild(menu);
-  // Adjust if off-screen
-  const mr = menu.getBoundingClientRect();
-  if (mr.right > window.innerWidth - 8) menu.style.left = (window.innerWidth - mr.width - 8) + 'px';
-  if (mr.bottom > window.innerHeight - 8) menu.style.top  = (rect.top - mr.height - 6) + 'px';
+
+  // Calcula espaço disponível abaixo e acima do botão
+  const GAP = 8;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const spaceBelow = vh - rect.bottom - GAP;
+  const spaceAbove = rect.top - GAP;
+
+  // Posição horizontal — alinha à esquerda, ajusta se sair da tela
+  let left = rect.left;
+  const menuW = Math.min(320, vw - 24);
+  if (left + menuW > vw - GAP) left = Math.max(GAP, vw - menuW - GAP);
+  menu.style.left = left + 'px';
+
+  // Posição vertical — prefere abrir pra baixo; se não couber, abre pra cima
+  const naturalH = menu.scrollHeight;
+  if (spaceBelow >= Math.min(naturalH, 200) || spaceBelow >= spaceAbove) {
+    // Abre pra baixo
+    menu.style.top = (rect.bottom + GAP) + 'px';
+    menu.style.maxHeight = Math.max(120, spaceBelow) + 'px';
+  } else {
+    // Abre pra cima
+    const maxH = Math.max(120, spaceAbove);
+    menu.style.maxHeight = maxH + 'px';
+    menu.style.top = (rect.top - GAP - Math.min(naturalH, maxH)) + 'px';
+  }
   setTimeout(() => {
     const onDocClick = (e) => {
       if (!menu.contains(e.target)) { pjClosePopups(); document.removeEventListener('click', onDocClick); }
