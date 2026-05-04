@@ -17410,28 +17410,111 @@ async function pjTpClear(taskId) {
   if (t2 && pjCurrentTaskId === taskId) pjRenderTaskModal({ ...t2 });
 }
 
+// Estado da busca dentro do modal de cliente (memo entre re-renders)
+let _pjClientPickerQ = '';
+let _pjClientPickerTaskId = null;
+
 function pjOpenClientMenu(ev, taskId) {
+  if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+  const t = pjAllTasks.find(x => x.id === taskId);
+  if (!t) return;
+  _pjClientPickerTaskId = taskId;
+  _pjClientPickerQ = '';
+  pjRenderClientPicker();
+}
+
+function pjRenderClientPicker() {
+  const taskId = _pjClientPickerTaskId;
   const t = pjAllTasks.find(x => x.id === taskId);
   if (!t) return;
   const cur = pjResolveTaskClient(t) || null;
   const names = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : [];
-  const opts = [{ id:null, label:'Sem cliente', icon:'✕' }];
-  names.forEach(n => {
+  const q = (_pjClientPickerQ || '').toLowerCase().trim();
+  const filtered = q ? names.filter(n => n.toLowerCase().includes(q)) : names;
+
+  const rowHtml = (n) => {
     const color = (typeof getClientColor === 'function') ? getClientColor(n) : null;
-    opts.push({ id:n, label:n, icon:'🏪', color: color || undefined });
-  });
-  // Atalho pra cadastrar novo na Base de Dados
-  opts.push({ id:'__bd__', label:'＋ Cadastrar novo cliente…', icon:'🏢' });
-  pjShowPopupMenu(ev, opts, cur, async (id) => {
-    if (id === '__bd__') {
-      try { switchTab('base', document.getElementById('bdIconBtn')); } catch(_) {}
-      return;
-    }
-    await pjUpdateTask(taskId, { client: id || null });
-    const t2 = pjAllTasks.find(x => x.id === taskId);
-    if (t2 && pjCurrentTaskId === taskId) pjRenderTaskModal({ ...t2 });
-    if (pjCurrentView.type === 'list' || pjCurrentView.type === 'kanban' || pjCurrentView.type === 'inbox') pjRenderMain();
-  });
+    const logo = (typeof getClientLogo === 'function') ? getClientLogo(n) : null;
+    const active = n === cur;
+    const dot = logo
+      ? `<img src="${logo}" alt="" class="pj-cli-logo">`
+      : `<span class="pj-cli-dot" style="background:${color||'#6366f1'}"></span>`;
+    return `<div class="pj-cli-row ${active?'active':''}" onclick="pjPickClient(${JSON.stringify(n).replace(/"/g,'&quot;')})">
+      ${dot}
+      <span class="pj-cli-name">${escHtml(n)}</span>
+      ${active ? '<span class="pj-cli-check">✓</span>' : ''}
+    </div>`;
+  };
+
+  const html = `
+    <h3>🏪 Cliente</h3>
+    <div class="pj-cli-search-wrap">
+      <input class="pj-form-input" id="pjCliSearch" placeholder="🔍 Buscar cliente..." value="${escHtml(_pjClientPickerQ)}" oninput="_pjClientPickerQ=this.value;pjRenderClientPickerListOnly()">
+    </div>
+    <div class="pj-cli-list" id="pjCliList">
+      <div class="pj-cli-row ${cur===null?'active':''}" onclick="pjPickClient(null)">
+        <span class="pj-cli-dot" style="background:transparent;border:1px dashed var(--border)"></span>
+        <span class="pj-cli-name" style="color:var(--text2)">Sem cliente</span>
+        ${cur===null ? '<span class="pj-cli-check">✓</span>' : ''}
+      </div>
+      ${filtered.length === 0
+        ? `<div class="pj-cli-empty">${q ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}</div>`
+        : filtered.map(rowHtml).join('')}
+    </div>
+    <div class="pj-form-actions">
+      <button class="pj-btn pj-btn-secondary" onclick="pjCloseFormModal()">Fechar</button>
+      <button class="pj-btn pj-btn-primary" onclick="pjCloseFormModal();switchTab('base',document.getElementById('bdIconBtn'))">＋ Cadastrar novo</button>
+    </div>`;
+  pjOpenFormModal(html);
+  setTimeout(() => {
+    const inp = document.getElementById('pjCliSearch');
+    if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+  }, 80);
+}
+
+// Re-renderiza só a lista (não recria o modal nem perde foco do input)
+function pjRenderClientPickerListOnly() {
+  const taskId = _pjClientPickerTaskId;
+  const t = pjAllTasks.find(x => x.id === taskId);
+  if (!t) return;
+  const cur = pjResolveTaskClient(t) || null;
+  const names = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : [];
+  const q = (_pjClientPickerQ || '').toLowerCase().trim();
+  const filtered = q ? names.filter(n => n.toLowerCase().includes(q)) : names;
+  const list = document.getElementById('pjCliList');
+  if (!list) return;
+  const rowHtml = (n) => {
+    const color = (typeof getClientColor === 'function') ? getClientColor(n) : null;
+    const logo = (typeof getClientLogo === 'function') ? getClientLogo(n) : null;
+    const active = n === cur;
+    const dot = logo
+      ? `<img src="${logo}" alt="" class="pj-cli-logo">`
+      : `<span class="pj-cli-dot" style="background:${color||'#6366f1'}"></span>`;
+    return `<div class="pj-cli-row ${active?'active':''}" onclick="pjPickClient(${JSON.stringify(n).replace(/"/g,'&quot;')})">
+      ${dot}
+      <span class="pj-cli-name">${escHtml(n)}</span>
+      ${active ? '<span class="pj-cli-check">✓</span>' : ''}
+    </div>`;
+  };
+  list.innerHTML = `
+    <div class="pj-cli-row ${cur===null?'active':''}" onclick="pjPickClient(null)">
+      <span class="pj-cli-dot" style="background:transparent;border:1px dashed var(--border)"></span>
+      <span class="pj-cli-name" style="color:var(--text2)">Sem cliente</span>
+      ${cur===null ? '<span class="pj-cli-check">✓</span>' : ''}
+    </div>
+    ${filtered.length === 0
+      ? `<div class="pj-cli-empty">${q ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}</div>`
+      : filtered.map(rowHtml).join('')}`;
+}
+
+async function pjPickClient(name) {
+  const taskId = _pjClientPickerTaskId;
+  if (!taskId) { pjCloseFormModal(); return; }
+  await pjUpdateTask(taskId, { client: name || null });
+  const t2 = pjAllTasks.find(x => x.id === taskId);
+  if (t2 && pjCurrentTaskId === taskId) pjRenderTaskModal({ ...t2 });
+  if (pjCurrentView.type === 'list' || pjCurrentView.type === 'kanban' || pjCurrentView.type === 'inbox') pjRenderMain();
+  pjCloseFormModal();
 }
 
 function pjOpenPriorityMenu(ev, taskId) {

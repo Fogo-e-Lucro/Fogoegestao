@@ -3221,15 +3221,41 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   box-shadow:0 20px 60px rgba(0,0,0,.22), 0 4px 16px rgba(0,0,0,.1);
   padding:5px; min-width:190px; max-width:min(320px, calc(100vw - 24px));
   overflow-y:auto !important; overflow-x:hidden;
-  -webkit-overflow-scrolling:touch; /* scroll inercial no iOS */
+  -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain;
   touch-action:pan-y;
-  /* max-height definido via JS dinamicamente conforme espaço disponível */
   animation: pjPopIn .14s cubic-bezier(.4,0,.2,1);
   scrollbar-width:thin; scrollbar-color:var(--border) transparent;
 }
 .pj-popup-menu::-webkit-scrollbar { width:4px; }
 .pj-popup-menu::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+/* Backdrop e bottom sheet — usado no mobile pra ter scroll que sempre funciona */
+.pj-popup-backdrop {
+  position:fixed; inset:0; z-index:9999;
+  background:rgba(0,0,0,.4);
+  animation: pjBackdropIn .18s ease;
+}
+@keyframes pjBackdropIn { from { opacity:0; } to { opacity:1; } }
+.pj-popup-menu.is-sheet {
+  position:fixed !important;
+  left:0 !important; right:0 !important; bottom:0 !important; top:auto !important;
+  width:100% !important; max-width:100% !important;
+  max-height:70vh !important;
+  border-radius:18px 18px 0 0 !important;
+  padding:6px 8px 24px !important;
+  animation: pjSheetIn .22s cubic-bezier(.4,0,.2,1);
+}
+@keyframes pjSheetIn { from { transform:translateY(100%); } to { transform:translateY(0); } }
+.pj-popup-menu.is-sheet::before {
+  content:""; display:block;
+  width:38px; height:4px;
+  background:var(--border); border-radius:3px;
+  margin:6px auto 10px;
+  flex-shrink:0;
+}
+.pj-popup-menu.is-sheet .pj-popup-item { padding:14px 14px; font-size:15px; }
+.pj-popup-menu.is-sheet .pj-popup-icon { font-size:16px; width:22px; }
 @keyframes pjPopIn { from { opacity:0; transform:translateY(-6px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
 .pj-popup-label {
   font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
@@ -4175,6 +4201,49 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-assignee-list { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
 .pj-assignee-row { display:flex; align-items:center; gap:10px; padding:8px; background:var(--bg); border-radius:8px; cursor:pointer; }
 .pj-assignee-name { font-size:13px; color:var(--text); }
+
+/* Client picker (modal de seleção de cliente) — substitui o popup */
+.pj-cli-search-wrap { margin-bottom:10px; }
+.pj-cli-list {
+  display:flex; flex-direction:column; gap:4px;
+  max-height:55vh; overflow-y:auto; overflow-x:hidden;
+  padding:2px; margin:0 -2px 14px;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin; scrollbar-color:var(--border) transparent;
+}
+.pj-cli-list::-webkit-scrollbar { width:6px; }
+.pj-cli-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+.pj-cli-row {
+  display:flex; align-items:center; gap:12px;
+  padding:10px 12px; border-radius:10px;
+  cursor:pointer; transition:background .12s, border-color .12s;
+  background:var(--bg); border:1px solid transparent;
+}
+.pj-cli-row:hover { background:var(--bg2); border-color:var(--border); }
+.pj-cli-row.active {
+  background:linear-gradient(90deg, rgba(99,102,241,.16), rgba(168,85,247,.10));
+  border-color:rgba(99,102,241,.45);
+}
+.pj-cli-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+.pj-cli-logo {
+  width:28px; height:28px; border-radius:7px; flex-shrink:0;
+  object-fit:cover; background:var(--bg2);
+  border:1px solid var(--border);
+}
+.pj-cli-name {
+  flex:1; min-width:0; font-size:14px; font-weight:500; color:var(--text);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.pj-cli-check { color:var(--accent); font-weight:700; flex-shrink:0; }
+.pj-cli-empty {
+  text-align:center; padding:24px 12px;
+  color:var(--text3); font-size:13px;
+}
+@media (max-width:640px) {
+  .pj-cli-list { max-height:50vh; }
+  .pj-cli-row { padding:12px; }
+  .pj-cli-name { font-size:15px; }
+}
 .pj-activity-empty { text-align:center; padding:24px 16px; color:var(--text3); font-size:12px; display:flex; flex-direction:column; align-items:center; gap:6px; }
 .pj-activity-empty-icon { font-size:28px; }
 .pj-activity-empty-title { font-weight:700; color:var(--text2); font-size:12.5px; }
