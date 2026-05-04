@@ -1645,8 +1645,14 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           <div class="pj-comment-input-wrap">
             <textarea class="pj-comment-input" id="pjCommentInput" placeholder="Escreva um comentário... (use @ para mencionar)" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
             <input type="file" id="pjCommentFile" style="display:none" onchange="pjCommentFileChosen(event)">
-            <button class="pj-comment-attach-btn" title="Anexar arquivo" onclick="document.getElementById('pjCommentFile').click()">📎</button>
-            <button class="pj-comment-send" onclick="pjSendComment()">↑</button>
+            <button class="pj-comment-mention-btn" title="Mencionar membro (@)" onclick="pjInsertMention()" type="button">@</button>
+            <button class="pj-comment-attach-btn" title="Anexar arquivo" onclick="document.getElementById('pjCommentFile').click()" type="button">📎</button>
+          </div>
+          <div class="pj-comment-actions">
+            <button class="pj-comment-send" onclick="pjSendComment()" title="Enviar comentário" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-3px;margin-right:6px;"><path d="M22 2 11 13"></path><path d="m22 2-7 20-4-9-9-4 20-7z"></path></svg>
+              Enviar
+            </button>
           </div>
           <div class="pj-comment-attach-preview" id="pjCommentAttachPreview"></div>
         </div>
@@ -12953,12 +12959,8 @@ function pjFilterPopDue(ev) {
   pjShowPopupMenu(ev, items, pjFilter.due||'', val => pjSetFilter('due', val));
 }
 function pjFilterPopClient(ev) {
-  const names = typeof getCanonicalClientNames === 'function' ? getCanonicalClientNames() : [];
-  const items = [
-    { id:'', label:'Todos os clientes', icon:'🏢' },
-    ...names.sort().map(n => ({ id: n, label: n, icon: '🏢' }))
-  ];
-  pjShowPopupMenu(ev, items, pjFilter.client||'', val => pjSetFilter('client', val));
+  // Usa modal com logo/cor (igual ao picker de tarefa) — funciona desktop e mobile
+  pjFilterClientModal();
 }
 function pjFilterPopSort(ev) {
   const items = [
@@ -13032,13 +13034,33 @@ function pjOpenFiltersSheet() {
       <span class="pj-filter-sheet-label">${label}</span>
       <span class="pj-filter-sheet-value">${escHtml(value)} ▸</span>
     </button>`;
+  // Botões de visão (Lista/Kanban/Mapa) — mostrados apenas quando estamos dentro de uma lista
+  const isInList = pjCurrentView && (pjCurrentView.type === 'list' || pjCurrentView.type === 'kanban' || pjCurrentView.type === 'map');
+  const curListId = isInList ? pjCurrentView.id : null;
+  const curList = curListId ? (pjLists || []).find(l => l.id === curListId) : null;
+  const hasMap = curList && (curList.customFields||[]).some(cf => cf.type === 'address');
+  const viewRow = isInList ? `
+    <div class="pj-filter-sheet-view-row">
+      <span class="pj-filter-sheet-icon">🗂</span>
+      <span class="pj-filter-sheet-label" style="font-size:14px;font-weight:600;">Visão</span>
+      <div class="pj-filter-sheet-view-btns">
+        <button class="${pjCurrentView.type==='list'?'active':''}" onclick="pjSetView('${curListId}','list');pjCloseFormModal()">☰ Lista</button>
+        <button class="${pjCurrentView.type==='kanban'?'active':''}" onclick="pjSetView('${curListId}','kanban');pjCloseFormModal()">⊞ Kanban</button>
+        ${hasMap ? `<button class="${pjCurrentView.type==='map'?'active':''}" onclick="pjSetView('${curListId}','map');pjCloseFormModal()">📍 Mapa</button>` : ''}
+      </div>
+    </div>` : '';
   const html = `
     <h3>⚙ Filtros</h3>
+    ${viewRow}
     <div class="pj-filter-sheet-list">
       ${row('👤','Responsável', assigneeLabel, "pjFilterPopAssigneeFromSheet()")}
       ${row('⚑','Prioridade',  priorityLabel, "pjFilterPopPriorityFromSheet()")}
       ${row('📅','Vencimento',  dueLabel,      "pjFilterPopDueFromSheet()")}
-      ${row('🏢','Cliente',     clientLabel,   "pjFilterPopClientFromSheet()")}
+      <button class="pj-filter-sheet-row" onclick="pjFilterClientModal()">
+        <span class="pj-filter-sheet-icon">🏢</span>
+        <span class="pj-filter-sheet-label">Cliente</span>
+        <span class="pj-filter-sheet-value">${escHtml(clientLabel)} ▸</span>
+      </button>
       ${row('↕','Ordenar',      sortLabel,     "pjFilterPopSortFromSheet()")}
       ${row('⭐','Visões salvas','Abrir',       "pjOpenViewsMenuFromSheet()")}
     </div>
@@ -13062,7 +13084,7 @@ function _pjFakeEv() {
 function pjFilterPopAssigneeFromSheet() { pjFilterPopAssignee(_pjFakeEv()); }
 function pjFilterPopPriorityFromSheet() { pjFilterPopPriority(_pjFakeEv()); }
 function pjFilterPopDueFromSheet()      { pjFilterPopDue(_pjFakeEv()); }
-function pjFilterPopClientFromSheet()   { pjFilterPopClient(_pjFakeEv()); }
+function pjFilterPopClientFromSheet()   { pjFilterClientModal(); }
 function pjFilterPopSortFromSheet()     { pjFilterPopSort(_pjFakeEv()); }
 function pjOpenViewsMenuFromSheet()     { pjOpenViewsMenu(_pjFakeEv()); }
 function pjApplyFilter(tasks) {
@@ -17591,6 +17613,86 @@ function pjGoToBdNewClient() {
   try { setTimeout(() => bdNewCliente(), 200); } catch(_) {}
 }
 
+// ── Seletor de cliente para FILTRO (modal com logo/cor, igual ao picker de tarefa) ──
+let _pjFilterCliQ = '';
+function pjFilterClientModal() {
+  _pjFilterCliQ = '';
+  _pjRenderFilterClientModal();
+}
+function _pjRenderFilterClientModal() {
+  const names = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : [];
+  const q = (_pjFilterCliQ || '').toLowerCase().trim();
+  const filtered = q ? names.filter(n => n.toLowerCase().includes(q)) : names;
+  const cur = pjFilter.client || '';
+  const rowHtml = (n) => {
+    const color = (typeof getClientColor === 'function') ? getClientColor(n) : null;
+    const logo  = (typeof getClientLogo  === 'function') ? getClientLogo(n)  : null;
+    const active = n === cur;
+    const dot = logo
+      ? `<img src="${logo}" alt="" class="pj-cli-logo">`
+      : `<span class="pj-cli-dot" style="background:${color||'#6366f1'}"></span>`;
+    return `<div class="pj-cli-row ${active?'active':''}" onclick="pjSetFilterClient(${JSON.stringify(n).replace(/"/g,'&quot;')})">
+      ${dot}<span class="pj-cli-name">${escHtml(n)}</span>${active?'<span class="pj-cli-check">✓</span>':''}
+    </div>`;
+  };
+  const html = `
+    <h3>🏢 Filtrar por Cliente</h3>
+    <div class="pj-cli-search-wrap">
+      <input class="pj-form-input" id="pjFCliSearch" placeholder="🔍 Buscar cliente..."
+        value="${escHtml(_pjFilterCliQ)}" oninput="_pjFilterCliQ=this.value;_pjRenderFilterClientListOnly()">
+    </div>
+    <div class="pj-cli-list" id="pjFCliList">
+      <div class="pj-cli-row ${cur===''?'active':''}" onclick="pjSetFilterClient('')">
+        <span class="pj-cli-dot" style="background:transparent;border:1px dashed var(--border)"></span>
+        <span class="pj-cli-name" style="color:var(--text2)">Todos os clientes</span>
+        ${cur==='' ? '<span class="pj-cli-check">✓</span>' : ''}
+      </div>
+      ${filtered.length === 0
+        ? `<div class="pj-cli-empty">${q ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}</div>`
+        : filtered.map(rowHtml).join('')}
+    </div>
+    <div class="pj-form-actions">
+      <button class="pj-btn pj-btn-secondary" onclick="pjCloseFormModal()">Fechar</button>
+    </div>`;
+  pjOpenFormModal(html);
+  setTimeout(() => {
+    const inp = document.getElementById('pjFCliSearch');
+    if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+  }, 80);
+}
+function _pjRenderFilterClientListOnly() {
+  const names = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : [];
+  const q = (_pjFilterCliQ || '').toLowerCase().trim();
+  const filtered = q ? names.filter(n => n.toLowerCase().includes(q)) : names;
+  const cur = pjFilter.client || '';
+  const list = document.getElementById('pjFCliList');
+  if (!list) return;
+  const rowHtml = (n) => {
+    const color = (typeof getClientColor === 'function') ? getClientColor(n) : null;
+    const logo  = (typeof getClientLogo  === 'function') ? getClientLogo(n)  : null;
+    const active = n === cur;
+    const dot = logo
+      ? `<img src="${logo}" alt="" class="pj-cli-logo">`
+      : `<span class="pj-cli-dot" style="background:${color||'#6366f1'}"></span>`;
+    return `<div class="pj-cli-row ${active?'active':''}" onclick="pjSetFilterClient(${JSON.stringify(n).replace(/"/g,'&quot;')})">
+      ${dot}<span class="pj-cli-name">${escHtml(n)}</span>${active?'<span class="pj-cli-check">✓</span>':''}
+    </div>`;
+  };
+  list.innerHTML = `
+    <div class="pj-cli-row ${cur===''?'active':''}" onclick="pjSetFilterClient('')">
+      <span class="pj-cli-dot" style="background:transparent;border:1px dashed var(--border)"></span>
+      <span class="pj-cli-name" style="color:var(--text2)">Todos os clientes</span>
+      ${cur==='' ? '<span class="pj-cli-check">✓</span>' : ''}
+    </div>
+    ${filtered.length === 0
+      ? `<div class="pj-cli-empty">${q ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}</div>`
+      : filtered.map(rowHtml).join('')}`;
+}
+function pjSetFilterClient(name) {
+  pjSetFilter('client', name || '');
+  pjCloseFormModal();
+}
+
 function pjOpenPriorityMenu(ev, taskId) {
   const t = pjAllTasks.find(x => x.id === taskId);
   if (!t) return;
@@ -17637,6 +17739,8 @@ async function pjOpenTask(taskId) {
   if (typeof appCoEditStart === 'function') appCoEditStart('task:'+taskId);
   const overlay = document.getElementById('pjTaskOverlay');
   overlay.classList.add('open');
+  // Trava scroll do body — evita URL bar do iOS aparecer/sumir e empurrar a bottombar pra fora
+  document.body.classList.add('pj-task-open');
   document.getElementById('pjModalLeft').style.opacity = '0.5';
   // Load task (from cache or Firestore)
   let task = pjAllTasks.find(t => t.id === taskId);
@@ -18226,6 +18330,7 @@ function pjCloseTaskModal() {
   if (typeof appCoEditStop === 'function') appCoEditStop();
   pjCurrentTaskId = null;
   document.getElementById('pjTaskOverlay').classList.remove('open');
+  document.body.classList.remove('pj-task-open');
   if (pjCommentUnsub) { pjCommentUnsub(); pjCommentUnsub = null; }
   clearTimeout(pjModalSaveTimer);
 }
@@ -18337,17 +18442,44 @@ function pjMentionRender() {
       ${pjAvatarHtml(m.uid || m.id || m.email)}<span>${escHtml(m.name||m.email||'')}${roleTag}${pendingTag}</span>
     </div>`;
   }).join('');
-  // position near caret
-  const r = ta.getBoundingClientRect();
-  pop.style.left = r.left + 8 + 'px';
-  pop.style.top = (r.bottom + 4) + 'px';
+  // Posiciona perto do caret — se não couber abaixo, mostra acima.
+  // Render primeiro pra medir altura real, depois ajusta.
   pop.style.display = 'block';
+  pop.style.left = '0px';
+  pop.style.top = '0px';
+  const r = ta.getBoundingClientRect();
+  const popH = pop.offsetHeight || 220;
+  const popW = pop.offsetWidth || 240;
+  const vh = window.innerHeight;
+  const vw = window.innerWidth;
+  let top = r.bottom + 4;
+  if (top + popH > vh - 8) top = Math.max(8, r.top - popH - 4);
+  let left = r.left + 8;
+  if (left + popW > vw - 8) left = Math.max(8, vw - popW - 8);
+  pop.style.top = top + 'px';
+  pop.style.left = left + 'px';
 }
 function pjMentionClose() {
   pjMentionState.open = false;
   const pop = document.getElementById('pjMentionList');
   if (pop) pop.style.display = 'none';
 }
+// Insere "@" no input de comentário e dispara o autocomplete (botão de mencionar)
+function pjInsertMention() {
+  const ta = document.getElementById('pjCommentInput');
+  if (!ta) return;
+  ta.focus();
+  const pos = ta.selectionStart || ta.value.length;
+  const before = ta.value.slice(0, pos);
+  // Garante espaço antes do @ se não estiver no começo nem após espaço
+  const needsSpace = before.length > 0 && !/\s$/.test(before);
+  const insert = (needsSpace ? ' @' : '@');
+  ta.value = before + insert + ta.value.slice(pos);
+  const newPos = pos + insert.length;
+  ta.setSelectionRange(newPos, newPos);
+  ta.dispatchEvent(new Event('input', { bubbles:true }));
+}
+
 function pjMentionInsert(key) {
   const m = pjMembers.find(x => x.uid === key) || pjMembers.find(x => x.id === key) || pjMembers.find(x => x.email === key);
   if (!m) return;
