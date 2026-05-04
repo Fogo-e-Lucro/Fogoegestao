@@ -60,29 +60,6 @@
     <div class="login-footer">Acesso restrito à equipe Fogo e Lucro</div>
   </div>
 </div>
-<script>
-/* ── Brasas flutuantes no login ── */
-(function spawnEmbers() {
-  const screen = document.getElementById('loginScreen');
-  if (!screen) return;
-  function createEmber() {
-    const e = document.createElement('div');
-    e.className = 'login-ember';
-    const size = 2 + Math.random() * 4;
-    const x = 10 + Math.random() * 80;
-    const dur = 5 + Math.random() * 8;
-    const delay = Math.random() * 6;
-    const drift = (Math.random() - .5) * 120;
-    e.style.cssText = `width:${size}px;height:${size}px;left:${x}%;bottom:-10px;
-      animation-duration:${dur}s;animation-delay:${delay}s;
-      --drift:${drift}px;opacity:${.4+Math.random()*.5};`;
-    screen.appendChild(e);
-    setTimeout(() => e.remove(), (dur + delay) * 1000 + 500);
-  }
-  for (let i = 0; i < 18; i++) createEmber();
-  setInterval(createEmber, 900);
-})();
-</script>
 
 <!-- HEADER -->
 <header class="app-header" id="appHeader">
