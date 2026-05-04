@@ -1,37 +1,3 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#6366f1"/>
-      <stop offset="60%" stop-color="#8b5cf6"/>
-      <stop offset="100%" stop-color="#a855f7"/>
-    </linearGradient>
-    <linearGradient id="flame" x1="0.5" y1="0" x2="0.5" y2="1">
-      <stop offset="0%" stop-color="#fbbf24"/>
-      <stop offset="50%" stop-color="#f97316"/>
-      <stop offset="100%" stop-color="#ef4444"/>
-    </linearGradient>
-    <linearGradient id="flameInner" x1="0.5" y1="0.2" x2="0.5" y2="1">
-      <stop offset="0%" stop-color="#fef3c7"/>
-      <stop offset="100%" stop-color="#fbbf24"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="112" ry="112" fill="url(#bg)"/>
-  <g transform="translate(0,8)">
-    <path fill="url(#flame)" d="M256 96
-      C 248 144, 200 168, 192 224
-      C 184 280, 224 304, 224 336
-      C 224 360, 240 376, 256 376
-      C 272 376, 288 360, 288 336
-      C 288 304, 328 280, 320 224
-      C 312 168, 264 144, 256 96 Z"/>
-    <path fill="url(#flameInner)" d="M256 192
-      C 248 216, 232 232, 232 264
-      C 232 288, 240 304, 256 304
-      C 272 304, 280 288, 280 264
-      C 280 232, 264 216, 256 192 Z"/>
-  </g>
-  <g transform="translate(256,420)" text-anchor="middle">
-    <text font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-weight="800"
-          font-size="48" fill="white" letter-spacing="2">FOGO</text>
-  </g>
+  <image href="logo-gold.png" x="56" y="56" width="400" height="400"/>
 </svg>
