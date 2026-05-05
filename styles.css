@@ -5289,6 +5289,96 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   }
 }
 
+/* ══════════════════════════════════════════════════════
+   ANEXOS DA TAREFA — seção dentro do modal
+═══════════════════════════════════════════════════════ */
+.pj-attach-header {
+  display:flex; align-items:center; gap:8px;
+  cursor:pointer; user-select:none;
+}
+.pj-attach-count {
+  font-size:12px; color:var(--text3); font-weight:500;
+}
+.pj-attach-add-btn {
+  margin-left:auto;
+  width:26px; height:26px; border-radius:7px;
+  border:1px solid var(--border); background:var(--bg2);
+  color:var(--text2); font-size:14px; font-weight:600;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:all .15s;
+}
+.pj-attach-add-btn:hover { background:var(--accent); color:#fff; border-color:transparent; }
+.pj-attach-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr));
+  gap:10px; margin:10px 0 12px;
+}
+.pj-attach-item {
+  position:relative; background:var(--bg2);
+  border:1px solid var(--border); border-radius:10px;
+  overflow:hidden; transition:border-color .15s, transform .15s;
+}
+.pj-attach-item:hover {
+  border-color:var(--accent);
+  transform:translateY(-1px);
+}
+.pj-attach-img img {
+  display:block; width:100%; height:120px; object-fit:cover;
+  cursor:pointer;
+}
+.pj-attach-img .pj-attach-meta {
+  padding:6px 10px; font-size:11.5px; color:var(--text2);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  border-top:1px solid var(--border);
+}
+.pj-attach-doc-link {
+  display:flex; align-items:center; gap:10px;
+  padding:14px 12px; text-decoration:none;
+  color:var(--text); width:100%; box-sizing:border-box;
+}
+.pj-attach-icon { font-size:24px; line-height:1; flex-shrink:0; }
+.pj-attach-info { display:flex; flex-direction:column; min-width:0; flex:1; }
+.pj-attach-name {
+  font-size:13px; font-weight:600;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.pj-attach-sub {
+  font-size:11px; color:var(--text3); margin-top:2px;
+}
+.pj-attach-remove {
+  position:absolute; top:5px; right:5px;
+  width:22px; height:22px; border-radius:50%;
+  border:none; background:rgba(0,0,0,.55); color:#fff;
+  font-size:14px; line-height:1; cursor:pointer;
+  opacity:0; transition:opacity .15s, background .15s;
+  display:flex; align-items:center; justify-content:center;
+}
+.pj-attach-item:hover .pj-attach-remove { opacity:1; }
+.pj-attach-remove:hover { background:#ef4444; }
+
+.pj-attach-dropzone {
+  display:flex; align-items:center; justify-content:center;
+  padding:18px 14px;
+  border:2px dashed var(--border); border-radius:10px;
+  color:var(--text3); font-size:13px;
+  cursor:pointer; transition:all .15s;
+  background:transparent;
+}
+.pj-attach-dropzone:hover {
+  border-color:var(--accent); color:var(--accent);
+  background:rgba(99,102,241,.04);
+}
+.pj-attach-dropzone.drag-over {
+  border-color:var(--accent); border-style:solid;
+  background:rgba(99,102,241,.1);
+  color:var(--accent); font-weight:600;
+}
+
+@media (max-width:768px) {
+  .pj-attach-grid { grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
+  .pj-attach-img img { height:100px; }
+  .pj-attach-remove { opacity:1; } /* mobile sempre visível */
+}
+
 /* ── Coluna Cliente na list view ── */
 .pj-list-client-pill {
   display:inline-flex !important; align-items:center; gap:6px;

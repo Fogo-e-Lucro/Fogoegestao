@@ -1621,6 +1621,24 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             <div class="pj-modal-desc-preview pj-md" id="pjModalDescPreview" style="display:none;"></div>
           </div>
           <div id="pjModalCustomFields"></div>
+          <!-- Anexos da tarefa (independentes dos comentários) -->
+          <div class="pj-modal-section-title pj-attach-header" onclick="pjToggleAttach()">
+            <span id="pjAttachToggleIcon">▸</span>
+            📎 Anexos
+            <span class="pj-attach-count" id="pjAttachCount"></span>
+            <button class="pj-attach-add-btn" type="button" onclick="event.stopPropagation();document.getElementById('pjTaskAttachFile').click()" title="Adicionar arquivo">＋</button>
+            <input type="file" id="pjTaskAttachFile" style="display:none" onchange="pjTaskAttachFileChosen(event)">
+          </div>
+          <div id="pjAttachSection" style="display:none">
+            <div class="pj-attach-grid" id="pjAttachGrid"></div>
+            <div class="pj-attach-dropzone"
+                 ondragover="pjAttachDragOver(event)"
+                 ondragleave="pjAttachDragLeave(event)"
+                 ondrop="pjAttachDrop(event)"
+                 onclick="document.getElementById('pjTaskAttachFile').click()">
+              <span>📎 Arraste arquivos aqui ou clique para selecionar</span>
+            </div>
+          </div>
           <div class="pj-modal-section-title pj-subtask-header" onclick="pjToggleSubtasks()">
             <span id="pjSubtaskToggleIcon">▸</span>
             Subtarefas
@@ -18583,6 +18601,14 @@ function pjRenderTaskModal(task) {
   if (sec)  sec.style.display  = pjSubtaskOpen ? '' : 'none';
   if (icon) icon.textContent   = pjSubtaskOpen ? '▾' : '▸';
   pjRenderSubtasks(task.id);
+  // Anexos da tarefa: abre auto se já tiver anexos
+  const hasAttach = Array.isArray(task.attachments) && task.attachments.length > 0;
+  pjAttachOpen = hasAttach;
+  const aSec = document.getElementById('pjAttachSection');
+  const aIco = document.getElementById('pjAttachToggleIcon');
+  if (aSec) aSec.style.display = pjAttachOpen ? '' : 'none';
+  if (aIco) aIco.textContent  = pjAttachOpen ? '▾' : '▸';
+  pjRenderTaskAttachments(task.id);
   document.getElementById('pjModalLeft').style.opacity = '1';
 }
 
@@ -18676,6 +18702,162 @@ function pjToggleSubtasks() {
   const icon = document.getElementById('pjSubtaskToggleIcon');
   if (sec)  sec.style.display  = pjSubtaskOpen ? '' : 'none';
   if (icon) icon.textContent   = pjSubtaskOpen ? '▾' : '▸';
+}
+
+// ── ANEXOS DA TAREFA (top-level, separados de comentários) ─────
+let pjAttachOpen = false;
+function pjToggleAttach() {
+  pjAttachOpen = !pjAttachOpen;
+  const sec  = document.getElementById('pjAttachSection');
+  const icon = document.getElementById('pjAttachToggleIcon');
+  if (sec)  sec.style.display = pjAttachOpen ? '' : 'none';
+  if (icon) icon.textContent  = pjAttachOpen ? '▾' : '▸';
+}
+
+function pjRenderTaskAttachments(taskId) {
+  const grid = document.getElementById('pjAttachGrid');
+  const countEl = document.getElementById('pjAttachCount');
+  if (!grid) return;
+  const task = pjAllTasks.find(t => t.id === taskId);
+  const items = Array.isArray(task?.attachments) ? task.attachments : [];
+  if (countEl) countEl.textContent = items.length ? `(${items.length})` : '';
+  if (!items.length) {
+    grid.innerHTML = '';
+    return;
+  }
+  grid.innerHTML = items.map((a, i) => {
+    const isImg = (a.type||'').startsWith('image/');
+    const src = a.url || a.dataUrl || '';
+    const sizeKB = a.size ? `${Math.round(a.size/1024)}KB` : '';
+    const dt = a.uploadedAt
+      ? (typeof a.uploadedAt === 'number'
+          ? new Date(a.uploadedAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})
+          : '')
+      : '';
+    if (isImg) {
+      return `<div class="pj-attach-item pj-attach-img">
+        <img src="${src}" alt="${escHtml(a.name||'')}" onclick="window.open('${src}','_blank')">
+        <div class="pj-attach-meta"><span title="${escHtml(a.name||'')}">${escHtml(a.name||'imagem')}</span></div>
+        <button class="pj-attach-remove" onclick="event.stopPropagation();pjRemoveTaskAttachment(${i})" title="Remover">×</button>
+      </div>`;
+    }
+    return `<div class="pj-attach-item pj-attach-doc">
+      <a class="pj-attach-doc-link" href="${src}" download="${escHtml(a.name||'arquivo')}" target="_blank">
+        <span class="pj-attach-icon">📄</span>
+        <div class="pj-attach-info">
+          <span class="pj-attach-name" title="${escHtml(a.name||'')}">${escHtml(a.name||'arquivo')}</span>
+          <span class="pj-attach-sub">${sizeKB}${sizeKB && dt ? ' · ' : ''}${dt}</span>
+        </div>
+      </a>
+      <button class="pj-attach-remove" onclick="event.stopPropagation();pjRemoveTaskAttachment(${i})" title="Remover">×</button>
+    </div>`;
+  }).join('');
+}
+
+async function pjTaskAttachFileChosen(ev) {
+  const file = ev.target.files?.[0];
+  ev.target.value = ''; // permite re-selecionar mesmo arquivo
+  if (!file) return;
+  await pjAddTaskAttachment(file);
+}
+
+async function pjAddTaskAttachment(file) {
+  if (!pjCurrentTaskId) return;
+  const isImg = (file.type||'').startsWith('image/');
+  const maxSize = isImg ? 10*1024*1024 : 900*1024;
+  if (file.size > maxSize) {
+    const lim = isImg ? '10MB' : '900KB';
+    if (typeof showToast === 'function') showToast('warn','⚠️',`Arquivo muito grande (máx ${lim} para ${isImg?'imagens':'documentos'}).`);
+    return;
+  }
+  let url = null, dataUrl = null;
+  if (isImg) {
+    if (typeof getSpImgbbKey !== 'function' || !getSpImgbbKey()) {
+      if (typeof showToast === 'function') showToast('warn','⚠️','Configure ImgBB nas Configurações pra anexar imagens.');
+      return;
+    }
+    try {
+      url = await uploadImage(file);
+    } catch(e) {
+      if (typeof showToast === 'function') showToast('error','❌','Falha no upload: '+(e?.message||''));
+      return;
+    }
+  } else {
+    dataUrl = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+  const uid = _auth?.currentUser?.uid || _currentUser?.uid || null;
+  const att = {
+    name: file.name,
+    type: file.type,
+    size: file.size,
+    uploadedAt: Date.now(),
+    uploadedBy: uid,
+    ...(url ? {url} : {dataUrl}),
+  };
+  // Update local
+  const task = pjAllTasks.find(t => t.id === pjCurrentTaskId);
+  if (!task) return;
+  if (!Array.isArray(task.attachments)) task.attachments = [];
+  task.attachments.push(att);
+  pjRenderTaskAttachments(pjCurrentTaskId);
+  // Garante seção aberta pra usuário ver
+  if (!pjAttachOpen) pjToggleAttach();
+  // Persiste no Firestore
+  try {
+    if (typeof firebase !== 'undefined' && firebase?.firestore?.FieldValue) {
+      await pjC('pj_tasks').doc(pjCurrentTaskId).update({
+        attachments: firebase.firestore.FieldValue.arrayUnion(att),
+        updatedAt: pjNow(),
+      });
+    } else {
+      await pjC('pj_tasks').doc(pjCurrentTaskId).update({
+        attachments: task.attachments, updatedAt: pjNow()
+      });
+    }
+  } catch(e) { console.warn('[pj] erro ao salvar anexo:', e); }
+  // Log de atividade
+  if (typeof pjLogActivity === 'function') {
+    pjLogActivity(pjCurrentTaskId, { type:'attach', action:'add', name:file.name });
+  }
+  if (typeof showToast === 'function') showToast('success','📎','Anexo adicionado.');
+}
+
+async function pjRemoveTaskAttachment(idx) {
+  if (!pjCurrentTaskId) return;
+  if (!confirm('Remover este anexo?')) return;
+  const task = pjAllTasks.find(t => t.id === pjCurrentTaskId);
+  if (!task || !Array.isArray(task.attachments)) return;
+  const removed = task.attachments[idx];
+  task.attachments.splice(idx, 1);
+  pjRenderTaskAttachments(pjCurrentTaskId);
+  try {
+    await pjC('pj_tasks').doc(pjCurrentTaskId).update({
+      attachments: task.attachments, updatedAt: pjNow(),
+    });
+  } catch(e) { console.warn('[pj] erro ao remover anexo:', e); }
+  if (typeof pjLogActivity === 'function' && removed) {
+    pjLogActivity(pjCurrentTaskId, { type:'attach', action:'remove', name:removed.name });
+  }
+}
+
+// Drag & drop na zona da tarefa
+function pjAttachDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+function pjAttachDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+async function pjAttachDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const files = [...(e.dataTransfer?.files || [])];
+  for (const f of files) await pjAddTaskAttachment(f);
 }
 function pjSubtaskInputKey(e) {
   if (e.key === 'Enter') { e.preventDefault(); pjAddSubtask(); }
@@ -18810,6 +18992,11 @@ function pjRenderActivityLogItem(a) {
   } else if (a.type === 'created') {
     icon = '✨';
     body = 'criou a tarefa';
+  } else if (a.type === 'attach') {
+    icon = '📎';
+    if (a.action === 'add') body = `anexou <strong>${escHtml(a.name||'arquivo')}</strong>`;
+    else if (a.action === 'remove') body = `removeu o anexo <strong>${escHtml(a.name||'arquivo')}</strong>`;
+    else body = `mexeu nos anexos`;
   } else {
     body = `fez uma alteração (${escHtml(a.type||'')})`;
   }
@@ -19384,12 +19571,18 @@ async function pjDuplicateTask(taskId) {
     order: Date.now(),
     createdBy: uid,
   };
-  // 🛡️ CRÍTICO: o spread '...orig' compartilha REFERÊNCIA do array activity
+  // 🛡️ CRÍTICO: o spread '...orig' compartilha REFERÊNCIA dos arrays
   // entre a cópia e a original. Qualquer push em uma vaza pra outra. Mesma
   // raiz do bug em pjSpawnNextRecurrence — limpa explicitamente.
   delete copy.activity;       // log fica só na original
-  delete copy.attachments;    // anexos ficam só na original
-  // Sanity: se o spread copiou alguma referência mutável, não levamos
+  // Anexos: faz CÓPIA do array (não compartilha referência) — assim a
+  // cópia tem seus próprios anexos mas começa com os da original
+  if (Array.isArray(orig.attachments)) {
+    copy.attachments = orig.attachments.map(a => ({...a}));
+  } else {
+    delete copy.attachments;
+  }
+  // Sanity: se algo escapou, garante array vazio em activity
   if (Array.isArray(copy.activity)) copy.activity = [];
 
   // Local first
@@ -19405,7 +19598,7 @@ async function pjDuplicateTask(taskId) {
     data.createdAt = pjNow(); data.updatedAt = pjNow();
     // Garantia extra: nunca persiste activity da original na cópia
     delete data.activity;
-    delete data.attachments;
+    // attachments: persiste o array clonado (já é cópia independente)
     await pjC('pj_tasks').doc(newId).set(data);
   } catch(e) {}
   // Open the copy
