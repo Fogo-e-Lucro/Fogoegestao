@@ -341,7 +341,7 @@
               <label class="share-tab-label"><input type="checkbox" class="anew-space-check" value="*" checked> Todos</label>
             </div>
           </div>
-          <input class="acesso-input" id="aNewWhatsApp" placeholder="WhatsApp (ex: 5511999999999)" style="margin-bottom:10px;">
+          <input class="acesso-input" id="aNewWhatsApp" placeholder="(11) 99999-9999" autocomplete="tel" inputmode="numeric" maxlength="16" style="margin-bottom:10px;">
           <button class="acesso-add-btn" onclick="addMember()" style="width:100%;">+ Adicionar e Convidar por Gmail</button>
         </div>
       </div>
@@ -2670,7 +2670,80 @@ function acessoToggleForm() {
   const open = body.style.display === 'none';
   body.style.display = open ? '' : 'none';
   if (chev) chev.textContent = open ? '▲' : '▼';
-  if (open) acessoRenderSpaces();
+  if (open) {
+    acessoRenderSpaces();
+    // Aplica máscara/validação BR no WhatsApp ao abrir o form
+    try { brPhoneAttach(document.getElementById('aNewWhatsApp')); } catch(_) {}
+  }
+}
+
+// ── Telefone Brasileiro: máscara + validação ──────────────────
+// Aceita apenas formatos válidos:
+//   Celular: (DD) 9XXXX-XXXX  → 11 dígitos (DDD + 9 + 8)
+//   Fixo:    (DD) XXXX-XXXX   → 10 dígitos (DDD + 8)
+// Internamente armazena com prefixo '55' (formato WhatsApp).
+function brPhoneStripDigits(raw) {
+  let d = (raw || '').replace(/\D/g, '');
+  // Remove código do país se vier
+  if (d.startsWith('55') && (d.length === 12 || d.length === 13)) d = d.slice(2);
+  return d;
+}
+function brPhoneFormat(raw) {
+  const d = brPhoneStripDigits(raw).slice(0, 11);
+  if (!d) return '';
+  if (d.length <= 2)  return `(${d}`;
+  if (d.length <= 6)  return `(${d.slice(0,2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+  return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+}
+function brPhoneValid(raw) {
+  const d = brPhoneStripDigits(raw);
+  if (d.length === 11) {
+    const ddd = parseInt(d.slice(0,2), 10);
+    if (ddd < 11 || ddd > 99) return false;
+    return d[2] === '9'; // celular precisa do 9 inicial
+  }
+  if (d.length === 10) {
+    const ddd = parseInt(d.slice(0,2), 10);
+    if (ddd < 11 || ddd > 99) return false;
+    return d[2] !== '9'; // fixo NÃO começa com 9
+  }
+  return false;
+}
+function brPhoneNormalize(raw) {
+  const d = brPhoneStripDigits(raw);
+  if (d.length === 10 || d.length === 11) return '55' + d;
+  return null;
+}
+function brPhoneAttach(input) {
+  if (!input || input.dataset.brPhoneWired) return;
+  input.dataset.brPhoneWired = '1';
+  input.setAttribute('inputmode', 'numeric');
+  input.setAttribute('autocomplete', 'tel');
+  if (!input.placeholder || /5511/.test(input.placeholder)) {
+    input.placeholder = '(11) 99999-9999';
+  }
+  input.maxLength = 16;
+  // Formata valor inicial (se vier do Firestore como '5511...')
+  if (input.value) input.value = brPhoneFormat(input.value);
+  input.addEventListener('input', () => {
+    const cur = input.selectionStart || 0;
+    const beforeDigits = input.value.slice(0, cur).replace(/\D/g, '').length;
+    input.value = brPhoneFormat(input.value);
+    // Reposiciona caret após o N-ésimo dígito
+    let count = 0;
+    for (let i = 0; i < input.value.length; i++) {
+      if (/\d/.test(input.value[i])) count++;
+      if (count >= beforeDigits) {
+        input.setSelectionRange(i + 1, i + 1);
+        return;
+      }
+    }
+  });
+  input.addEventListener('blur', () => {
+    if (!input.value) { input.classList.remove('br-phone-invalid'); return; }
+    input.classList.toggle('br-phone-invalid', !brPhoneValid(input.value));
+  });
 }
 
 function acessoRoleChange() {
@@ -2695,7 +2768,11 @@ async function acessoRenderSpaces() {
     spaces.map(s => `<label class="share-tab-label"><input type="checkbox" class="anew-space-check" value="${s.id}"> ${escHtml(s.name)}</label>`).join('');
 }
 
+let _addMemberBusy = false;
 async function addMember() {
+  // Trava reentrância — evita duplicação por duplo clique / Enter rápido
+  if (_addMemberBusy) return;
+  const btn = document.querySelector('.acesso-add-btn');
   const name  = document.getElementById('aNewName').value.trim();
   const email = document.getElementById('aNewEmail').value.trim().toLowerCase();
   const pwd   = document.getElementById('aNewPwd').value.trim();
@@ -2704,17 +2781,32 @@ async function addMember() {
   if (!email || !email.includes('@')) { showToast('warn','⚠️','Email inválido.'); return; }
   if (_acessoMembers.find(m => m.email === email)) { showToast('warn','⚠️','Membro já existe.'); return; }
 
+  // Valida WhatsApp brasileiro (se preenchido)
+  const waInput = document.getElementById('aNewWhatsApp');
+  const waRaw = (waInput?.value || '').trim();
+  let whatsapp = '';
+  if (waRaw) {
+    if (!brPhoneValid(waRaw)) {
+      waInput.classList.add('br-phone-invalid');
+      waInput.focus();
+      showToast('warn','⚠️','Telefone inválido. Use (DD) 9XXXX-XXXX (celular) ou (DD) XXXX-XXXX (fixo).');
+      return;
+    }
+    whatsapp = brPhoneNormalize(waRaw); // '55' + 10/11 dígitos
+  }
+
   const tabs   = role === 'admin' ? ALL_TABS.slice() :
     [...document.querySelectorAll('.anew-tab-check:checked')].map(c => c.value);
   const spChecked = [...document.querySelectorAll('.anew-space-check:checked')].map(c => c.value);
   const spaces = spChecked.includes('*') ? '*' : spChecked;
   const authType = pwd ? 'password' : 'google';
-  const whatsapp = (document.getElementById('aNewWhatsApp')?.value || '').trim().replace(/\D/g,'');
 
   const member = { name, email, role, authType, tabs, spaces, createdAt: new Date().toISOString() };
   if (pwd) member.tempPassword = pwd;
   if (whatsapp) member.whatsapp = whatsapp;
 
+  _addMemberBusy = true;
+  if (btn) { btn.disabled = true; btn.style.opacity = '.6'; btn.dataset.origText = btn.textContent; btn.textContent = 'Adicionando…'; }
   try {
     const docId = btoa(email).replace(/[^a-zA-Z0-9]/g,'_');
     await _db.collection('app_members').doc(docId).set(member);
@@ -2734,16 +2826,24 @@ async function addMember() {
         uid: null, email, name, role: pjRole, pending: true, createdAt: Date.now()
       });
     } catch(_) {}
-    _acessoMembers.push(member);
+    // Upsert no array local (não duplica se já tiver entrada)
+    const idx = _acessoMembers.findIndex(m => m.email === email);
+    if (idx >= 0) _acessoMembers[idx] = member;
+    else _acessoMembers.push(member);
     renderMemberList();
     // Gmail invite
     acessoSendInvite(email, name, authType, pwd);
     // Reset form
-    ['aNewName','aNewEmail','aNewPwd','aNewWhatsApp'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    ['aNewName','aNewEmail','aNewPwd','aNewWhatsApp'].forEach(id => { const el=document.getElementById(id); if(el) { el.value=''; el.classList.remove('br-phone-invalid'); } });
     document.querySelector('input[name="aNewRole"][value="member"]').checked = true;
     acessoRoleChange();
     showToast('success','✅',`${name} adicionado!`);
-  } catch(e) { showToast('error','❌','Erro ao salvar: '+(e.message||'')); }
+  } catch(e) {
+    showToast('error','❌','Erro ao salvar: '+(e.message||''));
+  } finally {
+    _addMemberBusy = false;
+    if (btn) { btn.disabled = false; btn.style.opacity = ''; if (btn.dataset.origText) btn.textContent = btn.dataset.origText; }
+  }
 }
 
 function acessoSendInvite(email, name, authType, pwd) {
@@ -2875,8 +2975,16 @@ function renderMemberList() {
   const cnt = document.getElementById('acessoMemberCount');
   if (!el) return;
   const onlineEmails = new Set((_appPresenceUsers||[]).map(u => u.email));
+  // Dedup defensivo por email — caso _acessoMembers tenha duplicata
+  const seenEmails = new Set();
+  const deduped = _acessoMembers.filter(m => {
+    const k = (m.email||'').toLowerCase();
+    if (!k || seenEmails.has(k)) return false;
+    seenEmails.add(k);
+    return true;
+  });
   // Admin always first
-  const sorted = [..._acessoMembers].sort((a,b) => {
+  const sorted = [...deduped].sort((a,b) => {
     if (a.role==='admin' && b.role!=='admin') return -1;
     if (b.role==='admin' && a.role!=='admin') return 1;
     return (a.name||a.email).localeCompare(b.name||b.email);
@@ -19542,6 +19650,19 @@ async function bdNewCliente() {
 
 async function bdSaveField(id, field, value) {
   const db = _bdDb(); if (!db) return;
+  // Telefone/WhatsApp: valida formato BR e normaliza pra '55' + dígitos
+  if (field === 'telefone' || field === 'whatsapp') {
+    if (value && value.trim()) {
+      if (typeof brPhoneValid === 'function' && !brPhoneValid(value)) {
+        showToast('warn','⚠️','Telefone inválido. Use (DD) 9XXXX-XXXX (celular) ou (DD) XXXX-XXXX (fixo).');
+        return;
+      }
+      if (typeof brPhoneNormalize === 'function') {
+        const norm = brPhoneNormalize(value);
+        if (norm) value = norm;
+      }
+    }
+  }
   try {
     await db.collection('clientes_base').doc(id).update({ [field]: value, updatedAt: Date.now() });
   } catch(e) { console.error('bdSave',e); }
@@ -19648,7 +19769,9 @@ function bdRenderDetail(id) {
   const health = _bdHealthScore(c);
   const cor = c.cor || '#6366f1';
   const wa = (c.whatsapp||c.telefone||'').replace(/\D/g,'');
-  const waLink = wa ? `https://wa.me/55${wa}` : '';
+  // Garante prefixo 55 sem duplicar (dados antigos podem estar sem; novos já têm)
+  const waE164 = wa ? (wa.startsWith('55') && wa.length >= 12 ? wa : '55'+wa) : '';
+  const waLink = waE164 ? `https://wa.me/${waE164}` : '';
 
   main.innerHTML = `
     <button class="bd-back-mobile" onclick="bdBackToList()" aria-label="Voltar para lista">
@@ -19701,6 +19824,10 @@ function bdRenderDetail(id) {
       ${_bdRenderHiddenFooter()}
     </div>
   `;
+  // Attach máscara BR nos campos telefone/whatsapp da ficha
+  try {
+    main.querySelectorAll('input[data-br-phone="1"]').forEach(inp => brPhoneAttach(inp));
+  } catch(_) {}
 }
 
 // Slug estável a partir do título (remove emoji + acentos + caracteres especiais)
@@ -19870,8 +19997,12 @@ function _bdInput(c, field, label, opts={}) {
   const v = c[field]||'';
   const type = opts.type||'text';
   const copy = opts.copy !== false ? _bdCopyHtml(v) : '';
+  // Campos de telefone ganham máscara BR
+  const isPhone = field === 'telefone' || field === 'whatsapp';
+  const initVal = isPhone && v ? brPhoneFormat(v) : _bdEsc(v);
+  const phoneAttrs = isPhone ? `data-br-phone="1"` : '';
   return `<div class="bd-field"><div class="bd-field-label">${label}</div><div class="bd-field-value">
-    <input class="bd-field-input" type="${type}" value="${_bdEsc(v)}" onchange="bdSaveField('${c.id}','${field}',this.value)" ${opts.placeholder?'placeholder="'+opts.placeholder+'"':''}>
+    <input class="bd-field-input" type="${type}" value="${initVal}" ${phoneAttrs} onchange="bdSaveField('${c.id}','${field}',this.value)" ${opts.placeholder?'placeholder="'+opts.placeholder+'"':''}>
     ${copy}
   </div></div>`;
 }

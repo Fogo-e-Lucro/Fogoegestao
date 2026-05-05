@@ -5082,6 +5082,12 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   }
 }
 
+/* Telefone BR inválido — destaca a borda em vermelho */
+input.br-phone-invalid {
+  border-color:#ef4444 !important;
+  box-shadow:0 0 0 3px rgba(239,68,68,.12) !important;
+}
+
 /* Trava scroll do documento enquanto o task modal está aberto — evita
    barra de URL do iOS aparecer/sumir e jogar a bottombar pra fora da tela.
    Usa só overflow:hidden (não position:fixed) pra não perder a posição de scroll. */
