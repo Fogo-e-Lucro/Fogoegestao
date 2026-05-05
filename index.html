@@ -14646,6 +14646,38 @@ function pjGetMyWeekProgress() {
   return { total: my.length, completed, remaining: my.length - completed, scope:'week' };
 }
 
+// Stats consolidadas do dia: meta total (tarefas suas com dueDate=hoje),
+// quantas já fechou (das de hoje) e quantas FECHOU hoje no total
+// (qualquer dueDate, mas completedAt=hoje) — pra detectar "passou da meta".
+function pjGetTodayStats() {
+  const uid = (typeof _currentUser !== 'undefined' && _currentUser && _currentUser.uid) || null;
+  if (!uid) return { todayTotal:0, todayDone:0, todayRemaining:0, closedToday:0 };
+  const today = pjDateStr(new Date());
+  const myTasks = (pjAllTasks||[]).filter(t =>
+    !pjIsArchived(t) && !t.parentTaskId &&
+    Array.isArray(t.assignees) && t.assignees.includes(uid)
+  );
+  const myToday = myTasks.filter(t => t.dueDate === today);
+  const todayTotal = myToday.length;
+  const todayDone = myToday.filter(t => pjIsDone(t)).length;
+  // Conta tarefas que o usuário FECHOU hoje (completedAt no dia atual)
+  const closedToday = myTasks.filter(t => {
+    if (!pjIsDone(t) || !t.completedAt) return false;
+    let ms;
+    if (t.completedAt?.toMillis)       ms = t.completedAt.toMillis();
+    else if (t.completedAt?.toDate)    ms = t.completedAt.toDate().getTime();
+    else if (typeof t.completedAt === 'number') ms = t.completedAt;
+    else return false;
+    return pjDateStr(new Date(ms)) === today;
+  }).length;
+  return {
+    todayTotal,
+    todayDone,
+    todayRemaining: Math.max(0, todayTotal - todayDone),
+    closedToday,
+  };
+}
+
 // Chamado quando uma tarefa transiciona pra fechado.
 let _pjCelebTimer = null;
 function pjOnTaskClosed(t) {
@@ -14655,8 +14687,7 @@ function pjOnTaskClosed(t) {
 
   const today = pjDateStr(new Date());
 
-  // 😤 ESPECIAL: tarefa ATRASADA — alerta ao invés de celebração.
-  // Tem prioridade sobre tudo: não foi mais que obrigação, sem som de festa.
+  // 😤 1. ATRASADA — alerta com esculacho (não é celebração).
   if (t.dueDate && t.dueDate < today) {
     const dueDate = new Date(t.dueDate + 'T00:00:00');
     const daysLate = Math.max(1, Math.floor((Date.now() - dueDate.getTime()) / 86400000));
@@ -14665,45 +14696,72 @@ function pjOnTaskClosed(t) {
     return;
   }
 
-  // 🔊 SOM de celebração e haptic — só para tarefas no prazo
+  // 🔊 Som + haptic pra tarefas no prazo
   try { pjPlayCelebrationSound(); } catch(_) {}
   if (typeof pjHaptic === 'function') { try { pjHaptic('success'); } catch(_) {} }
 
-  // 🎉 POPUP — mostra o progresso APENAS quando faz sentido pra essa tarefa.
-  // Caso contrário (tarefa não-minha ou de outro dia), exibe celebração
-  // simples sem barra "0/1" enganosa.
   const isMine = Array.isArray(t.assignees) && t.assignees.includes(uid);
-  const isTodayTask = isMine && t.dueDate === today;
+  const stats = pjGetTodayStats();
 
-  // Range da semana atual (segunda → domingo)
-  const now = new Date();
-  const dow = now.getDay();
-  const monday = new Date(now); monday.setHours(0,0,0,0);
-  monday.setDate(now.getDate() - ((dow + 6) % 7));
-  const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
-  const isWeekTask = isMine && t.dueDate && t.dueDate >= pjDateStr(monday) && t.dueDate <= pjDateStr(sunday);
+  // 2. NÃO MINHA ou SEM META do dia → celebração simples
+  if (!isMine || stats.todayTotal === 0) {
+    pjCelebrateSimple(t);
+    return;
+  }
 
-  // 1. Tarefa minha pra HOJE → progresso de hoje
-  if (isTodayTask) {
-    const prog = pjGetMyTodayProgress();
-    if (prog.total > 0) {
-      if (prog.remaining === 0) pjCelebrateAllDone(prog.total, 'today');
-      else pjCelebrateProgress(prog);
-      return;
-    }
+  // 🌟 3. PASSOU DA META — fechou MAIS tarefas hoje que o total previsto
+  //      Ex: meta era 3, fechou 4 (1 a mais que o planejado).
+  if (stats.closedToday > stats.todayTotal) {
+    pjCelebrateOverGoal(stats);
+    return;
   }
-  // 2. Tarefa minha da SEMANA (não hoje) → progresso da semana
-  if (isWeekTask) {
-    const prog = pjGetMyWeekProgress();
-    if (prog.total > 0) {
-      if (prog.remaining === 0) pjCelebrateAllDone(prog.total, 'week');
-      else pjCelebrateProgress(prog);
-      return;
-    }
+
+  // 🏆 4. META BATIDA — todas as de hoje concluídas (sem extras)
+  if (stats.todayRemaining === 0) {
+    pjCelebrateAllDone(stats.todayTotal, 'today');
+    return;
   }
-  // 3. Tarefa fora do escopo do usuário (não-minha ou outra data) →
-  //    celebração simples, sem barra de progresso confusa
-  pjCelebrateSimple(t);
+
+  // 🎉 5. PROGRESSO NORMAL — ainda faltam tarefas pra hoje
+  pjCelebrateProgress({
+    total: stats.todayTotal,
+    completed: stats.todayDone,
+    remaining: stats.todayRemaining,
+    scope: 'today',
+  });
+}
+
+// 🌟 Celebração ESPECIAL — passou da meta diária (super-produtivo!)
+function pjCelebrateOverGoal(stats) {
+  const overlay = pjEnsureCelebrateOverlay();
+  const card = overlay.querySelector('.pj-celebrate-card');
+  const extra = stats.closedToday - stats.todayTotal;
+  const pct = Math.round((stats.closedToday / Math.max(1, stats.todayTotal)) * 100);
+  card.className = 'pj-celebrate-card pj-celebrate-overgoal';
+  card.innerHTML = `
+    <div class="pj-celebrate-emoji big">🌟</div>
+    <div class="pj-celebrate-title">PASSOU DA META!</div>
+    <div class="pj-celebrate-text">
+      Você concluiu <b>${stats.closedToday} ${stats.closedToday===1?'tarefa':'tarefas'}</b> hoje —
+      <b>${extra} a mais</b> que sua meta de <b>${stats.todayTotal}</b>!<br>
+      <span style="opacity:.9;display:inline-block;margin-top:6px;">Que organização impecável! 👏✨</span>
+    </div>
+    <div class="pj-celebrate-bar"><div class="pj-celebrate-bar-fill" style="width:100%;"></div></div>
+    <div class="pj-celebrate-frac">${stats.closedToday} / ${stats.todayTotal} <span style="opacity:.75;font-size:.85em;">(${pct}%)</span></div>
+    <button class="pj-btn pj-btn-primary" type="button" style="margin-top:14px;" onclick="document.getElementById('pjCelebrateOverlay')?.classList.remove('open')">Mandou bem! 🚀</button>
+  `;
+  overlay.classList.add('open');
+  // Salva de confete em 3 ondas pra parecer mais especial
+  if (typeof pjConfettiBurst === 'function') {
+    try {
+      pjConfettiBurst(window.innerWidth/2, window.innerHeight/3);
+      setTimeout(() => pjConfettiBurst(window.innerWidth/3, window.innerHeight/2), 220);
+      setTimeout(() => pjConfettiBurst(2*window.innerWidth/3, window.innerHeight/2), 440);
+    } catch(_) {}
+  }
+  try { pjPlayApplauseSound(); } catch(_) {}
+  clearTimeout(_pjCelebTimer);
+  _pjCelebTimer = setTimeout(() => overlay.classList.remove('open'), 8500);
 }
 
 // Alerta de tarefa ATRASADA — mostra esculacho ao invés de celebração.
