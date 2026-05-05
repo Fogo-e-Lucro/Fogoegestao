@@ -12999,6 +12999,7 @@ function pjListColumns(list) {
     { id:'assignee', label:'Responsável', width:'150px' },
     { id:'due',      label:'Vencimento',  width:'130px' },
     { id:'priority', label:'Prioridade',  width:'100px' },
+    { id:'client',   label:'Cliente',     width:'160px' },
     ...fields.map(f => ({ id:`cf:${f.id}`, label:f.name || 'Campo', width:'140px', field:f })),
   ];
 }
@@ -13269,6 +13270,19 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
   const recur = t.recurrence?.pattern ? `<span class="pj-recur-badge" title="${pjRecurrenceLabel(t.recurrence)}">🔁</span>` : '';
 
   const selected = pjSelected.has(t.id);
+  // Célula Cliente — mostra logo/cor + nome (clique abre o picker)
+  const clientName = (typeof pjResolveTaskClient === 'function') ? pjResolveTaskClient(t) : (t.client || null);
+  let clientCellInner;
+  if (clientName) {
+    const cLogo = (typeof getClientLogo === 'function') ? getClientLogo(clientName) : null;
+    const cColor = (typeof getClientColor === 'function') ? getClientColor(clientName) : null;
+    const dot = cLogo
+      ? `<img src="${cLogo}" alt="" class="pj-list-client-logo">`
+      : `<span class="pj-list-client-dot" style="background:${cColor||'#6366f1'}"></span>`;
+    clientCellInner = `<button type="button" class="pj-list-client-pill" onclick="event.stopPropagation();pjOpenClientMenu(event,'${t.id}')" title="Clique pra trocar cliente">${dot}<span class="pj-list-client-name">${escHtml(clientName)}</span></button>`;
+  } else {
+    clientCellInner = `<button type="button" class="pj-list-client-pill empty" onclick="event.stopPropagation();pjOpenClientMenu(event,'${t.id}')" title="Definir cliente"><span class="pj-cell-empty">+ cliente</span></button>`;
+  }
   const cellMap = {
     title: `<div class="pj-list-cell title">
       <div class="pj-sel-circle ${selected?'checked':''}" onclick="event.stopPropagation();pjToggleSelect('${t.id}',event)" title="Selecionar">${selected?'✓':''}</div>
@@ -13282,6 +13296,7 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
     assignee: `<div class="pj-list-cell">${assigneeHtml}</div>`,
     due:      `<div class="pj-list-cell">${dueLabel?`<span class="pj-task-due ${due.cls}">${dueLabel}</span>`:`<span class="pj-cell-empty">—</span>`}</div>`,
     priority: `<div class="pj-list-cell">${prio}</div>`,
+    client:   `<div class="pj-list-cell">${clientCellInner}</div>`,
     status:   `<div class="pj-list-cell"><button type="button" class="pj-status-pill" style="--c:${st.color}" onclick="event.stopPropagation();pjOpenStatusMenu(event,'${t.id}')" title="Clique pra trocar"><span class="pj-status-pill-dot"></span><span class="pj-status-pill-label">${escHtml(st.name)}</span><svg viewBox="0 0 12 12" width="10" height="10" class="pj-status-pill-arrow" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5l3 3 3-3"/></svg></button></div>`,
   };
   const cellsHtml = cols.map(c => {

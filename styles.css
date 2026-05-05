@@ -5289,6 +5289,37 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   }
 }
 
+/* ── Coluna Cliente na list view ── */
+.pj-list-client-pill {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 10px 4px 4px;
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:20px;
+  cursor:pointer; font-family:var(--font); font-size:12px;
+  color:var(--text); max-width:100%;
+  transition:border-color .15s, background .15s;
+}
+.pj-list-client-pill:hover { border-color:var(--accent); background:var(--card); }
+.pj-list-client-pill.empty {
+  background:transparent; border:1px dashed var(--border);
+  padding:5px 10px;
+}
+.pj-list-client-pill.empty:hover { border-color:var(--accent); }
+.pj-list-client-logo {
+  width:20px; height:20px; min-width:20px; border-radius:50%;
+  object-fit:cover; flex-shrink:0;
+  border:1px solid var(--border);
+}
+.pj-list-client-dot {
+  width:18px; height:18px; min-width:18px; border-radius:50%;
+  flex-shrink:0;
+  border:1px solid rgba(255,255,255,.15);
+}
+.pj-list-client-name {
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  font-weight:500;
+}
+
 /* Telefone BR inválido — destaca a borda em vermelho */
 input.br-phone-invalid {
   border-color:#ef4444 !important;
