@@ -14597,22 +14597,53 @@ function pjGetMyTodayProgress() {
     t.dueDate === today
   );
   const completed = myToday.filter(t => pjIsDone(t)).length;
-  return { total: myToday.length, completed, remaining: myToday.length - completed, isMine:true };
+  return { total: myToday.length, completed, remaining: myToday.length - completed, isMine:true, scope:'today' };
+}
+
+// Progresso da semana atual (segunda → domingo) — fallback quando não há
+// tarefas pra hoje, pra ainda mostrar uma celebração relevante ao usuário.
+function pjGetMyWeekProgress() {
+  const uid = (typeof _currentUser !== 'undefined' && _currentUser && _currentUser.uid) || null;
+  if (!uid) return { total:0, completed:0, remaining:0, scope:'week' };
+  const now = new Date();
+  // Segunda da semana atual (week starts on Monday)
+  const dow = now.getDay(); // 0=dom, 1=seg, ..., 6=sab
+  const monday = new Date(now); monday.setHours(0,0,0,0);
+  monday.setDate(now.getDate() - ((dow + 6) % 7));
+  const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+  const ms = pjDateStr(monday), ds = pjDateStr(sunday);
+  const my = (pjAllTasks||[]).filter(t =>
+    !pjIsArchived(t) && !t.parentTaskId &&
+    Array.isArray(t.assignees) && t.assignees.includes(uid) &&
+    t.dueDate && t.dueDate >= ms && t.dueDate <= ds
+  );
+  const completed = my.filter(t => pjIsDone(t)).length;
+  return { total: my.length, completed, remaining: my.length - completed, scope:'week' };
 }
 
 // Chamado quando uma tarefa transiciona pra fechado.
 let _pjCelebTimer = null;
 function pjOnTaskClosed(t) {
+  if (!t) return;
+  // 🔊 SOM: toca sempre que uma tarefa é fechada (a menos que o usuário
+  // tenha desligado em pj_sound). Antes ficava preso a prioridade.
+  try { pjPlayCelebrationSound(); } catch(_) {}
+  // Haptic discreto no mobile
+  if (typeof pjHaptic === 'function') { try { pjHaptic('success'); } catch(_) {} }
+
   const uid = (typeof _currentUser !== 'undefined' && _currentUser && _currentUser.uid) || null;
-  if (!uid || !t) return;
-  const today = pjDateStr(new Date());
-  const isMine = Array.isArray(t.assignees) && t.assignees.includes(uid);
-  const isToday = t.dueDate === today;
-  // Só celebra se a tarefa fechada era minha E pra hoje
-  if (!isMine || !isToday) return;
-  const prog = pjGetMyTodayProgress();
-  if (prog.total === 0) return;
-  if (prog.remaining === 0) pjCelebrateAllDone(prog.total);
+  if (!uid) return;
+  // 🎉 POPUP DE PROGRESSO: escolhe o melhor escopo
+  //   1. Tarefas pra HOJE (assignadas a mim) — se houver, mostra progresso de hoje
+  //   2. Senão, tarefas da SEMANA atual — mostra progresso da semana
+  //   3. Senão, conta a tarefa fechada como milestone único
+  let prog = pjGetMyTodayProgress();
+  if (prog.total === 0) prog = pjGetMyWeekProgress();
+  if (prog.total === 0) {
+    // Sem outras tarefas relevantes — celebra só essa
+    prog = { total: 1, completed: 1, remaining: 0, scope:'single' };
+  }
+  if (prog.remaining === 0) pjCelebrateAllDone(prog.total, prog.scope);
   else pjCelebrateProgress(prog);
 }
 
@@ -14632,39 +14663,52 @@ function pjCelebrateProgress(prog) {
   const overlay = pjEnsureCelebrateOverlay();
   const card = overlay.querySelector('.pj-celebrate-card');
   const pct = Math.round((prog.completed / prog.total) * 100);
+  // Texto de escopo: hoje, semana ou genérico
+  const scopeWord = prog.scope === 'week' ? 'esta semana' : (prog.scope === 'today' ? 'hoje' : '');
+  const headerText = scopeWord
+    ? `Você já concluiu <b>${prog.completed}</b> ${prog.completed===1?'tarefa':'tarefas'} ${scopeWord}.`
+    : `Tarefa concluída! <b>${prog.completed}</b> no total.`;
+  const remainingText = prog.remaining > 0
+    ? `<br>${prog.remaining===1?'Falta apenas':'Faltam apenas'} <b>${prog.remaining}</b> ${prog.remaining===1?'tarefa':'tarefas'}!`
+    : '';
   card.className = 'pj-celebrate-card pj-celebrate-progress';
   card.innerHTML = `
     <div class="pj-celebrate-emoji">🎉</div>
     <div class="pj-celebrate-title">PARABÉNS!</div>
     <div class="pj-celebrate-text">
-      Você já concluiu <b>${prog.completed}</b> ${prog.completed===1?'tarefa':'tarefas'} hoje.<br>
-      ${prog.remaining===1?'Falta apenas':'Faltam apenas'} <b>${prog.remaining}</b> ${prog.remaining===1?'tarefa':'tarefas'}!
+      ${headerText}${remainingText}
     </div>
     <div class="pj-celebrate-bar"><div class="pj-celebrate-bar-fill" style="width:${pct}%"></div></div>
-    <div class="pj-celebrate-frac">${prog.completed} / ${prog.total}</div>
+    <div class="pj-celebrate-frac">${prog.completed} / ${prog.total} <span style="opacity:.6;font-size:.85em;">(${pct}%)</span></div>
   `;
   overlay.classList.add('open');
-  if (typeof pjPlayCelebrationSound === 'function') pjPlayCelebrationSound();
+  // Confete leve em cima do card pra ficar mais animado
+  try {
+    if (typeof pjConfettiBurst === 'function') {
+      pjConfettiBurst(window.innerWidth/2, window.innerHeight/2);
+    }
+  } catch(_) {}
   clearTimeout(_pjCelebTimer);
-  _pjCelebTimer = setTimeout(() => overlay.classList.remove('open'), 2600);
+  _pjCelebTimer = setTimeout(() => overlay.classList.remove('open'), 3200);
 }
 
-function pjCelebrateAllDone(total) {
+function pjCelebrateAllDone(total, scope) {
   const overlay = pjEnsureCelebrateOverlay();
   const card = overlay.querySelector('.pj-celebrate-card');
   card.className = 'pj-celebrate-card pj-celebrate-alldone';
+  const scopeWord = scope === 'week' ? 'da semana' : (scope === 'today' ? 'do dia' : '');
+  const subtitle = scopeWord
+    ? `Você terminou <b>todas as ${total} ${total===1?'tarefa':'tarefas'} ${scopeWord}</b>.<br>Que produtividade! 👏👏👏`
+    : `Você concluiu uma tarefa! 🚀<br>Continue assim!`;
   card.innerHTML = `
     <div class="pj-celebrate-emoji big">🏆</div>
     <div class="pj-celebrate-title">TUDO PRONTO!</div>
-    <div class="pj-celebrate-text">
-      Você terminou <b>todas as ${total} ${total===1?'tarefa':'tarefas'}</b> do dia.<br>
-      Que dia produtivo! 👏👏👏
-    </div>
+    <div class="pj-celebrate-text">${subtitle}</div>
     <button class="pj-btn pj-btn-primary" type="button" onclick="document.getElementById('pjCelebrateOverlay')?.classList.remove('open')">Aproveitar 🎈</button>
   `;
   overlay.classList.add('open');
   if (typeof pjConfettiBurst === 'function') pjConfettiBurst(window.innerWidth/2, window.innerHeight/3);
-  pjPlayApplauseSound();
+  try { pjPlayApplauseSound(); } catch(_) {}
   clearTimeout(_pjCelebTimer);
   _pjCelebTimer = setTimeout(() => overlay.classList.remove('open'), 7000);
 }
@@ -15620,7 +15664,8 @@ async function pjToggleTaskDone(taskId) {
   } catch(_) {}
   // Recorrência: ao concluir, gera próxima ocorrência
   if (!isDone && t.recurrence?.pattern && t.dueDate) pjSpawnNextRecurrence(t);
-  // Celebração: confete + som ao concluir tarefa urgente ou alta
+  // Celebração: confete na origem do clique pra tarefas urgent/high (extra)
+  // — som + popup de progresso são feitos por pjOnTaskClosed pra TODAS as tarefas
   if (!isDone && (t.priority === 'urgent' || t.priority === 'high')) {
     const checkEl = document.querySelector(`[data-task-id="${t.id}"] .pj-task-check, [data-task-id="${t.id}"] .pj-row-check`);
     let ox, oy;
@@ -15628,11 +15673,10 @@ async function pjToggleTaskDone(taskId) {
       const r = checkEl.getBoundingClientRect();
       ox = r.left + r.width/2; oy = r.top + r.height/2;
     }
-    pjConfettiBurst(ox, oy);
-    pjPlayCelebrationSound();
-    if (typeof pjHaptic === 'function') pjHaptic('success');
-  } else if (typeof pjHaptic === 'function') {
-    pjHaptic(isDone ? 'light' : 'medium');
+    try { pjConfettiBurst(ox, oy); } catch(_) {}
+  }
+  if (typeof pjHaptic === 'function') {
+    try { pjHaptic(isDone ? 'light' : 'medium'); } catch(_) {}
   }
   pjRenderMain(); pjRenderSidebar();
   // Pop-up de progresso do dia (parabéns / tudo pronto)
