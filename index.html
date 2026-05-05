@@ -18405,19 +18405,41 @@ async function pjOpenTask(taskId) {
     task = {id:snap.id,...snap.data()};
   }
   pjRenderTaskModal(task);
-  // Real-time comments — fecha listener anterior e abre o novo
+  // Real-time comments — fecha listener anterior e abre o novo.
+  // CRÍTICO: NÃO usa .orderBy('createdAt') na query do Firestore porque:
+  //   1. Exige índice composto (taskId + createdAt) que pode não existir
+  //   2. Exclui comentários antigos sem o campo createdAt (silenciosamente)
+  // Em vez disso, ordenamos no cliente — mais robusto e mais permissivo.
   if (pjCommentUnsub) { try { pjCommentUnsub(); } catch(_){} pjCommentUnsub = null; }
-  pjCommentUnsub = pjC('pj_comments').where('taskId','==',taskId).orderBy('createdAt','asc')
+  pjCommentUnsub = pjC('pj_comments').where('taskId','==',taskId)
     .onSnapshot(snap => {
       // Confere se ainda estamos na mesma tarefa — se usuário trocou de
       // tarefa enquanto o snapshot estava em trânsito, ignora.
       if (pjCurrentTaskId !== taskId) return;
       // Defesa extra: filtra por taskId mesmo já vindo da query (nunca mistura)
+      // E ordena por createdAt no client (tolerante a comentários sem o campo)
       pjComments = snap.docs.map(d => ({id:d.id,...d.data()}))
-        .filter(c => c.taskId === taskId);
+        .filter(c => c.taskId === taskId)
+        .sort((a, b) => {
+          const tsA = a.createdAt?.toMillis ? a.createdAt.toMillis()
+                    : a.createdAt?.toDate ? a.createdAt.toDate().getTime()
+                    : (typeof a.createdAt === 'number' ? a.createdAt : 0);
+          const tsB = b.createdAt?.toMillis ? b.createdAt.toMillis()
+                    : b.createdAt?.toDate ? b.createdAt.toDate().getTime()
+                    : (typeof b.createdAt === 'number' ? b.createdAt : 0);
+          return tsA - tsB;
+        });
+      console.debug('[pj] comentários carregados:', pjComments.length, 'pra task', taskId);
       pjRenderActivity();
     }, (err) => {
       console.warn('[pj] erro listener comentários:', err);
+      // Fallback: tenta query simples com get() (caso onSnapshot tenha
+      // permission ou conexão pontual com problema)
+      pjC('pj_comments').where('taskId','==',taskId).get().then(snap => {
+        if (pjCurrentTaskId !== taskId) return;
+        pjComments = snap.docs.map(d => ({id:d.id,...d.data()})).filter(c => c.taskId === taskId);
+        pjRenderActivity();
+      }).catch(()=>{});
     });
 }
 
