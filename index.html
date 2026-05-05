@@ -2846,16 +2846,291 @@ async function addMember() {
   }
 }
 
-function acessoSendInvite(email, name, authType, pwd) {
-  const appUrl = window.location.origin + window.location.pathname;
-  const subject = encodeURIComponent('Convite — Fogo & Gestão');
-  let body = `Olá, ${name}!\n\nVocê foi adicionado ao sistema Fogo & Gestão.\n\nAcesse: ${appUrl}\n\n`;
+// ── Sistema de convite por e-mail (template profissional + modal de preview) ──
+const FG_DOMAIN = 'https://fogoegestao.com.br';
+
+function _inviteSubject(name) {
+  const first = (name||'').split(' ')[0] || 'colaborador';
+  return `🔥 Bem-vindo(a) ao Fogo & Gestão, ${first}! Seu acesso está pronto`;
+}
+
+function _inviteHtml(name, email, authType, pwd, inviterName) {
+  const isGoogle = authType === 'google';
+  const firstName = (name||'').split(' ')[0] || 'colaborador';
+  const inviterLine = inviterName
+    ? `<p style="margin:0 0 18px;font-size:14px;color:#5a5a7a;line-height:1.6;"><em>${escHtml(inviterName)}</em> convidou você para fazer parte da equipe.</p>`
+    : '';
+  const accessBlock = isGoogle ? `
+    <div style="font-size:14.5px;color:#1a1a2e;line-height:1.8;">
+      <strong style="color:#404060;">Método de login:</strong> Conta Google<br>
+      <strong style="color:#404060;">E-mail vinculado:</strong> <span style="font-family:'SF Mono',Menlo,Consolas,monospace;color:#6366f1;">${escHtml(email)}</span>
+    </div>
+    <div style="font-size:13px;color:#666;margin-top:12px;background:#fff;padding:10px 14px;border-radius:6px;border:1px solid #e6e8f0;">
+      ✨ Basta clicar em <strong>"Entrar com Google"</strong> ao abrir o site.
+    </div>` : `
+    <div style="font-size:14.5px;color:#1a1a2e;line-height:1.8;">
+      <strong style="color:#404060;">E-mail:</strong> <span style="font-family:'SF Mono',Menlo,Consolas,monospace;color:#6366f1;">${escHtml(email)}</span><br>
+      <strong style="color:#404060;">Senha temporária:</strong>
+    </div>
+    <div style="font-family:'SF Mono',Menlo,Consolas,monospace;background:#fff;border:1px dashed #6366f1;padding:14px;text-align:center;border-radius:8px;margin:10px 0 6px;font-size:16px;font-weight:700;color:#6366f1;letter-spacing:1px;">
+      ${escHtml(pwd||'(definir no primeiro acesso)')}
+    </div>
+    <div style="font-size:12px;color:#888;margin-top:8px;">
+      ⚠️ <strong>Importante:</strong> recomendamos alterar sua senha logo no primeiro acesso.
+    </div>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f8f9fc;padding:24px 12px;font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif;">
+  <tr><td align="center">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="620" style="max-width:620px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,17,23,.08);">
+      <tr><td style="background:linear-gradient(135deg,#6366f1 0%,#a855f7 50%,#ec4899 100%);padding:40px 28px;text-align:center;">
+        <div style="font-size:48px;line-height:1;margin-bottom:10px;">🔥</div>
+        <h1 style="color:#fff;margin:0;font-size:26px;font-weight:800;letter-spacing:-.5px;">Fogo &amp; Gestão</h1>
+        <p style="color:rgba(255,255,255,.92);margin:8px 0 0;font-size:13px;letter-spacing:.4px;text-transform:uppercase;font-weight:600;">Sistema integrado · Fogo &amp; Lucro</p>
+      </td></tr>
+      <tr><td style="padding:36px 32px 12px;">
+        <h2 style="margin:0 0 8px;font-size:22px;color:#1a1a2e;font-weight:700;">Olá, ${escHtml(firstName)}! 👋</h2>
+        ${inviterLine}
+        <p style="font-size:15px;line-height:1.65;color:#404060;margin:0 0 8px;">
+          Você foi adicionado(a) ao <strong>Fogo &amp; Gestão</strong>, nossa plataforma integrada de gestão de projetos, clientes, métricas e conteúdo da agência.
+        </p>
+      </td></tr>
+      <tr><td style="padding:0 32px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f3f4ff;border-left:4px solid #6366f1;border-radius:10px;margin:18px 0;">
+          <tr><td style="padding:20px 22px;">
+            <div style="font-size:11px;font-weight:800;color:#6366f1;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;">🔐 Seu acesso</div>
+            ${accessBlock}
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td align="center" style="padding:14px 32px 28px;">
+        <a href="${FG_DOMAIN}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;text-decoration:none;padding:16px 44px;border-radius:12px;font-weight:700;font-size:15.5px;letter-spacing:.3px;box-shadow:0 8px 20px rgba(99,102,241,.35);">
+          Acessar agora →
+        </a>
+        <div style="margin-top:14px;font-size:12px;color:#888;">
+          ou copie no navegador: <a href="${FG_DOMAIN}" style="color:#6366f1;text-decoration:none;font-weight:600;">fogoegestao.com.br</a>
+        </div>
+      </td></tr>
+      <tr><td style="padding:0 32px 24px;">
+        <div style="border-top:1px solid #eef0f6;padding-top:24px;">
+          <div style="font-size:13px;font-weight:800;color:#404060;margin-bottom:14px;text-transform:uppercase;letter-spacing:.6px;">O que você pode fazer</div>
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="font-size:13.5px;color:#404060;">
+            <tr><td style="padding:6px 0;line-height:1.6;">📋 <strong>Gestão Central:</strong> projetos com Kanban, listas e calendário</td></tr>
+            <tr><td style="padding:6px 0;line-height:1.6;">🏪 <strong>Base de Dados:</strong> ficha completa dos clientes da agência</td></tr>
+            <tr><td style="padding:6px 0;line-height:1.6;">📊 <strong>Métricas:</strong> performance de Meta Ads e indicadores</td></tr>
+            <tr><td style="padding:6px 0;line-height:1.6;">📱 <strong>Social:</strong> roteiro de conteúdo e calendário editorial</td></tr>
+            <tr><td style="padding:6px 0;line-height:1.6;">📍 <strong>Google:</strong> ranking GMB e SEO local</td></tr>
+            <tr><td style="padding:6px 0;line-height:1.6;">💬 <strong>Colaboração:</strong> comentários, menções e notificações em tempo real</td></tr>
+          </table>
+        </div>
+      </td></tr>
+      <tr><td style="padding:0 32px 28px;">
+        <div style="background:#fafbff;border-radius:10px;padding:16px 18px;font-size:12.5px;color:#666;line-height:1.6;">
+          <strong style="color:#404060;">📱 Instale como app:</strong> ao abrir o site no celular, toque em <em>"Adicionar à tela inicial"</em> para usar como aplicativo.
+        </div>
+      </td></tr>
+      <tr><td style="background:#fafbff;border-top:1px solid #eef0f6;padding:20px 32px;text-align:center;">
+        <div style="font-size:11.5px;color:#999;line-height:1.6;">
+          Você recebeu este e-mail porque foi adicionado(a) à equipe Fogo &amp; Lucro.<br>
+          © ${new Date().getFullYear()} Fogo &amp; Lucro · <a href="${FG_DOMAIN}" style="color:#6366f1;text-decoration:none;">fogoegestao.com.br</a>
+        </div>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>`;
+}
+
+function _inviteText(name, email, authType, pwd, inviterName) {
+  const firstName = (name||'').split(' ')[0] || 'colaborador';
+  let t = '';
+  t += `🔥 FOGO & GESTÃO — Sistema integrado da Fogo & Lucro\n`;
+  t += `═══════════════════════════════════════════\n\n`;
+  t += `Olá, ${firstName}! 👋\n\n`;
+  if (inviterName) t += `${inviterName} convidou você para fazer parte da equipe.\n\n`;
+  t += `Você foi adicionado(a) ao Fogo & Gestão — nossa plataforma integrada de gestão de projetos, clientes, métricas e conteúdo.\n\n`;
+  t += `🔐 SEU ACESSO\n`;
+  t += `─────────────────────────────────────────\n`;
   if (authType === 'google') {
-    body += `Faça login com sua conta Google (${email}).`;
+    t += `• Método: Conta Google\n`;
+    t += `• E-mail: ${email}\n\n`;
+    t += `Basta clicar em "Entrar com Google" ao abrir o site.\n\n`;
   } else {
-    body += `Use seu e-mail: ${email}\nSenha: ${pwd}\n\nRecomendamos alterar sua senha após o primeiro acesso.`;
+    t += `• E-mail: ${email}\n`;
+    t += `• Senha temporária: ${pwd || '(definir no primeiro acesso)'}\n\n`;
+    t += `⚠️  Recomendamos alterar sua senha no primeiro acesso.\n\n`;
   }
-  window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(email)}&su=${subject}&body=${encodeURIComponent(body)}`, '_blank');
+  t += `🌐 ACESSAR\n`;
+  t += `─────────────────────────────────────────\n`;
+  t += `${FG_DOMAIN}\n\n`;
+  t += `O QUE VOCÊ PODE FAZER:\n`;
+  t += `─────────────────────────────────────────\n`;
+  t += `📋 Gestão Central — Kanban, listas e calendário\n`;
+  t += `🏪 Base de Dados — ficha completa dos clientes\n`;
+  t += `📊 Métricas — Meta Ads e indicadores\n`;
+  t += `📱 Social — roteiro e calendário editorial\n`;
+  t += `📍 Google — ranking GMB e SEO local\n`;
+  t += `💬 Colaboração em tempo real\n\n`;
+  t += `📱 DICA: ao abrir no celular, toque em "Adicionar à tela inicial" para usar como app.\n\n`;
+  t += `─────────────────────────────────────────\n`;
+  t += `© ${new Date().getFullYear()} Fogo & Lucro · fogoegestao.com.br\n`;
+  return t;
+}
+
+function _inviteWhatsAppText(name, email, authType, pwd) {
+  const firstName = (name||'').split(' ')[0] || '';
+  let t = `🔥 *Fogo & Gestão* — Convite\n\n`;
+  t += `Olá${firstName ? ', '+firstName : ''}! 👋\n\n`;
+  t += `Você foi adicionado(a) ao nosso sistema integrado de gestão.\n\n`;
+  t += `*🔐 Seu acesso:*\n`;
+  if (authType === 'google') {
+    t += `• Login: Google\n• E-mail: ${email}\n\n`;
+  } else {
+    t += `• E-mail: ${email}\n• Senha: ${pwd || '(definir no primeiro acesso)'}\n\n`;
+    t += `⚠️ Recomendo alterar a senha no primeiro acesso.\n\n`;
+  }
+  t += `*🌐 Acessar:*\n${FG_DOMAIN}\n\n`;
+  t += `_Dica: no celular, toque em "Adicionar à tela inicial" para usar como app._`;
+  return t;
+}
+
+// Abre o modal de preview do e-mail de convite (substitui a abertura
+// direta do Gmail). Permite ao admin ver o template antes de enviar.
+function acessoSendInvite(email, name, authType, pwd) {
+  acessoOpenInvitePreview(email, name, authType, pwd);
+}
+
+function acessoOpenInvitePreview(email, name, authType, pwd) {
+  const inviter = (() => {
+    const myEmail = typeof getCurrentEmail === 'function' ? getCurrentEmail() : null;
+    if (!myEmail) return null;
+    const me = (_acessoMembers||[]).find(x => x.email === myEmail);
+    return me?.name || null;
+  })();
+  const subject = _inviteSubject(name);
+  const html    = _inviteHtml(name, email, authType, pwd, inviter);
+  const text    = _inviteText(name, email, authType, pwd, inviter);
+  const waText  = _inviteWhatsAppText(name, email, authType, pwd);
+
+  // Procura WhatsApp do membro recém-criado
+  const member = (_acessoMembers||[]).find(m => m.email === email);
+  const memberWa = member?.whatsapp || '';
+
+  let modal = document.getElementById('inviteEmailModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'inviteEmailModal';
+    modal.className = 'invite-email-modal';
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+  }
+  // Guarda dados para os botões de ação
+  modal._inviteData = { email, subject, html, text, waText, memberWa, name };
+
+  modal.innerHTML = `
+    <div class="invite-email-card">
+      <div class="invite-email-header">
+        <div>
+          <h3>📧 Convite por e-mail</h3>
+          <div class="invite-email-meta-line">Para: <strong>${escHtml(email)}</strong></div>
+        </div>
+        <button class="invite-email-close" onclick="document.getElementById('inviteEmailModal').remove()" title="Fechar">×</button>
+      </div>
+
+      <div class="invite-email-tabs">
+        <button class="invite-email-tab active" data-tab="preview" onclick="acessoInviteSwitchTab('preview')">👁 Pré-visualizar</button>
+        <button class="invite-email-tab" data-tab="text" onclick="acessoInviteSwitchTab('text')">📝 Texto simples</button>
+        <button class="invite-email-tab" data-tab="html" onclick="acessoInviteSwitchTab('html')">⟨/⟩ HTML</button>
+      </div>
+
+      <div class="invite-email-body">
+        <div class="invite-email-tab-content active" data-pane="preview">
+          <div class="invite-email-subject-line">
+            <span class="invite-email-subject-label">Assunto:</span>
+            <span class="invite-email-subject-value">${escHtml(subject)}</span>
+          </div>
+          <div class="invite-email-render">${html}</div>
+        </div>
+        <div class="invite-email-tab-content" data-pane="text">
+          <textarea class="invite-email-source" readonly>${escHtml(text)}</textarea>
+        </div>
+        <div class="invite-email-tab-content" data-pane="html">
+          <textarea class="invite-email-source invite-email-source-mono" readonly>${escHtml(html)}</textarea>
+        </div>
+      </div>
+
+      <div class="invite-email-tip">
+        💡 <strong>Como enviar com formatação completa:</strong> clique em <em>"Copiar HTML formatado"</em> abaixo, depois cole (Ctrl/Cmd + V) no corpo do Gmail. A formatação visual do template é preservada.
+      </div>
+
+      <div class="invite-email-actions">
+        <button class="invite-email-btn invite-email-btn-secondary" onclick="acessoCopyInvite('subject', this)">📋 Copiar assunto</button>
+        <button class="invite-email-btn invite-email-btn-secondary" onclick="acessoCopyInvite('text', this)">📋 Copiar texto</button>
+        <button class="invite-email-btn invite-email-btn-secondary" onclick="acessoCopyInvite('html', this)">✨ Copiar HTML formatado</button>
+        ${memberWa ? `<button class="invite-email-btn invite-email-btn-whatsapp" onclick="acessoOpenWhatsAppInvite()">💬 Enviar pelo WhatsApp</button>` : ''}
+        <button class="invite-email-btn invite-email-btn-primary" onclick="acessoOpenGmailInvite()">📧 Abrir no Gmail</button>
+      </div>
+    </div>
+  `;
+}
+
+function acessoInviteSwitchTab(tab) {
+  const modal = document.getElementById('inviteEmailModal');
+  if (!modal) return;
+  modal.querySelectorAll('.invite-email-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  modal.querySelectorAll('.invite-email-tab-content').forEach(c => c.classList.toggle('active', c.dataset.pane === tab));
+}
+
+async function acessoCopyInvite(kind, btn) {
+  const modal = document.getElementById('inviteEmailModal');
+  if (!modal || !modal._inviteData) return;
+  const d = modal._inviteData;
+  try {
+    if (kind === 'html') {
+      // Clipboard API com HTML+text — Gmail/Outlook/etc preservam formatação ao colar
+      if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'text/html':  new Blob([d.html], {type:'text/html'}),
+            'text/plain': new Blob([d.text], {type:'text/plain'}),
+          })
+        ]);
+      } else {
+        // Fallback: copia HTML como texto
+        await navigator.clipboard.writeText(d.html);
+      }
+    } else if (kind === 'subject') {
+      await navigator.clipboard.writeText(d.subject);
+    } else {
+      await navigator.clipboard.writeText(d.text);
+    }
+    if (btn) {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✓ Copiado!';
+      btn.classList.add('invite-copied');
+      setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('invite-copied'); }, 1600);
+    }
+    showToast('success','✅', kind === 'html' ? 'HTML copiado! Cole no Gmail (Ctrl/Cmd+V).' : 'Copiado para a área de transferência.');
+  } catch(e) {
+    showToast('error','❌','Erro ao copiar: '+(e.message||'permissão negada'));
+  }
+}
+
+function acessoOpenGmailInvite() {
+  const modal = document.getElementById('inviteEmailModal');
+  if (!modal || !modal._inviteData) return;
+  const d = modal._inviteData;
+  const url = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(d.email)}&su=${encodeURIComponent(d.subject)}&body=${encodeURIComponent(d.text)}`;
+  window.open(url, '_blank');
+  showToast('info','💡','Gmail aberto. Para formatação visual, cole o HTML que você copiou (Ctrl/Cmd+V).');
+}
+
+function acessoOpenWhatsAppInvite() {
+  const modal = document.getElementById('inviteEmailModal');
+  if (!modal || !modal._inviteData) return;
+  const d = modal._inviteData;
+  if (!d.memberWa) { showToast('warn','⚠️','Membro sem WhatsApp cadastrado.'); return; }
+  const wa = d.memberWa.replace(/\D/g,'');
+  const e164 = wa.startsWith('55') && wa.length >= 12 ? wa : '55'+wa;
+  const url = `https://wa.me/${e164}?text=${encodeURIComponent(d.waText)}`;
+  window.open(url, '_blank');
 }
 
 async function acessoUploadAvatar(el, targetEmail) {

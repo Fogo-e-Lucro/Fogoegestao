@@ -5088,6 +5088,200 @@ input.br-phone-invalid {
   box-shadow:0 0 0 3px rgba(239,68,68,.12) !important;
 }
 
+/* ══════════════════════════════════════════════════════
+   MODAL DE CONVITE POR E-MAIL — preview profissional
+═══════════════════════════════════════════════════════ */
+.invite-email-modal {
+  position:fixed; inset:0; z-index:9000;
+  background:rgba(15,17,23,.6); backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  display:flex; align-items:center; justify-content:center;
+  padding:20px;
+  animation:invite-modal-in .22s ease-out;
+}
+@keyframes invite-modal-in {
+  from { opacity:0; }
+  to   { opacity:1; }
+}
+.invite-email-card {
+  background:var(--card,#fff);
+  border:1px solid var(--border,#e6e8f0);
+  border-radius:16px;
+  width:100%; max-width:760px;
+  max-height:92vh;
+  display:flex; flex-direction:column;
+  box-shadow:0 32px 80px rgba(0,0,0,.45);
+  overflow:hidden;
+  animation:invite-card-in .28s cubic-bezier(.2,.9,.3,1.1);
+}
+@keyframes invite-card-in {
+  from { transform:translateY(20px) scale(.98); opacity:0; }
+  to   { transform:translateY(0)    scale(1);   opacity:1; }
+}
+.invite-email-header {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  padding:20px 24px 14px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(99,102,241,.04), transparent);
+}
+.invite-email-header h3 {
+  margin:0; font-size:17px; font-weight:700; color:var(--text);
+}
+.invite-email-meta-line {
+  font-size:12.5px; color:var(--text3); margin-top:4px;
+}
+.invite-email-meta-line strong { color:var(--text2); font-weight:600; }
+.invite-email-close {
+  width:32px; height:32px; border-radius:8px;
+  border:none; background:transparent;
+  font-size:22px; color:var(--text3); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  line-height:1; transition:background .15s, color .15s;
+}
+.invite-email-close:hover { background:var(--bg2); color:var(--text); }
+
+.invite-email-tabs {
+  display:flex; gap:2px;
+  padding:0 24px;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  overflow-x:auto;
+}
+.invite-email-tab {
+  padding:11px 16px;
+  border:none; background:none;
+  color:var(--text3); font-size:13px; font-weight:600;
+  font-family:inherit; cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:color .15s, border-color .15s;
+  white-space:nowrap;
+}
+.invite-email-tab:hover { color:var(--text2); }
+.invite-email-tab.active {
+  color:var(--accent); border-bottom-color:var(--accent);
+}
+
+.invite-email-body {
+  flex:1; overflow-y:auto;
+  background:#f0f2f8;
+  padding:18px;
+}
+.invite-email-tab-content { display:none; }
+.invite-email-tab-content.active { display:block; }
+
+.invite-email-subject-line {
+  background:#fff;
+  border:1px solid #e6e8f0;
+  border-radius:10px;
+  padding:12px 16px;
+  margin-bottom:14px;
+  display:flex; align-items:center; gap:10px;
+  font-size:13px;
+}
+.invite-email-subject-label {
+  color:#888; font-weight:600; flex-shrink:0;
+}
+.invite-email-subject-value {
+  color:#1a1a2e; font-weight:600;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+
+.invite-email-render {
+  background:#f8f9fc;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 4px 16px rgba(0,0,0,.08);
+}
+.invite-email-render table { max-width:100% !important; }
+
+.invite-email-source {
+  width:100%; min-height:340px;
+  padding:14px;
+  background:#fff;
+  border:1px solid #e6e8f0;
+  border-radius:10px;
+  font-family:'SF Mono',Menlo,Consolas,monospace;
+  font-size:12.5px; line-height:1.6;
+  color:#1a1a2e;
+  resize:vertical;
+}
+.invite-email-source-mono { font-size:11.5px; min-height:380px; }
+
+.invite-email-tip {
+  padding:12px 24px;
+  background:linear-gradient(90deg, rgba(99,102,241,.06), rgba(168,85,247,.04));
+  border-top:1px solid var(--border);
+  font-size:12.5px; color:var(--text2);
+  line-height:1.55;
+}
+.invite-email-tip strong { color:var(--text); font-weight:700; }
+.invite-email-tip em { color:var(--accent); font-style:normal; font-weight:600; }
+
+.invite-email-actions {
+  display:flex; gap:8px;
+  padding:14px 18px calc(14px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--border);
+  background:var(--card);
+  flex-wrap:wrap;
+}
+.invite-email-btn {
+  flex:1 1 auto; min-width:130px;
+  padding:11px 16px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  font-family:inherit; font-size:13px; font-weight:600;
+  cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  transition:all .15s ease;
+}
+.invite-email-btn-secondary {
+  background:var(--bg2); color:var(--text2);
+}
+.invite-email-btn-secondary:hover {
+  background:var(--card); color:var(--text); border-color:var(--accent);
+}
+.invite-email-btn-primary {
+  background:linear-gradient(135deg, var(--accent), var(--accent2,#a855f7));
+  color:#fff; border-color:transparent;
+  box-shadow:0 4px 12px rgba(99,102,241,.3);
+  flex:1 1 200px;
+}
+.invite-email-btn-primary:hover {
+  transform:translateY(-1px);
+  box-shadow:0 6px 16px rgba(99,102,241,.4);
+}
+.invite-email-btn-whatsapp {
+  background:linear-gradient(135deg, #25d366, #128c7e);
+  color:#fff; border-color:transparent;
+  box-shadow:0 4px 12px rgba(37,211,102,.3);
+}
+.invite-email-btn-whatsapp:hover {
+  transform:translateY(-1px);
+  box-shadow:0 6px 16px rgba(37,211,102,.4);
+}
+.invite-email-btn.invite-copied {
+  background:linear-gradient(135deg, #22c55e, #16a34a) !important;
+  color:#fff !important; border-color:transparent !important;
+}
+
+@media (max-width:640px) {
+  .invite-email-modal { padding:0; }
+  .invite-email-card {
+    max-width:100%; max-height:100dvh; max-height:100svh;
+    height:100dvh; height:100svh;
+    border-radius:0;
+  }
+  .invite-email-header { padding:14px 16px 10px; }
+  .invite-email-header h3 { font-size:15px; }
+  .invite-email-tabs { padding:0 14px; }
+  .invite-email-tab { padding:10px 12px; font-size:12px; }
+  .invite-email-body { padding:12px; }
+  .invite-email-tip { padding:10px 16px; font-size:12px; }
+  .invite-email-actions { padding:10px 12px calc(10px + env(safe-area-inset-bottom)); gap:6px; }
+  .invite-email-btn { flex:1 1 calc(50% - 4px); min-width:0; padding:10px 8px; font-size:12px; }
+  .invite-email-btn-primary { flex:1 1 100%; order:-1; }
+}
+
 /* Trava scroll do documento enquanto o task modal está aberto — evita
    barra de URL do iOS aparecer/sumir e jogar a bottombar pra fora da tela.
    Usa só overflow:hidden (não position:fixed) pra não perder a posição de scroll. */
