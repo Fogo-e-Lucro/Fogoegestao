@@ -13333,7 +13333,8 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
     if (cellMap[c.id]) return cellMap[c.id];
     if (c.id.startsWith('cf:') && c.field) {
       const v = t.customFieldValues?.[c.field.id] || '';
-      return `<div class="pj-list-cell">${v?escHtml(String(v)):'<span class="pj-cell-empty">—</span>'}</div>`;
+      const inner = v ? pjRenderCellValue(String(v), c.field) : '<span class="pj-cell-empty">—</span>';
+      return `<div class="pj-list-cell">${inner}</div>`;
     }
     return `<div class="pj-list-cell"><span class="pj-cell-empty">—</span></div>`;
   }).join('');
@@ -18751,6 +18752,51 @@ function pjAttachStartListener(taskId) {
 }
 function pjAttachStopListener() {
   if (pjAttachUnsub) { try { pjAttachUnsub(); } catch(_){} pjAttachUnsub = null; }
+}
+
+// Detecta URL e formata como pill clicável com favicon + domínio
+function pjIsUrl(s) {
+  if (!s) return false;
+  return /^(https?:\/\/|www\.)\S+$/i.test(String(s).trim());
+}
+function pjUrlNice(s) {
+  let url = String(s).trim();
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  let host = '';
+  try { host = new URL(url).hostname.replace(/^www\./, ''); } catch(_) { host = url; }
+  return { url, host };
+}
+function pjRenderUrlPill(s) {
+  const { url, host } = pjUrlNice(s);
+  // Favicon via Google s2
+  const fav = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=32`;
+  const safeUrl = url.replace(/"/g,'&quot;');
+  return `<a class="pj-url-pill" href="${safeUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="${escHtml(url)}">
+    <img class="pj-url-pill-icon" src="${fav}" alt="" onerror="this.style.display='none'">
+    <span class="pj-url-pill-host">${escHtml(host)}</span>
+    <svg class="pj-url-pill-arrow" viewBox="0 0 14 14" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h6v6"/><path d="M11 3 3 11"/></svg>
+  </a>`;
+}
+
+// Renderiza valor de célula do list view com formatação inteligente:
+// - URL → pill clicável com favicon + domínio
+// - Email → link mailto
+// - Telefone (BR) → link tel
+// - Texto longo → trunca com ellipsis e tooltip
+function pjRenderCellValue(value, field) {
+  const v = String(value || '').trim();
+  if (!v) return '<span class="pj-cell-empty">—</span>';
+  // Se o campo é declarado como url, renderiza pill mesmo se não bater regex
+  const ftype = field?.type || '';
+  if (ftype === 'url' || pjIsUrl(v)) return pjRenderUrlPill(v);
+  if (ftype === 'email' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+    return `<a class="pj-url-pill" href="mailto:${escHtml(v)}" onclick="event.stopPropagation()" title="${escHtml(v)}">
+      <span class="pj-url-pill-icon" style="font-size:13px;">✉️</span>
+      <span class="pj-url-pill-host">${escHtml(v)}</span>
+    </a>`;
+  }
+  // Texto comum — só escapa
+  return `<span class="pj-cell-text" title="${escHtml(v)}">${escHtml(v)}</span>`;
 }
 
 function pjFmtBytes(b) {

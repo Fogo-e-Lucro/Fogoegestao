@@ -5483,6 +5483,51 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   .pj-attach-add-btn { padding:5px 7px; }
 }
 
+/* ── URL pill na célula da list view ── */
+.pj-url-pill {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:3px 10px 3px 4px;
+  max-width:100%;
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:20px;
+  text-decoration:none;
+  color:var(--text);
+  font-size:12px; font-weight:500;
+  height:26px; line-height:1; box-sizing:border-box;
+  overflow:hidden;
+  transition:all .15s;
+}
+.pj-url-pill:hover {
+  border-color:var(--accent); background:var(--card);
+  color:var(--accent);
+  transform:translateY(-1px);
+}
+.pj-url-pill-icon {
+  width:18px !important; height:18px !important;
+  min-width:18px; max-width:18px;
+  border-radius:4px; flex-shrink:0;
+  background:#fff;
+  object-fit:contain;
+  padding:1px;
+}
+.pj-url-pill-host {
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  min-width:0;
+}
+.pj-url-pill-arrow {
+  flex-shrink:0; opacity:.5;
+  transition:opacity .15s, transform .15s;
+}
+.pj-url-pill:hover .pj-url-pill-arrow {
+  opacity:1; transform:translate(1px,-1px);
+}
+
+/* Texto comum em célula — trunca com ellipsis */
+.pj-cell-text {
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  display:inline-block; max-width:100%;
+}
+
 /* ── Coluna Cliente na list view ── */
 .pj-list-client-pill {
   display:inline-flex !important; align-items:center; gap:6px;
