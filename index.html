@@ -13023,14 +13023,26 @@ function pjBuildAll() {
 // Registry de colunas built-in + custom fields da lista.
 function pjListColumns(list) {
   const fields = (list && list.customFields) || [];
+  // Detecta se a coluna provavelmente armazena URL/email pra reservar
+  // pouca largura (renderizamos como bolinha do favicon)
+  const tasksOfList = (typeof pjAllTasks !== 'undefined' ? pjAllTasks : [])
+    .filter(t => t.listId === list?.id).slice(0, 30);
+  const fieldHasUrl = (fieldId) => tasksOfList.some(t => {
+    const v = (t.customFieldValues || {})[fieldId];
+    return v && /^(https?:\/\/|www\.)/i.test(String(v));
+  });
   return [
-    { id:'title',    label:'Tarefa',      width:'minmax(220px,2fr)' },
-    { id:'status',   label:'Status',      width:'140px' },
-    { id:'assignee', label:'Responsável', width:'150px' },
-    { id:'due',      label:'Vencimento',  width:'130px' },
-    { id:'priority', label:'Prioridade',  width:'100px' },
-    { id:'client',   label:'Cliente',     width:'160px' },
-    ...fields.map(f => ({ id:`cf:${f.id}`, label:f.name || 'Campo', width:'140px', field:f })),
+    // Tarefa: muito mais largura (3fr) e min maior pra caber 30+ chars
+    { id:'title',    label:'Tarefa',      width:'minmax(320px,3fr)' },
+    { id:'status',   label:'Status',      width:'130px' },
+    { id:'assignee', label:'Responsável', width:'130px' },
+    { id:'due',      label:'Vencimento',  width:'120px' },
+    { id:'priority', label:'Prioridade',  width:'90px' },
+    { id:'client',   label:'Cliente',     width:'150px' },
+    ...fields.map(f => {
+      const isCompact = f.type === 'url' || f.type === 'email' || fieldHasUrl(f.id);
+      return { id:`cf:${f.id}`, label:f.name || 'Campo', width: isCompact ? '64px' : '130px', field:f };
+    }),
   ];
 }
 function pjColPrefsKey(listId) {
@@ -18766,11 +18778,18 @@ function pjUrlNice(s) {
   try { host = new URL(url).hostname.replace(/^www\./, ''); } catch(_) { host = url; }
   return { url, host };
 }
-function pjRenderUrlPill(s) {
+function pjRenderUrlPill(s, opts) {
   const { url, host } = pjUrlNice(s);
-  // Favicon via Google s2
-  const fav = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=32`;
+  const fav = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=64`;
   const safeUrl = url.replace(/"/g,'&quot;');
+  const compact = opts && opts.compact;
+  if (compact) {
+    // Só bolinha com favicon — economiza espaço na célula
+    return `<a class="pj-url-dot" href="${safeUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="${escHtml(host)} — clique para abrir">
+      <img src="${fav}" alt="${escHtml(host)}" onerror="this.parentElement.classList.add('no-favicon');this.style.display='none'">
+      <span class="pj-url-dot-fallback">🔗</span>
+    </a>`;
+  }
   return `<a class="pj-url-pill" href="${safeUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="${escHtml(url)}">
     <img class="pj-url-pill-icon" src="${fav}" alt="" onerror="this.style.display='none'">
     <span class="pj-url-pill-host">${escHtml(host)}</span>
@@ -18786,16 +18805,14 @@ function pjRenderUrlPill(s) {
 function pjRenderCellValue(value, field) {
   const v = String(value || '').trim();
   if (!v) return '<span class="pj-cell-empty">—</span>';
-  // Se o campo é declarado como url, renderiza pill mesmo se não bater regex
   const ftype = field?.type || '';
-  if (ftype === 'url' || pjIsUrl(v)) return pjRenderUrlPill(v);
+  // URL na célula da list view → SEMPRE bolinha compacta (favicon-only)
+  if (ftype === 'url' || pjIsUrl(v)) return pjRenderUrlPill(v, { compact: true });
   if (ftype === 'email' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
-    return `<a class="pj-url-pill" href="mailto:${escHtml(v)}" onclick="event.stopPropagation()" title="${escHtml(v)}">
-      <span class="pj-url-pill-icon" style="font-size:13px;">✉️</span>
-      <span class="pj-url-pill-host">${escHtml(v)}</span>
+    return `<a class="pj-url-dot" href="mailto:${escHtml(v)}" onclick="event.stopPropagation()" title="${escHtml(v)}">
+      <span class="pj-url-dot-fallback">✉</span>
     </a>`;
   }
-  // Texto comum — só escapa
   return `<span class="pj-cell-text" title="${escHtml(v)}">${escHtml(v)}</span>`;
 }
 
