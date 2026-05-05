@@ -2326,18 +2326,150 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .mtr-badge.red { background:rgba(239,68,68,.15);color:#ef4444; }
 .mtr-badge.blue { background:rgba(59,130,246,.15);color:#3b82f6; }
 
-@media(max-width:600px) {
-  .mtr-kpi-grid{grid-template-columns:repeat(2,1fr);}
-  .mtr-header{flex-direction:column;align-items:flex-start;}
-  .mtr-wrap{padding:12px 10px;}
-  .mtr-controls{flex-wrap:wrap;gap:6px;}
-  .mtr-presets{flex-wrap:wrap;}
-  .mtr-section-title{font-size:13px;}
-  .mtr-camp-table{font-size:11px;}
-  .mtr-camp-name{max-width:140px;}
-  .mtr-share-btn{padding:5px 10px;font-size:11px;}
-  .mtr-funnel-stages{flex-direction:column;gap:8px;}
-  .mtr-funnel-arrow{transform:rotate(90deg);}
+/* ════════════════════════════════════════════════════
+   MÉTRICAS — RESPONSIVO (tablet 900 / mobile 768 / small 480)
+   ════════════════════════════════════════════════════ */
+@media (max-width:900px) {
+  .mtr-wrap { padding:14px 12px; }
+  .mtr-hrow { padding:12px 14px; gap:10px; }
+  .mtr-kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+  .mtr-kpi { padding:18px 16px; }
+  .mtr-funnel-stages { flex-direction:column; gap:8px; }
+  .mtr-funnel-arrow { transform:rotate(90deg); }
+}
+
+@media (max-width:768px) {
+  /* WRAPPER */
+  .mtr-wrap { padding:10px 10px 24px; }
+  .mtr-header { margin-bottom:14px; border-radius:14px; }
+
+  /* CABEÇALHO — empilha as 2 linhas com layout vertical limpo */
+  .mtr-hrow { padding:10px 12px; gap:8px; }
+  .mtr-hrow-top { flex-wrap:wrap; }
+  .mtr-hrow-bottom { padding:10px 12px; gap:8px; flex-direction:column; align-items:stretch; }
+
+  /* TÍTULO compacto — sem subtítulo, ícone menor */
+  .mtr-title-wrap { gap:8px; }
+  .mtr-title-icon { width:32px; height:32px; font-size:16px; border-radius:9px; }
+  .mtr-title { font-size:14px; }
+  .mtr-subtitle { display:none; }
+
+  /* FONTES (selects IG/Meta/GMB) — full width, empilha */
+  .mtr-sources {
+    order:3; flex:1 1 100%; width:100%;
+    flex-direction:column; gap:6px; margin-top:2px;
+  }
+  .mtr-select {
+    width:100%; max-width:none;
+    padding:10px 32px 10px 12px;
+    font-size:13px; min-height:40px;
+    border-radius:10px;
+  }
+
+  /* AÇÕES RÁPIDAS — só ícones compactos */
+  .mtr-quick-actions { margin-left:auto; gap:4px; }
+  .mtr-quick-btn { width:36px; height:36px; font-size:15px; border-radius:9px; }
+  .mtr-refresh-btn {
+    width:36px; height:36px; padding:0;
+    font-size:0; /* esconde texto "Atualizar" */
+    border-radius:9px;
+  }
+  .mtr-refresh-btn svg { width:15px; height:15px; }
+
+  /* PERÍODO — presets em linha, datas embaixo */
+  .mtr-period-group { width:100%; gap:8px; flex-direction:column; }
+  .mtr-presets {
+    width:100%; padding:3px;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:2px;
+  }
+  .mtr-preset {
+    padding:8px 4px; font-size:12px;
+    min-height:36px;
+  }
+  .mtr-compare-dates {
+    width:100%; padding:8px 12px;
+    border-radius:10px; min-height:40px;
+    justify-content:center;
+  }
+  .mtr-date-input { font-size:13px; flex:1; min-width:0; }
+
+  /* COMPARAR — full width */
+  .mtr-compare-group { width:100%; flex-direction:column; align-items:stretch; gap:8px; }
+  .mtr-compare-wrap {
+    padding:10px 14px; background:var(--card);
+    border:1px solid var(--border); border-radius:10px;
+    justify-content:flex-start;
+  }
+
+  /* FERRAMENTAS — botões ocupam meia largura cada */
+  .mtr-tools-group {
+    width:100%; margin-left:0; gap:6px;
+    display:grid; grid-template-columns:1fr 1fr;
+  }
+  .mtr-tool-btn {
+    padding:10px 8px; font-size:12px;
+    min-height:40px; justify-content:center;
+    border-radius:10px;
+  }
+
+  /* KPI cards — grid 2x2 compacto */
+  .mtr-kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .mtr-kpi {
+    padding:14px 12px; border-radius:12px;
+    min-width:0; /* permite shrink dentro do grid */
+  }
+  .mtr-kpi-label { font-size:10.5px; }
+  .mtr-kpi-value { font-size:18px; word-break:break-all; }
+  .mtr-kpi-icon { width:26px; height:26px; font-size:13px; }
+  .mtr-kpi-trend { font-size:10.5px; }
+  .mtr-kpi-del { width:24px; height:24px; font-size:11px; opacity:1; }
+
+  /* SECTION title compacto */
+  .mtr-section { margin-bottom:20px; }
+  .mtr-section-title { font-size:12px; margin-bottom:10px; gap:6px; }
+
+  /* TABELA campanhas — scroll horizontal claro */
+  .mtr-camp-table-wrap,
+  .mtr-camp-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:14px; }
+  .mtr-camp-table { font-size:11.5px; min-width:560px; border-radius:0; }
+  .mtr-camp-table th, .mtr-camp-table td { padding:8px 10px; }
+  .mtr-camp-name { max-width:160px; }
+  .mtr-share-btn { padding:6px 10px; font-size:11px; }
+
+  /* Empty state */
+  .mtr-empty { padding:24px 16px; font-size:13px; text-align:center; }
+
+  /* Modal de KPI expandido — full screen no mobile */
+  .mtr-kpi-modal-card,
+  .mtr-cmp-card,
+  .mtr-share-card,
+  .mtr-ai-history-card {
+    width:100% !important; max-width:100vw !important;
+    height:100dvh !important; max-height:100dvh !important;
+    border-radius:0 !important; margin:0 !important;
+  }
+}
+
+@media (max-width:480px) {
+  /* Telas muito pequenas — empilha mais agressivo */
+  .mtr-wrap { padding:8px 8px 24px; }
+  .mtr-hrow { padding:8px 10px; }
+
+  /* Esconde título "Métricas" em telas mt pequenas, mantém só ícone */
+  .mtr-title { font-size:13px; }
+
+  /* Ações rápidas embaixo se faltar espaço */
+  .mtr-quick-actions { gap:3px; }
+  .mtr-quick-btn { width:34px; height:34px; }
+  .mtr-refresh-btn { width:34px; height:34px; }
+
+  /* KPIs ainda 2 cols, mas valor menor pra caber */
+  .mtr-kpi { padding:12px 10px; border-radius:10px; }
+  .mtr-kpi-value { font-size:16px; }
+  .mtr-kpi-label { font-size:10px; }
+
+  /* Presets ainda 4 cols mas mais compacto */
+  .mtr-preset { font-size:11px; padding:7px 2px; min-height:34px; }
 }
 
 /* Barra global de cliente removida — fonte única é a Base de Dados (aba Banco de Dados) */
