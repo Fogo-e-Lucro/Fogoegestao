@@ -18846,8 +18846,9 @@ function pjRenderTaskAttachments(taskId) {
     const uploaderName = uploader?.name || uploader?.email?.split('@')[0] || '';
     const meta = [size, dt, uploaderName].filter(Boolean).join(' · ');
     if (isImg) {
-      return `<div class="pj-attach-item pj-attach-img" onclick="window.open('${safeSrc}','_blank')" title="Clique para abrir">
-        <div class="pj-attach-img-wrap"><img src="${src}" alt="${escHtml(a.name||'')}" loading="lazy"></div>
+      const safeName = escHtml(a.name||'');
+      return `<div class="pj-attach-item pj-attach-img" onclick="pjOpenLightbox('${safeSrc}','${safeName}')" title="Clique para ampliar">
+        <div class="pj-attach-img-wrap"><img src="${src}" alt="${safeName}" loading="lazy"></div>
         <div class="pj-attach-meta">
           <span class="pj-attach-name" title="${escHtml(a.name||'')}">${escHtml(a.name||'imagem')}</span>
           ${meta ? `<span class="pj-attach-sub">${escHtml(meta)}</span>` : ''}
@@ -19037,9 +19038,11 @@ function pjRenderActivityComment(c, isReply) {
   if (c.attachment) {
     const a = c.attachment;
     const src = a.url || a.dataUrl || '';
+    const safeSrc = (src||'').replace(/'/g,'&#39;');
+    const safeName = escHtml(a.name||'');
     const isImg = (a.type||'').startsWith('image/');
     attachHtml = `<div class="pj-comment-attach">${isImg
-      ? `<img src="${src}" onclick="window.open('${src}','_blank')">`
+      ? `<img src="${src}" alt="${safeName}" loading="lazy" onclick="event.stopPropagation();pjOpenLightbox('${safeSrc}','${safeName}')">`
       : `<a href="${src}" download="${escHtml(a.name||'arquivo')}" target="_blank">📄 ${escHtml(a.name||'Arquivo')}</a>`}</div>`;
   }
   const reactions = c.reactions || {};

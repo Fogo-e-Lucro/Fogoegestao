@@ -3726,11 +3726,21 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 }
 .pj-attach-chip button:hover { color:#ef4444; }
 .pj-comment-attach {
-  margin-top:6px; max-width:240px;
+  margin-top:6px; display:inline-block;
+  max-width:140px; /* compacto */
 }
 .pj-comment-attach img {
-  max-width:100%; max-height:160px; border-radius:8px;
-  border:1px solid var(--border); cursor:pointer; display:block;
+  width:140px !important; height:140px !important;
+  max-width:140px !important; max-height:140px !important;
+  object-fit:cover;
+  border-radius:8px;
+  border:1px solid var(--border);
+  cursor:zoom-in; display:block;
+  transition:transform .15s, border-color .15s;
+}
+.pj-comment-attach img:hover {
+  transform:scale(1.02);
+  border-color:var(--accent);
 }
 .pj-comment-attach a {
   display:inline-flex; align-items:center; gap:6px;
@@ -6162,7 +6172,19 @@ body.pj-task-open .pj-modal-body { touch-action:pan-y; }
 
 /* ── Lightbox ── */
 .pj-lightbox { position:fixed; inset:0; background:rgba(0,0,0,.92); backdrop-filter:blur(8px); z-index:9000; display:flex; align-items:center; justify-content:center; padding:20px; animation:pjFadeIn .2s ease; cursor:zoom-out; }
-.pj-lightbox img { max-width:90vw; max-height:90vh; object-fit:contain; border-radius:12px; box-shadow:0 24px 80px rgba(0,0,0,.8); }
+/* Lightbox respeita tamanho NATURAL da imagem (não estica). Se for menor
+   que 70% da viewport, fica do tamanho que é. Se for maior, encolhe. */
+.pj-lightbox img {
+  width:auto !important; height:auto !important;
+  max-width:min(70vw, 720px) !important;
+  max-height:80vh !important;
+  object-fit:contain;
+  border-radius:12px;
+  box-shadow:0 24px 80px rgba(0,0,0,.8);
+}
+@media (max-width:768px) {
+  .pj-lightbox img { max-width:92vw !important; max-height:75vh !important; }
+}
 .pj-lightbox-close { position:absolute; top:20px; right:24px; background:rgba(255,255,255,.15); border:none; color:#fff; font-size:24px; cursor:pointer; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background .15s; }
 .pj-lightbox-close:hover { background:rgba(255,255,255,.25); }
 .pj-lightbox-caption { position:absolute; bottom:24px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,.7); font-size:13px; background:rgba(0,0,0,.5); padding:6px 14px; border-radius:20px; white-space:nowrap; }
