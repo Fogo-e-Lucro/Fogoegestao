@@ -14676,22 +14676,35 @@ function pjOnTaskClosed(t) {
 }
 
 // ⚡ Celebração de tarefa ADIANTADA — parabeniza por entregar antes do prazo.
+// Mensagens rotativas com tema de velocidade / foco / agilidade.
 function pjCelebrateAhead(t) {
   const overlay = pjEnsureCelebrateOverlay();
   const card = overlay.querySelector('.pj-celebrate-card');
   card.className = 'pj-celebrate-card pj-celebrate-ahead';
-  // Calcula quantos dias adiantou (em relação a hoje, no fuso local)
   const dueLocal = new Date(t.dueDate + 'T00:00:00');
   const todayLocal = new Date(); todayLocal.setHours(0,0,0,0);
   const daysAhead = Math.max(1, Math.round((dueLocal - todayLocal) / 86400000));
   const dayLabel = daysAhead === 1 ? '1 dia antes do prazo' : `${daysAhead} dias antes do prazo`;
   const title = (t && t.title) ? String(t.title).slice(0, 80) : 'Tarefa';
+  const messages = [
+    { emoji: '⚡', title: 'MANDOU BEM!',         text: 'Você adiantou o trabalho! Esse foco vai poupar dor de cabeça depois. 🚀' },
+    { emoji: '🚀', title: 'FOGUETE!',           text: 'Entregou antes do prazo. Eficiência pura!' },
+    { emoji: '🦅', title: 'OLHO DE ÁGUIA',      text: 'Visão de futuro! Adiantou o que precisava ser feito.' },
+    { emoji: '🏃', title: 'VELOCIDADE DA LUZ',  text: 'Adiantou o trabalho! Ninguém te segura.' },
+    { emoji: '🎯', title: 'MIRA CERTEIRA',      text: 'Antes do combinado. Que organização impecável!' },
+    { emoji: '🔥', title: 'PEGANDO FOGO',       text: 'Adiantando entregas! Performance lá em cima.' },
+    { emoji: '💎', title: 'CRISTALINO',         text: 'Foco impecável: tarefa fechada antes do prazo.' },
+    { emoji: '🏆', title: 'PROFISSIONAL!',      text: 'Quem entrega antes do prazo é referência. Continue assim!' },
+    { emoji: '✨', title: 'BRILHOU!',           text: 'Adiantou o serviço! Vai dormir tranquilo(a) hoje.' },
+    { emoji: '🦾', title: 'MÁQUINA!',           text: 'Você está adiantando tudo! Que disciplina.' },
+  ];
+  const msg = messages[Math.floor(Math.random() * messages.length)];
   card.innerHTML = `
-    <div class="pj-celebrate-emoji">⚡</div>
-    <div class="pj-celebrate-title">MANDOU BEM!</div>
+    <div class="pj-celebrate-emoji">${msg.emoji}</div>
+    <div class="pj-celebrate-title">${msg.title}</div>
     <div class="pj-celebrate-text">
       <div style="font-weight:700;background:rgba(255,255,255,.18);color:#fff;padding:6px 14px;border-radius:20px;display:inline-block;margin-bottom:10px;font-size:.9em;">⏱ ${dayLabel}</div>
-      <div style="font-size:.95em;line-height:1.55;">Você adiantou o trabalho! Esse foco vai poupar dor de cabeça depois. 🚀</div>
+      <div style="font-size:.95em;line-height:1.55;">${msg.text}</div>
       <div style="font-size:.8em;opacity:.85;margin-top:10px;font-style:italic;">"${escHtml(title)}"</div>
     </div>
   `;
@@ -14700,21 +14713,27 @@ function pjCelebrateAhead(t) {
     try { pjConfettiBurst(window.innerWidth/2, window.innerHeight/2); } catch(_) {}
   }
   clearTimeout(_pjCelebTimer);
-  _pjCelebTimer = setTimeout(() => overlay.classList.remove('open'), 3600);
+  _pjCelebTimer = setTimeout(() => overlay.classList.remove('open'), 3800);
 }
 
-// Alerta de tarefa ATRASADA — mostra esculacho ao invés de celebração.
-// Visual de alerta (vermelho/laranja) com mensagem rotativa pra não cansar.
+// Alerta de tarefa ATRASADA — esculacho com humor (tartaruga & cia).
+// Mensagens rotativas pra não cansar. NÃO é comemoração.
 function pjCelebrateOverdue(t, daysLate) {
   const overlay = pjEnsureCelebrateOverlay();
   const card = overlay.querySelector('.pj-celebrate-card');
   const messages = [
-    { emoji: '⚠️', title: 'ATRASADA',     text: 'Esta tarefa estava atrasada. Não foi mais que sua obrigação.' },
-    { emoji: '🚨', title: 'ATÉ QUE ENFIM!', text: 'Demorou… Lembre-se: prazo existe por algum motivo.' },
-    { emoji: '🐢', title: 'NO TEMPO DA TARTARUGA', text: 'Você terminou — mas com bastante atraso. Tente não repetir.' },
-    { emoji: '⏰', title: 'PRAZO ESTOURADO', text: 'Concluída fora do prazo. Vamos prestar mais atenção nos vencimentos?' },
-    { emoji: '😤', title: 'JÁ ERA HORA',    text: 'Tarefa fechada com atraso. Não tem comemoração — é o mínimo.' },
-    { emoji: '🦥', title: 'PREGUIÇOSA',     text: 'Levou mais que devia. Da próxima fica esperto(a) com o prazo.' },
+    { emoji: '🐢', title: 'TARTARUGA TURBINADA', text: 'Chegou! Mas no ritmo da tartaruga. Não foi mais que obrigação.' },
+    { emoji: '🦥', title: 'PREGUIÇA EM PESSOA',  text: 'Levou bem mais que devia. Tente acordar mais cedo na próxima.' },
+    { emoji: '⏰', title: 'RELÓGIO QUEBRADO?',   text: 'Faltou olhar a data. Lembre-se: prazo existe por algum motivo.' },
+    { emoji: '😴', title: 'CHEGOU SONOLENTO(A)', text: 'Tá vivo(a)! Só fechou bem depois do combinado.' },
+    { emoji: '🚂', title: 'TREM ATRASADO',       text: 'Pelo menos saiu da estação. Da próxima, agiliza.' },
+    { emoji: '🐌', title: 'VELOCIDADE LESMA',    text: 'Atrasou — mas chegou. Não tem comemoração: é o mínimo.' },
+    { emoji: '🚧', title: 'EM OBRAS HÁ DIAS',    text: 'Finalmente concluída. Tente entregar no prazo na próxima.' },
+    { emoji: '⌛', title: 'AMPULHETA TRAVADA',   text: 'Vamos prestar mais atenção nos vencimentos? É o básico.' },
+    { emoji: '🦕', title: 'ERA JURÁSSICA',       text: 'Essa tarefa virou fóssil… Bem fora do prazo combinado.' },
+    { emoji: '🚨', title: 'ATÉ QUE ENFIM!',      text: 'Demorou demais. Não foi mais que sua obrigação.' },
+    { emoji: '😤', title: 'JÁ ERA HORA',         text: 'Tarefa fechada com atraso. Compromisso é compromisso.' },
+    { emoji: '🛑', title: 'STOP! ATRASADA',      text: 'Faltou organização com o prazo. Da próxima fica esperto(a).' },
   ];
   const msg = messages[Math.floor(Math.random() * messages.length)];
   card.className = 'pj-celebrate-card pj-celebrate-overdue';
@@ -14736,19 +14755,31 @@ function pjCelebrateOverdue(t, daysLate) {
   _pjCelebTimer = setTimeout(() => overlay.classList.remove('open'), 4200);
 }
 
-// Celebração simples — só "🎉 Tarefa concluída!" sem barra de progresso.
-// Usada quando a tarefa fechada não pertence ao escopo do usuário.
+// Celebração simples — sem barra de progresso. Mensagens rotativas leves.
+// Usada quando a tarefa fechada não pertence ao escopo do dia.
 function pjCelebrateSimple(t) {
   const overlay = pjEnsureCelebrateOverlay();
   const card = overlay.querySelector('.pj-celebrate-card');
   card.className = 'pj-celebrate-card pj-celebrate-simple';
   const title = (t && t.title) ? String(t.title).slice(0, 80) : 'Tarefa';
+  const messages = [
+    { emoji: '🎉', title: 'CONCLUÍDA!',   text: 'Mais uma fora da lista! 🚀' },
+    { emoji: '✅', title: 'FEITO!',       text: 'Bom trabalho! 👏' },
+    { emoji: '🎊', title: 'MANDOU VER!',  text: 'Tarefa fechada com sucesso!' },
+    { emoji: '🚀', title: 'DECOLOU!',     text: 'Bora pras próximas!' },
+    { emoji: '💪', title: 'FORÇA TOTAL!', text: 'Continue nessa pegada!' },
+    { emoji: '⭐', title: 'TOP!',         text: 'Mais uma na conta!' },
+    { emoji: '🔥', title: 'MANDOU BRASA!',text: 'Tarefa concluída — bora pra próxima!' },
+    { emoji: '👊', title: 'NA VEIA!',     text: 'Fechou! Quem tá vencendo é você.' },
+    { emoji: '🎯', title: 'ACERTOU!',     text: 'Mais uma na conta. Foco impecável!' },
+  ];
+  const msg = messages[Math.floor(Math.random() * messages.length)];
   card.innerHTML = `
-    <div class="pj-celebrate-emoji">🎉</div>
-    <div class="pj-celebrate-title">CONCLUÍDA!</div>
+    <div class="pj-celebrate-emoji">${msg.emoji}</div>
+    <div class="pj-celebrate-title">${msg.title}</div>
     <div class="pj-celebrate-text">
-      ${escHtml(title)}
-      <div style="margin-top:10px;font-size:.9em;opacity:.7;">Mais uma fora da lista! 🚀</div>
+      <div style="font-style:italic;font-size:.92em;opacity:.92;margin-bottom:8px;">"${escHtml(title)}"</div>
+      <div style="font-size:.92em;opacity:.95;">${msg.text}</div>
     </div>
   `;
   overlay.classList.add('open');
@@ -14758,7 +14789,7 @@ function pjCelebrateSimple(t) {
     }
   } catch(_) {}
   clearTimeout(_pjCelebTimer);
-  _pjCelebTimer = setTimeout(() => overlay.classList.remove('open'), 2200);
+  _pjCelebTimer = setTimeout(() => overlay.classList.remove('open'), 2400);
 }
 
 function pjEnsureCelebrateOverlay() {
@@ -14773,20 +14804,32 @@ function pjEnsureCelebrateOverlay() {
   return o;
 }
 
-// Popup de progresso — só usado pra tarefas de HOJE (escopo único).
+// Popup de progresso — só usado pra tarefas de HOJE.
+// Mensagens rotativas pra não cansar o usuário com a mesma frase.
 function pjCelebrateProgress(prog) {
   const overlay = pjEnsureCelebrateOverlay();
   const card = overlay.querySelector('.pj-celebrate-card');
   const pct = Math.round((prog.completed / prog.total) * 100);
+  const messages = [
+    { emoji: '🎉', title: 'PARABÉNS!',     opener: 'Você já concluiu' },
+    { emoji: '🔥', title: 'MANDANDO BEM!', opener: 'Já são' },
+    { emoji: '💪', title: 'BORA, BORA!',   opener: 'No ritmo! Já' },
+    { emoji: '🚀', title: 'EM RITMO!',     opener: 'Foram' },
+    { emoji: '⭐', title: 'BRILHANDO!',    opener: 'Você completou' },
+    { emoji: '👊', title: 'TÁ FÁCIL!',     opener: 'Já fechou' },
+    { emoji: '⚡', title: 'TURBINADO!',    opener: 'Você riscou' },
+    { emoji: '🎯', title: 'NO ALVO!',      opener: 'Já tem' },
+  ];
+  const msg = messages[Math.floor(Math.random() * messages.length)];
   const remainingText = prog.remaining > 0
     ? `<br>${prog.remaining===1?'Falta apenas':'Faltam apenas'} <b>${prog.remaining}</b> ${prog.remaining===1?'tarefa':'tarefas'}!`
     : '';
   card.className = 'pj-celebrate-card pj-celebrate-progress';
   card.innerHTML = `
-    <div class="pj-celebrate-emoji">🎉</div>
-    <div class="pj-celebrate-title">PARABÉNS!</div>
+    <div class="pj-celebrate-emoji">${msg.emoji}</div>
+    <div class="pj-celebrate-title">${msg.title}</div>
     <div class="pj-celebrate-text">
-      Você já concluiu <b>${prog.completed}</b> ${prog.completed===1?'tarefa':'tarefas'} hoje.${remainingText}
+      ${msg.opener} <b>${prog.completed}</b> ${prog.completed===1?'tarefa':'tarefas'} hoje.${remainingText}
     </div>
     <div class="pj-celebrate-bar"><div class="pj-celebrate-bar-fill" style="width:${pct}%"></div></div>
     <div class="pj-celebrate-frac">${prog.completed} / ${prog.total} <span style="opacity:.6;font-size:.85em;">(${pct}%)</span></div>
@@ -14802,16 +14845,28 @@ function pjCelebrateProgress(prog) {
 }
 
 // Tudo pronto — meta do DIA atingida (todas as tarefas com dueDate=hoje).
+// Mensagens rotativas pra celebrar o fim do dia produtivo.
 function pjCelebrateAllDone(total) {
   const overlay = pjEnsureCelebrateOverlay();
   const card = overlay.querySelector('.pj-celebrate-card');
   card.className = 'pj-celebrate-card pj-celebrate-alldone';
+  const messages = [
+    { emoji: '🏆', title: 'TUDO PRONTO!',                text: 'Que produtividade! 👏👏👏' },
+    { emoji: '🎯', title: 'MISSÃO CUMPRIDA!',            text: 'Dia produtivo demais!' },
+    { emoji: '🥇', title: 'DIA PERFEITO!',               text: 'Mandou ver hoje!' },
+    { emoji: '🎊', title: 'FECHOU O DIA!',               text: 'Pode descansar tranquilo(a)!' },
+    { emoji: '👑', title: 'REI DA PRODUTIVIDADE!',       text: 'Que organização impecável!' },
+    { emoji: '🌟', title: 'ESTRELA DO DIA!',             text: 'Performance lá em cima!' },
+    { emoji: '🚀', title: 'DECOLOU LONGE!',              text: 'Você arrasou hoje! Pode comemorar.' },
+    { emoji: '🏅', title: 'MEDALHA DE OURO!',            text: 'Foco, disciplina e entrega. Top!' },
+  ];
+  const msg = messages[Math.floor(Math.random() * messages.length)];
   card.innerHTML = `
-    <div class="pj-celebrate-emoji big">🏆</div>
-    <div class="pj-celebrate-title">TUDO PRONTO!</div>
+    <div class="pj-celebrate-emoji big">${msg.emoji}</div>
+    <div class="pj-celebrate-title">${msg.title}</div>
     <div class="pj-celebrate-text">
       Você terminou <b>todas as ${total} ${total===1?'tarefa':'tarefas'} do dia</b>.<br>
-      Que produtividade! 👏👏👏
+      ${msg.text}
     </div>
     <button class="pj-btn pj-btn-primary" type="button" onclick="document.getElementById('pjCelebrateOverlay')?.classList.remove('open')">Aproveitar 🎈</button>
   `;
