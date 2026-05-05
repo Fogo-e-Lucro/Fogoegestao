@@ -5334,13 +5334,24 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-attach-count:empty { display:none; }
 .pj-attach-add-btn {
   margin-left:auto;
-  display:inline-flex; align-items:center; gap:5px;
-  padding:5px 10px;
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:6px;
+  padding:6px 12px;
+  height:30px; line-height:1;
   border-radius:8px; border:1px solid var(--border);
   background:var(--card); color:var(--text2);
-  font-size:11.5px; font-weight:600; font-family:inherit;
+  font-size:12px; font-weight:600; font-family:var(--font);
   text-transform:none; letter-spacing:0;
+  white-space:nowrap;
   cursor:pointer; transition:all .15s;
+  box-sizing:border-box;
+}
+.pj-attach-add-btn svg {
+  flex-shrink:0; width:11px; height:11px;
+  display:block;
+}
+.pj-attach-add-btn span {
+  display:inline-block; line-height:1;
 }
 .pj-attach-add-btn:hover {
   background:linear-gradient(135deg, var(--accent), var(--accent2,#a855f7));
@@ -5426,27 +5437,54 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 
-/* Actions (download, remove) */
+/* Actions (download, remove) — minimalista, discreta */
 .pj-attach-actions {
-  position:absolute; top:8px; right:8px;
-  display:flex; gap:4px;
-  opacity:0; transition:opacity .15s;
+  position:absolute; top:6px; right:6px;
+  display:flex; gap:3px;
+  opacity:0; transform:translateY(-2px);
+  transition:opacity .15s ease, transform .15s ease;
+  z-index:2;
 }
-.pj-attach-item:hover .pj-attach-actions { opacity:1; }
+.pj-attach-item:hover .pj-attach-actions {
+  opacity:1; transform:translateY(0);
+}
 .pj-attach-action {
-  width:26px; height:26px; border-radius:7px;
-  border:none; background:rgba(20,20,30,.85); color:#fff;
-  cursor:pointer; transition:all .15s;
-  display:flex; align-items:center; justify-content:center;
+  width:24px; height:24px; border-radius:50%;
+  border:none;
+  background:rgba(255,255,255,.92);
+  color:#1a1a2e;
+  cursor:pointer; transition:all .18s ease;
+  display:inline-flex; align-items:center; justify-content:center;
   text-decoration:none;
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
+  box-shadow:0 2px 6px rgba(0,0,0,.18), 0 0 0 1px rgba(0,0,0,.04);
 }
 .pj-attach-action:hover {
-  background:var(--accent);
-  transform:scale(1.08);
+  background:#fff; color:var(--accent);
+  transform:scale(1.06);
+  box-shadow:0 4px 10px rgba(99,102,241,.3);
 }
-.pj-attach-action.danger:hover { background:#ef4444; }
+.pj-attach-action.danger:hover {
+  background:#fee2e2; color:#dc2626;
+  box-shadow:0 4px 10px rgba(220,38,38,.25);
+}
+.pj-attach-action svg {
+  width:12px; height:12px; stroke-width:2;
+}
+
+/* Para cards de docs (fundo claro), inverte cores */
+.pj-attach-doc .pj-attach-action {
+  background:var(--card);
+  color:var(--text2);
+  box-shadow:0 2px 6px rgba(0,0,0,.12), 0 0 0 1px var(--border);
+}
+.pj-attach-doc .pj-attach-action:hover {
+  background:var(--card);
+  color:var(--accent);
+}
+.pj-attach-doc .pj-attach-action.danger:hover {
+  background:rgba(239,68,68,.1);
+  color:#ef4444;
+}
 
 /* Dropzone */
 .pj-attach-dropzone {
