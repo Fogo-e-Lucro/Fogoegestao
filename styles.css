@@ -3173,6 +3173,54 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   -webkit-text-fill-color:transparent;
 }
 .pj-celebrate-alldone .pj-btn { margin-top:16px; }
+
+/* ── ALERTA de tarefa ATRASADA — visual de aviso, não comemoração ── */
+.pj-celebrate-card.pj-celebrate-overdue {
+  background:linear-gradient(135deg, #f97316 0%, #dc2626 100%);
+  border:2px solid rgba(255,255,255,.25);
+  box-shadow:0 24px 60px rgba(220,38,38,.4), 0 0 0 4px rgba(248,113,113,.18);
+  animation: pjCelebPop .5s cubic-bezier(.34,1.56,.64,1), pjOverdueShake .4s ease-out .3s;
+}
+@keyframes pjOverdueShake {
+  0%,100% { transform:translateX(0); }
+  20%     { transform:translateX(-6px); }
+  40%     { transform:translateX(6px); }
+  60%     { transform:translateX(-4px); }
+  80%     { transform:translateX(4px); }
+}
+.pj-celebrate-overdue .pj-celebrate-emoji {
+  animation: pjOverdueWiggle 1.2s ease-in-out infinite;
+}
+@keyframes pjOverdueWiggle {
+  0%,100% { transform:rotate(-8deg); }
+  50%     { transform:rotate(8deg); }
+}
+.pj-celebrate-overdue .pj-celebrate-title {
+  font-size:26px;
+  color:#fff !important;
+  background:none !important;
+  -webkit-text-fill-color:#fff !important;
+  text-shadow:0 2px 8px rgba(0,0,0,.3);
+  letter-spacing:1px;
+}
+.pj-celebrate-overdue .pj-celebrate-text {
+  color:rgba(255,255,255,.95);
+}
+.pj-celebrate-overdue .pj-celebrate-text b { color:#fff; }
+
+/* ── Celebração simples — só "🎉 concluída" sem barra ── */
+.pj-celebrate-card.pj-celebrate-simple {
+  background:linear-gradient(135deg, var(--accent) 0%, var(--accent2,#a855f7) 100%);
+  border-color:transparent;
+}
+.pj-celebrate-simple .pj-celebrate-title {
+  color:#fff !important;
+  background:none !important;
+  -webkit-text-fill-color:#fff !important;
+}
+.pj-celebrate-simple .pj-celebrate-text {
+  color:rgba(255,255,255,.95);
+}
 @media (max-width:520px) {
   .pj-celebrate-card { padding:22px 20px; min-width:0; width:88vw; }
   .pj-celebrate-emoji { font-size:48px; }
