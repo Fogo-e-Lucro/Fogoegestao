@@ -18796,7 +18796,17 @@ function pjRenderActivity() {
   const top = pjComments.filter(c => !c.parentId && c.taskId === tid);
   // Mescla: comentários top-level + log de mudanças (task.activity), ordenado por ts
   const task = pjAllTasks.find(x => x.id === tid);
-  const activityLog = Array.isArray(task?.activity) ? task.activity : [];
+  // 🛡️ Defesa contra log polui­do (cópia/recorrência antigas que compartilharam
+  // referência do array activity): filtra entradas com ts ANTERIOR à criação
+  // da tarefa atual. Uma tarefa não pode ter histórico antes de existir.
+  let taskCreatedMs = 0;
+  if (task?.createdAt) {
+    if (task.createdAt.toMillis) taskCreatedMs = task.createdAt.toMillis();
+    else if (task.createdAt.toDate) taskCreatedMs = task.createdAt.toDate().getTime();
+    else if (typeof task.createdAt === 'number') taskCreatedMs = task.createdAt;
+  }
+  const activityLog = (Array.isArray(task?.activity) ? task.activity : [])
+    .filter(a => !taskCreatedMs || (a.ts || 0) >= taskCreatedMs - 5000); // 5s de tolerância
   const merged = [
     ...top.map(c => ({
       _kind: 'comment',
@@ -19337,6 +19347,14 @@ async function pjDuplicateTask(taskId) {
     order: Date.now(),
     createdBy: uid,
   };
+  // 🛡️ CRÍTICO: o spread '...orig' compartilha REFERÊNCIA do array activity
+  // entre a cópia e a original. Qualquer push em uma vaza pra outra. Mesma
+  // raiz do bug em pjSpawnNextRecurrence — limpa explicitamente.
+  delete copy.activity;       // log fica só na original
+  delete copy.attachments;    // anexos ficam só na original
+  // Sanity: se o spread copiou alguma referência mutável, não levamos
+  if (Array.isArray(copy.activity)) copy.activity = [];
+
   // Local first
   if (!pjTasks[copy.listId]) pjTasks[copy.listId] = [];
   pjTasks[copy.listId].push(copy);
@@ -19348,6 +19366,9 @@ async function pjDuplicateTask(taskId) {
     const { id, ...data } = copy;
     // convert fake createdAt to Firestore
     data.createdAt = pjNow(); data.updatedAt = pjNow();
+    // Garantia extra: nunca persiste activity da original na cópia
+    delete data.activity;
+    delete data.attachments;
     await pjC('pj_tasks').doc(newId).set(data);
   } catch(e) {}
   // Open the copy
