@@ -14611,74 +14611,12 @@ function pjConfettiBurst(originX, originY) {
 }
 
 // ── Gamificação: parabéns ao concluir + palmas ao terminar o dia ──
-function pjGetMyTodayProgress() {
-  const uid = (typeof _currentUser !== 'undefined' && _currentUser && _currentUser.uid) || null;
-  if (!uid) return { total:0, completed:0, remaining:0, isMine:false };
-  const today = pjDateStr(new Date());
-  const myToday = (pjAllTasks||[]).filter(t =>
-    !pjIsArchived(t) &&
-    !t.parentTaskId &&
-    Array.isArray(t.assignees) && t.assignees.includes(uid) &&
-    t.dueDate === today
-  );
-  const completed = myToday.filter(t => pjIsDone(t)).length;
-  return { total: myToday.length, completed, remaining: myToday.length - completed, isMine:true, scope:'today' };
-}
-
-// Progresso da semana atual (segunda → domingo) — fallback quando não há
-// tarefas pra hoje, pra ainda mostrar uma celebração relevante ao usuário.
-function pjGetMyWeekProgress() {
-  const uid = (typeof _currentUser !== 'undefined' && _currentUser && _currentUser.uid) || null;
-  if (!uid) return { total:0, completed:0, remaining:0, scope:'week' };
-  const now = new Date();
-  // Segunda da semana atual (week starts on Monday)
-  const dow = now.getDay(); // 0=dom, 1=seg, ..., 6=sab
-  const monday = new Date(now); monday.setHours(0,0,0,0);
-  monday.setDate(now.getDate() - ((dow + 6) % 7));
-  const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
-  const ms = pjDateStr(monday), ds = pjDateStr(sunday);
-  const my = (pjAllTasks||[]).filter(t =>
-    !pjIsArchived(t) && !t.parentTaskId &&
-    Array.isArray(t.assignees) && t.assignees.includes(uid) &&
-    t.dueDate && t.dueDate >= ms && t.dueDate <= ds
-  );
-  const completed = my.filter(t => pjIsDone(t)).length;
-  return { total: my.length, completed, remaining: my.length - completed, scope:'week' };
-}
-
-// Stats consolidadas do dia: meta total (tarefas suas com dueDate=hoje),
-// quantas já fechou (das de hoje) e quantas FECHOU hoje no total
-// (qualquer dueDate, mas completedAt=hoje) — pra detectar "passou da meta".
-function pjGetTodayStats() {
-  const uid = (typeof _currentUser !== 'undefined' && _currentUser && _currentUser.uid) || null;
-  if (!uid) return { todayTotal:0, todayDone:0, todayRemaining:0, closedToday:0 };
-  const today = pjDateStr(new Date());
-  const myTasks = (pjAllTasks||[]).filter(t =>
-    !pjIsArchived(t) && !t.parentTaskId &&
-    Array.isArray(t.assignees) && t.assignees.includes(uid)
-  );
-  const myToday = myTasks.filter(t => t.dueDate === today);
-  const todayTotal = myToday.length;
-  const todayDone = myToday.filter(t => pjIsDone(t)).length;
-  // Conta tarefas que o usuário FECHOU hoje (completedAt no dia atual)
-  const closedToday = myTasks.filter(t => {
-    if (!pjIsDone(t) || !t.completedAt) return false;
-    let ms;
-    if (t.completedAt?.toMillis)       ms = t.completedAt.toMillis();
-    else if (t.completedAt?.toDate)    ms = t.completedAt.toDate().getTime();
-    else if (typeof t.completedAt === 'number') ms = t.completedAt;
-    else return false;
-    return pjDateStr(new Date(ms)) === today;
-  }).length;
-  return {
-    todayTotal,
-    todayDone,
-    todayRemaining: Math.max(0, todayTotal - todayDone),
-    closedToday,
-  };
-}
-
 // Chamado quando uma tarefa transiciona pra fechado.
+// Lógica simples e clara — só conta tarefas com dueDate = HOJE.
+//   - dueDate < hoje  → ATRASADA: alerta com esculacho (não conta na meta)
+//   - dueDate > hoje  → ADIANTADA: parabéns por adiantar (não conta na meta)
+//   - dueDate = hoje  → conta no progresso "X de Y concluídas hoje"
+//   - sem dueDate ou não-minha → celebração simples
 let _pjCelebTimer = null;
 function pjOnTaskClosed(t) {
   if (!t) return;
@@ -14686,8 +14624,9 @@ function pjOnTaskClosed(t) {
   if (!uid) return;
 
   const today = pjDateStr(new Date());
+  const isMine = Array.isArray(t.assignees) && t.assignees.includes(uid);
 
-  // 😤 1. ATRASADA — alerta com esculacho (não é celebração).
+  // 😤 1. ATRASADA — alerta com esculacho (NÃO conta na meta de hoje)
   if (t.dueDate && t.dueDate < today) {
     const dueDate = new Date(t.dueDate + 'T00:00:00');
     const daysLate = Math.max(1, Math.floor((Date.now() - dueDate.getTime()) / 86400000));
@@ -14700,68 +14639,68 @@ function pjOnTaskClosed(t) {
   try { pjPlayCelebrationSound(); } catch(_) {}
   if (typeof pjHaptic === 'function') { try { pjHaptic('success'); } catch(_) {} }
 
-  const isMine = Array.isArray(t.assignees) && t.assignees.includes(uid);
-  const stats = pjGetTodayStats();
+  // ⚡ 2. ADIANTADA — minha + dueDate futuro: parabeniza por adiantar.
+  //     NÃO conta na meta de hoje (meta = só tarefas com dueDate=hoje).
+  if (isMine && t.dueDate && t.dueDate > today) {
+    pjCelebrateAhead(t);
+    return;
+  }
 
-  // 2. NÃO MINHA ou SEM META do dia → celebração simples
-  if (!isMine || stats.todayTotal === 0) {
+  // ✨ 3. SEM data ou NÃO-MINHA → celebração simples (sem barra)
+  if (!isMine || !t.dueDate) {
     pjCelebrateSimple(t);
     return;
   }
 
-  // 🌟 3. PASSOU DA META — fechou MAIS tarefas hoje que o total previsto
-  //      Ex: meta era 3, fechou 4 (1 a mais que o planejado).
-  if (stats.closedToday > stats.todayTotal) {
-    pjCelebrateOverGoal(stats);
+  // ✅ 4. TAREFA DE HOJE — agora sim, calcula progresso só com tarefas de hoje
+  const myToday = (pjAllTasks||[]).filter(x =>
+    !pjIsArchived(x) && !x.parentTaskId &&
+    Array.isArray(x.assignees) && x.assignees.includes(uid) &&
+    x.dueDate === today
+  );
+  const total = myToday.length;
+  const done = myToday.filter(x => pjIsDone(x)).length;
+  const remaining = Math.max(0, total - done);
+
+  // 🏆 META BATIDA — todas as de hoje concluídas
+  if (remaining === 0 && total > 0) {
+    pjCelebrateAllDone(total, 'today');
     return;
   }
 
-  // 🏆 4. META BATIDA — todas as de hoje concluídas (sem extras)
-  if (stats.todayRemaining === 0) {
-    pjCelebrateAllDone(stats.todayTotal, 'today');
-    return;
-  }
-
-  // 🎉 5. PROGRESSO NORMAL — ainda faltam tarefas pra hoje
+  // 🎉 PROGRESSO — ainda faltam tarefas
   pjCelebrateProgress({
-    total: stats.todayTotal,
-    completed: stats.todayDone,
-    remaining: stats.todayRemaining,
+    total, completed: done, remaining,
     scope: 'today',
   });
 }
 
-// 🌟 Celebração ESPECIAL — passou da meta diária (super-produtivo!)
-function pjCelebrateOverGoal(stats) {
+// ⚡ Celebração de tarefa ADIANTADA — parabeniza por entregar antes do prazo.
+function pjCelebrateAhead(t) {
   const overlay = pjEnsureCelebrateOverlay();
   const card = overlay.querySelector('.pj-celebrate-card');
-  const extra = stats.closedToday - stats.todayTotal;
-  const pct = Math.round((stats.closedToday / Math.max(1, stats.todayTotal)) * 100);
-  card.className = 'pj-celebrate-card pj-celebrate-overgoal';
+  card.className = 'pj-celebrate-card pj-celebrate-ahead';
+  // Calcula quantos dias adiantou (em relação a hoje, no fuso local)
+  const dueLocal = new Date(t.dueDate + 'T00:00:00');
+  const todayLocal = new Date(); todayLocal.setHours(0,0,0,0);
+  const daysAhead = Math.max(1, Math.round((dueLocal - todayLocal) / 86400000));
+  const dayLabel = daysAhead === 1 ? '1 dia antes do prazo' : `${daysAhead} dias antes do prazo`;
+  const title = (t && t.title) ? String(t.title).slice(0, 80) : 'Tarefa';
   card.innerHTML = `
-    <div class="pj-celebrate-emoji big">🌟</div>
-    <div class="pj-celebrate-title">PASSOU DA META!</div>
+    <div class="pj-celebrate-emoji">⚡</div>
+    <div class="pj-celebrate-title">MANDOU BEM!</div>
     <div class="pj-celebrate-text">
-      Você concluiu <b>${stats.closedToday} ${stats.closedToday===1?'tarefa':'tarefas'}</b> hoje —
-      <b>${extra} a mais</b> que sua meta de <b>${stats.todayTotal}</b>!<br>
-      <span style="opacity:.9;display:inline-block;margin-top:6px;">Que organização impecável! 👏✨</span>
+      <div style="font-weight:700;background:rgba(255,255,255,.18);color:#fff;padding:6px 14px;border-radius:20px;display:inline-block;margin-bottom:10px;font-size:.9em;">⏱ ${dayLabel}</div>
+      <div style="font-size:.95em;line-height:1.55;">Você adiantou o trabalho! Esse foco vai poupar dor de cabeça depois. 🚀</div>
+      <div style="font-size:.8em;opacity:.85;margin-top:10px;font-style:italic;">"${escHtml(title)}"</div>
     </div>
-    <div class="pj-celebrate-bar"><div class="pj-celebrate-bar-fill" style="width:100%;"></div></div>
-    <div class="pj-celebrate-frac">${stats.closedToday} / ${stats.todayTotal} <span style="opacity:.75;font-size:.85em;">(${pct}%)</span></div>
-    <button class="pj-btn pj-btn-primary" type="button" style="margin-top:14px;" onclick="document.getElementById('pjCelebrateOverlay')?.classList.remove('open')">Mandou bem! 🚀</button>
   `;
   overlay.classList.add('open');
-  // Salva de confete em 3 ondas pra parecer mais especial
   if (typeof pjConfettiBurst === 'function') {
-    try {
-      pjConfettiBurst(window.innerWidth/2, window.innerHeight/3);
-      setTimeout(() => pjConfettiBurst(window.innerWidth/3, window.innerHeight/2), 220);
-      setTimeout(() => pjConfettiBurst(2*window.innerWidth/3, window.innerHeight/2), 440);
-    } catch(_) {}
+    try { pjConfettiBurst(window.innerWidth/2, window.innerHeight/2); } catch(_) {}
   }
-  try { pjPlayApplauseSound(); } catch(_) {}
   clearTimeout(_pjCelebTimer);
-  _pjCelebTimer = setTimeout(() => overlay.classList.remove('open'), 8500);
+  _pjCelebTimer = setTimeout(() => overlay.classList.remove('open'), 3600);
 }
 
 // Alerta de tarefa ATRASADA — mostra esculacho ao invés de celebração.
@@ -14834,15 +14773,11 @@ function pjEnsureCelebrateOverlay() {
   return o;
 }
 
+// Popup de progresso — só usado pra tarefas de HOJE (escopo único).
 function pjCelebrateProgress(prog) {
   const overlay = pjEnsureCelebrateOverlay();
   const card = overlay.querySelector('.pj-celebrate-card');
   const pct = Math.round((prog.completed / prog.total) * 100);
-  // Texto de escopo: hoje, semana ou genérico
-  const scopeWord = prog.scope === 'week' ? 'esta semana' : (prog.scope === 'today' ? 'hoje' : '');
-  const headerText = scopeWord
-    ? `Você já concluiu <b>${prog.completed}</b> ${prog.completed===1?'tarefa':'tarefas'} ${scopeWord}.`
-    : `Tarefa concluída! <b>${prog.completed}</b> no total.`;
   const remainingText = prog.remaining > 0
     ? `<br>${prog.remaining===1?'Falta apenas':'Faltam apenas'} <b>${prog.remaining}</b> ${prog.remaining===1?'tarefa':'tarefas'}!`
     : '';
@@ -14851,13 +14786,12 @@ function pjCelebrateProgress(prog) {
     <div class="pj-celebrate-emoji">🎉</div>
     <div class="pj-celebrate-title">PARABÉNS!</div>
     <div class="pj-celebrate-text">
-      ${headerText}${remainingText}
+      Você já concluiu <b>${prog.completed}</b> ${prog.completed===1?'tarefa':'tarefas'} hoje.${remainingText}
     </div>
     <div class="pj-celebrate-bar"><div class="pj-celebrate-bar-fill" style="width:${pct}%"></div></div>
     <div class="pj-celebrate-frac">${prog.completed} / ${prog.total} <span style="opacity:.6;font-size:.85em;">(${pct}%)</span></div>
   `;
   overlay.classList.add('open');
-  // Confete leve em cima do card pra ficar mais animado
   try {
     if (typeof pjConfettiBurst === 'function') {
       pjConfettiBurst(window.innerWidth/2, window.innerHeight/2);
@@ -14867,18 +14801,18 @@ function pjCelebrateProgress(prog) {
   _pjCelebTimer = setTimeout(() => overlay.classList.remove('open'), 3200);
 }
 
-function pjCelebrateAllDone(total, scope) {
+// Tudo pronto — meta do DIA atingida (todas as tarefas com dueDate=hoje).
+function pjCelebrateAllDone(total) {
   const overlay = pjEnsureCelebrateOverlay();
   const card = overlay.querySelector('.pj-celebrate-card');
   card.className = 'pj-celebrate-card pj-celebrate-alldone';
-  const scopeWord = scope === 'week' ? 'da semana' : (scope === 'today' ? 'do dia' : '');
-  const subtitle = scopeWord
-    ? `Você terminou <b>todas as ${total} ${total===1?'tarefa':'tarefas'} ${scopeWord}</b>.<br>Que produtividade! 👏👏👏`
-    : `Você concluiu uma tarefa! 🚀<br>Continue assim!`;
   card.innerHTML = `
     <div class="pj-celebrate-emoji big">🏆</div>
     <div class="pj-celebrate-title">TUDO PRONTO!</div>
-    <div class="pj-celebrate-text">${subtitle}</div>
+    <div class="pj-celebrate-text">
+      Você terminou <b>todas as ${total} ${total===1?'tarefa':'tarefas'} do dia</b>.<br>
+      Que produtividade! 👏👏👏
+    </div>
     <button class="pj-btn pj-btn-primary" type="button" onclick="document.getElementById('pjCelebrateOverlay')?.classList.remove('open')">Aproveitar 🎈</button>
   `;
   overlay.classList.add('open');
