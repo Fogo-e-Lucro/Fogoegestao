@@ -13052,10 +13052,14 @@ function pjColPrefsKey(listId) {
 function pjGetColPrefs(listId) {
   try {
     const raw = localStorage.getItem(pjColPrefsKey(listId));
-    if (!raw) return { order: [], hidden: [] };
+    if (!raw) return { order: [], hidden: [], widths: {} };
     const o = JSON.parse(raw) || {};
-    return { order: Array.isArray(o.order)?o.order:[], hidden: Array.isArray(o.hidden)?o.hidden:[] };
-  } catch(e) { return { order: [], hidden: [] }; }
+    return {
+      order:  Array.isArray(o.order)  ? o.order  : [],
+      hidden: Array.isArray(o.hidden) ? o.hidden : [],
+      widths: (o.widths && typeof o.widths === 'object') ? o.widths : {},
+    };
+  } catch(e) { return { order: [], hidden: [], widths: {} }; }
 }
 function pjSaveColPrefs(listId, prefs) {
   try { localStorage.setItem(pjColPrefsKey(listId), JSON.stringify(prefs)); } catch(e){}
@@ -13063,10 +13067,17 @@ function pjSaveColPrefs(listId, prefs) {
 function pjResetColPrefs(listId) {
   try { localStorage.removeItem(pjColPrefsKey(listId)); } catch(e){}
 }
-// Aplica prefs (ordem + esconder) ao registry; cols novas ficam no fim na ordem original.
+function pjSetColWidth(listId, colId, widthPx) {
+  const p = pjGetColPrefs(listId);
+  p.widths = p.widths || {};
+  p.widths[colId] = `${Math.max(60, Math.round(widthPx))}px`;
+  pjSaveColPrefs(listId, p);
+}
+// Aplica prefs (ordem + esconder + larguras customizadas) ao registry.
 function pjApplyColPrefs(allCols, listId) {
   const prefs = pjGetColPrefs(listId);
   const hidden = new Set(prefs.hidden || []);
+  const widths = prefs.widths || {};
   const idMap = new Map(allCols.map(c => [c.id, c]));
   const out = [];
   (prefs.order || []).forEach(id => {
@@ -13078,7 +13089,63 @@ function pjApplyColPrefs(allCols, listId) {
   allCols.forEach(c => {
     if (idMap.has(c.id) && !hidden.has(c.id)) out.push(c);
   });
-  return out;
+  // Aplica largura customizada (sobrescreve default)
+  return out.map(c => widths[c.id] ? { ...c, width: widths[c.id] } : c);
+}
+
+// ── Redimensionar coluna arrastando o handle direito do header ──
+let _pjResize = null;
+function pjColResizeStart(e, colId, listId) {
+  e.preventDefault();
+  e.stopPropagation();
+  const cell = e.target.closest('.pj-list-th-cell');
+  if (!cell) return;
+  const startX = (e.touches && e.touches[0]?.clientX) || e.clientX || 0;
+  const startWidth = cell.getBoundingClientRect().width;
+  const headRow = cell.parentElement;
+  const cells = [...headRow.querySelectorAll('.pj-list-th-cell')];
+  const colIdx = cells.indexOf(cell); // 0-based posição da coluna no header
+  _pjResize = { colId, listId, startX, startWidth, cell, headRow, colIdx, lastWidth: startWidth };
+  document.body.classList.add('pj-resizing-col');
+  cell.querySelector('.pj-th-resize-handle')?.classList.add('active');
+  window.addEventListener('mousemove', pjColResizeMove);
+  window.addEventListener('mouseup',   pjColResizeEnd);
+  window.addEventListener('touchmove', pjColResizeMove, { passive: false });
+  window.addEventListener('touchend',  pjColResizeEnd);
+}
+function pjColResizeMove(e) {
+  if (!_pjResize) return;
+  if (e.preventDefault) e.preventDefault();
+  const x = (e.touches && e.touches[0]?.clientX) || e.clientX || 0;
+  const dx = x - _pjResize.startX;
+  const newWidth = Math.max(60, _pjResize.startWidth + dx);
+  _pjResize.lastWidth = newWidth;
+  // Atualiza grid-template-columns inline em tempo real (preview)
+  const tplCols = (_pjResize.headRow.style.gridTemplateColumns || '').split(/\s+/).filter(Boolean);
+  // Estrutura: [28px (sel)] [col1] [col2] ... [36px (+)]
+  const tplIdx = _pjResize.colIdx + 1;
+  if (tplCols[tplIdx]) {
+    tplCols[tplIdx] = `${newWidth}px`;
+    const newTpl = tplCols.join(' ');
+    _pjResize.headRow.style.gridTemplateColumns = newTpl;
+    document.querySelectorAll('.pj-list-tr, .pj-list-th-row').forEach(row => {
+      row.style.gridTemplateColumns = newTpl;
+    });
+  }
+}
+function pjColResizeEnd() {
+  if (!_pjResize) return;
+  const { listId, colId, lastWidth } = _pjResize;
+  document.body.classList.remove('pj-resizing-col');
+  document.querySelectorAll('.pj-th-resize-handle.active').forEach(h => h.classList.remove('active'));
+  window.removeEventListener('mousemove', pjColResizeMove);
+  window.removeEventListener('mouseup',   pjColResizeEnd);
+  window.removeEventListener('touchmove', pjColResizeMove);
+  window.removeEventListener('touchend',  pjColResizeEnd);
+  _pjResize = null;
+  pjSetColWidth(listId, colId, lastWidth);
+  // Re-render pra solidificar (e propagar o template em todas as linhas)
+  if (typeof pjRenderMain === 'function') pjRenderMain();
 }
 
 // Drag&drop horizontal no cabeçalho
@@ -13264,8 +13331,12 @@ function pjBuildListPage(listId) {
       ${cols.map(c => `<div class="pj-list-th-cell" data-col-id="${c.id}" draggable="true"
         ondragstart="pjColHeadDragStart(event,'${c.id}')"
         ondragend="pjColHeadDragEnd()"
-        title="Arraste pra reordenar">
+        title="Arraste pra reordenar — use a barra direita pra redimensionar">
         <span class="pj-th-grip" aria-hidden="true">⠿</span><span class="pj-th-label">${escHtml(c.label)}</span>
+        <div class="pj-th-resize-handle" draggable="false"
+             onmousedown="pjColResizeStart(event,'${c.id}','${listId}')"
+             ontouchstart="pjColResizeStart(event,'${c.id}','${listId}')"
+             title="Arraste pra redimensionar coluna"></div>
       </div>`).join('')}
       <div class="pj-th-add-col" title="Adicionar campo" onclick="pjOpenAddFieldMenu(event,'${listId}')">＋</div>
     </div>`;

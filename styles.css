@@ -5570,41 +5570,77 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   opacity:1; transform:translate(1px,-1px);
 }
 
-/* URL compacta — só uma bolinha com favicon (economiza espaço em célula) */
+/* URL compacta — bolinha BEM pequenininha com favicon (24x24 com ícone 14x14) */
 .pj-url-dot {
-  display:inline-flex; align-items:center; justify-content:center;
-  width:30px; height:30px;
+  display:inline-flex !important; align-items:center; justify-content:center;
+  width:24px !important; height:24px !important;
+  min-width:24px !important; max-width:24px !important;
+  max-height:24px !important;
   border-radius:50%;
   background:var(--bg2);
-  border:1.5px solid var(--border);
+  border:1px solid var(--border);
   text-decoration:none;
   color:var(--text2);
   cursor:pointer;
   transition:all .15s ease;
   position:relative;
   overflow:hidden;
+  flex-shrink:0;
+  box-sizing:border-box;
+  vertical-align:middle;
 }
 .pj-url-dot:hover {
   border-color:var(--accent);
   background:var(--card);
-  transform:scale(1.06);
-  box-shadow:0 4px 10px rgba(99,102,241,.18);
+  transform:scale(1.1);
+  box-shadow:0 3px 8px rgba(99,102,241,.22);
 }
+.pj-url-dot > img,
 .pj-url-dot img {
-  width:18px !important; height:18px !important;
-  max-width:18px !important; max-height:18px !important;
-  border-radius:4px; object-fit:contain;
-  background:#fff; padding:1px;
-  display:block;
+  width:14px !important; height:14px !important;
+  min-width:14px !important; max-width:14px !important;
+  max-height:14px !important;
+  border-radius:3px; object-fit:contain;
+  background:#fff; padding:0;
+  display:block !important;
+  flex-shrink:0;
 }
 .pj-url-dot .pj-url-dot-fallback {
   position:absolute; inset:0;
   display:none;
   align-items:center; justify-content:center;
-  font-size:13px; line-height:1;
+  font-size:11px; line-height:1;
 }
 .pj-url-dot.no-favicon { background:linear-gradient(135deg, var(--accent), var(--accent2,#a855f7)); border-color:transparent; }
 .pj-url-dot.no-favicon .pj-url-dot-fallback { display:flex; color:#fff; }
+
+/* ── Redimensionar colunas: handle invisível na borda direita do header ── */
+.pj-list-th-cell { position:relative; }
+.pj-th-resize-handle {
+  position:absolute; top:0; right:-3px; bottom:0;
+  width:7px;
+  cursor:col-resize;
+  z-index:3;
+  background:transparent;
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:none;
+}
+.pj-th-resize-handle::after {
+  content:''; position:absolute;
+  top:25%; bottom:25%; left:50%;
+  width:2px; border-radius:2px;
+  background:transparent;
+  transition:background .15s ease;
+}
+.pj-th-resize-handle:hover::after,
+.pj-th-resize-handle.active::after {
+  background:var(--accent);
+}
+.pj-th-resize-handle.active { z-index:4; }
+/* Cursor durante o resize ativo (em todo o doc) */
+body.pj-resizing-col,
+body.pj-resizing-col * { cursor:col-resize !important; user-select:none !important; }
 
 /* Texto comum em célula — trunca com ellipsis */
 .pj-cell-text {
