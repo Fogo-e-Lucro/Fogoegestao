@@ -19898,7 +19898,16 @@ function pjIsDone(task) {
   // (compat: pjStatusBucket infere bucket pra dados antigos)
   return st ? pjStatusBucket(st) === 'closed' : false;
 }
-function pjDateStr(d) { return d.toISOString().split('T')[0]; }
+function pjDateStr(d) {
+  // CRÍTICO: usa data LOCAL (não UTC). toISOString() retorna UTC e
+  // no fim do dia, em fusos negativos como BRT (-3), o UTC já está no
+  // dia seguinte. Isso fazia tarefas criadas pra "hoje" virarem
+  // "atrasadas" depois das 21h local. A data local é o que o usuário vê.
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 // ── Detector de tarefas paradas ──────────────────────────────────────
 // Retorna null se a tarefa está OK, ou { days, severity, threshold } se parada.
@@ -19940,6 +19949,9 @@ function pjStalePillHtml(task) {
 
 function pjDueCls(dateStr) {
   const today = pjDateStr(new Date());
+  // Tarefa só fica ATRASADA quando a data local passa pra depois do
+  // vencimento. Sem horário definido, considera o dia inteiro como
+  // prazo (até 23:59:59 local) — só vira atrasada amanhã.
   if (dateStr < today) return {cls:'overdue', label:'Atrasada'};
   if (dateStr === today) return {cls:'today', label:'Hoje'};
   const d = new Date(dateStr+'T00:00:00');
