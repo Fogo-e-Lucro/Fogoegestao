@@ -3742,13 +3742,18 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   transform:scale(1.02);
   border-color:var(--accent);
 }
-.pj-comment-attach a {
+.pj-comment-attach a,
+.pj-comment-attach-doc {
   display:inline-flex; align-items:center; gap:6px;
   padding:6px 10px; border-radius:8px;
   background:var(--bg2); border:1px solid var(--border);
   font-size:12px; color:var(--accent); text-decoration:none;
+  cursor:pointer; font-family:inherit;
 }
-.pj-comment-attach a:hover { background:var(--card); }
+.pj-comment-attach a:hover,
+.pj-comment-attach-doc:hover {
+  background:var(--card); border-color:var(--accent);
+}
 
 .pj-task-check {
   width:18px; height:18px; border:2px solid var(--border); border-radius:5px;
@@ -5409,7 +5414,10 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   display:flex; align-items:center; gap:12px;
   padding:14px 12px; text-decoration:none;
   color:var(--text); width:100%; box-sizing:border-box;
+  background:transparent; border:none; cursor:pointer;
+  font-family:inherit; text-align:left;
 }
+.pj-attach-doc-link:hover { background:rgba(99,102,241,.04); }
 .pj-attach-doc-icon {
   width:42px; height:42px; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;

@@ -18887,6 +18887,36 @@ function pjRenderCellValue(value, field) {
   return `<span class="pj-cell-text" title="${escHtml(v)}">${escHtml(v)}</span>`;
 }
 
+// Força download de uma URL (mesmo cross-origin como ImgBB).
+// O atributo 'download' do <a> só funciona pra mesma origem; pra URLs
+// externas é preciso fetch → blob → objectURL → click programático.
+async function pjDownloadFile(src, filename) {
+  try {
+    // dataUrl funciona direto via <a download>
+    if ((src||'').startsWith('data:')) {
+      const a = document.createElement('a');
+      a.href = src; a.download = filename || 'arquivo';
+      document.body.appendChild(a); a.click(); a.remove();
+      return;
+    }
+    const res = await fetch(src, { mode: 'cors', credentials: 'omit' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const blob = await res.blob();
+    const objUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = objUrl;
+    a.download = filename || 'arquivo';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(objUrl); a.remove(); }, 200);
+  } catch(e) {
+    // Fallback: abre numa nova aba se CORS bloquear
+    console.warn('[pj] fallback download:', e);
+    if (typeof showToast === 'function') showToast('warn','⚠️','Não foi possível baixar diretamente. Abrindo em nova aba — clique direito → Salvar.');
+    window.open(src, '_blank');
+  }
+}
+
 function pjFmtBytes(b) {
   if (!b || b < 1024) return (b||0) + ' B';
   if (b < 1024*1024) return (b/1024).toFixed(1).replace('.0','') + ' KB';
@@ -18933,18 +18963,18 @@ function pjRenderTaskAttachments(taskId) {
       : null;
     const uploaderName = uploader?.name || uploader?.email?.split('@')[0] || '';
     const meta = [size, dt, uploaderName].filter(Boolean).join(' · ');
+    const safeName = (a.name||'').replace(/'/g,'&#39;');
     if (isImg) {
-      const safeName = escHtml(a.name||'');
-      return `<div class="pj-attach-item pj-attach-img" onclick="pjOpenLightbox('${safeSrc}','${safeName}')" title="Clique para ampliar">
-        <div class="pj-attach-img-wrap"><img src="${src}" alt="${safeName}" loading="lazy"></div>
+      return `<div class="pj-attach-item pj-attach-img" onclick="pjOpenLightbox('${safeSrc}','${escHtml(a.name||'')}')" title="Clique para ampliar">
+        <div class="pj-attach-img-wrap"><img src="${src}" alt="${escHtml(a.name||'')}" loading="lazy"></div>
         <div class="pj-attach-meta">
           <span class="pj-attach-name" title="${escHtml(a.name||'')}">${escHtml(a.name||'imagem')}</span>
           ${meta ? `<span class="pj-attach-sub">${escHtml(meta)}</span>` : ''}
         </div>
         <div class="pj-attach-actions">
-          <a class="pj-attach-action" href="${src}" download="${escHtml(a.name||'imagem')}" onclick="event.stopPropagation()" title="Baixar">
+          <button class="pj-attach-action" onclick="event.stopPropagation();pjDownloadFile('${safeSrc}','${safeName}')" title="Baixar">
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-          </a>
+          </button>
           <button class="pj-attach-action danger" onclick="event.stopPropagation();pjRemoveTaskAttachment(${i})" title="Remover">
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
           </button>
@@ -18953,13 +18983,13 @@ function pjRenderTaskAttachments(taskId) {
     }
     const ic = pjAttachIconFor(a.name, a.type);
     return `<div class="pj-attach-item pj-attach-doc">
-      <a class="pj-attach-doc-link" href="${src}" download="${escHtml(a.name||'arquivo')}" target="_blank">
+      <button class="pj-attach-doc-link" type="button" onclick="pjDownloadFile('${safeSrc}','${safeName}')" title="Baixar ${escHtml(a.name||'arquivo')}">
         <span class="pj-attach-doc-icon ${ic.cls}">${ic.icon}</span>
         <div class="pj-attach-info">
           <span class="pj-attach-name" title="${escHtml(a.name||'')}">${escHtml(a.name||'arquivo')}</span>
           <span class="pj-attach-sub">${escHtml(meta || ic.label)}</span>
         </div>
-      </a>
+      </button>
       <div class="pj-attach-actions">
         <button class="pj-attach-action danger" onclick="event.stopPropagation();pjRemoveTaskAttachment(${i})" title="Remover">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
@@ -19128,10 +19158,11 @@ function pjRenderActivityComment(c, isReply) {
     const src = a.url || a.dataUrl || '';
     const safeSrc = (src||'').replace(/'/g,'&#39;');
     const safeName = escHtml(a.name||'');
+    const safeNameJs = (a.name||'').replace(/'/g,'&#39;');
     const isImg = (a.type||'').startsWith('image/');
     attachHtml = `<div class="pj-comment-attach">${isImg
       ? `<img src="${src}" alt="${safeName}" loading="lazy" onclick="event.stopPropagation();pjOpenLightbox('${safeSrc}','${safeName}')">`
-      : `<a href="${src}" download="${escHtml(a.name||'arquivo')}" target="_blank">📄 ${escHtml(a.name||'Arquivo')}</a>`}</div>`;
+      : `<button type="button" class="pj-comment-attach-doc" onclick="event.stopPropagation();pjDownloadFile('${safeSrc}','${safeNameJs}')">📄 ${escHtml(a.name||'Arquivo')}</button>`}</div>`;
   }
   const reactions = c.reactions || {};
   const uid = _auth?.currentUser?.uid || _currentUser?.uid;
