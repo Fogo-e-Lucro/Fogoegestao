@@ -18887,34 +18887,98 @@ function pjRenderCellValue(value, field) {
   return `<span class="pj-cell-text" title="${escHtml(v)}">${escHtml(v)}</span>`;
 }
 
-// Força download de uma URL (mesmo cross-origin como ImgBB).
-// O atributo 'download' do <a> só funciona pra mesma origem; pra URLs
-// externas é preciso fetch → blob → objectURL → click programático.
+// Helper interno: dispara download de um blob/dataUrl com nome customizado
+function _pjTriggerDl(href, filename, isObjUrl) {
+  const a = document.createElement('a');
+  a.href = href;
+  a.download = filename || 'arquivo';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    if (isObjUrl) URL.revokeObjectURL(href);
+    a.remove();
+  }, 200);
+}
+
+// Força download de uma URL (inclusive cross-origin como ImgBB).
+// Estratégia em camadas:
+//   1. dataUrl → <a download> direto
+//   2. Imagem cross-origin → canvas + crossOrigin (funciona com CDNs CORS)
+//   3. Fetch direto + blob
+//   4. Proxy images.weserv.nl (imagens) — adiciona CORS headers
+//   5. Último: window.open + toast
 async function pjDownloadFile(src, filename) {
+  if (!src) return;
+  // 1. dataUrl direto
+  if (src.startsWith('data:')) {
+    _pjTriggerDl(src, filename);
+    return;
+  }
+  const isImg = /\.(jpe?g|png|gif|webp|bmp|svg|avif)(\?|$|#)/i.test(src) || /ibb\.co/.test(src);
+
+  // 2. CANVAS pra imagens — funciona melhor pq a tag <img> já carrega a
+  //    imagem com crossOrigin, e o canvas exporta o blob pra download
+  if (isImg) {
+    try {
+      const blob = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas blob falhou')), 'image/png', 0.95);
+          } catch(e) { reject(e); }
+        };
+        img.onerror = () => reject(new Error('img load falhou'));
+        img.src = src;
+        // Timeout de segurança
+        setTimeout(() => reject(new Error('timeout')), 8000);
+      });
+      const objUrl = URL.createObjectURL(blob);
+      _pjTriggerDl(objUrl, filename, true);
+      return;
+    } catch(e) {
+      console.debug('[pj] canvas download falhou, tentando próxima estratégia:', e);
+    }
+  }
+
+  // 3. Fetch direto (cross-origin com CORS allow)
   try {
-    // dataUrl funciona direto via <a download>
-    if ((src||'').startsWith('data:')) {
-      const a = document.createElement('a');
-      a.href = src; a.download = filename || 'arquivo';
-      document.body.appendChild(a); a.click(); a.remove();
+    const res = await fetch(src, { mode: 'cors', credentials: 'omit' });
+    if (res.ok) {
+      const blob = await res.blob();
+      const objUrl = URL.createObjectURL(blob);
+      _pjTriggerDl(objUrl, filename, true);
       return;
     }
-    const res = await fetch(src, { mode: 'cors', credentials: 'omit' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const blob = await res.blob();
-    const objUrl = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = objUrl;
-    a.download = filename || 'arquivo';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => { URL.revokeObjectURL(objUrl); a.remove(); }, 200);
-  } catch(e) {
-    // Fallback: abre numa nova aba se CORS bloquear
-    console.warn('[pj] fallback download:', e);
-    if (typeof showToast === 'function') showToast('warn','⚠️','Não foi possível baixar diretamente. Abrindo em nova aba — clique direito → Salvar.');
-    window.open(src, '_blank');
+  } catch(_) {}
+
+  // 4. Proxy images.weserv.nl (só imagens — adiciona CORS headers)
+  if (isImg) {
+    try {
+      const noProto = src.replace(/^https?:\/\//, '');
+      const proxy = `https://images.weserv.nl/?url=${encodeURIComponent(noProto)}`;
+      const res = await fetch(proxy);
+      if (res.ok) {
+        const blob = await res.blob();
+        const objUrl = URL.createObjectURL(blob);
+        _pjTriggerDl(objUrl, filename, true);
+        return;
+      }
+    } catch(_) {}
   }
+
+  // 5. Último fallback: nova aba
+  console.warn('[pj] download direto falhou — abrindo em nova aba');
+  if (typeof showToast === 'function') {
+    showToast('warn','⚠️','Abrindo em nova aba — clique com botão direito → "Salvar imagem como..."');
+  }
+  window.open(src, '_blank');
 }
 
 function pjFmtBytes(b) {
