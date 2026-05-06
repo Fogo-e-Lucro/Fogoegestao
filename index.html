@@ -20743,9 +20743,16 @@ function pjDueCls(dateStr) {
   // prazo (até 23:59:59 local) — só vira atrasada amanhã.
   if (dateStr < today) return {cls:'overdue', label:'Atrasada'};
   if (dateStr === today) return {cls:'today', label:'Hoje'};
-  const d = new Date(dateStr+'T00:00:00');
-  const diff = Math.round((d - new Date())/86400000);
-  return {cls:'future', label: diff<=7 ? `em ${diff}d` : d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})};
+  // Calcula diferença em DIAS LOCAIS (não em ms). Antes usava
+  // Math.round((d - new Date())/86400000) que retornava 0 pra amanhã
+  // dependendo da hora do dia (bug de fuso/arredondamento).
+  const todayLocal = new Date(); todayLocal.setHours(0,0,0,0);
+  const dueLocal = new Date(dateStr + 'T00:00:00');
+  const diff = Math.round((dueLocal - todayLocal) / 86400000);
+  if (diff === 1) return {cls:'future', label:'Amanhã'};
+  if (diff === 2) return {cls:'future', label:'Depois de amanhã'};
+  if (diff <= 7)  return {cls:'future', label:`em ${diff}d`};
+  return {cls:'future', label: dueLocal.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})};
 }
 function pjRelTime(date) {
   const diff = Date.now() - date.getTime();
