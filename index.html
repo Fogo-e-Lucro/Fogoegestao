@@ -3538,6 +3538,8 @@ async function loadFromCloud() {
     // Inicia listener da Base de Dados imediatamente (não espera o usuário abrir a aba BD)
     // Isso garante que dropdowns de cliente em tarefas, posts, etc. já tenham os dados.
     try { if (typeof bdInit === 'function') bdInit(); } catch(_) {}
+    // Inicia listener de notificações cross-device (menções, atribuições)
+    try { if (typeof pjStartNotifListener === 'function') pjStartNotifListener(); } catch(_) {}
   } catch(e) { console.warn('Firestore load failed, using localStorage:', e); setSyncStatus('err'); }
 }
 
@@ -13769,12 +13771,101 @@ function pjDeleteView(id) {
 }
 
 // ── Notificações ────────────────────────────────────────
-function pjAddNotification(notif) {
-  const n = { id:'n_'+Date.now()+Math.random().toString(36).slice(2,6), read:false, ts:Date.now(), ...notif };
+// Persistência em duas camadas:
+//   - LOCAL (localStorage 'pj_notif'): cache do usuário atual, lê na abertura
+//   - FIRESTORE 'pj_notifications': fonte da verdade pra entrega cross-device
+// Quando o remetente cria uma notif com forUid != currentUser, ela é gravada
+// no Firestore. Cada usuário tem um listener que escuta where('forUid','==',uid)
+// e adiciona ao state local — tocando som + atualizando o sino.
+async function pjAddNotification(notif) {
+  const currentUid = _auth?.currentUser?.uid || _currentUser?.uid || null;
+  const id = 'n_' + Date.now() + Math.random().toString(36).slice(2,6);
+  const n = { id, read:false, ts:Date.now(), ...notif };
+
+  // Se a notificação é PRA outro usuário → persiste no Firestore.
+  // O listener do destinatário cuida de tocar som + atualizar sino.
+  if (notif.forUid && notif.forUid !== currentUid) {
+    try {
+      const data = {
+        type: notif.type || 'mention',
+        title: notif.title || '',
+        subtitle: notif.subtitle || '',
+        taskId: notif.taskId || null,
+        forUid: notif.forUid,
+        senderUid: notif.senderUid || currentUid || null,
+        senderName: notif.senderName || null,
+        ts: pjNow(),
+        read: false,
+      };
+      // Filtra undefineds (Firestore não aceita)
+      Object.keys(data).forEach(k => { if (data[k] === undefined) delete data[k]; });
+      await pjC('pj_notifications').doc(id).set(data);
+    } catch(e) { console.warn('[pj] erro ao persistir notif:', e); }
+    return;
+  }
+
+  // Notif local (pra mim mesmo) → guarda em cache + atualiza UI
   pjNotifications.unshift(n);
   if (pjNotifications.length > 50) pjNotifications = pjNotifications.slice(0,50);
   localStorage.setItem('pj_notif', JSON.stringify(pjNotifications));
   pjUpdateNotifBell();
+  if (pjNotifPanelOpen) pjRenderNotifPanel();
+}
+
+// Listener real-time: cada usuário escuta notificações destinadas a ele.
+// Toca som + adiciona ao state local quando uma notif nova chega.
+let pjNotifUnsub = null;
+const _pjNotifSeen = new Set(); // ids já vistos nessa sessão
+function pjStartNotifListener() {
+  const uid = _auth?.currentUser?.uid || _currentUser?.uid;
+  if (!uid) return;
+  if (pjNotifUnsub) { try { pjNotifUnsub(); } catch(_){} pjNotifUnsub = null; }
+  // Marca todas as notifs já em cache como "vistas" pra não tocar som de
+  // notifs antigas ao recarregar a página
+  pjNotifications.forEach(n => _pjNotifSeen.add(n.id));
+  try {
+    pjNotifUnsub = pjC('pj_notifications').where('forUid','==',uid)
+      .onSnapshot(snap => {
+        let newOnes = 0;
+        snap.docChanges().forEach(ch => {
+          if (ch.type !== 'added') return;
+          const d = { id: ch.doc.id, ...ch.doc.data() };
+          if (_pjNotifSeen.has(d.id)) return;
+          _pjNotifSeen.add(d.id);
+          // Só conta como "nova chegada" se ts > 30s atrás (evita
+          // "tocar som" pras 50 antigas no primeiro snapshot da sessão)
+          const ts = d.ts?.toMillis ? d.ts.toMillis() : (d.ts?.toDate ? d.ts.toDate().getTime() : Date.now());
+          const isFresh = (Date.now() - ts) < 60_000;
+          // Adiciona ao cache local
+          if (!pjNotifications.find(x => x.id === d.id)) {
+            pjNotifications.unshift({ ...d, ts });
+            if (pjNotifications.length > 50) pjNotifications = pjNotifications.slice(0,50);
+          }
+          if (isFresh) newOnes++;
+        });
+        localStorage.setItem('pj_notif', JSON.stringify(pjNotifications));
+        pjUpdateNotifBell();
+        if (pjNotifPanelOpen) pjRenderNotifPanel();
+        // 🔊 Toca som + desktop notif pras novas que chegaram agora
+        if (newOnes > 0) {
+          try { pjPlayMentionSound(); } catch(_) {}
+          // Pega a notif mais recente pra mostrar no desktop
+          const latest = pjNotifications[0];
+          if (latest && typeof pjFireDesktopNotif === 'function') {
+            pjFireDesktopNotif(latest.title || 'Nova notificação', latest.subtitle || '', latest.taskId);
+          }
+          // Toast in-app pra dar feedback visual mesmo se desktop notif estiver bloqueada
+          if (typeof showToast === 'function') {
+            showToast('info', '🔔', latest?.title || 'Nova notificação');
+          }
+        }
+      }, (err) => {
+        console.warn('[pj] erro listener notifs:', err);
+      });
+  } catch(e) { console.warn('[pj] não foi possível iniciar listener notifs:', e); }
+}
+function pjStopNotifListener() {
+  if (pjNotifUnsub) { try { pjNotifUnsub(); } catch(_){} pjNotifUnsub = null; }
 }
 function pjUpdateNotifBell() {
   const bell = document.getElementById('pjNotifBell');
@@ -13842,19 +13933,33 @@ function pjOpenNotif(id) {
   n.read = true;
   localStorage.setItem('pj_notif', JSON.stringify(pjNotifications));
   pjUpdateNotifBell();
+  // Persiste read=true no Firestore (pra não vir como unread em outros devices)
+  try { pjC('pj_notifications').doc(id).update({ read: true }).catch(()=>{}); } catch(_) {}
   if (n.taskId) pjOpenTask(n.taskId);
   pjNotifPanelOpen = false;
   document.getElementById('pjNotifPanel')?.classList.remove('open');
 }
 function pjMarkAllRead() {
+  const unreadIds = pjNotifications.filter(n => !n.read).map(n => n.id);
   pjNotifications.forEach(n => n.read = true);
   localStorage.setItem('pj_notif', JSON.stringify(pjNotifications));
   pjUpdateNotifBell(); pjRenderNotifPanel();
+  // Persiste no Firestore
+  unreadIds.forEach(id => {
+    try { pjC('pj_notifications').doc(id).update({ read: true }).catch(()=>{}); } catch(_) {}
+  });
 }
 function pjClearNotifs() {
+  const ids = pjNotifications.map(n => n.id);
   pjNotifications = [];
   localStorage.setItem('pj_notif', JSON.stringify(pjNotifications));
   pjUpdateNotifBell(); pjRenderNotifPanel();
+  // Apaga no Firestore também (mas só as do usuário atual — listener vai
+  // ignorar via _pjNotifSeen)
+  ids.forEach(id => _pjNotifSeen.add(id));
+  ids.forEach(id => {
+    try { pjC('pj_notifications').doc(id).delete().catch(()=>{}); } catch(_) {}
+  });
 }
 
 // ── Workload por responsável ───────────────────────────
@@ -15486,7 +15591,9 @@ if (document.readyState === 'loading') {
   pjFocusInit();
 }
 
-// Detecta nova atribuição em tasks atualizadas via realtime
+// Detecta nova atribuição em tasks atualizadas via realtime.
+// Toca som localmente se EU fui atribuído. (A notificação no Firestore
+// já foi criada pelo remetente em pjUpdateTask quando ele atribuiu.)
 function pjMaybeNotifyAssignment(prevTask, newTask) {
   const uid = _auth.currentUser?.uid || _currentUser?.uid;
   if (!uid) return;
@@ -15495,9 +15602,12 @@ function pjMaybeNotifyAssignment(prevTask, newTask) {
   const wasAssigned = prevAssignees.includes(uid);
   const isAssigned = newAssignees.includes(uid);
   if (!wasAssigned && isAssigned) {
+    // Toca som imediatamente (UX) — listener de notif do Firestore vai
+    // tocar de novo se chegar primeiro, mas o Set _pjNotifSeen previne dupla
     pjPlayMentionSound();
     const title = `Você foi atribuído à "${newTask.title||''}"`;
     const subtitle = pjLists.find(l=>l.id===newTask.listId)?.name || '';
+    // Cria notif local imediata (pro próprio user que abriu a página)
     pjAddNotification({ type:'mention', title, subtitle, taskId: newTask.id });
     pjFireDesktopNotif(title, subtitle, newTask.id);
   }
@@ -19469,18 +19579,21 @@ function pjProcessMentionNotifs(text, senderName, senderUid) {
       (m.name||'').toLowerCase().split(' ')[0] === handle ||
       (m.email||'').toLowerCase().split('@')[0] === handle
     );
-    const targetUid = member?.uid || handle;
-    if (!mentioned.has(targetUid)) {
-      mentioned.add(targetUid);
-      pjAddNotification({
-        type: 'mention',
-        title: `${senderName} te mencionou`,
-        subtitle: `"${text.slice(0,60)}${text.length>60?'…':''}" em "${taskTitle}"`,
-        taskId: pjCurrentTaskId,
-        forUid: targetUid,
-        senderUid,
-      });
-    }
+    // Só notifica se achou o membro com UID válido — sem UID não dá pra
+    // entregar a notif via listener (forUid precisa ser UID real)
+    if (!member || !member.uid) continue;
+    const targetUid = member.uid;
+    if (mentioned.has(targetUid)) continue;
+    mentioned.add(targetUid);
+    pjAddNotification({
+      type: 'mention',
+      title: `${senderName} te mencionou`,
+      subtitle: `"${text.slice(0,60)}${text.length>60?'…':''}" em "${taskTitle}"`,
+      taskId: pjCurrentTaskId,
+      forUid: targetUid,
+      senderUid,
+      senderName,
+    });
   }
 }
 
@@ -19774,6 +19887,27 @@ async function pjUpdateTask(taskId, data) {
       if (added.length || removed.length) {
         pjLogActivity(taskId, { type:'assignee', added, removed });
       }
+      // 🔔 Cria notificação no Firestore pra cada usuário recém-atribuído
+      // (que NÃO seja o próprio remetente). O listener do destinatário
+      // vai pegar e tocar som + atualizar sino.
+      const myUid = _auth?.currentUser?.uid || _currentUser?.uid;
+      const me = pjMembers.find(m => m.uid === myUid);
+      const senderName = me?.name || me?.email?.split('@')[0] || 'Alguém';
+      const t = pjAllTasks.find(x => x.id === taskId);
+      const taskTitle = t?.title || 'uma tarefa';
+      const listName = pjLists.find(l => l.id === t?.listId)?.name || '';
+      added.forEach(targetUid => {
+        if (targetUid === myUid) return; // não notifica a si mesmo
+        pjAddNotification({
+          type: 'assigned',
+          title: `${senderName} te atribuiu a "${taskTitle}"`,
+          subtitle: listName,
+          taskId,
+          forUid: targetUid,
+          senderUid: myUid,
+          senderName,
+        });
+      });
     }
   } catch(_) {}
   // Fire webhook for status change
