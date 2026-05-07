@@ -5892,15 +5892,15 @@ body.pj-resizing-col * { cursor:col-resize !important; user-select:none !importa
   margin-right:2px;
 }
 
-/* Botão "+" pra adicionar subtarefa (aparece no hover da row) */
+/* Botão "+" pra adicionar subtarefa — sempre visível, fica em destaque no hover */
 .pj-list-row-subadd {
   display:inline-flex; align-items:center; justify-content:center;
   width:22px; height:22px; flex-shrink:0;
-  margin-left:auto;
+  margin-left:6px;
   border:1px dashed var(--border); border-radius:5px;
   background:transparent; color:var(--text3);
   cursor:pointer;
-  opacity:0;
+  opacity:.55;
   transition:all .15s;
 }
 .pj-list-tr:hover .pj-list-row-subadd { opacity:1; }
@@ -5908,6 +5908,7 @@ body.pj-resizing-col * { cursor:col-resize !important; user-select:none !importa
   border-color:var(--accent); border-style:solid;
   background:var(--accent); color:#fff;
   transform:scale(1.06);
+  opacity:1;
 }
 
 /* Subtarefa: linha visualmente recolhida + linha guia vertical */

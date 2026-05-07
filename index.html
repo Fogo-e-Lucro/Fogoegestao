@@ -2223,8 +2223,8 @@ function appStartUazapiPolling() {
 }
 
 /* ─── Presence (quem está online) ─────────────────────── */
-const APP_PRESENCE_HEARTBEAT_MS = 30 * 1000;
-const APP_PRESENCE_THRESHOLD_MS = 90 * 1000; // considera online se atualizou há <90s
+const APP_PRESENCE_HEARTBEAT_MS = 25 * 1000;  // heartbeat a cada 25s
+const APP_PRESENCE_THRESHOLD_MS = 60 * 1000;  // online se heartbeat há < 60s (e flag online=true)
 let _appPresenceHeartbeatTimer = null;
 let _appPresenceUnsub = null;
 let _appPresenceUsers = []; // [{uid,name,email,photoUrl,lastSeenMs}]
@@ -2233,6 +2233,9 @@ let _appPresencePopoverOpen = false;
 async function appPresenceWriteHeartbeat() {
   const u = firebase.auth?.()?.currentUser;
   if (!u || typeof _db === 'undefined') return;
+  // Não escreve heartbeat se aba está hidden — economiza writes e mantém
+  // o status offline mais rápido quando user fica em outra aba/app
+  if (typeof document !== 'undefined' && document.hidden) return;
   try {
     await _db.collection('app_presence').doc(u.uid).set({
       uid: u.uid,
@@ -2240,7 +2243,37 @@ async function appPresenceWriteHeartbeat() {
       email: u.email || '',
       photoUrl: u.photoURL || '',
       lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+      online: true, // flag explícita — vira false no beforeunload
     }, { merge: true });
+  } catch(e) {}
+}
+
+// Marca explicitamente OFFLINE (online=false) — mantém lastSeen antigo
+// pra registrar "visto por último". Usado em beforeunload e logout.
+async function appPresenceMarkOffline() {
+  const u = firebase.auth?.()?.currentUser;
+  if (!u || typeof _db === 'undefined') return;
+  try {
+    // Atualiza online=false e mantém o último lastSeen real (não atualiza)
+    await _db.collection('app_presence').doc(u.uid).update({ online: false });
+  } catch(e) {}
+}
+
+// Versão sync usando sendBeacon — mais confiável em beforeunload (browser
+// pode matar a aba antes de await terminar). Usa REST do Firestore via fetch.
+function appPresenceMarkOfflineSync() {
+  try {
+    const u = firebase.auth?.()?.currentUser;
+    if (!u) return;
+    const projectId = (typeof firebase !== 'undefined' && firebase.app?.()?.options?.projectId) || null;
+    if (!projectId) return;
+    // Tenta via sendBeacon na REST API do Firestore (best-effort)
+    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/app_presence/${u.uid}?updateMask.fieldPaths=online`;
+    const body = JSON.stringify({ fields: { online: { booleanValue: false } } });
+    if (navigator.sendBeacon) {
+      const blob = new Blob([body], { type: 'application/json' });
+      navigator.sendBeacon(url, blob);
+    }
   } catch(e) {}
 }
 
@@ -2248,27 +2281,37 @@ function appPresenceStartHeartbeat() {
   if (_appPresenceHeartbeatTimer) clearInterval(_appPresenceHeartbeatTimer);
   appPresenceWriteHeartbeat();
   _appPresenceHeartbeatTimer = setInterval(appPresenceWriteHeartbeat, APP_PRESENCE_HEARTBEAT_MS);
-  // Atualiza ao voltar pra aba
+  // Atualiza ao voltar pra aba; quando esconde, marca offline (poupando writes)
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) appPresenceWriteHeartbeat();
-  });
-  // Marca lastSeen final ao sair (sem deletar, pra manter "visto por último")
-  window.addEventListener('beforeunload', () => {
-    const u = firebase.auth?.()?.currentUser;
-    if (u && typeof _db !== 'undefined') {
-      try { _db.collection('app_presence').doc(u.uid).set({ lastSeen: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }); } catch(e) {}
+    if (document.hidden) {
+      // Aba escondida — marca offline (mas mantém lastSeen pra histórico)
+      appPresenceMarkOffline();
+    } else {
+      // Voltou pra aba — heartbeat imediato com online=true
+      appPresenceWriteHeartbeat();
     }
-    // Cleanup de listeners pra não vazar leituras se a aba só recarrega
+  });
+  // Marca offline ao sair (síncrono via sendBeacon pra ser confiável)
+  window.addEventListener('pagehide', () => {
+    appPresenceMarkOfflineSync();
     try { if (typeof pjCleanupListeners === 'function') pjCleanupListeners(); } catch(_){}
+  });
+  window.addEventListener('beforeunload', () => {
+    appPresenceMarkOfflineSync();
   });
 }
 
 // Recalcula isOnline com base no horário atual e re-ordena.
-// Usado tanto pelo snapshot quanto pelo timer de refresh (a cada 30s).
+// Online = flag explícita 'online: true' AND heartbeat há < threshold.
+// (flag online vira false em beforeunload/visibility-hidden via sendBeacon)
 function _appPresenceRecomputeOnline() {
   const now = Date.now();
   _appPresenceUsers.forEach(u => {
-    u.isOnline = (now - (u.lastSeenMs || 0)) < APP_PRESENCE_THRESHOLD_MS;
+    const recente = (now - (u.lastSeenMs || 0)) < APP_PRESENCE_THRESHOLD_MS;
+    // Se a flag online é explícita (false), respeita. Se ausente (legado),
+    // assume true e usa só o threshold de tempo.
+    const flagOk = u.online !== false;
+    u.isOnline = flagOk && recente;
   });
   _appPresenceUsers.sort((a,b) => (b.isOnline?1:0) - (a.isOnline?1:0) || b.lastSeenMs - a.lastSeenMs);
 }
@@ -2283,7 +2326,8 @@ function appPresenceStartListener() {
         const d = doc.data();
         const ts = d.lastSeen?.toMillis ? d.lastSeen.toMillis() : (d.lastSeen?.seconds ? d.lastSeen.seconds*1000 : 0);
         if (!ts) return;
-        _appPresenceUsers.push({ ...d, lastSeenMs: ts, isOnline: false });
+        // Preserva flag 'online' (explicit false significa saiu da página)
+        _appPresenceUsers.push({ ...d, lastSeenMs: ts, isOnline: false, online: d.online });
       });
       _appPresenceRecomputeOnline();
       appPresenceRender();
@@ -13449,6 +13493,7 @@ async function pjQuickAddSubtaskInline(parentId) {
     parentTaskId: parentId,
     customFieldValues: { ...(parent.customFieldValues || {}) },
     client: parent.client || null,
+    activity: [], attachments: [], // 🛡️ histórico/anexos limpos
     createdBy: uid,
     createdAt: pjNow(), updatedAt: pjNow(),
     order: Date.now(),
