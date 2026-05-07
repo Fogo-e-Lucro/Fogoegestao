@@ -14489,6 +14489,7 @@ function pjKanbanDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
 async function pjKanbanDrop(e, listId, statusId) {
   e.preventDefault(); e.currentTarget.classList.remove('drag-over');
   const taskId = _pjDragTaskId;
+  console.log('🔥 [pjKanbanDrop] taskId:', taskId, '→ listId:', listId, 'statusId:', statusId);
   if (!taskId) return;
   _pjDragTaskId = null;
 
@@ -15714,6 +15715,7 @@ function pjMaybeNotifyAssignment(prevTask, newTask) {
 // Use em paths que não passam por pjToggleTaskDone/pjChangeTaskStatus (kanban drop,
 // list drop, pjUpdateTask). Devolve { willClose, wasClosed } pra quem precise persistir.
 function pjAfterStatusChange(task, prevStatusId, newStatusId) {
+  console.log('🔥 [pjAfterStatusChange] chamado:', { taskTitle:task?.title, prevStatusId, newStatusId });
   if (!task) return { willClose:false, wasClosed:false };
   const list = pjLists.find(l => l.id === task.listId);
   const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
@@ -15753,6 +15755,44 @@ function pjAfterStatusChange(task, prevStatusId, newStatusId) {
 // Modelo: list.automations = [{
 //   id, name, enabled, trigger:{type, statusId}, actions:[{type, userId, message}]
 // }]
+
+// 🐛 DEBUG: roda do console pra ver o estado das automações
+// Uso: pjDebugAuto('produção')  — ou listId
+window.pjDebugAuto = function(listIdOrName) {
+  if (!listIdOrName) {
+    console.log('🐛 Listas com automações:');
+    pjLists.forEach(l => {
+      const n = (l.automations||[]).length;
+      if (n > 0) console.log(`  • ${l.name} (${l.id}): ${n} regra(s)`, l.automations);
+    });
+    return;
+  }
+  const list = pjLists.find(l => l.id === listIdOrName) ||
+               pjLists.find(l => (l.name||'').toLowerCase().includes(String(listIdOrName).toLowerCase()));
+  if (!list) { console.error('Lista não encontrada:', listIdOrName); return; }
+  console.log('🐛 Lista:', list.name, '(id:', list.id, ')');
+  console.log('🐛 Statuses:', list.statuses?.map(s => ({id:s.id, name:s.name})) || 'usando default');
+  console.log('🐛 Automations:', list.automations || 'NENHUMA');
+  console.log('🐛 pjMembers:', pjMembers.map(m => ({uid:m.uid||'(SEM UID)', name:m.name, email:m.email})));
+  return list;
+};
+
+// 🐛 DEBUG: simula uma mudança de status pra testar a automação manualmente
+// Uso: pjTestAuto('produção', 'taskId', 'análise')
+window.pjTestAuto = function(listIdOrName, taskIdOrTitle, statusName) {
+  const list = pjLists.find(l => l.id === listIdOrName) ||
+               pjLists.find(l => (l.name||'').toLowerCase().includes(String(listIdOrName).toLowerCase()));
+  if (!list) { console.error('Lista não encontrada:', listIdOrName); return; }
+  const task = pjAllTasks.find(t => t.id === taskIdOrTitle) ||
+               pjAllTasks.find(t => t.listId === list.id && (t.title||'').toLowerCase().includes(String(taskIdOrTitle).toLowerCase()));
+  if (!task) { console.error('Tarefa não encontrada na lista:', taskIdOrTitle); return; }
+  const status = (list.statuses||[]).find(s => s.id === statusName) ||
+                 (list.statuses||[]).find(s => (s.name||'').toLowerCase().includes(String(statusName).toLowerCase()));
+  if (!status) { console.error('Status não encontrado:', statusName, '— statuses:', list.statuses); return; }
+  console.log('🐛 Disparando automação manual:', { task:task.title, statusName:status.name, statusId:status.id });
+  pjRunAutomations({ event:'status_changed', task, list, prevStatusId:'manual_test', newStatusId:status.id });
+};
+
 async function pjRunAutomations(ctx) {
   const { event, task, list, prevStatusId, newStatusId } = ctx;
   console.log('[automation] pjRunAutomations chamado:', { event, taskId: task?.id, listName: list?.name, regras: list?.automations?.length || 0, newStatusId });
