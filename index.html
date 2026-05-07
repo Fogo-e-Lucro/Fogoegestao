@@ -13800,7 +13800,7 @@ async function pjAddNotification(notif) {
       // Filtra undefineds (Firestore não aceita)
       Object.keys(data).forEach(k => { if (data[k] === undefined) delete data[k]; });
       await pjC('pj_notifications').doc(id).set(data);
-      console.debug('[pj] notif persistida no Firestore pra forUid:', notif.forUid, '— título:', notif.title);
+      console.log('[pj] notif persistida no Firestore pra forUid:', notif.forUid, '— título:', notif.title);
     } catch(e) {
       console.error('[pj] ERRO ao persistir notif:', e, 'data:', notif);
       if (typeof showToast === 'function') {
@@ -15775,6 +15775,66 @@ window.pjDebugAuto = function(listIdOrName) {
   console.log('🐛 Automations:', list.automations || 'NENHUMA');
   console.log('🐛 pjMembers:', pjMembers.map(m => ({uid:m.uid||'(SEM UID)', name:m.name, email:m.email})));
   return list;
+};
+
+// 🐛 DEBUG: testa escrita direta na coleção pj_notifications
+// Uso: pjTestWriteNotif() — confirma se as Firestore rules permitem
+window.pjTestWriteNotif = async function(targetUid) {
+  const id = 'test_' + Date.now();
+  const data = {
+    type: 'test',
+    title: '🧪 Teste manual de escrita',
+    subtitle: 'pjTestWriteNotif',
+    forUid: targetUid || 'fake_target_uid',
+    senderUid: _auth?.currentUser?.uid || 'no_auth',
+    ts: pjNow(),
+    read: false,
+  };
+  console.log('🧪 Tentando escrever em pj_notifications:', { id, data });
+  try {
+    await pjC('pj_notifications').doc(id).set(data);
+    console.log('✅ ESCRITA OK — id:', id);
+    console.log('💡 Agora verifique se aparece com pjListAllNotifs()');
+    return id;
+  } catch(e) {
+    console.error('❌ ESCRITA FALHOU — provável regra do Firestore bloqueando:', e);
+    console.error('  → message:', e.message);
+    console.error('  → code:', e.code);
+    return null;
+  }
+};
+
+// 🐛 DEBUG: lista as últimas N notificações na coleção (qualquer destinatário)
+// Uso: pjListAllNotifs() — útil pra ver se a notif foi persistida
+window.pjListAllNotifs = async function(n = 20) {
+  try {
+    const snap = await pjC('pj_notifications').limit(n).get();
+    const notifs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    console.log(`🔍 Últimas ${notifs.length} notificações em pj_notifications:`);
+    notifs.forEach(n => {
+      const ts = n.ts?.toMillis ? new Date(n.ts.toMillis()).toLocaleTimeString() : '?';
+      console.log(`  [${ts}] ${n.title} → forUid: ${n.forUid} (read: ${n.read})`);
+    });
+    return notifs;
+  } catch(e) {
+    console.error('❌ Falha ao listar — regra de leitura ou conexão:', e);
+    return null;
+  }
+};
+
+// 🐛 DEBUG: lista MINHAS notificações no Firestore (pra confirmar listener)
+window.pjListMyNotifs = async function() {
+  const uid = _auth?.currentUser?.uid || _currentUser?.uid;
+  if (!uid) { console.error('Sem uid'); return; }
+  try {
+    const snap = await pjC('pj_notifications').where('forUid','==',uid).get();
+    const notifs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    console.log(`🔍 Minhas notifs (forUid=${uid}): ${notifs.length}`);
+    notifs.forEach(n => console.log(`  • ${n.title} (${n.read?'lida':'NÃO lida'})`));
+    return notifs;
+  } catch(e) {
+    console.error('❌', e);
+  }
 };
 
 // 🐛 DEBUG: simula uma mudança de status pra testar a automação manualmente
@@ -18930,7 +18990,7 @@ async function pjOpenTask(taskId) {
                     : (typeof b.createdAt === 'number' ? b.createdAt : 0);
           return tsA - tsB;
         });
-      console.debug('[pj] comentários carregados:', pjComments.length, 'pra task', taskId);
+      console.log('[pj] comentários carregados:', pjComments.length, 'pra task', taskId);
       pjRenderActivity();
     }, (err) => {
       console.warn('[pj] erro listener comentários:', err);
@@ -19330,7 +19390,7 @@ async function pjDownloadFile(src, filename) {
       _pjTriggerDl(objUrl, filename, true);
       return;
     } catch(e) {
-      console.debug('[pj] canvas download falhou, tentando próxima estratégia:', e);
+      console.log('[pj] canvas download falhou, tentando próxima estratégia:', e);
     }
   }
 
