@@ -14403,20 +14403,52 @@ function pjBuildKanban(listId, statuses, tasks) {
            ondragleave="pjKanbanDragLeave(event)">`;
     stTasks.forEach(t => {
       const due = t.dueDate ? pjDueCls(t.dueDate, t.dueTime) : null;
+      const dueLabelFull = due ? (t.dueTime ? `${due.label} ${t.dueTime}` : due.label) : null;
       const assigneeHtml = (t.assignees||[]).slice(0,3).map(uid => pjAvatarHtml(uid)).join('');
+      const extraAssigneesCount = Math.max(0, (t.assignees||[]).length - 3);
       const tagsHtml = pjTaskTagsHtml(t, { small: true });
       const staleHtml = pjStalePillHtml(t);
-      h += `<div class="pj-card" draggable="true" data-priority="${t.priority||'low'}"
+      const done = pjIsDone(t);
+      // Cliente: logo/cor da BD
+      const clientName = (typeof pjResolveTaskClient === 'function') ? pjResolveTaskClient(t) : (t.client || null);
+      let clientHtml = '';
+      if (clientName) {
+        const cLogo = (typeof getClientLogo === 'function') ? getClientLogo(clientName) : null;
+        const cColor = (typeof getClientColor === 'function') ? getClientColor(clientName) : null;
+        const dot = cLogo
+          ? `<img src="${cLogo}" alt="" class="pj-card-client-logo">`
+          : `<span class="pj-card-client-dot" style="background:${cColor||'#6366f1'}"></span>`;
+        clientHtml = `<span class="pj-card-client" title="${escHtml(clientName)}">${dot}<span>${escHtml(clientName)}</span></span>`;
+      }
+      // Subtarefas e comentários (contadores)
+      const subtaskCount = (pjAllTasks.filter(s => s.parentTaskId === t.id) || []).length;
+      const subtaskDone = (pjAllTasks.filter(s => s.parentTaskId === t.id && pjIsDone(s)) || []).length;
+      const attachCount = Array.isArray(t.attachments) ? t.attachments.length : 0;
+      // Prioridade pill compacta
+      const prio = t.priority && t.priority !== 'low' && t.priority !== 'normal'
+        ? `<span class="pj-card-prio ${t.priority}" title="${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}"></span>`
+        : '';
+      const recur = t.recurrence?.pattern ? `<span class="pj-card-recur" title="${pjRecurrenceLabel(t.recurrence)}">🔁</span>` : '';
+      h += `<div class="pj-card ${done?'done':''}" draggable="true" data-priority="${t.priority||'low'}"
                ondragstart="pjKanbanDragStart(event,'${t.id}')"
                ondragend="pjKanbanDragEnd(event)"
                onclick="pjOpenTask('${t.id}')">
-          <div class="pj-card-title">${escHtml(t.title)}</div>
+          <div class="pj-card-top">
+            ${prio}
+            <div class="pj-card-title">${escHtml(t.title||'(sem título)')}</div>
+            ${recur}
+          </div>
           ${tagsHtml || staleHtml ? `<div class="pj-card-tags">${tagsHtml}${staleHtml}</div>` : ''}
+          ${clientHtml ? `<div class="pj-card-client-wrap">${clientHtml}</div>` : ''}
           <div class="pj-card-footer">
-            ${t.priority&&t.priority!=='low' ? `<span class="pj-priority ${t.priority}">${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}</span>` : ''}
-            ${due ? `<span class="pj-task-due ${due.cls}">${due.label}</span>` : ''}
+            ${due ? `<span class="pj-task-due ${due.cls}" title="${escHtml(dueLabelFull||'')}"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="margin-right:3px;vertical-align:-1px"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6h12M5 1v3M11 1v3"/></svg>${dueLabelFull}</span>` : ''}
+            ${subtaskCount ? `<span class="pj-card-meta-pill" title="Subtarefas">☑ ${subtaskDone}/${subtaskCount}</span>` : ''}
+            ${attachCount ? `<span class="pj-card-meta-pill" title="Anexos">📎 ${attachCount}</span>` : ''}
             <span style="flex:1"></span>
-            <div class="pj-task-assignees">${assigneeHtml}</div>
+            <div class="pj-task-assignees">
+              ${assigneeHtml}
+              ${extraAssigneesCount > 0 ? `<span class="pj-card-assignee-more">+${extraAssigneesCount}</span>` : ''}
+            </div>
           </div>
         </div>`;
     });
