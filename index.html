@@ -1658,8 +1658,13 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             <div class="pj-subtask-list" id="pjSubtaskList"></div>
             <div class="pj-add-subtask-row" id="pjAddSubtaskRow">
               <div class="pj-subtask-check" style="opacity:.3"></div>
-              <input class="pj-add-subtask-input" id="pjSubtaskInput" placeholder="Nova subtarefa… (Enter para salvar)"
+              <input class="pj-add-subtask-input" id="pjSubtaskInput" placeholder="Nova subtarefa… (Enter pra adicionar)"
                 onkeydown="pjSubtaskInputKey(event)" onfocus="this.placeholder='Nova subtarefa…'">
+              <button class="pj-add-subtask-full-btn" type="button"
+                onclick="pjAddSubtask({openFull:true})"
+                title="Criar e abrir editor completo (com prazo, prioridade, anexos, comentários, etc)">
+                ✨ Editor completo
+              </button>
             </div>
           </div>
         </div>
@@ -19104,7 +19109,26 @@ function pjRenderTaskModal(task) {
   const st = statuses.find(s => s.id === (task.statusId||statuses[0].id)) || statuses[0];
 
   document.getElementById('pjModalSpaceName').textContent = sp?.name || '—';
-  document.getElementById('pjModalListName').textContent  = list?.name || '—';
+  // 🌳 Breadcrumb: se é subtarefa, mostra cadeia completa (lista › avô › pai)
+  // pra contexto. Cada nível navegável.
+  const listEl = document.getElementById('pjModalListName');
+  if (task.parentTaskId) {
+    // Constrói cadeia de pais: [pai, avô, ...] subindo até chegar no top
+    const ancestors = [];
+    let cursor = pjAllTasks.find(x => x.id === task.parentTaskId);
+    let safety = 8; // anti-loop em caso de dado bugado
+    while (cursor && safety-- > 0) {
+      ancestors.unshift(cursor);
+      if (!cursor.parentTaskId) break;
+      cursor = pjAllTasks.find(x => x.id === cursor.parentTaskId);
+    }
+    const crumbHtml = (list?.name ? escHtml(list.name) : '—') +
+      ancestors.map(a => ` <span class="sep">›</span> <span class="pj-modal-crumb-parent" onclick="pjOpenTask('${a.id}')" title="Abrir tarefa pai">${escHtml(a.title || '(sem título)')}</span>`).join('') +
+      ` <span class="sep">›</span> <span style="color:var(--accent);font-weight:600;">subtarefa</span>`;
+    listEl.innerHTML = crumbHtml;
+  } else {
+    listEl.textContent = list?.name || '—';
+  }
 
   const titleEl = document.getElementById('pjModalTitle');
   titleEl.value = task.title || '';
@@ -19270,66 +19294,45 @@ function pjRenderSubtasks(parentId) {
 
   if (!subtasks.length) { el.innerHTML = ''; return; }
 
-  // Busca a lista para pegar os campos personalizados
-  const parentTask = pjAllTasks.find(x => x.id === parentId);
-  const listObj = parentTask ? pjLists.find(l => l.id === parentTask.listId) : null;
-  const fields = listObj?.customFields || [];
-
   el.innerHTML = subtasks.map(t => {
     const isDone = pjIsDone(t);
     const due = t.dueDate ? pjDueCls(t.dueDate, t.dueTime) : null;
-    const assignees = (t.assignees||[]).slice(0,2).map(uid=>pjAvatarHtml(uid)).join('');
+    const dueLabel = due ? (t.dueTime ? `${due.label} ${t.dueTime}` : due.label) : null;
+    const assignees = (t.assignees||[]).slice(0,3).map(uid=>pjAvatarHtml(uid)).join('');
+    const list = pjLists.find(l => l.id === t.listId);
+    const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
+    const st = statuses.find(s => s.id === (t.statusId||statuses[0].id)) || statuses[0];
 
-    // Campos personalizados inline
-    let fieldsHtml = '';
-    if (fields.length) {
-      fieldsHtml = '<div class="pj-subtask-fields">';
-      fields.forEach(f => {
-        const val = (t.customFieldValues || {})[f.id] || '';
-        let inputEl = '';
-        if (f.type === 'select' || f.type === 'client') {
-          const opts = f.type === 'client'
-            ? ((typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : [])
-            : (f.options || []);
-          inputEl = `<select class="pj-subtask-field-select" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)">
-            <option value="">—</option>
-            ${opts.map(o=>`<option ${o===val?'selected':''}>${escHtml(o)}</option>`).join('')}
-          </select>`;
-        } else if (f.type === 'address') {
-          const addrId = `pjAddr_${t.id}_${f.id}_sub`;
-          inputEl = `<div style="position:relative;display:inline-flex;align-items:center;">
-            <input class="pj-subtask-field-val" id="${addrId}" type="text" value="${escHtml(String(val))}"
-              placeholder="—" autocomplete="off"
-              oninput="pjAddrInput(event,'${t.id}','${f.id}')"
-              onblur="setTimeout(()=>pjAddrHideSugg('${addrId}'),200)">
-            <div class="pj-addr-suggestions" id="${addrId}_sugg" style="min-width:220px;"></div>
-          </div>`;
-        } else {
-          const itype = f.type==='date'?'date':(f.type==='number'?'number':'text');
-          inputEl = `<input class="pj-subtask-field-val" type="${itype}" value="${escHtml(String(val))}"
-            placeholder="—" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)">`;
-        }
-        fieldsHtml += `<div class="pj-subtask-field-chip">
-          <span class="pj-subtask-field-label">${escHtml(f.name)}:</span>${inputEl}
-        </div>`;
-      });
-      fieldsHtml += '</div>';
-    }
+    // Indicadores ricos: prioridade, recorrência, anexos, sub-subtarefas, comentários
+    const PRIO_ICON = { urgent:'🔴', high:'🟠', normal:null, low:null };
+    const prioIcon = PRIO_ICON[t.priority];
+    const recurIcon = t.recurrence?.pattern ? '🔁' : null;
+    const attachCount = Array.isArray(t.attachments) ? t.attachments.length : 0;
+    const subSubCount = pjAllTasks.filter(x => x.parentTaskId === t.id).length;
+    const subSubDone  = pjAllTasks.filter(x => x.parentTaskId === t.id && pjIsDone(x)).length;
+    const indicators = [
+      prioIcon ? `<span class="pj-subtask-ind" title="Prioridade ${t.priority}">${prioIcon}</span>` : '',
+      recurIcon ? `<span class="pj-subtask-ind" title="${pjRecurrenceLabel ? pjRecurrenceLabel(t.recurrence) : 'Recorrente'}">${recurIcon}</span>` : '',
+      attachCount ? `<span class="pj-subtask-ind" title="${attachCount} anexo(s)">📎 ${attachCount}</span>` : '',
+      subSubCount ? `<span class="pj-subtask-ind" title="${subSubDone}/${subSubCount} subtarefas aninhadas">↳ ${subSubDone}/${subSubCount}</span>` : '',
+    ].filter(Boolean).join('');
 
-    return `<div class="pj-subtask-item" data-id="${t.id}" style="flex-direction:column;align-items:stretch;gap:0;">
-      <div style="display:flex;align-items:center;gap:8px;">
+    return `<div class="pj-subtask-item pj-subtask-rich ${isDone?'done':''}" data-id="${t.id}">
+      <div class="pj-subtask-row">
         <div class="pj-subtask-check ${isDone?'done':''}" onclick="event.stopPropagation();pjToggleSubtaskDone('${t.id}')">
           ${isDone?'✓':''}
         </div>
-        <span class="pj-subtask-text ${isDone?'done':''}" onclick="pjOpenTask('${t.id}')"
-              title="Abrir subtarefa">${escHtml(t.title||'(sem título)')}</span>
+        <span class="pj-subtask-text ${isDone?'done':''}" onclick="pjOpenTask('${t.id}')" title="Abrir editor completo">${escHtml(t.title||'(sem título)')}</span>
+        ${indicators ? `<span class="pj-subtask-indicators">${indicators}</span>` : ''}
         <div class="pj-subtask-meta">
-          ${due ? `<span class="pj-task-due ${due.cls}" style="font-size:10px;">${due.label}</span>` : ''}
-          ${assignees ? `<span style="display:flex;gap:2px;">${assignees}</span>` : ''}
+          <button type="button" class="pj-subtask-status-pill" style="--c:${st.color}" onclick="event.stopPropagation();pjOpenStatusMenu(event,'${t.id}')" title="Trocar status">
+            <span class="pj-status-pill-dot"></span>${escHtml(st.name)}
+          </button>
+          ${dueLabel ? `<span class="pj-task-due ${due.cls}" style="font-size:10.5px;">${escHtml(dueLabel)}</span>` : ''}
+          ${assignees ? `<span style="display:inline-flex;gap:2px;">${assignees}</span>` : ''}
         </div>
         <button class="pj-subtask-del" title="Excluir subtarefa" onclick="event.stopPropagation();pjDeleteSubtask('${t.id}','${parentId}')">×</button>
       </div>
-      ${fieldsHtml}
     </div>`;
   }).join('');
 }
@@ -19720,23 +19723,39 @@ async function pjDeleteSubtask(taskId, parentId) {
   pjRenderSubtasks(parentId);
 }
 
-async function pjAddSubtask() {
+async function pjAddSubtask(opts) {
   if (!pjCurrentTaskId) return;
   const input = document.getElementById('pjSubtaskInput');
-  const title = (input?.value||'').trim() || 'Nova subtarefa';
+  const inputVal = (input?.value||'').trim();
+  // Modo 1 (rápido — Enter no input): cria com o título digitado e fica nas subtarefas
+  // Modo 2 (botão "Nova" / opts.openFull): cria 'Nova subtarefa' e abre modal completo
+  const wantsFullEdit = opts?.openFull;
+  const title = inputVal || (wantsFullEdit ? 'Nova subtarefa' : 'Nova subtarefa');
   if (input) input.value = '';
 
   const parentTask = pjAllTasks.find(t => t.id === pjCurrentTaskId);
   if (!parentTask) return;
   const uid = _auth?.currentUser?.uid || _currentUser?.uid;
   const id  = pjId();
+  // Subtarefa HERDA do pai: listId, spaceId, customFieldValues, client.
+  // Status sempre vai pra inicial da lista (pra começar do zero).
+  // Outros campos (dueDate, priority, assignees, recurrence) ficam vazios
+  // pra subtarefa ter SEU próprio prazo/prioridade/responsável.
+  const parentList = pjLists.find(l => l.id === parentTask.listId);
   const data = {
-    id, title, description:'', listId:parentTask.listId,
-    spaceId: parentTask.spaceId || pjLists.find(l=>l.id===parentTask.listId)?.spaceId || '',
-    statusId: (pjLists.find(l=>l.id===parentTask.listId)?.statuses||PJ_DEFAULT_STATUSES)[0].id,
-    assignees:[], dueDate:null, priority:null,
-    parentTaskId:pjCurrentTaskId, customFieldValues:{ ...(parentTask.customFieldValues || {}) },
-    createdBy:uid, createdAt:pjNow(), updatedAt:pjNow(), order:Date.now(),
+    id, title, description:'',
+    listId: parentTask.listId,
+    spaceId: parentTask.spaceId || parentList?.spaceId || '',
+    statusId: (parentList?.statuses||PJ_DEFAULT_STATUSES)[0].id,
+    assignees: [], // próprios responsáveis
+    dueDate: null, dueTime: null, // próprio prazo
+    priority: 'normal', // própria prioridade
+    parentTaskId: pjCurrentTaskId,
+    customFieldValues: { ...(parentTask.customFieldValues || {}) },
+    client: parentTask.client || null, // herda cliente do pai (override permitido)
+    createdBy: uid,
+    createdAt: pjNow(), updatedAt: pjNow(),
+    order: Date.now(),
   };
   // Optimistic local add (works in demo/offline)
   pjAllTasks.push(data);
@@ -19746,10 +19765,15 @@ async function pjAddSubtask() {
   pjRenderSidebar();
   // Ensure subtask section is open
   if (!pjSubtaskOpen) pjToggleSubtasks();
-  // Focus input for rapid entry
-  if (input) input.focus();
   // Persist to Firestore
   try { await pjC('pj_tasks').doc(id).set({ ...data, id:undefined }); } catch(e){}
+  // Modo 2: abre o editor completo da subtarefa recém-criada (mesma UX do '+ Tarefa')
+  if (wantsFullEdit) {
+    setTimeout(() => { if (typeof pjOpenTask === 'function') pjOpenTask(id); }, 80);
+  } else if (input) {
+    // Modo 1 (rápido): foca no input pra digitar a próxima subtarefa
+    input.focus();
+  }
 }
 
 function pjRenderActivityComment(c, isReply) {
