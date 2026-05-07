@@ -14851,8 +14851,26 @@ function pjTaskRowHtml(t) {
   const st = statuses.find(s => s.id === (t.statusId||statuses[0].id)) || statuses[0];
   const done = pjIsDone(t);
   const due = t.dueDate ? pjDueCls(t.dueDate, t.dueTime) : null;
+  // Inclui horário no rótulo se tiver dueTime ('Hoje 14:00')
+  const dueLabel = due ? (t.dueTime ? `${due.label} ${t.dueTime}` : due.label) : null;
   const subtaskCount = (pjAllTasks.filter(s => s.parentTaskId === t.id) || []).length;
+  const subtaskDone = (pjAllTasks.filter(s => s.parentTaskId === t.id && pjIsDone(s)) || []).length;
   const assigneeHtml = (t.assignees||[]).slice(0,3).map(uid=>pjAvatarHtml(uid)).join('');
+  // Recorrência: badge 🔁 com tooltip do padrão
+  const recurBadge = t.recurrence?.pattern
+    ? `<span class="pj-recur-badge" title="${escHtml(typeof pjRecurrenceLabel==='function' ? pjRecurrenceLabel(t.recurrence) : 'Recorrente')}">🔁</span>`
+    : '';
+  // Cliente (logo / cor da BD)
+  const clientName = (typeof pjResolveTaskClient === 'function') ? pjResolveTaskClient(t) : (t.client || null);
+  let clientPill = '';
+  if (clientName) {
+    const cLogo = (typeof getClientLogo === 'function') ? getClientLogo(clientName) : null;
+    const cColor = (typeof getClientColor === 'function') ? getClientColor(clientName) : null;
+    const dot = cLogo
+      ? `<img src="${cLogo}" alt="" class="pj-task-client-logo">`
+      : `<span class="pj-task-client-dot" style="background:${cColor||'#6366f1'}"></span>`;
+    clientPill = `<span class="pj-task-client-mini" title="Cliente: ${escHtml(clientName)}">${dot}</span>`;
+  }
   return `<div class="pj-task-row ${done?'done-row':''}" data-priority="${t.priority||'low'}" data-task-id="${t.id}"
     draggable="true"
     ondragstart="pjListDragStart(event,'${t.id}')"
@@ -14862,13 +14880,17 @@ function pjTaskRowHtml(t) {
       ${done?'✓':''}
     </div>
     <div class="pj-task-title-cell">
-      <div class="pj-task-title-text ${done?'done':''}">${escHtml(t.title||'(sem título)')}</div>
-      ${subtaskCount>0?`<div class="pj-subtask-count">↳ ${subtaskCount} subtarefa${subtaskCount>1?'s':''}</div>`:''}
+      <div class="pj-task-title-text ${done?'done':''}">${escHtml(t.title||'(sem título)')} ${recurBadge}</div>
+      ${subtaskCount>0?`<div class="pj-subtask-count">↳ ${subtaskDone}/${subtaskCount} subtarefa${subtaskCount>1?'s':''}</div>`:''}
     </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+    <div class="pj-task-row-meta">
+      ${clientPill}
       ${t.priority&&t.priority!=='low'?`<span class="pj-priority ${t.priority}">${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}</span>`:''}
+      ${dueLabel?`<span class="pj-task-due ${due.cls}" title="Vencimento">${escHtml(dueLabel)}</span>`:''}
       <button type="button" class="pj-status-dot" style="--c:${st.color}" onclick="event.stopPropagation();pjOpenStatusMenu(event,'${t.id}')" title="${escHtml(st.name)} — clique pra trocar"></button>
-      ${due?`<span class="pj-task-due ${due.cls}">${due.label}</span>`:''}
+      <button type="button" class="pj-task-row-status-pill" style="--c:${st.color}" onclick="event.stopPropagation();pjOpenStatusMenu(event,'${t.id}')" title="${escHtml(st.name)} — clique pra trocar">
+        <span class="pj-task-row-status-dot"></span><span class="pj-task-row-status-label">${escHtml(st.name)}</span>
+      </button>
       <div class="pj-task-assignees">${assigneeHtml}</div>
     </div>
   </div>`;
