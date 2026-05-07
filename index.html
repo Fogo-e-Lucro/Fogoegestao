@@ -16390,22 +16390,11 @@ async function pjToggleTaskDone(taskId) {
   else { delete t.completedAt; delete t.archived; }
   if (pjTasks[t.listId]) pjTasks[t.listId] = pjTasks[t.listId].map(x => x.id===t.id ? t : x);
   pjAllTasks = pjAllTasks.map(x => x.id===t.id ? t : x);
-  // Log da mudança (concluiu / reabriu)
+  // Log da mudança + DISPARA AUTOMAÇÕES (mesma rota que kanban drop)
   try {
-    const prevSt = statuses.find(s => s.id === prevStatusId);
-    const newSt  = statuses.find(s => s.id === newStatusId);
-    pjLogActivity(t.id, {
-      type: 'status',
-      fromName: prevSt?.name || null,
-      toName:   newSt?.name  || null,
-      fromColor: prevSt?.color || null,
-      toColor:   newSt?.color  || null,
-    });
-  } catch(_) {}
-  // Recorrência: ao concluir, gera próxima ocorrência
-  if (!isDone && t.recurrence?.pattern && t.dueDate) pjSpawnNextRecurrence(t);
+    pjAfterStatusChange(t, prevStatusId, newStatusId);
+  } catch(e) { console.warn('[pjToggleTaskDone] erro pjAfterStatusChange', e); }
   // Celebração: confete na origem do clique pra tarefas urgent/high (extra)
-  // — som + popup de progresso são feitos por pjOnTaskClosed pra TODAS as tarefas
   if (!isDone && (t.priority === 'urgent' || t.priority === 'high')) {
     const checkEl = document.querySelector(`[data-task-id="${t.id}"] .pj-task-check, [data-task-id="${t.id}"] .pj-row-check`);
     let ox, oy;
@@ -16419,9 +16408,8 @@ async function pjToggleTaskDone(taskId) {
     try { pjHaptic(isDone ? 'light' : 'medium'); } catch(_) {}
   }
   pjRenderMain(); pjRenderSidebar();
-  // Pop-up de progresso do dia (parabéns / tudo pronto)
-  if (!isDone) { try { pjOnTaskClosed(t); } catch(e) {} }
-  if (!isDone) pjFireWebhook('task.completed', pjTaskPayload(t));
+  // OBS: pjOnTaskClosed, pjSpawnNextRecurrence, pjFireWebhook e
+  // pjLogActivity já foram chamados dentro de pjAfterStatusChange.
   try {
     const upd = { statusId: newStatusId, updatedAt:pjNow() };
     if (!isDone) upd.completedAt = pjNow();
@@ -16478,22 +16466,14 @@ async function pjChangeTaskStatus(taskId, newStatusId) {
   }
   if (pjTasks[t.listId]) pjTasks[t.listId] = pjTasks[t.listId].map(x => x.id === t.id ? t : x);
   pjAllTasks = pjAllTasks.map(x => x.id === t.id ? t : x);
-  // Log da mudança de status
+  // Log da mudança + DISPARA AUTOMAÇÕES (mesma rota que kanban drop)
   try {
-    const prevSt = statuses.find(s => s.id === prevStatusId);
-    pjLogActivity(t.id, {
-      type: 'status',
-      fromName: prevSt?.name || null,
-      toName:   newSt?.name  || null,
-      fromColor: prevSt?.color || null,
-      toColor:   newSt?.color  || null,
-    });
-  } catch(_) {}
+    pjAfterStatusChange(t, prevStatusId, newStatusId);
+  } catch(e) { console.warn('[pjChangeTaskStatus] erro pjAfterStatusChange', e); }
   // Recorrência: ao concluir, gera próxima ocorrência
   if (willClose && !wasClosed && t.recurrence?.pattern && t.dueDate) pjSpawnNextRecurrence(t);
   pjRenderMain(); pjRenderSidebar();
-  // Pop-up de progresso do dia (parabéns / tudo pronto)
-  if (willClose && !wasClosed) { try { pjOnTaskClosed(t); } catch(e) {} }
+  // Pop-up de progresso do dia (parabéns / tudo pronto) — pjAfterStatusChange já chama pjOnTaskClosed via willClose, mas mantemos compat
   if (willClose && !wasClosed) pjFireWebhook('task.completed', pjTaskPayload(t));
 
   // Persiste
