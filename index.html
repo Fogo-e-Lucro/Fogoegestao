@@ -14758,6 +14758,8 @@ function pjAvatarHtml(key) {
 async function pjQuickCreateTask(listId, statusId) {
   const list = pjLists.find(l => l.id === listId);
   if (!list) return;
+  // Memoriza pra próximo uso do FAB de qualquer tela
+  if (typeof pjSetLastUsedListId === 'function') pjSetLastUsedListId(listId);
   const statuses = list.statuses || PJ_DEFAULT_STATUSES;
   const stId = statusId || statuses[0].id;
   const uid = _auth.currentUser?.uid || _currentUser?.uid;
@@ -15405,32 +15407,56 @@ function pjRelativeTime(ts) {
 }
 
 // ── Quick-add FAB ──
+// Helpers pra "última lista usada" — persistido em localStorage
+function pjGetLastUsedListId() {
+  try {
+    const id = localStorage.getItem('pj_last_list');
+    if (!id) return null;
+    // Confere se a lista ainda existe e o user pode ver
+    const list = pjLists.find(l => l.id === id);
+    if (!list) return null;
+    if (typeof userIsAdmin === 'function' && !userIsAdmin()) {
+      if (typeof userCanSeeSpace === 'function' && !userCanSeeSpace(list.spaceId)) return null;
+    }
+    return id;
+  } catch(_) { return null; }
+}
+function pjSetLastUsedListId(id) {
+  try { if (id) localStorage.setItem('pj_last_list', id); } catch(_) {}
+}
+
 function pjOpenFabModal() {
-  // ATALHO: se o usuário está numa lista, cria direto lá e abre o modal
-  // completo (mesmo comportamento do botão "+ Tarefa").
+  // ATALHO 1: dentro de uma lista → cria direto lá
   if (pjCurrentView && pjCurrentView.type === 'list' && pjCurrentView.id) {
     if (typeof pjQuickCreateTask === 'function') {
+      pjSetLastUsedListId(pjCurrentView.id);
       pjQuickCreateTask(pjCurrentView.id);
       return;
     }
   }
-  // Caso contrário (dashboard, por cliente, timeline, etc): abre modal
-  // pequeno só pra ESCOLHER a lista. Após escolher, vai pro modal completo.
+  // ATALHO 2: usa a ÚLTIMA lista usada (sem perguntar)
+  const lastId = pjGetLastUsedListId();
+  if (lastId && typeof pjQuickCreateTask === 'function') {
+    pjQuickCreateTask(lastId);
+    return;
+  }
+  // ATALHO 3: pega a PRIMEIRA lista disponível pro usuário
+  const firstList = pjLists.find(l => {
+    if (typeof userIsAdmin === 'function' && userIsAdmin()) return true;
+    if (typeof userCanSeeSpace === 'function') return userCanSeeSpace(l.spaceId);
+    return true;
+  });
+  if (firstList && typeof pjQuickCreateTask === 'function') {
+    pjSetLastUsedListId(firstList.id);
+    pjQuickCreateTask(firstList.id);
+    return;
+  }
+  // FALLBACK: nem lista existe — mostra modal pra criar uma OU abre form
   const overlay = document.getElementById('pjFabModal');
   if (!overlay) return;
-  // Popular lista de listas
   const sel = document.getElementById('pjFabListSelect');
-  if (sel) {
-    const opts = pjLists
-      .filter(l => typeof userIsAdmin !== 'function' || userIsAdmin() || (typeof userCanSeeSpace==='function' && userCanSeeSpace(l.spaceId)))
-      .map(l => {
-        const sp = pjSpaces.find(s => s.id === l.spaceId);
-        return `<option value="${l.id}">${escHtml((sp?.name||'')+' › '+l.name)}</option>`;
-      }).join('');
-    sel.innerHTML = opts || '<option value="">Nenhuma lista disponível</option>';
-  }
+  if (sel) sel.innerHTML = '<option value="">Nenhuma lista disponível — crie uma lista primeiro</option>';
   overlay.classList.add('open');
-  // Reset extras da IA e configura voice button
   _pjFabExtractedExtras = null;
   try { if (typeof pjVoiceUiSetup === 'function') pjVoiceUiSetup(); } catch(_) {}
   setTimeout(() => document.getElementById('pjFabTitle')?.focus(), 50);
