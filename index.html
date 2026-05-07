@@ -13302,7 +13302,8 @@ function pjBuildListPage(listId) {
     </div>
     ${view==='list' ? `<button class="pj-icon-btn pj-icon-btn-lg" title="Mostrar/ocultar colunas" onclick="pjOpenColumnsMenu(event,'${listId}')">👁️</button>` : ''}
     ${_viewIsAdmin ? `<button class="pj-icon-btn pj-icon-btn-lg" title="Editar status" onclick="pjOpenStatusEditor('${listId}')">🏷️</button>
-    <button class="pj-icon-btn pj-icon-btn-lg" title="Campos personalizados" onclick="pjOpenFieldsEditor('${listId}')">📋</button>` : ''}
+    <button class="pj-icon-btn pj-icon-btn-lg" title="Campos personalizados" onclick="pjOpenFieldsEditor('${listId}')">📋</button>
+    <button class="pj-icon-btn pj-icon-btn-lg" title="Automações" onclick="pjOpenAutomationsEditor('${listId}')">⚡</button>` : ''}
     <button class="pj-btn pj-btn-primary" style="font-size:12px;padding:6px 14px;" onclick="pjQuickCreateTask('${listId}')">＋ Tarefa</button>
   </div>` + pjBuildFilterBar(list) + pjBuildBulkBar() + `<div class="pj-view-body" style="padding-top:8px;">`;
 
@@ -15722,8 +15723,88 @@ function pjAfterStatusChange(task, prevStatusId, newStatusId) {
         toColor:   newSt?.color  || null,
       });
     } catch(_) {}
+    // ⚡ AUTOMAÇÕES da lista — dispara regras quando status muda
+    try { pjRunAutomations({ event:'status_changed', task, prevStatusId, newStatusId, list }); } catch(e) { console.warn('[automation]', e); }
   }
   return { willClose, wasClosed };
+}
+
+// ⚡ ── Automações por lista ──────────────────────────────────
+// Modelo: list.automations = [{
+//   id, name, enabled, trigger:{type, statusId}, actions:[{type, userId, message}]
+// }]
+async function pjRunAutomations(ctx) {
+  const { event, task, list, prevStatusId, newStatusId } = ctx;
+  if (!list || !Array.isArray(list.automations)) return;
+  const myUid = _auth?.currentUser?.uid || _currentUser?.uid;
+  for (const a of list.automations) {
+    if (!a || a.enabled === false) continue;
+    // Match do trigger
+    const tr = a.trigger || {};
+    let matched = false;
+    if (event === 'status_changed' && tr.type === 'status_changed') {
+      // 'any' ou statusId específico
+      if (!tr.statusId || tr.statusId === 'any' || tr.statusId === newStatusId) {
+        matched = true;
+      }
+    }
+    if (!matched) continue;
+    // Executa ações
+    for (const ac of (a.actions||[])) {
+      try { await pjExecAutomationAction(ac, { task, list, automation:a, prevStatusId, newStatusId, myUid }); }
+      catch(e) { console.warn('[automation action]', e); }
+    }
+  }
+}
+
+async function pjExecAutomationAction(action, ctx) {
+  const { task, list, automation, myUid } = ctx;
+  if (!action?.type) return;
+  // Substitui placeholders na mensagem: {title}, {list}, {status}
+  const fmt = (s) => String(s||'')
+    .replace(/\{title\}/g, task.title || '')
+    .replace(/\{list\}/g, list?.name || '')
+    .replace(/\{status\}/g, (list?.statuses||PJ_DEFAULT_STATUSES).find(s => s.id === task.statusId)?.name || '');
+
+  if (action.type === 'notify_user') {
+    if (!action.userId) return;
+    const member = pjMembers.find(m => m.uid === action.userId || m.id === action.userId);
+    if (!member) return;
+    const targetUid = member.uid;
+    if (!targetUid) return;
+    // Não notifica a si mesmo (já é quem disparou a automação)
+    if (targetUid === myUid) return;
+    const defaultMsg = `${list?.name || 'Lista'}: "${task.title || 'Tarefa'}" foi pra "${fmt('{status}')}"`;
+    pjAddNotification({
+      type: 'automation',
+      title: action.message ? fmt(action.message) : defaultMsg,
+      subtitle: `🔔 Automação: ${automation.name || 'Regra'}`,
+      taskId: task.id,
+      forUid: targetUid,
+      senderUid: myUid,
+      senderName: 'Sistema',
+    });
+  } else if (action.type === 'assign_user') {
+    if (!action.userId) return;
+    const cur = Array.isArray(task.assignees) ? [...task.assignees] : [];
+    if (cur.includes(action.userId)) return; // já está
+    cur.push(action.userId);
+    try { await pjUpdateTask(task.id, { assignees: cur }); } catch(_) {}
+  } else if (action.type === 'add_comment') {
+    if (!action.message) return;
+    const text = fmt(action.message);
+    try {
+      await pjC('pj_comments').add({
+        taskId: task.id,
+        userId: 'automation',
+        text,
+        type: 'comment',
+        isAutomation: true,
+        automationName: automation.name || '',
+        createdAt: pjNow(),
+      });
+    } catch(_) {}
+  }
 }
 
 // ── Histórico de atividade (log de mudanças por tarefa) ────────────
@@ -20670,6 +20751,157 @@ async function pjSaveStatuses(listId) {
   if (pjCurrentView.id===listId) pjRenderMain();
   pjRenderSidebar();
 }
+// ⚡ ── Editor de AUTOMAÇÕES ──────────────────────────────
+function pjOpenAutomationsEditor(listId) {
+  if (typeof userIsAdmin === 'function' && !userIsAdmin()) {
+    if (typeof showToast === 'function') showToast('Apenas admins podem gerenciar automações.', 'warn');
+    return;
+  }
+  const list = pjLists.find(l => l.id === listId); if (!list) return;
+  const autos = Array.isArray(list.automations) ? list.automations : [];
+  const html = `
+    <h3>⚡ Automações — ${escHtml(list.name)}</h3>
+    <p style="font-size:12px;color:var(--text3);margin:0 0 14px;line-height:1.5;">
+      Crie regras automáticas: quando um evento acontece (ex: status muda pra "Análise"),
+      o sistema executa uma ação (ex: notificar a Eduarda).
+    </p>
+    <div id="pjAutomationsList" class="pj-auto-list">
+      ${autos.length ? autos.map((a,i) => pjRenderAutomationRow(a, i, list)).join('') : '<div class="pj-auto-empty">Nenhuma automação ainda. Clique em "+ Nova" pra começar.</div>'}
+    </div>
+    <button class="pj-btn pj-btn-secondary" style="width:100%;margin-top:8px;" onclick="pjAutomationAdd('${listId}')">＋ Nova automação</button>
+    <div class="pj-form-actions">
+      <button class="pj-btn pj-btn-secondary" onclick="pjCloseFormModal()">Fechar</button>
+      <button class="pj-btn pj-btn-primary" onclick="pjAutomationsSave('${listId}')">Salvar</button>
+    </div>`;
+  pjOpenFormModal(html);
+}
+
+function pjRenderAutomationRow(a, idx, list) {
+  const statuses = list.statuses || PJ_DEFAULT_STATUSES;
+  const tr = a.trigger || { type:'status_changed', statusId:'any' };
+  const action = (a.actions && a.actions[0]) || { type:'notify_user', userId:'' };
+  const statusOpts = `<option value="any" ${tr.statusId==='any'?'selected':''}>qualquer status</option>` +
+    statuses.map(s => `<option value="${s.id}" ${tr.statusId===s.id?'selected':''}>${escHtml(s.name)}</option>`).join('');
+  const memberOpts = `<option value="">-- escolher --</option>` + pjMembers
+    .filter(m => m.uid)
+    .map(m => `<option value="${m.uid}" ${action.userId===m.uid?'selected':''}>${escHtml(m.name||m.email||'?')}</option>`).join('');
+  return `<div class="pj-auto-row" data-idx="${idx}">
+    <div class="pj-auto-row-head">
+      <input class="pj-auto-name" placeholder="Nome da regra (ex: Notificar Eduarda quando for pra análise)"
+             value="${escHtml(a.name||'')}" data-key="name">
+      <label class="pj-auto-toggle" title="Ativar/desativar">
+        <input type="checkbox" ${a.enabled !== false ? 'checked':''} data-key="enabled">
+        <span></span>
+      </label>
+      <button class="pj-auto-del" onclick="pjAutomationRemove(${idx})" title="Excluir">×</button>
+    </div>
+    <div class="pj-auto-grid">
+      <div class="pj-auto-block">
+        <label class="pj-auto-lbl">QUANDO</label>
+        <div class="pj-auto-line">
+          <select class="pj-auto-input" data-key="trigger.type">
+            <option value="status_changed" ${tr.type==='status_changed'?'selected':''}>Status mudar para</option>
+          </select>
+          <select class="pj-auto-input" data-key="trigger.statusId">
+            ${statusOpts}
+          </select>
+        </div>
+      </div>
+      <div class="pj-auto-arrow">→</div>
+      <div class="pj-auto-block">
+        <label class="pj-auto-lbl">FAZER</label>
+        <div class="pj-auto-line">
+          <select class="pj-auto-input" data-key="actions.0.type" onchange="pjAutomationActionTypeChanged(this, ${idx})">
+            <option value="notify_user" ${action.type==='notify_user'?'selected':''}>Notificar membro</option>
+            <option value="assign_user" ${action.type==='assign_user'?'selected':''}>Atribuir tarefa para</option>
+            <option value="add_comment" ${action.type==='add_comment'?'selected':''}>Adicionar comentário</option>
+          </select>
+          <select class="pj-auto-input pj-auto-target-user" data-key="actions.0.userId"
+                  style="display:${(action.type==='notify_user'||action.type==='assign_user')?'':'none'}">
+            ${memberOpts}
+          </select>
+          <input class="pj-auto-input pj-auto-msg" data-key="actions.0.message"
+                 placeholder="Mensagem opcional ({title}, {status}, {list})"
+                 value="${escHtml(action.message||'')}"
+                 style="display:${(action.type==='add_comment'||action.type==='notify_user')?'':'none'}">
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function pjAutomationActionTypeChanged(sel, idx) {
+  const row = sel.closest('.pj-auto-row');
+  if (!row) return;
+  const type = sel.value;
+  const userSel = row.querySelector('.pj-auto-target-user');
+  const msgInp  = row.querySelector('.pj-auto-msg');
+  if (userSel) userSel.style.display = (type==='notify_user'||type==='assign_user') ? '' : 'none';
+  if (msgInp)  msgInp.style.display  = (type==='add_comment'||type==='notify_user') ? '' : 'none';
+}
+
+function pjAutomationAdd(listId) {
+  const list = pjLists.find(l => l.id === listId); if (!list) return;
+  const container = document.getElementById('pjAutomationsList');
+  // Remove "empty" se existir
+  const emptyEl = container.querySelector('.pj-auto-empty');
+  if (emptyEl) emptyEl.remove();
+  const idx = container.querySelectorAll('.pj-auto-row').length;
+  const newAuto = { name:'', enabled:true,
+    trigger:{ type:'status_changed', statusId:'any' },
+    actions:[{ type:'notify_user', userId:'' }] };
+  container.insertAdjacentHTML('beforeend', pjRenderAutomationRow(newAuto, idx, list));
+}
+
+function pjAutomationRemove(idx) {
+  const row = document.querySelector(`.pj-auto-row[data-idx="${idx}"]`);
+  if (row) row.remove();
+}
+
+async function pjAutomationsSave(listId) {
+  const rows = document.querySelectorAll('.pj-auto-row');
+  const automations = [];
+  rows.forEach(row => {
+    const name = row.querySelector('[data-key="name"]')?.value.trim() || '';
+    const enabled = !!row.querySelector('[data-key="enabled"]')?.checked;
+    const trigger = {
+      type: row.querySelector('[data-key="trigger.type"]')?.value || 'status_changed',
+      statusId: row.querySelector('[data-key="trigger.statusId"]')?.value || 'any',
+    };
+    const action = {
+      type: row.querySelector('[data-key="actions.0.type"]')?.value || 'notify_user',
+    };
+    const userSel = row.querySelector('[data-key="actions.0.userId"]');
+    const msgInp  = row.querySelector('[data-key="actions.0.message"]');
+    if (userSel && (action.type==='notify_user'||action.type==='assign_user')) {
+      action.userId = userSel.value || '';
+    }
+    if (msgInp && (action.type==='add_comment'||action.type==='notify_user')) {
+      const m = msgInp.value.trim();
+      if (m) action.message = m;
+    }
+    // Valida: precisa ter ação preenchida
+    if ((action.type==='notify_user' || action.type==='assign_user') && !action.userId) return; // skip
+    if (action.type==='add_comment' && !action.message) return;
+    automations.push({
+      id: 'au_'+Date.now()+Math.random().toString(36).slice(2,5),
+      name: name || `Quando ${trigger.statusId === 'any' ? 'qualquer status' : 'status'} mudar`,
+      enabled,
+      trigger,
+      actions: [action],
+    });
+  });
+  try {
+    await pjC('pj_lists').doc(listId).update({ automations });
+    const list = pjLists.find(l => l.id === listId);
+    if (list) list.automations = automations;
+    pjCloseFormModal();
+    if (typeof showToast === 'function') showToast('success', '⚡', `${automations.length} automaç${automations.length===1?'ão':'ões'} salva(s).`);
+  } catch(e) {
+    if (typeof showToast === 'function') showToast('error', '❌', 'Erro ao salvar: '+(e.message||''));
+  }
+}
+
 // Converte cor (hex/rgb) para hex válido para input type=color
 function pjToHex(c) {
   if (!c) return '#6366f1';
