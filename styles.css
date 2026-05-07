@@ -6110,16 +6110,19 @@ select.pj-auto-input { cursor:pointer; }
   font-weight:600;
 }
 
+/* Variante do pulse pra mobile (seta rotacionada) — keyframes FORA do @media */
+@keyframes pjAutoArrowPulseMobile {
+  0%,100% { transform:rotate(90deg) translateX(0); }
+  50%     { transform:rotate(90deg) translateX(3px); }
+}
+
 /* RESPONSIVE: empilha o fluxo no mobile */
 @media (max-width:680px) {
   .pj-auto-flow { grid-template-columns:1fr; }
   .pj-auto-flow-arrow {
     transform:rotate(90deg);
     margin:-4px auto;
-  }
-  @keyframes pjAutoArrowPulse {
-    0%,100% { transform:rotate(90deg) translateX(0); }
-    50%     { transform:rotate(90deg) translateX(3px); }
+    animation:pjAutoArrowPulseMobile 2.4s ease-in-out infinite;
   }
   .pj-auto-row { padding:12px; }
   .pj-auto-step { padding:12px 12px 12px 40px; }
