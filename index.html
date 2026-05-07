@@ -1541,16 +1541,10 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
   <div class="pj-fab-modal-overlay" id="pjFabModal" onclick="if(event.target===this)pjCloseFabModal()" onkeydown="if(event.key==='Escape')pjCloseFabModal()">
     <div class="pj-fab-modal">
       <h3>🪄 Nova tarefa</h3>
-      <p style="font-size:12.5px;color:var(--text3);margin:0 0 14px;line-height:1.5;">Em qual lista? Após escolher, abriremos o editor completo pra você preencher tudo (descrição, prazo, prioridade, responsáveis…).</p>
+      <p style="font-size:12.5px;color:var(--text3);margin:0 0 14px;line-height:1.5;">Onde você quer criar? Após escolher, abriremos o editor completo pra preencher tudo (título, descrição, prazo, prioridade, responsáveis…).</p>
       <form onsubmit="return pjFabSubmit(event)">
-        <label>Título <span style="font-weight:400;color:var(--text3);">(opcional — pode editar depois)</span></label>
-        <div class="pj-fab-title-row">
-          <input type="text" id="pjFabTitle" placeholder="Ex: Revisar copy da campanha" maxlength="200">
-          <button type="button" class="pj-voice-btn" id="pjFabVoiceBtn" onclick="pjVoiceStart('pjFabTitle', this)" title="Ditar (Web Speech)" aria-label="Ditar">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"/></svg>
-          </button>
-          <button type="button" class="pj-ai-extract-btn" id="pjFabAiBtn" onclick="pjFabExtractWithAi()" title="Extrair lista, prioridade, prazo e responsável via IA">✨ IA</button>
-        </div>
+        <label>Pasta</label>
+        <select id="pjFabSpaceSelect" onchange="pjFabRefreshListOptions()"></select>
         <label>Lista</label>
         <select id="pjFabListSelect"></select>
         <div class="pj-fab-modal-footer">
@@ -15426,7 +15420,7 @@ function pjSetLastUsedListId(id) {
 }
 
 function pjOpenFabModal() {
-  // ATALHO 1: dentro de uma lista → cria direto lá
+  // ATALHO: se está DENTRO de uma lista, cria direto lá (sem picker)
   if (pjCurrentView && pjCurrentView.type === 'list' && pjCurrentView.id) {
     if (typeof pjQuickCreateTask === 'function') {
       pjSetLastUsedListId(pjCurrentView.id);
@@ -15434,32 +15428,84 @@ function pjOpenFabModal() {
       return;
     }
   }
-  // ATALHO 2: usa a ÚLTIMA lista usada (sem perguntar)
-  const lastId = pjGetLastUsedListId();
-  if (lastId && typeof pjQuickCreateTask === 'function') {
-    pjQuickCreateTask(lastId);
-    return;
-  }
-  // ATALHO 3: pega a PRIMEIRA lista disponível pro usuário
-  const firstList = pjLists.find(l => {
-    if (typeof userIsAdmin === 'function' && userIsAdmin()) return true;
-    if (typeof userCanSeeSpace === 'function') return userCanSeeSpace(l.spaceId);
-    return true;
-  });
-  if (firstList && typeof pjQuickCreateTask === 'function') {
-    pjSetLastUsedListId(firstList.id);
-    pjQuickCreateTask(firstList.id);
-    return;
-  }
-  // FALLBACK: nem lista existe — mostra modal pra criar uma OU abre form
+  // SENÃO: mostra picker Pasta + Lista (pré-selecionado pela última usada)
   const overlay = document.getElementById('pjFabModal');
   if (!overlay) return;
-  const sel = document.getElementById('pjFabListSelect');
-  if (sel) sel.innerHTML = '<option value="">Nenhuma lista disponível — crie uma lista primeiro</option>';
+  const lastListId = pjGetLastUsedListId();
+  const lastList = lastListId ? pjLists.find(l => l.id === lastListId) : null;
+  const lastSpaceId = lastList?.spaceId || null;
+  // Filtra spaces visíveis ao usuário
+  const visibleSpaces = pjSpaces.filter(s => {
+    if (typeof userIsAdmin === 'function' && userIsAdmin()) return true;
+    if (typeof userCanSeeSpace === 'function') return userCanSeeSpace(s.id);
+    return true;
+  });
+  const spaceSel = document.getElementById('pjFabSpaceSelect');
+  if (spaceSel) {
+    if (!visibleSpaces.length) {
+      spaceSel.innerHTML = '<option value="">Nenhuma pasta disponível — crie uma pasta primeiro</option>';
+    } else {
+      const preSpace = lastSpaceId && visibleSpaces.find(s=>s.id===lastSpaceId)
+                       ? lastSpaceId
+                       : visibleSpaces[0].id;
+      spaceSel.innerHTML = visibleSpaces.map(s =>
+        `<option value="${s.id}" ${s.id === preSpace ? 'selected' : ''}>${escHtml(s.name)}</option>`
+      ).join('');
+    }
+  }
+  pjFabRefreshListOptions();
+  // Pré-seleciona última lista usada (se ainda existe)
+  const listSel = document.getElementById('pjFabListSelect');
+  if (listSel && lastListId) {
+    const opt = [...listSel.options].find(o => o.value === lastListId);
+    if (opt) listSel.value = lastListId;
+  }
   overlay.classList.add('open');
   _pjFabExtractedExtras = null;
-  try { if (typeof pjVoiceUiSetup === 'function') pjVoiceUiSetup(); } catch(_) {}
-  setTimeout(() => document.getElementById('pjFabTitle')?.focus(), 50);
+}
+
+// Atualiza dropdown de listas filtrando pelo space selecionado
+// (chamado no onchange do dropdown de pasta)
+function pjFabRefreshListOptions() {
+  const spaceSel = document.getElementById('pjFabSpaceSelect');
+  const listSel  = document.getElementById('pjFabListSelect');
+  if (!spaceSel || !listSel) return;
+  const spaceId = spaceSel.value;
+  if (!spaceId) {
+    listSel.innerHTML = '<option value="">Selecione uma pasta primeiro</option>';
+    return;
+  }
+  const lists = pjLists.filter(l => l.spaceId === spaceId);
+  if (!lists.length) {
+    listSel.innerHTML = '<option value="">Sem listas nessa pasta</option>';
+    return;
+  }
+  // Agrupa por folder pro select ficar mais legível
+  const grouped = {};
+  lists.forEach(l => {
+    const fkey = l.folderId || '__none__';
+    if (!grouped[fkey]) grouped[fkey] = [];
+    grouped[fkey].push(l);
+  });
+  let html = '';
+  // Listas sem folder primeiro
+  if (grouped['__none__']) {
+    grouped['__none__'].forEach(l => {
+      html += `<option value="${l.id}">${escHtml(l.name)}</option>`;
+    });
+    delete grouped['__none__'];
+  }
+  // Depois agrupadas por folder
+  Object.keys(grouped).forEach(fid => {
+    const folder = pjFolders.find(f => f.id === fid);
+    const folderName = folder?.name || 'Pasta';
+    html += `<optgroup label="${escHtml(folderName)}">`;
+    grouped[fid].forEach(l => {
+      html += `<option value="${l.id}">${escHtml(l.name)}</option>`;
+    });
+    html += `</optgroup>`;
+  });
+  listSel.innerHTML = html;
 }
 function pjCloseFabModal() {
   try { if (typeof pjVoiceStop === 'function') pjVoiceStop(); } catch(_) {}
@@ -15470,48 +15516,20 @@ function pjCloseFabModal() {
 }
 async function pjFabSubmit(ev) {
   if (ev) ev.preventDefault();
-  // Para gravação se ainda estiver rodando
-  try { if (typeof pjVoiceStop === 'function') pjVoiceStop(); } catch(_) {}
-  let title = (document.getElementById('pjFabTitle')?.value || '').trim();
   const listId = document.getElementById('pjFabListSelect')?.value;
-  if (!listId) return;
-  // Título é opcional — se vazio, usa default. Usuário edita no modal completo.
-  if (!title) title = 'Nova tarefa';
-  const list = pjLists.find(l => l.id === listId);
-  if (!list) return;
-  const statuses = list.statuses || PJ_DEFAULT_STATUSES;
-  const stId = statuses[0].id;
-  const uid = _auth?.currentUser?.uid || _currentUser?.uid;
-  const id = (typeof pjId==='function') ? pjId() : ('tk_'+Date.now());
-  // Aplica extras da IA (se houver)
-  const extras = _pjFabExtractedExtras || {};
-  _pjFabExtractedExtras = null;
-  const assignees = (extras.assigneeUids && extras.assigneeUids.length)
-    ? extras.assigneeUids
-    : (uid ? [uid] : []);
-  const localTask = {
-    id, title, description:'', listId, spaceId:list.spaceId,
-    statusId:stId, assignees, dueDate: extras.dueDate || null, startDate:null,
-    dueTime: extras.dueTime || null,
-    priority: extras.priority || 'normal',
-    clientId: extras.clientId || null,
-    parentTaskId:null, customFieldValues:{},
-    createdBy:uid, order: Date.now(),
-    createdAt:{ toMillis:()=>Date.now() }, updatedAt:{ toMillis:()=>Date.now() },
-  };
-  if (!pjTasks[listId]) pjTasks[listId] = [];
-  pjTasks[listId].push(localTask);
-  pjAllTasks = Object.values(pjTasks).flat();
+  if (!listId) {
+    if (typeof showToast === 'function') showToast('warn','⚠️','Selecione uma lista pra criar a tarefa.');
+    return false;
+  }
+  // Memoriza pra próxima
+  pjSetLastUsedListId(listId);
   pjCloseFabModal();
-  if (typeof showToast === 'function') showToast(`✓ "${title}" criada`, 'ok');
-  pjRenderMain();
-  try {
-    const docData = { ...localTask, createdAt: pjNow(), updatedAt: pjNow() };
-    delete docData.id;
-    await pjC('pj_tasks').doc(id).set(docData);
-  } catch(e) {}
-  // Abre o modal da tarefa pra editar mais detalhes
-  setTimeout(() => { if (typeof pjOpenTask === 'function') pjOpenTask(id); }, 100);
+  // Cria tarefa na lista escolhida e abre o EDITOR COMPLETO (full modal)
+  // — mesma rota do botão "+ Tarefa" do header da lista
+  if (typeof pjQuickCreateTask === 'function') {
+    pjQuickCreateTask(listId);
+  }
+  return false;
 }
 
 // ── Voice-to-task (Web Speech API + extração via IA) ──
