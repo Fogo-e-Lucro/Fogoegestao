@@ -12810,6 +12810,9 @@ function pjBuildInbox() {
 
 // ── WhatsApp Daily Report ──────────────────────────────
 function pjGetTaskClient(t) {
+  // Usa pjResolveTaskClient: tenta t.client top-level primeiro, depois custom field
+  if (typeof pjResolveTaskClient === 'function') return pjResolveTaskClient(t) || '';
+  if (t.client) return t.client;
   const list = pjLists.find(l => l.id === t.listId);
   if (!list) return '';
   const cf = (list.customFields || []).find(f => f.type === 'client' || /client|cliente/i.test(f.name));
@@ -13621,10 +13624,15 @@ function pjApplyFilter(tasks) {
       if (f.due==='none'    && t.dueDate) return false;
     }
     if (f.client) {
-      const cfvs = t.customFieldValues || {};
-      const lst = pjLists.find(l => l.id === t.listId);
-      const matched = (lst?.customFields||[]).filter(cf=>cf.type==='client').some(cf => cfvs[cf.id]===f.client);
-      if (!matched) return false;
+      // Verifica t.client (top-level) OU custom field tipo 'client'
+      const tClient = (typeof pjResolveTaskClient === 'function') ? pjResolveTaskClient(t) : (t.client || null);
+      if (tClient !== f.client) {
+        // Fallback antigo (tasks com client em custom field)
+        const cfvs = t.customFieldValues || {};
+        const lst = pjLists.find(l => l.id === t.listId);
+        const matched = (lst?.customFields||[]).filter(cf=>cf.type==='client').some(cf => cfvs[cf.id]===f.client);
+        if (!matched) return false;
+      }
     }
     return true;
   });
@@ -14236,8 +14244,11 @@ function pjBuildByClient() {
   } catch(e){}
   const canonical = new Set(Object.keys(bdMap));
 
-  // Resolve cliente de uma task (custom field tipo "client")
+  // Resolve cliente de uma task — usa pjResolveTaskClient se disponível
+  // (que já testa t.client top-level + custom field 'client' como fallback)
   const taskClient = (t) => {
+    if (typeof pjResolveTaskClient === 'function') return pjResolveTaskClient(t);
+    if (t.client) return t.client;
     const fields = pjLists.find(l=>l.id===t.listId)?.customFields || [];
     const clientField = fields.find(f => f.type==='client' || /client/i.test(f.name));
     if (clientField) return t.customFieldValues?.[clientField.id] || null;
