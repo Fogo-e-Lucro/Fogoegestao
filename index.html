@@ -13363,7 +13363,11 @@ function pjBuildListPage(listId) {
     </div>
     <div class="pj-status-zone ${collapsed?'collapsed':''}" data-list-id="${listId}" data-status-id="${st.id}"
          ondragover="pjListDragOver(event)" ondragleave="pjListDragLeave(event)" ondrop="pjListDrop(event,'${listId}','${st.id}')">`;
-    stTasks.forEach(t => { h += pjTaskColumnRowHtml(t, cols, gridTpl); });
+    stTasks.forEach(t => {
+      h += pjTaskColumnRowHtml(t, cols, gridTpl, 0);
+      // Renderiza subtarefas inline aninhadas (igual ClickUp) — recursivo
+      h += pjRenderSubtaskRowsRecursive(t.id, cols, gridTpl, 1, listId);
+    });
     h += `<div class="pj-add-task-row" onclick="event.stopPropagation();pjQuickCreateTask('${listId}','${st.id}')">＋ Adicionar tarefa</div></div>`;
   });
   h += `</div>`;
@@ -13371,7 +13375,72 @@ function pjBuildListPage(listId) {
 }
 
 // Row colunizada (List view com custom fields) — cols = array ordenado de descritores
-function pjTaskColumnRowHtml(t, cols, gridTpl) {
+// pjListExpanded: { taskId: true } — quais tarefas pais estão com subtarefas expandidas
+let pjListExpanded = (function(){
+  try { return JSON.parse(localStorage.getItem('pj_list_expanded')||'{}'); } catch(_) { return {}; }
+})();
+function pjListToggleExpand(taskId, ev) {
+  if (ev) ev.stopPropagation();
+  if (pjListExpanded[taskId]) delete pjListExpanded[taskId];
+  else pjListExpanded[taskId] = true;
+  try { localStorage.setItem('pj_list_expanded', JSON.stringify(pjListExpanded)); } catch(_){}
+  pjRenderMain();
+}
+
+// Renderiza subtarefas de um pai recursivamente (só se expandido)
+function pjRenderSubtaskRowsRecursive(parentId, cols, gridTpl, depth, listId) {
+  if (!pjListExpanded[parentId]) return '';
+  const subs = pjAllTasks
+    .filter(t => t.parentTaskId === parentId && !pjIsArchived(t))
+    .sort((a,b) => (a.order||0) - (b.order||0));
+  if (!subs.length) return '';
+  let html = '';
+  subs.forEach(s => {
+    html += pjTaskColumnRowHtml(s, cols, gridTpl, depth);
+    html += pjRenderSubtaskRowsRecursive(s.id, cols, gridTpl, depth + 1, listId);
+  });
+  // Linha "+ adicionar subtarefa" indentada (depois das filhas)
+  html += `<div class="pj-list-tr pj-add-subtask-inline" data-depth="${depth}" style="grid-template-columns:${gridTpl};" onclick="event.stopPropagation();pjQuickAddSubtaskInline('${parentId}')">
+    <div></div>
+    <div class="pj-list-cell pj-list-cell-subadd" style="padding-left:${depth*22}px;">＋ Adicionar subtarefa</div>
+  </div>`;
+  return html;
+}
+
+// Cria subtarefa rápida e abre modal completo
+async function pjQuickAddSubtaskInline(parentId) {
+  const parent = pjAllTasks.find(t => t.id === parentId);
+  if (!parent) return;
+  const uid = _auth?.currentUser?.uid || _currentUser?.uid;
+  const id  = pjId();
+  const list = pjLists.find(l => l.id === parent.listId);
+  const data = {
+    id, title:'Nova subtarefa', description:'',
+    listId: parent.listId,
+    spaceId: parent.spaceId || list?.spaceId || '',
+    statusId: (list?.statuses || PJ_DEFAULT_STATUSES)[0].id,
+    assignees: [], dueDate: null, dueTime: null, priority: 'normal',
+    parentTaskId: parentId,
+    customFieldValues: { ...(parent.customFieldValues || {}) },
+    client: parent.client || null,
+    createdBy: uid,
+    createdAt: pjNow(), updatedAt: pjNow(),
+    order: Date.now(),
+  };
+  pjAllTasks.push(data);
+  if (!pjTasks[data.listId]) pjTasks[data.listId] = [];
+  pjTasks[data.listId].push(data);
+  // Auto-expande o pai pra mostrar a recém criada
+  pjListExpanded[parentId] = true;
+  try { localStorage.setItem('pj_list_expanded', JSON.stringify(pjListExpanded)); } catch(_){}
+  pjRenderMain();
+  try { await pjC('pj_tasks').doc(id).set({ ...data, id:undefined }); } catch(e){}
+  // Abre modal completo pra editar
+  setTimeout(() => { if (typeof pjOpenTask === 'function') pjOpenTask(id); }, 80);
+}
+
+function pjTaskColumnRowHtml(t, cols, gridTpl, depth) {
+  depth = depth || 0;
   const list = pjLists.find(l => l.id === t.listId);
   const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
   const st = statuses.find(s => s.id === (t.statusId||statuses[0].id)) || statuses[0];
@@ -13379,6 +13448,9 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
   const due = t.dueDate ? pjDueCls(t.dueDate, t.dueTime) : null;
   const dueLabel = due ? (t.dueTime ? `${due.label} ${t.dueTime}` : due.label) : null;
   const subtaskCount = (pjAllTasks.filter(s => s.parentTaskId === t.id) || []).length;
+  const subtaskDone  = (pjAllTasks.filter(s => s.parentTaskId === t.id && pjIsDone(s)) || []).length;
+  const isExpanded = !!pjListExpanded[t.id];
+  const hasChildren = subtaskCount > 0;
   const assigneeHtml = (t.assignees||[]).length
     ? (t.assignees||[]).slice(0,3).map(uid=>pjAvatarHtml(uid)).join('')
     : `<span class="pj-cell-empty">—</span>`;
@@ -13401,15 +13473,29 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
   } else {
     clientCellInner = `<button type="button" class="pj-list-client-pill empty" onclick="event.stopPropagation();pjOpenClientMenu(event,'${t.id}')" title="Definir cliente"><span class="pj-cell-empty">+ cliente</span></button>`;
   }
+  // Chevron de expandir (clique alterna; só renderiza se tem subtarefas)
+  const chevronHtml = hasChildren
+    ? `<button type="button" class="pj-list-expand ${isExpanded?'open':''}" onclick="event.stopPropagation();pjListToggleExpand('${t.id}',event)" title="${isExpanded?'Recolher':'Expandir'} subtarefas (${subtaskDone}/${subtaskCount})">
+        <svg viewBox="0 0 12 12" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="3 5 6 8 9 5"/></svg>
+      </button>`
+    : `<span class="pj-list-expand-empty" aria-hidden="true"></span>`;
+  // Botão "+ subtarefa" no hover, sempre disponível mesmo sem filhas
+  const subAddBtn = `<button type="button" class="pj-list-row-subadd" onclick="event.stopPropagation();pjQuickAddSubtaskInline('${t.id}')" title="Adicionar subtarefa">
+    <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 1v12M1 7h12"/></svg>
+  </button>`;
+  // Indentação (subtarefas inline têm depth > 0)
+  const indentStyle = depth > 0 ? `padding-left:${depth*22}px;` : '';
   const cellMap = {
-    title: `<div class="pj-list-cell title">
+    title: `<div class="pj-list-cell title" style="${indentStyle}">
       <div class="pj-sel-circle ${selected?'checked':''}" onclick="event.stopPropagation();pjToggleSelect('${t.id}',event)" title="Selecionar">${selected?'✓':''}</div>
+      ${chevronHtml}
       <span class="pj-list-title-text ${done?'done':''}">${escHtml(t.title||'(sem título)')}</span>
       ${recur}
-      ${subtaskCount?`<span class="pj-subtask-count">↳ ${subtaskCount}</span>`:''}
+      ${subtaskCount && !isExpanded ? `<span class="pj-subtask-count" title="${subtaskDone}/${subtaskCount} subtarefas">↳ ${subtaskDone}/${subtaskCount}</span>` : ''}
       ${pjTimerBtnHtml(t)}
       ${(Array.isArray(t.tags) && t.tags.length) ? `<span class="pj-list-tags">${pjTaskTagsHtml(t,{small:true})}</span>` : ''}
       ${pjStalePillHtml(t)}
+      ${subAddBtn}
     </div>`,
     assignee: `<div class="pj-list-cell">${assigneeHtml}</div>`,
     due:      `<div class="pj-list-cell">${dueLabel?`<span class="pj-task-due ${due.cls}">${dueLabel}</span>`:`<span class="pj-cell-empty">—</span>`}</div>`,
@@ -13427,7 +13513,7 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
     return `<div class="pj-list-cell"><span class="pj-cell-empty">—</span></div>`;
   }).join('');
 
-  return `<div class="pj-list-tr ${done?'done-row':''} ${selected?'selected':''}" data-priority="${t.priority||'low'}" data-task-id="${t.id}"
+  return `<div class="pj-list-tr ${done?'done-row':''} ${selected?'selected':''} ${depth>0?'pj-list-tr-sub':''}" data-priority="${t.priority||'low'}" data-task-id="${t.id}" data-depth="${depth}"
        draggable="true"
        ondragstart="pjListDragStart(event,'${t.id}')"
        ondragend="pjListDragEnd(event)"
