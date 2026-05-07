@@ -20778,21 +20778,59 @@ function pjOpenAutomationsEditor(listId) {
   }
   const list = pjLists.find(l => l.id === listId); if (!list) return;
   const autos = Array.isArray(list.automations) ? list.automations : [];
+  const enabledCount = autos.filter(a => a.enabled !== false).length;
   const html = `
-    <h3>⚡ Automações — ${escHtml(list.name)}</h3>
-    <p style="font-size:12px;color:var(--text3);margin:0 0 14px;line-height:1.5;">
-      Crie regras automáticas: quando um evento acontece (ex: status muda pra "Análise"),
-      o sistema executa uma ação (ex: notificar a Eduarda).
-    </p>
-    <div id="pjAutomationsList" class="pj-auto-list">
-      ${autos.length ? autos.map((a,i) => pjRenderAutomationRow(a, i, list)).join('') : '<div class="pj-auto-empty">Nenhuma automação ainda. Clique em "+ Nova" pra começar.</div>'}
-    </div>
-    <button class="pj-btn pj-btn-secondary" style="width:100%;margin-top:8px;" onclick="pjAutomationAdd('${listId}')">＋ Nova automação</button>
-    <div class="pj-form-actions">
-      <button class="pj-btn pj-btn-secondary" onclick="pjCloseFormModal()">Fechar</button>
-      <button class="pj-btn pj-btn-primary" onclick="pjAutomationsSave('${listId}')">Salvar</button>
+    <div class="pj-auto-modal">
+      <div class="pj-auto-header">
+        <div class="pj-auto-header-icon">⚡</div>
+        <div class="pj-auto-header-info">
+          <div class="pj-auto-header-title">Automações</div>
+          <div class="pj-auto-header-sub">${escHtml(list.name)} · ${autos.length} regra${autos.length===1?'':'s'}${autos.length?` · ${enabledCount} ativa${enabledCount===1?'':'s'}`:''}</div>
+        </div>
+        <button class="pj-auto-close-x" onclick="pjCloseFormModal()" title="Fechar">×</button>
+      </div>
+
+      <div class="pj-auto-intro">
+        <span class="pj-auto-intro-emoji">💡</span>
+        <span><strong>Crie regras automáticas:</strong> quando um evento acontecer (ex: status muda pra "Análise"), o sistema executa uma ação (ex: notificar a Eduarda).</span>
+      </div>
+
+      <div id="pjAutomationsList" class="pj-auto-list">
+        ${autos.length
+          ? autos.map((a,i) => pjRenderAutomationRow(a, i, list)).join('')
+          : pjAutoEmptyState()}
+      </div>
+
+      <button class="pj-auto-add-btn" onclick="pjAutomationAdd('${listId}')">
+        <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 1v12M1 7h12"/></svg>
+        Nova automação
+      </button>
+
+      <div class="pj-auto-actions">
+        <button class="pj-btn pj-btn-secondary" onclick="pjCloseFormModal()">Fechar</button>
+        <button class="pj-btn pj-btn-primary pj-auto-save-btn" onclick="pjAutomationsSave('${listId}')">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Salvar regras
+        </button>
+      </div>
     </div>`;
   pjOpenFormModal(html);
+  // Modal mais largo pra automações
+  const card = document.getElementById('pjFormCard');
+  if (card) card.classList.add('pj-form-card-wide');
+}
+
+function pjAutoEmptyState() {
+  return `<div class="pj-auto-empty">
+    <div class="pj-auto-empty-icon">
+      <svg viewBox="0 0 64 64" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M28 8 12 36h16l-4 20 20-28H28z" fill="currentColor" opacity=".18"/>
+        <path d="M28 8 12 36h16l-4 20 20-28H28z"/>
+      </svg>
+    </div>
+    <div class="pj-auto-empty-title">Nenhuma automação ainda</div>
+    <div class="pj-auto-empty-text">Crie sua primeira regra clicando em <strong>"Nova automação"</strong> abaixo. Você pode notificar pessoas, atribuir tarefas ou comentar automaticamente.</div>
+  </div>`;
 }
 
 function pjRenderAutomationRow(a, idx, list) {
@@ -20801,48 +20839,65 @@ function pjRenderAutomationRow(a, idx, list) {
   const action = (a.actions && a.actions[0]) || { type:'notify_user', userId:'' };
   const statusOpts = `<option value="any" ${tr.statusId==='any'?'selected':''}>qualquer status</option>` +
     statuses.map(s => `<option value="${s.id}" ${tr.statusId===s.id?'selected':''}>${escHtml(s.name)}</option>`).join('');
-  const memberOpts = `<option value="">-- escolher --</option>` + pjMembers
+  const memberOpts = `<option value="">— escolher pessoa —</option>` + pjMembers
     .filter(m => m.uid)
     .map(m => `<option value="${m.uid}" ${action.userId===m.uid?'selected':''}>${escHtml(m.name||m.email||'?')}</option>`).join('');
-  return `<div class="pj-auto-row" data-idx="${idx}">
+  const enabled = a.enabled !== false;
+  return `<div class="pj-auto-row ${enabled?'is-enabled':'is-disabled'}" data-idx="${idx}">
+    <!-- Head: nome + toggle + delete -->
     <div class="pj-auto-row-head">
-      <input class="pj-auto-name" placeholder="Nome da regra (ex: Notificar Eduarda quando for pra análise)"
+      <div class="pj-auto-row-icon">⚡</div>
+      <input class="pj-auto-name" placeholder="Nome da regra (ex: Notificar Eduarda quando for pra Análise)"
              value="${escHtml(a.name||'')}" data-key="name">
-      <label class="pj-auto-toggle" title="Ativar/desativar">
-        <input type="checkbox" ${a.enabled !== false ? 'checked':''} data-key="enabled">
-        <span></span>
+      <label class="pj-auto-toggle" title="${enabled ? 'Desativar' : 'Ativar'}">
+        <input type="checkbox" ${enabled ? 'checked':''} data-key="enabled" onchange="this.closest('.pj-auto-row').classList.toggle('is-enabled',this.checked);this.closest('.pj-auto-row').classList.toggle('is-disabled',!this.checked)">
+        <span class="pj-auto-toggle-track"><span class="pj-auto-toggle-thumb"></span></span>
       </label>
-      <button class="pj-auto-del" onclick="pjAutomationRemove(${idx})" title="Excluir">×</button>
+      <button class="pj-auto-del" onclick="pjAutomationRemove(${idx})" title="Excluir regra">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      </button>
     </div>
-    <div class="pj-auto-grid">
-      <div class="pj-auto-block">
-        <label class="pj-auto-lbl">QUANDO</label>
-        <div class="pj-auto-line">
-          <select class="pj-auto-input" data-key="trigger.type">
-            <option value="status_changed" ${tr.type==='status_changed'?'selected':''}>Status mudar para</option>
-          </select>
-          <select class="pj-auto-input" data-key="trigger.statusId">
-            ${statusOpts}
-          </select>
+
+    <!-- Fluxo: passo 1 (QUANDO) -> passo 2 (FAZER) -->
+    <div class="pj-auto-flow">
+      <div class="pj-auto-step pj-auto-step-when">
+        <div class="pj-auto-step-num">1</div>
+        <div class="pj-auto-step-body">
+          <div class="pj-auto-step-lbl">Quando</div>
+          <div class="pj-auto-step-fields">
+            <select class="pj-auto-input" data-key="trigger.type">
+              <option value="status_changed" ${tr.type==='status_changed'?'selected':''}>Status mudar para</option>
+            </select>
+            <select class="pj-auto-input pj-auto-input-strong" data-key="trigger.statusId">
+              ${statusOpts}
+            </select>
+          </div>
         </div>
       </div>
-      <div class="pj-auto-arrow">→</div>
-      <div class="pj-auto-block">
-        <label class="pj-auto-lbl">FAZER</label>
-        <div class="pj-auto-line">
-          <select class="pj-auto-input" data-key="actions.0.type" onchange="pjAutomationActionTypeChanged(this, ${idx})">
-            <option value="notify_user" ${action.type==='notify_user'?'selected':''}>Notificar membro</option>
-            <option value="assign_user" ${action.type==='assign_user'?'selected':''}>Atribuir tarefa para</option>
-            <option value="add_comment" ${action.type==='add_comment'?'selected':''}>Adicionar comentário</option>
-          </select>
-          <select class="pj-auto-input pj-auto-target-user" data-key="actions.0.userId"
-                  style="display:${(action.type==='notify_user'||action.type==='assign_user')?'':'none'}">
-            ${memberOpts}
-          </select>
+
+      <div class="pj-auto-flow-arrow" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" x2="19" y1="12" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </div>
+
+      <div class="pj-auto-step pj-auto-step-do">
+        <div class="pj-auto-step-num">2</div>
+        <div class="pj-auto-step-body">
+          <div class="pj-auto-step-lbl">Fazer</div>
+          <div class="pj-auto-step-fields">
+            <select class="pj-auto-input" data-key="actions.0.type" onchange="pjAutomationActionTypeChanged(this, ${idx})">
+              <option value="notify_user" ${action.type==='notify_user'?'selected':''}>🔔 Notificar membro</option>
+              <option value="assign_user" ${action.type==='assign_user'?'selected':''}>👤 Atribuir tarefa</option>
+              <option value="add_comment" ${action.type==='add_comment'?'selected':''}>💬 Comentar</option>
+            </select>
+            <select class="pj-auto-input pj-auto-input-strong pj-auto-target-user" data-key="actions.0.userId"
+                    style="display:${(action.type==='notify_user'||action.type==='assign_user')?'':'none'}">
+              ${memberOpts}
+            </select>
+          </div>
           <input class="pj-auto-input pj-auto-msg" data-key="actions.0.message"
-                 placeholder="Mensagem opcional ({title}, {status}, {list})"
+                 placeholder="Mensagem (opcional) — use {title}, {status}, {list}"
                  value="${escHtml(action.message||'')}"
-                 style="display:${(action.type==='add_comment'||action.type==='notify_user')?'':'none'}">
+                 style="display:${(action.type==='add_comment'||action.type==='notify_user')?'':'none'};margin-top:8px;">
         </div>
       </div>
     </div>
@@ -20862,7 +20917,7 @@ function pjAutomationActionTypeChanged(sel, idx) {
 function pjAutomationAdd(listId) {
   const list = pjLists.find(l => l.id === listId); if (!list) return;
   const container = document.getElementById('pjAutomationsList');
-  // Remove "empty" se existir
+  // Remove "empty state" se existir
   const emptyEl = container.querySelector('.pj-auto-empty');
   if (emptyEl) emptyEl.remove();
   const idx = container.querySelectorAll('.pj-auto-row').length;
@@ -20870,11 +20925,28 @@ function pjAutomationAdd(listId) {
     trigger:{ type:'status_changed', statusId:'any' },
     actions:[{ type:'notify_user', userId:'' }] };
   container.insertAdjacentHTML('beforeend', pjRenderAutomationRow(newAuto, idx, list));
+  // Foca no input de nome da nova regra pra UX direto
+  const newRow = container.lastElementChild;
+  setTimeout(() => {
+    newRow?.querySelector('.pj-auto-name')?.focus();
+    newRow?.scrollIntoView({ behavior:'smooth', block:'center' });
+  }, 50);
 }
 
 function pjAutomationRemove(idx) {
   const row = document.querySelector(`.pj-auto-row[data-idx="${idx}"]`);
-  if (row) row.remove();
+  if (!row) return;
+  // Animação de remoção
+  row.style.transition = 'opacity .2s, transform .2s, max-height .25s';
+  row.style.opacity = '0';
+  row.style.transform = 'translateX(20px)';
+  row.style.maxHeight = row.offsetHeight + 'px';
+  setTimeout(() => {
+    row.style.maxHeight = '0';
+    row.style.padding = '0';
+    row.style.margin = '0';
+    setTimeout(() => row.remove(), 200);
+  }, 200);
 }
 
 async function pjAutomationsSave(listId) {
@@ -20988,7 +21060,13 @@ function pjOpenFormModal(html) {
   document.getElementById('pjFormModal').classList.add('open');
   setTimeout(()=>document.getElementById('pjFName')?.focus(),50);
 }
-function pjCloseFormModal() { document.getElementById('pjFormModal').classList.remove('open'); }
+function pjCloseFormModal() {
+  const modal = document.getElementById('pjFormModal');
+  if (modal) modal.classList.remove('open');
+  // Limpa classes opcionais aplicadas a um modal específico (ex: pj-form-card-wide)
+  const card = document.getElementById('pjFormCard');
+  if (card) card.classList.remove('pj-form-card-wide');
+}
 function pjSelectColor(el, color) {
   document.querySelectorAll('.pj-color-opt').forEach(e=>e.classList.remove('selected'));
   el.classList.add('selected');
