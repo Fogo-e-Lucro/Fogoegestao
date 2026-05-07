@@ -1540,11 +1540,12 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
   <button class="pj-fab" id="pjFab" onclick="pjOpenFabModal()" title="Criar tarefa rápida" style="display:none;">＋</button>
   <div class="pj-fab-modal-overlay" id="pjFabModal" onclick="if(event.target===this)pjCloseFabModal()" onkeydown="if(event.key==='Escape')pjCloseFabModal()">
     <div class="pj-fab-modal">
-      <h3>🪄 Nova tarefa rápida</h3>
+      <h3>🪄 Nova tarefa</h3>
+      <p style="font-size:12.5px;color:var(--text3);margin:0 0 14px;line-height:1.5;">Em qual lista? Após escolher, abriremos o editor completo pra você preencher tudo (descrição, prazo, prioridade, responsáveis…).</p>
       <form onsubmit="return pjFabSubmit(event)">
-        <label>Título</label>
+        <label>Título <span style="font-weight:400;color:var(--text3);">(opcional — pode editar depois)</span></label>
         <div class="pj-fab-title-row">
-          <input type="text" id="pjFabTitle" placeholder="Ex: Revisar copy da campanha amanhã às 9h" maxlength="200" required>
+          <input type="text" id="pjFabTitle" placeholder="Ex: Revisar copy da campanha" maxlength="200">
           <button type="button" class="pj-voice-btn" id="pjFabVoiceBtn" onclick="pjVoiceStart('pjFabTitle', this)" title="Ditar (Web Speech)" aria-label="Ditar">
             <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"/></svg>
           </button>
@@ -1554,7 +1555,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
         <select id="pjFabListSelect"></select>
         <div class="pj-fab-modal-footer">
           <button type="button" class="pj-btn" onclick="pjCloseFabModal()">Cancelar</button>
-          <button type="submit" class="pj-btn pj-btn-primary">Criar</button>
+          <button type="submit" class="pj-btn pj-btn-primary">Continuar →</button>
         </div>
       </form>
     </div>
@@ -15405,6 +15406,16 @@ function pjRelativeTime(ts) {
 
 // ── Quick-add FAB ──
 function pjOpenFabModal() {
+  // ATALHO: se o usuário está numa lista, cria direto lá e abre o modal
+  // completo (mesmo comportamento do botão "+ Tarefa").
+  if (pjCurrentView && pjCurrentView.type === 'list' && pjCurrentView.id) {
+    if (typeof pjQuickCreateTask === 'function') {
+      pjQuickCreateTask(pjCurrentView.id);
+      return;
+    }
+  }
+  // Caso contrário (dashboard, por cliente, timeline, etc): abre modal
+  // pequeno só pra ESCOLHER a lista. Após escolher, vai pro modal completo.
   const overlay = document.getElementById('pjFabModal');
   if (!overlay) return;
   // Popular lista de listas
@@ -15435,9 +15446,11 @@ async function pjFabSubmit(ev) {
   if (ev) ev.preventDefault();
   // Para gravação se ainda estiver rodando
   try { if (typeof pjVoiceStop === 'function') pjVoiceStop(); } catch(_) {}
-  const title = (document.getElementById('pjFabTitle')?.value || '').trim();
+  let title = (document.getElementById('pjFabTitle')?.value || '').trim();
   const listId = document.getElementById('pjFabListSelect')?.value;
-  if (!title || !listId) return;
+  if (!listId) return;
+  // Título é opcional — se vazio, usa default. Usuário edita no modal completo.
+  if (!title) title = 'Nova tarefa';
   const list = pjLists.find(l => l.id === listId);
   if (!list) return;
   const statuses = list.statuses || PJ_DEFAULT_STATUSES;
