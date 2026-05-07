@@ -13800,7 +13800,13 @@ async function pjAddNotification(notif) {
       // Filtra undefineds (Firestore não aceita)
       Object.keys(data).forEach(k => { if (data[k] === undefined) delete data[k]; });
       await pjC('pj_notifications').doc(id).set(data);
-    } catch(e) { console.warn('[pj] erro ao persistir notif:', e); }
+      console.debug('[pj] notif persistida no Firestore pra forUid:', notif.forUid, '— título:', notif.title);
+    } catch(e) {
+      console.error('[pj] ERRO ao persistir notif:', e, 'data:', notif);
+      if (typeof showToast === 'function') {
+        showToast('error','❌','Erro ao enviar notificação: '+(e.message||'permissão negada'));
+      }
+    }
     return;
   }
 
@@ -13810,6 +13816,21 @@ async function pjAddNotification(notif) {
   localStorage.setItem('pj_notif', JSON.stringify(pjNotifications));
   pjUpdateNotifBell();
   if (pjNotifPanelOpen) pjRenderNotifPanel();
+
+  // 🔔 Pra notifs explícitas (automação, menção, atribuição) destinadas
+  // a si mesmo: também toca som + sacode o sino + toast (mesma UX
+  // de quando outro usuário te notifica).
+  const RING_TYPES = new Set(['automation','mention','assigned']);
+  if (RING_TYPES.has(notif.type)) {
+    try { pjPlayMentionSound(); } catch(_) {}
+    try { if (typeof pjRingNotifBell === 'function') pjRingNotifBell(); } catch(_) {}
+    if (typeof showToast === 'function') {
+      showToast('info', '🔔', notif.title || 'Nova notificação');
+    }
+    if (typeof pjFireDesktopNotif === 'function') {
+      try { pjFireDesktopNotif(notif.title || 'Nova notificação', notif.subtitle || '', notif.taskId); } catch(_) {}
+    }
+  }
 }
 
 // Listener real-time: cada usuário escuta notificações destinadas a ele.
@@ -15759,6 +15780,7 @@ async function pjRunAutomations(ctx) {
 async function pjExecAutomationAction(action, ctx) {
   const { task, list, automation, myUid } = ctx;
   if (!action?.type) return;
+  console.debug('[automation] executando', { action, taskId: task?.id, automation: automation?.name });
   // Substitui placeholders na mensagem: {title}, {list}, {status}
   const fmt = (s) => String(s||'')
     .replace(/\{title\}/g, task.title || '')
@@ -15766,14 +15788,33 @@ async function pjExecAutomationAction(action, ctx) {
     .replace(/\{status\}/g, (list?.statuses||PJ_DEFAULT_STATUSES).find(s => s.id === task.statusId)?.name || '');
 
   if (action.type === 'notify_user') {
-    if (!action.userId) return;
-    const member = pjMembers.find(m => m.uid === action.userId || m.id === action.userId);
-    if (!member) return;
+    if (!action.userId) {
+      console.warn('[automation] notify_user SEM userId — automação ignorada');
+      return;
+    }
+    // Acha o membro: tenta uid, depois id, depois email (fallback robusto)
+    const member = pjMembers.find(m => m.uid === action.userId)
+                || pjMembers.find(m => m.id === action.userId)
+                || pjMembers.find(m => m.email === action.userId);
+    if (!member) {
+      console.warn('[automation] membro não encontrado pra userId:', action.userId, '— pjMembers:', pjMembers.map(m=>({uid:m.uid,id:m.id,email:m.email})));
+      return;
+    }
+    // Pra entregar via Firestore precisamos do uid REAL (não id do doc)
     const targetUid = member.uid;
-    if (!targetUid) return;
-    // Não notifica a si mesmo (já é quem disparou a automação)
-    if (targetUid === myUid) return;
+    if (!targetUid) {
+      console.warn('[automation] membro encontrado mas SEM uid (provavelmente nunca logou):', member);
+      if (typeof showToast === 'function') {
+        showToast('warn','⚠️',`${member.name||member.email} ainda não logou — não pode receber notificação automática.`);
+      }
+      return;
+    }
+    // OBS: SEM trava de auto-notificação. O usuário configurou a regra
+    // pra notificar a Eduarda — se a própria Eduarda mudar o status, ELA
+    // ainda deve ser notificada (lembrete pessoal). pjAddNotification cuida
+    // de criar local OU remoto dependendo se forUid === currentUid.
     const defaultMsg = `${list?.name || 'Lista'}: "${task.title || 'Tarefa'}" foi pra "${fmt('{status}')}"`;
+    console.debug('[automation] notify_user → forUid:', targetUid, 'currentUid:', myUid, '(será', targetUid===myUid?'LOCAL':'REMOTA via Firestore', ')');
     pjAddNotification({
       type: 'automation',
       title: action.message ? fmt(action.message) : defaultMsg,
