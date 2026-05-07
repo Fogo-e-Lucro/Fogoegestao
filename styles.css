@@ -4395,7 +4395,10 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-activity-time { font-size:10.5px; color:var(--text3); margin-top:2px; }
 
 /* ── Quick-add FAB ── */
-.pj-fab { position:fixed; right:24px; bottom:24px; width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--accent2,#a855f7)); color:#fff; border:none; font-size:26px; cursor:pointer; box-shadow:0 10px 28px color-mix(in srgb, var(--accent) 40%, transparent), 0 4px 10px rgba(0,0,0,.2); z-index:4500; display:flex; align-items:center; justify-content:center; transition:transform .15s, box-shadow .15s; }
+.pj-fab { position:fixed; right:24px; bottom:24px; width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--accent2,#a855f7)); color:#fff; border:none; font-size:26px; cursor:pointer; box-shadow:0 10px 28px color-mix(in srgb, var(--accent) 40%, transparent), 0 4px 10px rgba(0,0,0,.2); z-index:4500; display:flex; align-items:center; justify-content:center; transition:transform .15s, box-shadow .15s, opacity .2s; }
+/* Esconde o FAB quando o modal da tarefa está aberto — não cobre o
+   botão Enviar do comentário nem outras ações da modal */
+body.pj-task-open .pj-fab { display:none !important; }
 .pj-fab:hover { transform:scale(1.06) rotate(8deg); box-shadow:0 14px 36px color-mix(in srgb, var(--accent) 55%, transparent), 0 6px 14px rgba(0,0,0,.25); }
 .pj-fab:active { transform:scale(.96); }
 .pj-fab-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(6px); z-index:5500; display:none; align-items:center; justify-content:center; padding:20px; animation:pjFadeIn .2s ease; }
