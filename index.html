@@ -15755,7 +15755,12 @@ function pjAfterStatusChange(task, prevStatusId, newStatusId) {
 // }]
 async function pjRunAutomations(ctx) {
   const { event, task, list, prevStatusId, newStatusId } = ctx;
-  if (!list || !Array.isArray(list.automations)) return;
+  console.log('[automation] pjRunAutomations chamado:', { event, taskId: task?.id, listName: list?.name, regras: list?.automations?.length || 0, newStatusId });
+  if (!list) { console.warn('[automation] sem list — abortando'); return; }
+  if (!Array.isArray(list.automations) || !list.automations.length) {
+    console.log('[automation] lista sem automações configuradas — saindo');
+    return;
+  }
   const myUid = _auth?.currentUser?.uid || _currentUser?.uid;
   for (const a of list.automations) {
     if (!a || a.enabled === false) continue;
@@ -15768,11 +15773,19 @@ async function pjRunAutomations(ctx) {
         matched = true;
       }
     }
-    if (!matched) continue;
+    if (!matched) {
+      console.log('[automation] regra "' + (a.name||'sem nome') + '" não combinou com o evento — pulando');
+      continue;
+    }
+    console.log('[automation] regra MATCH:', a.name, '— executando', (a.actions||[]).length, 'ação(ões)');
+    // Toast visual pra usuário SABER que rodou
+    if (typeof showToast === 'function') {
+      showToast('info', '⚡', `Automação: ${a.name || 'regra'}`);
+    }
     // Executa ações
     for (const ac of (a.actions||[])) {
       try { await pjExecAutomationAction(ac, { task, list, automation:a, prevStatusId, newStatusId, myUid }); }
-      catch(e) { console.warn('[automation action]', e); }
+      catch(e) { console.error('[automation action] erro:', e); }
     }
   }
 }
@@ -15780,7 +15793,7 @@ async function pjRunAutomations(ctx) {
 async function pjExecAutomationAction(action, ctx) {
   const { task, list, automation, myUid } = ctx;
   if (!action?.type) return;
-  console.debug('[automation] executando', { action, taskId: task?.id, automation: automation?.name });
+  console.log('[automation] executando', { action, taskId: task?.id, automation: automation?.name });
   // Substitui placeholders na mensagem: {title}, {list}, {status}
   const fmt = (s) => String(s||'')
     .replace(/\{title\}/g, task.title || '')
@@ -15814,7 +15827,7 @@ async function pjExecAutomationAction(action, ctx) {
     // ainda deve ser notificada (lembrete pessoal). pjAddNotification cuida
     // de criar local OU remoto dependendo se forUid === currentUid.
     const defaultMsg = `${list?.name || 'Lista'}: "${task.title || 'Tarefa'}" foi pra "${fmt('{status}')}"`;
-    console.debug('[automation] notify_user → forUid:', targetUid, 'currentUid:', myUid, '(será', targetUid===myUid?'LOCAL':'REMOTA via Firestore', ')');
+    console.log('[automation] notify_user → forUid:', targetUid, 'currentUid:', myUid, '(será', targetUid===myUid?'LOCAL':'REMOTA via Firestore', ')');
     pjAddNotification({
       type: 'automation',
       title: action.message ? fmt(action.message) : defaultMsg,
