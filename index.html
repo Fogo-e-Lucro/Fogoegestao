@@ -2293,6 +2293,13 @@ function _appAvatarHtml(u, cls='') {
 function appPresenceRender() {
   const wrap = document.getElementById('appPresence');
   if (!wrap) return;
+  // 🔒 Restrito a admins: usuários comuns não veem quem está online
+  // nem o "visto por último" — privacidade da equipe
+  const isAdmin = (typeof userIsAdmin === 'function') ? userIsAdmin() : false;
+  if (!isAdmin) {
+    wrap.style.display = 'none';
+    return;
+  }
   const me = firebase.auth?.()?.currentUser?.uid;
   const others = _appPresenceUsers.filter(u => u.uid !== me);
   const onlineOthers = others.filter(u => u.isOnline);
