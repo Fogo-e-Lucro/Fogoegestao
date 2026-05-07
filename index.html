@@ -13373,7 +13373,7 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
   const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
   const st = statuses.find(s => s.id === (t.statusId||statuses[0].id)) || statuses[0];
   const done = pjIsDone(t);
-  const due = t.dueDate ? pjDueCls(t.dueDate) : null;
+  const due = t.dueDate ? pjDueCls(t.dueDate, t.dueTime) : null;
   const dueLabel = due ? (t.dueTime ? `${due.label} ${t.dueTime}` : due.label) : null;
   const subtaskCount = (pjAllTasks.filter(s => s.parentTaskId === t.id) || []).length;
   const assigneeHtml = (t.assignees||[]).length
@@ -14279,7 +14279,7 @@ function pjBuildByClient() {
     } else {
       items.forEach(t => {
         const list = pjLists.find(l=>l.id===t.listId);
-        const due = t.dueDate ? pjDueCls(t.dueDate) : null;
+        const due = t.dueDate ? pjDueCls(t.dueDate, t.dueTime) : null;
         const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
         const st = statuses.find(s=>s.id===(t.statusId||statuses[0].id))||statuses[0];
         h += `<div class="pj-bc-task-row" onclick="pjOpenTask('${t.id}')">
@@ -14402,7 +14402,7 @@ function pjBuildKanban(listId, statuses, tasks) {
            ondrop="pjKanbanDrop(event,'${listId}','${st.id}')"
            ondragleave="pjKanbanDragLeave(event)">`;
     stTasks.forEach(t => {
-      const due = t.dueDate ? pjDueCls(t.dueDate) : null;
+      const due = t.dueDate ? pjDueCls(t.dueDate, t.dueTime) : null;
       const assigneeHtml = (t.assignees||[]).slice(0,3).map(uid => pjAvatarHtml(uid)).join('');
       const tagsHtml = pjTaskTagsHtml(t, { small: true });
       const staleHtml = pjStalePillHtml(t);
@@ -14628,7 +14628,7 @@ function pjTaskRowHtml(t) {
   const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
   const st = statuses.find(s => s.id === (t.statusId||statuses[0].id)) || statuses[0];
   const done = pjIsDone(t);
-  const due = t.dueDate ? pjDueCls(t.dueDate) : null;
+  const due = t.dueDate ? pjDueCls(t.dueDate, t.dueTime) : null;
   const subtaskCount = (pjAllTasks.filter(s => s.parentTaskId === t.id) || []).length;
   const assigneeHtml = (t.assignees||[]).slice(0,3).map(uid=>pjAvatarHtml(uid)).join('');
   return `<div class="pj-task-row ${done?'done-row':''}" data-priority="${t.priority||'low'}" data-task-id="${t.id}"
@@ -14885,9 +14885,26 @@ function pjOnTaskClosed(t) {
   const isMine = Array.isArray(t.assignees) && t.assignees.includes(uid);
 
   // 😤 1. ATRASADA — alerta com esculacho (NÃO conta na meta de hoje)
+  //    Considera atrasada se:
+  //      a) data anterior a hoje, OU
+  //      b) data = hoje mas dueTime já passou da hora atual
+  let isOverdue = false;
+  let daysLate = 0;
   if (t.dueDate && t.dueDate < today) {
+    isOverdue = true;
     const dueDate = new Date(t.dueDate + 'T00:00:00');
-    const daysLate = Math.max(1, Math.floor((Date.now() - dueDate.getTime()) / 86400000));
+    daysLate = Math.max(1, Math.floor((Date.now() - dueDate.getTime()) / 86400000));
+  } else if (t.dueDate === today && t.dueTime && /^\d{1,2}:\d{2}$/.test(t.dueTime)) {
+    const [h, m] = t.dueTime.split(':').map(Number);
+    const dueMinutes = (h * 60) + m;
+    const now = new Date();
+    const nowMinutes = (now.getHours() * 60) + now.getMinutes();
+    if (nowMinutes > dueMinutes) {
+      isOverdue = true;
+      daysLate = 0; // mesmo dia, mas hora passou — sem dias inteiros
+    }
+  }
+  if (isOverdue) {
     try { pjPlayWarningBeep(); } catch(_) {}
     pjCelebrateOverdue(t, daysLate);
     return;
@@ -14995,7 +15012,9 @@ function pjCelebrateOverdue(t, daysLate) {
   ];
   const msg = messages[Math.floor(Math.random() * messages.length)];
   card.className = 'pj-celebrate-card pj-celebrate-overdue';
-  const dayLabel = daysLate === 1 ? '1 dia de atraso' : `${daysLate} dias de atraso`;
+  const dayLabel = daysLate === 0 ? 'Atrasada (passou do horário)'
+                 : daysLate === 1 ? '1 dia de atraso'
+                 : `${daysLate} dias de atraso`;
   const title = (t && t.title) ? String(t.title).slice(0, 80) : 'Tarefa';
   card.innerHTML = `
     <div class="pj-celebrate-emoji">${msg.emoji}</div>
@@ -18899,7 +18918,7 @@ function pjRenderSubtasks(parentId) {
 
   el.innerHTML = subtasks.map(t => {
     const isDone = pjIsDone(t);
-    const due = t.dueDate ? pjDueCls(t.dueDate) : null;
+    const due = t.dueDate ? pjDueCls(t.dueDate, t.dueTime) : null;
     const assignees = (t.assignees||[]).slice(0,2).map(uid=>pjAvatarHtml(uid)).join('');
 
     // Campos personalizados inline
@@ -20788,16 +20807,24 @@ function pjStalePillHtml(task) {
   return `<span class="pj-stale-pill ${info.severity}" title="Última mudança há ${info.days} dias — talvez precise de atenção">🧊 ${label}</span>`;
 }
 
-function pjDueCls(dateStr) {
+function pjDueCls(dateStr, dueTime) {
   const today = pjDateStr(new Date());
-  // Tarefa só fica ATRASADA quando a data local passa pra depois do
-  // vencimento. Sem horário definido, considera o dia inteiro como
-  // prazo (até 23:59:59 local) — só vira atrasada amanhã.
+  // Data anterior a hoje → ATRASADA (qualquer hora não importa)
   if (dateStr < today) return {cls:'overdue', label:'Atrasada'};
-  if (dateStr === today) return {cls:'today', label:'Hoje'};
-  // Calcula diferença em DIAS LOCAIS (não em ms). Antes usava
-  // Math.round((d - new Date())/86400000) que retornava 0 pra amanhã
-  // dependendo da hora do dia (bug de fuso/arredondamento).
+  // Hoje:
+  //   - sem dueTime → 'Hoje' o dia inteiro (vira atrasada só amanhã)
+  //   - com dueTime e hora atual já passou → ATRASADA mesmo sendo hoje
+  if (dateStr === today) {
+    if (dueTime && /^\d{1,2}:\d{2}$/.test(dueTime)) {
+      const [h, m] = dueTime.split(':').map(Number);
+      const dueMinutes = (h * 60) + m;
+      const now = new Date();
+      const nowMinutes = (now.getHours() * 60) + now.getMinutes();
+      if (nowMinutes > dueMinutes) return {cls:'overdue', label:'Atrasada'};
+    }
+    return {cls:'today', label:'Hoje'};
+  }
+  // Futuro — calcula diferença em DIAS LOCAIS
   const todayLocal = new Date(); todayLocal.setHours(0,0,0,0);
   const dueLocal = new Date(dateStr + 'T00:00:00');
   const diff = Math.round((dueLocal - todayLocal) / 86400000);
