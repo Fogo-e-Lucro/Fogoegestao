@@ -3611,18 +3611,63 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
   cursor:pointer; font-size:17px;
   display:flex; align-items:center; justify-content:center;
   position:relative; color:var(--text2);
-  transition:background .15s, transform .15s, border-color .15s;
+  transition:background .2s, transform .15s, border-color .2s, color .2s, box-shadow .2s;
 }
 .pj-notif-bell:hover { background:var(--bg2); border-color:var(--accent); transform:scale(1.05); }
-.pj-notif-count {
-  position:absolute; top:-4px; right:-4px;
-  min-width:18px; height:18px; padding:0 5px;
-  border-radius:9px; background:#ef4444; color:#fff;
-  font-size:10px; font-weight:700;
-  display:none; align-items:center; justify-content:center;
-  box-shadow:0 1px 3px rgba(0,0,0,.2);
+
+/* 🔔 Estado UNREAD: bell muda de cor (gradiente accent), brilha e
+   pulsa suavemente. Volta ao normal quando o usuário abre o painel. */
+.pj-notif-bell.has-unread {
+  background:linear-gradient(135deg, var(--accent), var(--accent2,#a855f7));
+  border-color:transparent;
+  color:#fff;
+  box-shadow:0 0 0 0 rgba(99,102,241,.55);
+  animation: pjBellPulse 2s ease-in-out infinite;
 }
-.pj-notif-count.has { display:flex; animation: pjPopIn .2s; }
+.pj-notif-bell.has-unread:hover {
+  transform:scale(1.08);
+  box-shadow:0 8px 24px rgba(99,102,241,.45);
+}
+@keyframes pjBellPulse {
+  0%,100% { box-shadow:0 0 0 0 rgba(99,102,241,.55); }
+  50%     { box-shadow:0 0 0 8px rgba(99,102,241,0); }
+}
+
+/* 🚨 Estado FRESH: notif acabou de chegar — sacode o sino algumas vezes */
+.pj-notif-bell.ringing {
+  animation: pjBellRing 1.4s cubic-bezier(.36,.07,.19,.97) 2;
+  transform-origin: 50% 8%;
+}
+@keyframes pjBellRing {
+  0%, 100% { transform:rotate(0deg); }
+  10%      { transform:rotate(-14deg); }
+  20%      { transform:rotate(12deg); }
+  30%      { transform:rotate(-10deg); }
+  40%      { transform:rotate(8deg); }
+  50%      { transform:rotate(-6deg); }
+  60%      { transform:rotate(4deg); }
+  70%      { transform:rotate(-2deg); }
+  80%      { transform:rotate(1deg); }
+}
+
+.pj-notif-count {
+  position:absolute; top:-5px; right:-5px;
+  min-width:20px; height:20px; padding:0 6px;
+  border-radius:10px;
+  background:linear-gradient(135deg, #ef4444, #dc2626);
+  color:#fff;
+  font-size:11px; font-weight:800;
+  display:none; align-items:center; justify-content:center;
+  box-shadow:0 2px 8px rgba(220,38,38,.4), 0 0 0 2px var(--bg);
+  border:1.5px solid #fff;
+  animation: pjBadgePop .35s cubic-bezier(.34,1.56,.64,1);
+}
+.pj-notif-count.has { display:flex; }
+@keyframes pjBadgePop {
+  0%   { transform:scale(0) rotate(-90deg); }
+  60%  { transform:scale(1.25) rotate(8deg); }
+  100% { transform:scale(1) rotate(0deg); }
+}
 .pj-notif-panel {
   position:fixed; top:60px; right:24px; z-index:9999;
   width:360px; max-height:480px; overflow:hidden;

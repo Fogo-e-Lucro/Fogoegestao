@@ -13846,9 +13846,10 @@ function pjStartNotifListener() {
         localStorage.setItem('pj_notif', JSON.stringify(pjNotifications));
         pjUpdateNotifBell();
         if (pjNotifPanelOpen) pjRenderNotifPanel();
-        // 🔊 Toca som + desktop notif pras novas que chegaram agora
+        // 🔊 Toca som + desktop notif + sacode o sino pras novas
         if (newOnes > 0) {
           try { pjPlayMentionSound(); } catch(_) {}
+          try { pjRingNotifBell(); } catch(_) {} // 🔔 sacode o sino
           // Pega a notif mais recente pra mostrar no desktop
           const latest = pjNotifications[0];
           if (latest && typeof pjFireDesktopNotif === 'function') {
@@ -13871,8 +13872,25 @@ function pjUpdateNotifBell() {
   const bell = document.getElementById('pjNotifBell');
   if (!bell) return;
   const unread = pjNotifications.filter(n => !n.read).length;
-  bell.querySelector('.pj-notif-count').textContent = unread > 99 ? '99+' : unread;
-  bell.querySelector('.pj-notif-count').style.display = unread ? '' : 'none';
+  const countEl = bell.querySelector('.pj-notif-count');
+  if (countEl) {
+    countEl.textContent = unread > 99 ? '99+' : unread;
+    countEl.classList.toggle('has', unread > 0);
+    countEl.style.display = unread > 0 ? '' : 'none';
+  }
+  // 🔔 Aplica estado VISUAL de não-lidas (gradiente accent + pulse)
+  bell.classList.toggle('has-unread', unread > 0);
+}
+
+// Sacode o sino (animação ringing) — chamado quando notif fresh chega
+function pjRingNotifBell() {
+  const bell = document.getElementById('pjNotifBell');
+  if (!bell) return;
+  bell.classList.remove('ringing');
+  // Force reflow pra reiniciar a animação se já tava rodando
+  void bell.offsetWidth;
+  bell.classList.add('ringing');
+  setTimeout(() => bell.classList.remove('ringing'), 3000);
 }
 function pjToggleNotifPanel(ev) {
   if (ev) ev.stopPropagation();
@@ -13882,6 +13900,12 @@ function pjToggleNotifPanel(ev) {
   if (pjNotifPanelOpen) {
     pjRenderNotifPanel();
     panel.classList.add('open');
+    // 👀 Visualizou! Marca tudo como lido — sino volta ao normal.
+    // Pequeno delay pra usuário ver o badge brevemente antes do panel sumir
+    // o estado unread (UX: confirmação visual de que viu o que estava pendente)
+    setTimeout(() => {
+      try { pjMarkAllRead(); } catch(_) {}
+    }, 500);
     setTimeout(() => {
       const onDoc = (e) => {
         if (!panel.contains(e.target) && e.target.id !== 'pjNotifBell' && !document.getElementById('pjNotifBell').contains(e.target)) {
@@ -15605,6 +15629,7 @@ function pjMaybeNotifyAssignment(prevTask, newTask) {
     // Toca som imediatamente (UX) — listener de notif do Firestore vai
     // tocar de novo se chegar primeiro, mas o Set _pjNotifSeen previne dupla
     pjPlayMentionSound();
+    try { pjRingNotifBell(); } catch(_) {} // 🔔 sacode o sino
     const title = `Você foi atribuído à "${newTask.title||''}"`;
     const subtitle = pjLists.find(l=>l.id===newTask.listId)?.name || '';
     // Cria notif local imediata (pro próprio user que abriu a página)
