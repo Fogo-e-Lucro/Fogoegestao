@@ -2447,7 +2447,10 @@ function appPresenceRenderPopover() {
      appPushUndo({ describe: 'mover tarefa', undo: async () => { ... } })
    Stack mantém últimas 20. Ctrl+Z chama o topo. */
 const APP_UNDO_MAX = 20;
+const APP_UNDO_TIMEOUT_MS = 30 * 1000; // ações expiram do stack após 30s
 const _appUndoStack = [];
+let _appUndoToastTimer = null;
+
 function appPushUndo(entry) {
   if (!entry || typeof entry.undo !== 'function') return;
   _appUndoStack.push({
@@ -2456,13 +2459,49 @@ function appPushUndo(entry) {
     ts: Date.now(),
   });
   while (_appUndoStack.length > APP_UNDO_MAX) _appUndoStack.shift();
+  _appShowUndoToast(entry.describe || 'ação');
 }
+
+// Mostra toast persistente "↩ Desfazer X" no canto inferior — clicável
+function _appShowUndoToast(describe) {
+  // Remove toast anterior se houver
+  document.querySelectorAll('.app-undo-toast').forEach(el => el.remove());
+  if (_appUndoToastTimer) clearTimeout(_appUndoToastTimer);
+
+  const toast = document.createElement('div');
+  toast.className = 'app-undo-toast';
+  toast.innerHTML = `
+    <span class="app-undo-toast-icon">↩</span>
+    <span class="app-undo-toast-text">${(describe||'').replace(/</g,'&lt;')}</span>
+    <button class="app-undo-toast-btn" onclick="appUndoLast();this.closest('.app-undo-toast').remove();">Desfazer</button>
+    <button class="app-undo-toast-close" onclick="this.closest('.app-undo-toast').remove();" title="Fechar">×</button>
+    <div class="app-undo-toast-progress"></div>
+  `;
+  document.body.appendChild(toast);
+  // Anima a barra de progresso (10s pra desaparecer)
+  requestAnimationFrame(() => {
+    const bar = toast.querySelector('.app-undo-toast-progress');
+    if (bar) {
+      bar.style.transition = 'transform 10s linear';
+      bar.style.transform = 'scaleX(0)';
+    }
+  });
+  _appUndoToastTimer = setTimeout(() => { try { toast.remove(); } catch(_){} }, 10_000);
+}
+
 async function appUndoLast() {
+  // Limpa entradas expiradas (>30s)
+  const now = Date.now();
+  while (_appUndoStack.length && (now - _appUndoStack[0].ts) > APP_UNDO_TIMEOUT_MS) {
+    _appUndoStack.shift();
+  }
   const entry = _appUndoStack.pop();
   if (!entry) {
     if (typeof showToast === 'function') showToast('warn','↩','Nada para desfazer.');
     return;
   }
+  // Fecha toast de undo (se aberto)
+  document.querySelectorAll('.app-undo-toast').forEach(el => el.remove());
   try {
     await entry.undo();
     if (typeof showToast === 'function') showToast('ok','↩', `Desfeito: ${entry.describe}`);
@@ -13702,29 +13741,156 @@ function pjBuildBulkBar() {
   if (!pjSelected.size) return '';
   return `<div class="pj-bulk-bar">
     <span class="pj-bulk-count">${pjSelected.size} selecionada${pjSelected.size>1?'s':''}</span>
+    <button class="pj-filter-btn" onclick="pjBulkSelectAll()" title="Selecionar todas as visíveis">☑ Todas</button>
     <button class="pj-filter-btn" onclick="pjBulkStatus(event)">🏷️ Status</button>
     <button class="pj-filter-btn" onclick="pjBulkAssign(event)">👤 Atribuir</button>
     <button class="pj-filter-btn" onclick="pjBulkPriority(event)">⚑ Prioridade</button>
+    <button class="pj-filter-btn" onclick="pjBulkClient(event)">🏪 Cliente</button>
+    <button class="pj-filter-btn" onclick="pjBulkDue(event)">📅 Vencimento</button>
+    <button class="pj-filter-btn" onclick="pjBulkMoveList(event)">📁 Mover lista</button>
     <button class="pj-filter-btn" onclick="pjBulkArchive()">🗄️ Arquivar</button>
     <button class="pj-filter-btn pj-filter-btn-danger" onclick="pjBulkDelete()">🗑 Excluir</button>
-    <button class="pj-filter-btn" onclick="pjBulkClear()" style="margin-left:auto;" title="Limpar seleção">✕</button>
+    <button class="pj-filter-btn" onclick="pjBulkClear()" style="margin-left:auto;" title="Limpar seleção (Esc)">✕</button>
   </div>`;
 }
+// Suporta SHIFT-click pra range select (igual Finder)
+let _pjLastSelected = null;
 function pjToggleSelect(taskId, e) {
   if (e) { e.stopPropagation(); e.preventDefault(); }
-  if (pjSelected.has(taskId)) pjSelected.delete(taskId); else pjSelected.add(taskId);
+  // SHIFT: seleciona range entre last selected e atual
+  if (e && e.shiftKey && _pjLastSelected && _pjLastSelected !== taskId) {
+    const rows = [...document.querySelectorAll('[data-task-id]')];
+    const ids = rows.map(r => r.dataset.taskId);
+    const i1 = ids.indexOf(_pjLastSelected);
+    const i2 = ids.indexOf(taskId);
+    if (i1 >= 0 && i2 >= 0) {
+      const [from, to] = i1 < i2 ? [i1, i2] : [i2, i1];
+      for (let i = from; i <= to; i++) pjSelected.add(ids[i]);
+      _pjLastSelected = taskId;
+      pjRenderMain();
+      return;
+    }
+  }
+  if (pjSelected.has(taskId)) pjSelected.delete(taskId);
+  else { pjSelected.add(taskId); _pjLastSelected = taskId; }
   pjRenderMain();
 }
-function pjBulkClear() { pjSelected.clear(); pjRenderMain(); }
+function pjBulkClear() { pjSelected.clear(); _pjLastSelected = null; pjRenderMain(); }
+function pjBulkSelectAll() {
+  // Pega todas as task-ids visíveis no momento (rendered)
+  document.querySelectorAll('[data-task-id]').forEach(el => {
+    const id = el.dataset.taskId;
+    if (id) pjSelected.add(id);
+  });
+  pjRenderMain();
+}
+
+// 🖱️ RUBBER BAND SELECTION (estilo Finder) — arrastar com mouse
+// pra desenhar uma caixa que seleciona todas as tarefas dentro
+let _pjRubberBand = null;
+function _pjStartRubberBand(e) {
+  // Só ativa em área com tarefas (.pj-view-body) e clicando em fundo (não em row)
+  const body = e.target.closest('.pj-view-body, .pj-list-table');
+  if (!body) return;
+  // Ignora se clicou em qualquer botão/link/checkbox/row da tarefa
+  if (e.target.closest('[data-task-id], button, a, input, select, .pj-status-pill, .pj-list-th-row')) return;
+  // Só botão esquerdo
+  if (e.button !== 0) return;
+  e.preventDefault();
+  const startX = e.clientX, startY = e.clientY;
+  const additive = e.metaKey || e.ctrlKey || e.shiftKey; // mantém seleção atual
+  if (!additive) pjSelected.clear();
+
+  const box = document.createElement('div');
+  box.className = 'pj-rubber-band';
+  document.body.appendChild(box);
+  _pjRubberBand = { startX, startY, box, additive, startSet: new Set(pjSelected) };
+
+  const onMove = (ev) => {
+    if (!_pjRubberBand) return;
+    const x1 = Math.min(startX, ev.clientX);
+    const y1 = Math.min(startY, ev.clientY);
+    const w = Math.abs(ev.clientX - startX);
+    const h = Math.abs(ev.clientY - startY);
+    box.style.left = x1 + 'px';
+    box.style.top  = y1 + 'px';
+    box.style.width  = w + 'px';
+    box.style.height = h + 'px';
+    box.style.display = (w > 3 || h > 3) ? 'block' : 'none';
+    // Calcula seleção: tarefas cujo retângulo intersecta a caixa
+    const rectBox = { left:x1, top:y1, right:x1+w, bottom:y1+h };
+    pjSelected = new Set(_pjRubberBand.startSet);
+    document.querySelectorAll('[data-task-id]').forEach(el => {
+      const r = el.getBoundingClientRect();
+      const intersect = !(r.right < rectBox.left || r.left > rectBox.right ||
+                          r.bottom < rectBox.top || r.top > rectBox.bottom);
+      if (intersect) {
+        pjSelected.add(el.dataset.taskId);
+        el.classList.add('pj-rubber-target');
+      } else {
+        el.classList.remove('pj-rubber-target');
+      }
+    });
+  };
+  const onUp = () => {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    if (_pjRubberBand) {
+      _pjRubberBand.box.remove();
+      _pjRubberBand = null;
+    }
+    document.querySelectorAll('.pj-rubber-target').forEach(el => el.classList.remove('pj-rubber-target'));
+    pjRenderMain(); // reflete seleção final
+  };
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+// Registra o listener globalmente — só ativa em áreas válidas (checa em _pjStartRubberBand)
+if (typeof document !== 'undefined') {
+  document.addEventListener('mousedown', _pjStartRubberBand);
+}
+
+// Esc limpa seleção
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && pjSelected.size > 0) {
+    const tag = (e.target?.tagName||'').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || e.target?.isContentEditable) return;
+    pjBulkClear();
+  }
+});
 function pjBulkDelete() {
   if (!pjSelected.size) return;
-  if (!confirm(`Excluir ${pjSelected.size} tarefa(s)? Não dá pra desfazer.`)) return;
+  const n = pjSelected.size;
+  if (!confirm(`Excluir ${n} tarefa(s)?\n\nVocê terá ~10 segundos pra desfazer com Ctrl+Z.`)) return;
   const ids = [...pjSelected];
+  // Snapshot pra undo
+  const snapshots = ids.map(id => {
+    const t = pjAllTasks.find(x => x.id === id);
+    return t ? { ...t } : null;
+  }).filter(Boolean);
   ids.forEach(id => {
     pjAllTasks = pjAllTasks.filter(t => t.id !== id);
     for (const lid in pjTasks) pjTasks[lid] = pjTasks[lid].filter(t => t.id !== id);
     try { pjC('pj_tasks').doc(id).delete(); } catch(e){}
   });
+  if (typeof appPushUndo === 'function') {
+    appPushUndo({
+      describe: `excluir ${n} tarefa(s)`,
+      undo: async () => {
+        for (const t of snapshots) {
+          pjAllTasks.push(t);
+          if (!pjTasks[t.listId]) pjTasks[t.listId] = [];
+          pjTasks[t.listId].push(t);
+          try {
+            const { id, ...data } = t;
+            await pjC('pj_tasks').doc(t.id).set(data);
+          } catch(e) {}
+        }
+        pjRenderMain(); pjRenderSidebar();
+      },
+    });
+  }
+  if (typeof showToast === 'function') showToast('info','🗑️',`${n} tarefa(s) excluída(s). Ctrl+Z desfaz.`);
   pjSelected.clear();
   pjRenderMain(); pjRenderSidebar();
 }
@@ -13751,8 +13917,22 @@ async function pjBulkArchive() {
   if (typeof showToast === 'function') showToast(`${ids.length} tarefa(s) arquivada(s).`, 'ok');
 }
 async function pjBulkApply(field, value) {
+  // Snapshot pra undo
+  const snapshots = [...pjSelected].map(id => {
+    const t = pjAllTasks.find(x => x.id === id);
+    return { id, prevValue: t?.[field] };
+  });
   for (const id of pjSelected) {
     await pjUpdateTask(id, { [field]: value });
+  }
+  if (typeof appPushUndo === 'function') {
+    appPushUndo({
+      describe: `${field} em ${snapshots.length} tarefa(s)`,
+      undo: async () => {
+        for (const s of snapshots) await pjUpdateTask(s.id, { [field]: s.prevValue });
+        pjRenderMain(); pjRenderSidebar();
+      },
+    });
   }
   pjSelected.clear();
   pjRenderMain(); pjRenderSidebar();
@@ -13775,12 +13955,158 @@ function pjBulkPriority(ev) {
 function pjBulkAssign(ev) {
   const opts = pjMembers.map(m => ({ id:m.uid, label:m.name||m.email, icon:'👤' }));
   pjShowPopupMenu(ev, opts, null, async (uid) => {
+    // Snapshot pra undo
+    const snapshots = [...pjSelected].map(id => {
+      const t = pjAllTasks.find(x => x.id === id);
+      return { id, prevAssignees: [...(t?.assignees||[])] };
+    });
     for (const id of pjSelected) {
       const t = pjAllTasks.find(x => x.id === id);
       const arr = [...(t?.assignees||[])];
       if (!arr.includes(uid)) arr.push(uid);
       await pjUpdateTask(id, { assignees: arr });
     }
+    if (typeof appPushUndo === 'function') {
+      const memberName = pjMembers.find(m => m.uid === uid)?.name || 'membro';
+      appPushUndo({
+        describe: `atribuir ${snapshots.length} tarefa(s) a ${memberName}`,
+        undo: async () => {
+          for (const s of snapshots) await pjUpdateTask(s.id, { assignees: s.prevAssignees });
+          pjRenderMain(); pjRenderSidebar();
+        },
+      });
+    }
+    pjSelected.clear();
+    pjRenderMain(); pjRenderSidebar();
+  });
+}
+
+// 🏪 Bulk: definir cliente em N tarefas
+function pjBulkClient(ev) {
+  const names = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : [];
+  const opts = [{ id:'__none__', label:'— Sem cliente —', icon:'✕' }];
+  names.sort().forEach(n => opts.push({ id:n, label:n, icon:'🏪' }));
+  pjShowPopupMenu(ev, opts, null, async (val) => {
+    const newClient = val === '__none__' ? null : val;
+    const snapshots = [...pjSelected].map(id => {
+      const t = pjAllTasks.find(x => x.id === id);
+      return { id, prevClient: t?.client || null };
+    });
+    for (const id of pjSelected) await pjUpdateTask(id, { client: newClient });
+    if (typeof appPushUndo === 'function') {
+      appPushUndo({
+        describe: `cliente em ${snapshots.length} tarefa(s)`,
+        undo: async () => {
+          for (const s of snapshots) await pjUpdateTask(s.id, { client: s.prevClient });
+          pjRenderMain(); pjRenderSidebar();
+        },
+      });
+    }
+    pjSelected.clear();
+    pjRenderMain(); pjRenderSidebar();
+  });
+}
+
+// 📅 Bulk: definir vencimento (hoje, amanhã, semana, sem data, custom)
+function pjBulkDue(ev) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate()+1);
+  const week = new Date(today); week.setDate(week.getDate()+7);
+  const fmt = d => pjDateStr(d);
+  const opts = [
+    { id:fmt(today), label:'Hoje', icon:'📅' },
+    { id:fmt(tomorrow), label:'Amanhã', icon:'📅' },
+    { id:fmt(week), label:'Em 7 dias', icon:'📅' },
+    { id:'__none__', label:'Sem data', icon:'✕' },
+    { id:'__custom__', label:'Escolher data…', icon:'📆' },
+  ];
+  pjShowPopupMenu(ev, opts, null, async (val) => {
+    let date = null;
+    if (val === '__custom__') {
+      const v = prompt('Data (AAAA-MM-DD):');
+      if (!v || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return;
+      date = v;
+    } else if (val === '__none__') {
+      date = null;
+    } else {
+      date = val;
+    }
+    const snapshots = [...pjSelected].map(id => {
+      const t = pjAllTasks.find(x => x.id === id);
+      return { id, prevDue: t?.dueDate || null };
+    });
+    for (const id of pjSelected) await pjUpdateTask(id, { dueDate: date });
+    if (typeof appPushUndo === 'function') {
+      appPushUndo({
+        describe: `vencimento em ${snapshots.length} tarefa(s)`,
+        undo: async () => {
+          for (const s of snapshots) await pjUpdateTask(s.id, { dueDate: s.prevDue });
+          pjRenderMain(); pjRenderSidebar();
+        },
+      });
+    }
+    pjSelected.clear();
+    pjRenderMain(); pjRenderSidebar();
+  });
+}
+
+// 📁 Bulk: mover N tarefas pra outra lista
+function pjBulkMoveList(ev) {
+  // Agrupa listas por space pro menu ficar legível
+  const opts = [];
+  pjSpaces.forEach(sp => {
+    const lists = pjLists.filter(l => l.spaceId === sp.id);
+    if (!lists.length) return;
+    opts.push({ header:true, label:sp.name });
+    lists.forEach(l => opts.push({ id:l.id, label:l.name, icon:'📋' }));
+  });
+  if (!opts.length) {
+    if (typeof showToast === 'function') showToast('warn','⚠️','Nenhuma lista disponível pra mover.');
+    return;
+  }
+  pjShowPopupMenu(ev, opts, null, async (newListId) => {
+    const targetList = pjLists.find(l => l.id === newListId);
+    if (!targetList) return;
+    const firstStatus = (targetList.statuses || PJ_DEFAULT_STATUSES)[0];
+    // Snapshot pra undo
+    const snapshots = [...pjSelected].map(id => {
+      const t = pjAllTasks.find(x => x.id === id);
+      return { id, prevListId: t?.listId, prevSpaceId: t?.spaceId, prevStatusId: t?.statusId };
+    });
+    for (const id of pjSelected) {
+      const t = pjAllTasks.find(x => x.id === id);
+      if (!t) continue;
+      // Remove da lista antiga + adiciona na nova
+      if (pjTasks[t.listId]) pjTasks[t.listId] = pjTasks[t.listId].filter(x => x.id !== id);
+      t.listId = newListId;
+      t.spaceId = targetList.spaceId;
+      t.statusId = firstStatus.id;
+      if (!pjTasks[newListId]) pjTasks[newListId] = [];
+      pjTasks[newListId].push(t);
+      try { await pjC('pj_tasks').doc(id).update({ listId: newListId, spaceId: targetList.spaceId, statusId: firstStatus.id, updatedAt: pjNow() }); } catch(e){}
+    }
+    pjAllTasks = Object.values(pjTasks).flat();
+    if (typeof appPushUndo === 'function') {
+      appPushUndo({
+        describe: `mover ${snapshots.length} tarefa(s) pra "${targetList.name}"`,
+        undo: async () => {
+          for (const s of snapshots) {
+            const t = pjAllTasks.find(x => x.id === s.id);
+            if (!t) continue;
+            if (pjTasks[t.listId]) pjTasks[t.listId] = pjTasks[t.listId].filter(x => x.id !== s.id);
+            t.listId = s.prevListId;
+            t.spaceId = s.prevSpaceId;
+            t.statusId = s.prevStatusId;
+            if (!pjTasks[s.prevListId]) pjTasks[s.prevListId] = [];
+            pjTasks[s.prevListId].push(t);
+            try { await pjC('pj_tasks').doc(s.id).update({ listId: s.prevListId, spaceId: s.prevSpaceId, statusId: s.prevStatusId, updatedAt: pjNow() }); } catch(e){}
+          }
+          pjAllTasks = Object.values(pjTasks).flat();
+          pjRenderMain(); pjRenderSidebar();
+        },
+      });
+    }
+    if (typeof showToast === 'function') showToast('success','📁',`${snapshots.length} tarefa(s) movida(s) pra "${targetList.name}". Ctrl+Z desfaz.`);
     pjSelected.clear();
     pjRenderMain(); pjRenderSidebar();
   });
@@ -15783,23 +16109,89 @@ function pjFabApplyAiExtraction(r) {
   };
 }
 
-// ── Notificações desktop (Notification API) ──
+// ── Notificações nativas (Notification API + Service Worker) ──
+// Suporte PWA mobile: usa registration.showNotification do SW quando
+// disponível — funciona com app instalado mesmo com aba fechada,
+// e libera vibração/badge no celular.
 function pjRequestDesktopNotif() {
   if (!('Notification' in window)) return;
   if (Notification.permission === 'default') {
-    try { Notification.requestPermission(); } catch(e) {}
+    try {
+      Notification.requestPermission().then(perm => {
+        if (perm === 'granted') {
+          if (typeof showToast === 'function') showToast('success','🔔','Notificações ativadas! Você receberá alertas de menções e atribuições.');
+        }
+      });
+    } catch(e) {}
   }
 }
-function pjFireDesktopNotif(title, body, taskId) {
+
+async function pjFireDesktopNotif(title, body, taskId) {
   try {
     if (!('Notification' in window)) return;
     if (Notification.permission !== 'granted') return;
-    if (document.visibilityState === 'visible' && document.hasFocus()) return; // só quando aba fora de foco
-    const n = new Notification(title, { body: body||'', icon:'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><text y="26" font-size="26">🎯</text></svg>', tag:`fg-${taskId||Date.now()}` });
-    n.onclick = () => { window.focus(); if (taskId && typeof pjOpenTask==='function') pjOpenTask(taskId); n.close(); };
+    // Se aba está visível E em foco, NÃO mostra notif nativa (toast in-app é
+    // mais elegante). Só dispara nativa quando user está em outra aba/app.
+    if (document.visibilityState === 'visible' && document.hasFocus()) return;
+
+    const opts = {
+      body: body || '',
+      icon: './icon-192.png',
+      badge: './icon-192.png',
+      tag: `fg-${taskId||Date.now()}`,
+      data: { taskId, url: location.pathname },
+      vibrate: [200, 100, 200], // padrão de vibração no mobile
+      requireInteraction: false, // some sozinha após uns segundos
+    };
+
+    // 🎯 Tenta via Service Worker primeiro (PWA mobile, melhor suporte)
+    if ('serviceWorker' in navigator) {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        if (reg && typeof reg.showNotification === 'function') {
+          await reg.showNotification(title, opts);
+          return;
+        }
+      } catch(_) {}
+    }
+    // Fallback: Notification API direto (desktop, browsers sem SW)
+    const n = new Notification(title, opts);
+    n.onclick = () => {
+      window.focus();
+      if (taskId && typeof pjOpenTask === 'function') pjOpenTask(taskId);
+      n.close();
+    };
     setTimeout(() => n.close(), 8000);
   } catch(e) {}
 }
+
+// Pede permissão automaticamente após 5s de uso (não logo na 1ª abertura
+// pra não assustar). Só mostra prompt 1x — se user negou, respeita.
+function pjMaybeAutoPromptNotif() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'default') return;
+  // Espera 5s pra não aparecer prompt junto com login/load
+  setTimeout(() => {
+    // Mostra um banner discreto in-app antes do prompt nativo
+    const banner = document.createElement('div');
+    banner.className = 'pj-notif-prompt-banner';
+    banner.innerHTML = `
+      <span>🔔 Quer receber alertas quando alguém te mencionar ou atribuir uma tarefa?</span>
+      <div class="pj-notif-prompt-actions">
+        <button onclick="this.closest('.pj-notif-prompt-banner').remove();localStorage.setItem('pj_notif_prompt_dismissed','1');">Agora não</button>
+        <button class="primary" onclick="pjRequestDesktopNotif();this.closest('.pj-notif-prompt-banner').remove();">Ativar</button>
+      </div>
+    `;
+    if (localStorage.getItem('pj_notif_prompt_dismissed') !== '1') {
+      document.body.appendChild(banner);
+      setTimeout(() => { try { banner.remove(); } catch(_){} }, 30_000); // some sozinho em 30s
+    }
+  }, 5000);
+}
+// Dispara o auto-prompt quando o user logar e renderizar
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(pjMaybeAutoPromptNotif, 8000);
+});
 
 // ── Mobile UX (drawer, pull-to-refresh, swipe-to-complete) ──
 // Implementação extraída pra mobile.js (carregado no <head>).
