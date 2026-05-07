@@ -14777,12 +14777,49 @@ async function pjQuickCreateTask(listId, statusId) {
 }
 
 // ── Som de notificação para menções/atribuições ───────
+// AudioContext compartilhado — alguns navegadores limitam quantos podem
+// ser criados; reusar resolve "Failed to construct AudioContext".
+let _pjAudioCtx = null;
+function _pjGetAudioCtx() {
+  try {
+    if (_pjAudioCtx && _pjAudioCtx.state !== 'closed') return _pjAudioCtx;
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    _pjAudioCtx = new Ctx();
+    return _pjAudioCtx;
+  } catch(e) { return null; }
+}
+
+// Destrava o AudioContext na primeira interação do usuário (autoplay policy).
+// Sem isso, browsers como Chrome/Safari bloqueiam som até primeiro click/touch.
+let _pjAudioUnlocked = false;
+function _pjUnlockAudio() {
+  if (_pjAudioUnlocked) return;
+  const ctx = _pjGetAudioCtx();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') {
+    ctx.resume().then(() => {
+      _pjAudioUnlocked = true;
+      console.log('[pj] 🔊 audio destravado');
+    }).catch(()=>{});
+  } else {
+    _pjAudioUnlocked = true;
+  }
+}
+// Registra listeners pra destravar audio na primeira interação
+['click','touchstart','keydown'].forEach(evt => {
+  document.addEventListener(evt, _pjUnlockAudio, { once: false, passive: true });
+});
+
 function pjPlayMentionSound() {
   try {
     if (lsRaw('pj_sound','1') === '0') return; // usuário desativou
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return;
-    const ctx = new Ctx();
+    const ctx = _pjGetAudioCtx();
+    if (!ctx) { console.warn('[pj] AudioContext não disponível'); return; }
+    // Se suspendido (autoplay bloqueado), tenta resumir antes
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
     const now = ctx.currentTime;
     // Dois bipes curtos ascendentes, suaves
     [[880, 0], [1320, 0.12]].forEach(([f, t]) => {
@@ -14795,9 +14832,17 @@ function pjPlayMentionSound() {
       o.connect(g); g.connect(ctx.destination);
       o.start(now+t); o.stop(now+t+0.2);
     });
-    setTimeout(() => ctx.close(), 600);
-  } catch(e) { /* silencioso */ }
+    // OBS: NÃO fechamos o ctx (reuso entre toques pra evitar erro)
+    if (ctx.state === 'suspended') {
+      console.warn('[pj] 🔇 som BLOQUEADO pelo browser (autoplay) — clique em qualquer lugar pra destravar');
+    }
+  } catch(e) { console.warn('[pj] erro tocando som:', e); }
 }
+// Helper de teste no console: pjTestSound()
+window.pjTestSound = function() {
+  console.log('[pj] testando som...');
+  pjPlayMentionSound();
+};
 // Para silenciar: localStorage.setItem('pj_sound','0')
 
 // ── Celebração: confete + som ao concluir tarefa de prioridade alta/urgente ──
