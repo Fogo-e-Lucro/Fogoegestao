@@ -15662,14 +15662,41 @@ function pjLogActivity(taskId, entry) {
               || 'system';
     const e = { ts: Date.now(), by: uid, ...entry };
     if (!Array.isArray(task.activity)) task.activity = [];
-    task.activity.push(e);
-    if (task.activity.length > 60) task.activity = task.activity.slice(-60);
-    // Persiste em background — Firestore arrayUnion mantém histórico cumulativo
+
+    // 🧹 COALESCÊNCIA: tipos que mudam rapidamente (rename letra a letra,
+    // ajuste de horário, prioridade, etc) viram UMA entrada se vierem em
+    // sequência do mesmo usuário em < 5min. Mostra só o estado FINAL.
+    const COALESCE_MS = 5 * 60 * 1000; // 5 min
+    const COALESCE_TYPES = new Set(['title', 'duetime', 'due', 'priority']);
+    const last = task.activity[task.activity.length - 1];
+    let coalesced = false;
+    if (last && COALESCE_TYPES.has(e.type) && last.type === e.type &&
+        last.by === e.by && (e.ts - (last.ts || 0)) < COALESCE_MS) {
+      // Atualiza a última entrada: mantém 'from' original (início da edição),
+      // atualiza 'to' e 'ts' pra refletir o estado atual
+      last.ts = e.ts;
+      if ('to' in e) last.to = e.to;
+      if ('toName' in e)  last.toName  = e.toName;
+      if ('toColor' in e) last.toColor = e.toColor;
+      coalesced = true;
+    }
+    if (!coalesced) {
+      task.activity.push(e);
+      if (task.activity.length > 60) task.activity = task.activity.slice(-60);
+    }
+
+    // Persiste em background
     try {
       if (typeof firebase !== 'undefined' && firebase?.firestore?.FieldValue) {
-        pjC('pj_tasks').doc(taskId).update({
-          activity: firebase.firestore.FieldValue.arrayUnion(e)
-        }).catch(()=>{});
+        if (coalesced) {
+          // Foi merge na última entry — escreve o array INTEIRO pra
+          // refletir a mudança (arrayUnion duplicaria em vez de atualizar)
+          pjC('pj_tasks').doc(taskId).update({ activity: task.activity }).catch(()=>{});
+        } else {
+          pjC('pj_tasks').doc(taskId).update({
+            activity: firebase.firestore.FieldValue.arrayUnion(e)
+          }).catch(()=>{});
+        }
       }
     } catch(_) {}
     // Re-renderiza atividade no modal se for a tarefa aberta
