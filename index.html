@@ -16200,7 +16200,8 @@ function pjLogActivity(taskId, entry) {
     const uid = (typeof _currentUser !== 'undefined' && _currentUser?.uid)
               || (typeof _auth !== 'undefined' && _auth?.currentUser?.uid)
               || 'system';
-    const e = { ts: Date.now(), by: uid, ...entry };
+    // taskId no payload pra defesa contra activity vazado entre tarefas
+    const e = { ts: Date.now(), by: uid, taskId, ...entry };
     if (!Array.isArray(task.activity)) task.activity = [];
 
     // 🧹 COALESCÊNCIA: tipos que mudam rapidamente (rename letra a letra,
@@ -19865,6 +19866,8 @@ async function pjAddSubtask(opts) {
     parentTaskId: pjCurrentTaskId,
     customFieldValues: { ...(parentTask.customFieldValues || {}) },
     client: parentTask.client || null, // herda cliente do pai (override permitido)
+    activity: [], // 🛡️ histórico LIMPO — não herda nada do pai
+    attachments: [], // 🛡️ anexos próprios
     createdBy: uid,
     createdAt: pjNow(), updatedAt: pjNow(),
     order: Date.now(),
@@ -20017,7 +20020,12 @@ function pjRenderActivity() {
     else if (typeof task.createdAt === 'number') taskCreatedMs = task.createdAt;
   }
   const activityLog = (Array.isArray(task?.activity) ? task.activity : [])
-    .filter(a => !taskCreatedMs || (a.ts || 0) >= taskCreatedMs - 5000); // 5s de tolerância
+    // ts >= criação da tarefa (com 5s de tolerância) — uma tarefa não pode ter
+    // histórico ANTES de existir; se tiver, é lixo de bug antigo
+    .filter(a => !taskCreatedMs || (a.ts || 0) >= taskCreatedMs - 5000)
+    // Se a entrada tiver taskId explícito, deve bater com a task atual
+    // (defesa contra activity vazado de cópia/recorrência antigas)
+    .filter(a => !a.taskId || a.taskId === tid);
   const merged = [
     ...top.map(c => ({
       _kind: 'comment',
@@ -20881,11 +20889,75 @@ async function pjSaveList(editId, folderId, spaceId) {
   pjCloseFormModal(); pjRenderSidebar();
 }
 async function pjDeleteList(id) {
-  if (!confirm('Excluir esta lista e todas as suas tarefas?')) return;
+  const list = pjLists.find(l => l.id === id);
+  if (!list) return;
+  // Snapshot pra restaurar caso usuário faça undo
+  const tasksSnapshot = (pjTasks[id] || []).map(t => ({ ...t }));
+  const taskCount = tasksSnapshot.length;
+
+  // Confirmação dupla: pra listas com muitas tarefas, exige digitar o nome
+  let confirmed;
+  if (taskCount === 0) {
+    confirmed = confirm(`Excluir a lista "${list.name}"?\n\nA lista está vazia.`);
+  } else if (taskCount < 10) {
+    confirmed = confirm(
+      `⚠️ Excluir a lista "${list.name}"?\n\n` +
+      `${taskCount} tarefa${taskCount===1?'':'s'} ${taskCount===1?'será excluída':'serão excluídas'} junto.\n\n` +
+      `Você terá ~10 segundos pra desfazer com Ctrl+Z.`
+    );
+  } else {
+    // 10+ tarefas — exige digitar o nome (proteção contra clique acidental)
+    const typed = prompt(
+      `🛑 ATENÇÃO: você está prestes a excluir a lista "${list.name}" e ${taskCount} tarefas.\n\n` +
+      `Pra confirmar, DIGITE o nome da lista exatamente:`
+    );
+    if (typed === null) return; // cancelou
+    if ((typed || '').trim() !== list.name) {
+      if (typeof showToast === 'function') showToast('warn','⚠️','Nome não confere — exclusão cancelada.');
+      return;
+    }
+    confirmed = true;
+  }
+  if (!confirmed) return;
+
   await pjDeleteListData(id);
   pjLists = pjLists.filter(l=>l.id!==id);
   pjRenderSidebar();
   if (pjCurrentView.id === id) pjNavigate('inbox');
+
+  // ⏪ UNDO: registra ação no stack do app pra Ctrl+Z restaurar
+  if (typeof appPushUndo === 'function') {
+    appPushUndo({
+      describe: `excluir lista "${list.name}"`,
+      undo: async () => {
+        try {
+          // Restaura o doc da lista
+          const { id: _lid, ...listData } = list;
+          await pjC('pj_lists').doc(id).set(listData);
+          pjLists.push(list);
+          // Restaura cada tarefa
+          pjTasks[id] = tasksSnapshot;
+          for (const t of tasksSnapshot) {
+            pjAllTasks.push(t);
+            try {
+              const { id: _tid, ...tData } = t;
+              await pjC('pj_tasks').doc(t.id).set(tData);
+            } catch(_) {}
+          }
+          pjRenderSidebar();
+          if (typeof pjRenderMain === 'function') pjRenderMain();
+          if (typeof showToast === 'function') showToast('success','↩️',`Lista "${list.name}" restaurada com ${taskCount} tarefa${taskCount===1?'':'s'}.`);
+        } catch(e) {
+          if (typeof showToast === 'function') showToast('error','❌','Erro ao restaurar: '+(e.message||''));
+        }
+      },
+    });
+  }
+
+  // Toast com hint de undo
+  if (typeof showToast === 'function') {
+    showToast('info', '🗑️', `Lista "${list.name}" excluída. Ctrl+Z pra desfazer.`);
+  }
 }
 async function pjDeleteListData(listId) {
   const snap = await pjC('pj_tasks').where('listId','==',listId).get();
