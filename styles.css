@@ -3871,13 +3871,6 @@ body.mtr-shared-view #tab-metricas { padding-top:24px; }
 .pj-task-title-cell { flex:1; min-width:0; }
 .pj-task-title-text { font-size:13.5px; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.35; }
 .pj-task-title-text.done { text-decoration:line-through; color:var(--text3); font-weight:400; }
-.pj-subtask-count {
-  font-size:10.5px; color:var(--text3); margin-top:3px;
-  display:inline-flex; align-items:center; gap:4px;
-  padding:1px 7px; background:var(--bg2); border-radius:6px;
-  font-weight:500;
-}
-
 .pj-task-assignees { display:flex; flex-direction:row-reverse; }
 .pj-task-assignees .pj-avatar { margin-left:-6px; transition:transform .15s, z-index 0s .15s; }
 .pj-task-assignees:hover .pj-avatar { margin-left:0; }
@@ -4619,120 +4612,6 @@ body.pj-task-open .pj-fab { display:none !important; }
 .pj-field-value { padding:6px 8px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:12.5px; font-family:var(--font); outline:none; border:1px solid transparent; }
 .pj-field-value:hover { border-color:var(--border); }
 .pj-field-value:focus { border-color:var(--accent); background:var(--card); }
-/* Subtasks */
-.pj-subtask-header { display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none; }
-.pj-subtask-progress-text { font-size:11px; color:var(--text3); font-weight:400; }
-.pj-subtask-progress-bar { flex:1; height:5px; background:var(--border); border-radius:3px; overflow:hidden; margin-left:4px; }
-.pj-subtask-progress-fill { height:100%; background:linear-gradient(90deg,#22c55e,#16a34a); border-radius:3px; transition:width .3s; }
-.pj-subtask-list { display:flex; flex-direction:column; gap:2px; margin-bottom:6px; }
-.pj-subtask-item { display:flex; align-items:center; gap:8px; padding:6px 6px; border-radius:7px; transition:background .12s; }
-.pj-subtask-item:hover { background:var(--bg); }
-
-/* ── Subtarefa rica: linha completa com indicadores e status pill ── */
-.pj-subtask-rich {
-  flex-direction:column; align-items:stretch;
-  padding:8px 10px; border-radius:9px;
-  border:1px solid transparent;
-  margin-bottom:4px;
-}
-.pj-subtask-rich:hover {
-  background:var(--bg);
-  border-color:var(--border);
-}
-.pj-subtask-rich.done { opacity:.65; }
-.pj-subtask-row {
-  display:flex; align-items:center; gap:8px;
-  flex-wrap:nowrap; min-width:0;
-}
-.pj-subtask-indicators {
-  display:inline-flex; align-items:center; gap:4px;
-  flex-shrink:0;
-  font-size:11px;
-}
-.pj-subtask-ind {
-  display:inline-flex; align-items:center; gap:2px;
-  padding:2px 6px;
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:8px;
-  color:var(--text2);
-  white-space:nowrap;
-  font-weight:600;
-  line-height:1;
-}
-.pj-subtask-status-pill {
-  display:inline-flex; align-items:center; gap:5px;
-  padding:3px 8px;
-  background:color-mix(in srgb, var(--c) 14%, transparent);
-  border:1px solid color-mix(in srgb, var(--c) 30%, transparent);
-  border-radius:14px;
-  color:var(--c);
-  font-size:10.5px; font-weight:700;
-  cursor:pointer;
-  font-family:var(--font);
-  transition:all .15s;
-  white-space:nowrap;
-}
-.pj-subtask-status-pill:hover {
-  background:color-mix(in srgb, var(--c) 22%, transparent);
-}
-.pj-subtask-status-pill .pj-status-pill-dot {
-  width:6px; height:6px; border-radius:50%;
-  background:var(--c);
-  flex-shrink:0;
-}
-
-/* Botão "Editor completo" no row de adicionar */
-.pj-add-subtask-full-btn {
-  display:inline-flex; align-items:center; gap:5px;
-  padding:5px 10px;
-  background:linear-gradient(135deg, rgba(99,102,241,.1), rgba(168,85,247,.08));
-  border:1px solid rgba(99,102,241,.3);
-  border-radius:8px;
-  color:var(--accent);
-  font-size:11.5px; font-weight:600; font-family:var(--font);
-  cursor:pointer;
-  white-space:nowrap;
-  transition:all .15s;
-  flex-shrink:0;
-}
-.pj-add-subtask-full-btn:hover {
-  background:linear-gradient(135deg, var(--accent), var(--accent2,#a855f7));
-  border-color:transparent; color:#fff;
-  transform:translateY(-1px);
-  box-shadow:0 4px 10px rgba(99,102,241,.3);
-}
-
-/* Breadcrumb: link clicável da tarefa pai no modal */
-.pj-modal-crumb-parent {
-  cursor:pointer;
-  color:var(--text2);
-  transition:color .15s;
-}
-.pj-modal-crumb-parent:hover {
-  color:var(--accent);
-  text-decoration:underline;
-}
-.pj-subtask-check { width:15px; height:15px; border:2px solid var(--border); border-radius:4px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:9px; transition:background .15s, border-color .15s; }
-.pj-subtask-check:hover { border-color:var(--accent); }
-.pj-subtask-check.done { background:var(--accent); border-color:var(--accent); color:#fff; }
-.pj-subtask-text { flex:1; font-size:13px; color:var(--text2); cursor:pointer; }
-.pj-subtask-text:hover { color:var(--accent); text-decoration:underline; }
-.pj-subtask-text.done { text-decoration:line-through; color:var(--text3); }
-.pj-subtask-meta { display:flex; align-items:center; gap:4px; flex-shrink:0; }
-.pj-subtask-del { background:none; border:none; color:var(--text3); font-size:15px; cursor:pointer; opacity:.35; padding:2px 5px; border-radius:5px; transition:opacity .12s, background .12s, color .12s; }
-.pj-subtask-del:hover { opacity:1; background:rgba(239,68,68,.12); color:#ef4444; }
-.pj-subtask-fields { display:flex; flex-wrap:wrap; gap:6px; padding:4px 0 4px 23px; }
-.pj-subtask-field-chip { display:flex; align-items:center; gap:4px; background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:2px 8px; font-size:11px; }
-.pj-subtask-field-label { color:var(--text3); font-weight:600; white-space:nowrap; }
-.pj-subtask-field-val { border:none; background:transparent; color:var(--text); font-size:11px; font-family:var(--font); outline:none; min-width:40px; max-width:120px; cursor:text; }
-.pj-subtask-field-val:focus { color:var(--accent); }
-.pj-subtask-field-select { border:none; background:transparent; color:var(--text); font-size:11px; font-family:var(--font); outline:none; cursor:pointer; max-width:120px; }
-.pj-subtask-field-empty { color:var(--text3); font-style:italic; }
-.pj-add-subtask-row { display:flex; align-items:center; gap:8px; padding:5px 6px; }
-.pj-add-subtask-input { flex:1; background:none; border:none; border-bottom:1px dashed var(--border); outline:none; font-size:13px; color:var(--text); font-family:var(--font); padding:3px 0; }
-.pj-add-subtask-input:focus { border-bottom-color:var(--accent); }
-.pj-add-subtask-input::placeholder { color:var(--text3); }
 .pj-tpl-row { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:var(--bg); }
 .pj-tpl-row:hover { border-color:var(--accent); }
 .pj-tpl-info { flex:1; }
@@ -4850,8 +4729,6 @@ body.pj-task-open .pj-fab { display:none !important; }
 .pj-search-item-label { flex:1; font-size:13.5px; font-weight:500; color:var(--text); }
 .pj-search-item-sub { font-size:11px; color:var(--text3); }
 .pj-search-item-type { font-size:10px; color:var(--text3); background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:1px 5px; text-transform:uppercase; }
-.pj-add-subtask { display:flex; align-items:center; gap:6px; padding:5px 6px; color:var(--text3); font-size:12.5px; cursor:pointer; border-radius:6px; }
-.pj-add-subtask:hover { background:var(--bg); color:var(--text2); }
 /* Activity */
 .pj-activity-title {
   font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 12px;
@@ -5921,90 +5798,6 @@ body.pj-resizing-col * { cursor:col-resize !important; user-select:none !importa
 .pj-cell-text {
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   display:inline-block; max-width:100%;
-}
-
-/* ══════════════════════════════════════════════════════
-   SUBTAREFAS INLINE (estilo ClickUp) — chevron + indentação
-═══════════════════════════════════════════════════════ */
-
-/* Chevron de expandir/recolher subtarefas */
-.pj-list-expand {
-  display:inline-flex; align-items:center; justify-content:center;
-  width:18px; height:18px; flex-shrink:0;
-  border:none; background:transparent;
-  color:var(--text3); cursor:pointer;
-  border-radius:4px;
-  margin-right:2px;
-  transition:transform .2s ease, background .15s, color .15s;
-}
-.pj-list-expand:hover { background:var(--bg2); color:var(--accent); }
-.pj-list-expand.open { transform:rotate(0deg); color:var(--accent); }
-.pj-list-expand:not(.open) { transform:rotate(-90deg); }
-/* Ocupa o mesmo espaço quando não há subtarefas (alinha colunas) */
-.pj-list-expand-empty {
-  display:inline-block;
-  width:18px; height:18px; flex-shrink:0;
-  margin-right:2px;
-}
-
-/* Botão "+" pra adicionar subtarefa — sempre visível, fica em destaque no hover */
-.pj-list-row-subadd {
-  display:inline-flex; align-items:center; justify-content:center;
-  width:22px; height:22px; flex-shrink:0;
-  margin-left:6px;
-  border:1px dashed var(--border); border-radius:5px;
-  background:transparent; color:var(--text3);
-  cursor:pointer;
-  opacity:.55;
-  transition:all .15s;
-}
-.pj-list-tr:hover .pj-list-row-subadd { opacity:1; }
-.pj-list-row-subadd:hover {
-  border-color:var(--accent); border-style:solid;
-  background:var(--accent); color:#fff;
-  transform:scale(1.06);
-  opacity:1;
-}
-
-/* Subtarefa: linha visualmente recolhida + linha guia vertical */
-.pj-list-tr-sub {
-  background:linear-gradient(90deg, rgba(99,102,241,.025), transparent 60%);
-}
-.pj-list-tr-sub .pj-list-cell.title {
-  position:relative;
-}
-.pj-list-tr-sub .pj-list-cell.title::before {
-  content:''; position:absolute;
-  left:14px; top:-1px; bottom:-1px;
-  width:2px;
-  background:linear-gradient(180deg, transparent, rgba(99,102,241,.25), transparent);
-}
-.pj-list-tr-sub[data-depth="2"] .pj-list-cell.title::before { left:36px; }
-.pj-list-tr-sub[data-depth="3"] .pj-list-cell.title::before { left:58px; }
-.pj-list-tr-sub[data-depth="4"] .pj-list-cell.title::before { left:80px; }
-.pj-list-tr-sub .pj-list-title-text { font-size:13px; }
-
-/* Linha "+ Adicionar subtarefa" inline */
-.pj-list-tr.pj-add-subtask-inline {
-  background:transparent;
-  border:1px dashed transparent;
-  cursor:pointer;
-  transition:all .15s;
-  margin-bottom:6px;
-}
-.pj-list-tr.pj-add-subtask-inline:hover {
-  background:rgba(99,102,241,.04);
-  border-color:rgba(99,102,241,.3);
-}
-.pj-list-cell-subadd {
-  color:var(--text3); font-size:12.5px; font-weight:500;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.pj-list-tr.pj-add-subtask-inline:hover .pj-list-cell-subadd { color:var(--accent); }
-
-/* Hover da row com subtarefas expandidas: destaque pra mostrar agrupamento */
-.pj-list-tr[data-task-id]:has(+ .pj-list-tr-sub) {
-  border-bottom-left-radius:0; border-bottom-right-radius:0;
 }
 
 /* ── Coluna Cliente na list view ── */
