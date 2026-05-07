@@ -12108,12 +12108,10 @@ function pjListRowHtml(l, indent, isAdmin) {
   if (typeof isAdmin === 'undefined') isAdmin = (typeof userIsAdmin === 'function') ? userIsAdmin() : true;
   const count = (pjTasks[l.id]||[]).filter(t => !pjIsDone(t)).length;
   const active = pjCurrentView.id === l.id ? 'active' : '';
-  const actions = isAdmin ? `
-    <div class="pj-list-actions">
-      <button class="pj-icon-btn" onclick="event.stopPropagation();pjOpenListForm(null,null,'${l.id}')">✏️</button>
-      <button class="pj-icon-btn" onclick="event.stopPropagation();pjOpenStatusEditor('${l.id}')">🏷️</button>
-      <button class="pj-icon-btn" onclick="event.stopPropagation();pjDeleteList('${l.id}')">🗑️</button>
-    </div>` : '';
+  // Sidebar limpo: SEM ícones na linha. Toda configuração da lista
+  // (editar nome, status, campos, automações, excluir) fica nos botões
+  // do header quando a lista está aberta — não polui a navegação lateral.
+  const actions = '';
   return `
   <div class="pj-list-row ${indent?'indent2':''} ${active}"
     onclick="pjNavigate('list','${l.id}')"
@@ -13303,7 +13301,8 @@ function pjBuildListPage(listId) {
     ${view==='list' ? `<button class="pj-icon-btn pj-icon-btn-lg" title="Mostrar/ocultar colunas" onclick="pjOpenColumnsMenu(event,'${listId}')">👁️</button>` : ''}
     ${_viewIsAdmin ? `<button class="pj-icon-btn pj-icon-btn-lg" title="Editar status" onclick="pjOpenStatusEditor('${listId}')">🏷️</button>
     <button class="pj-icon-btn pj-icon-btn-lg" title="Campos personalizados" onclick="pjOpenFieldsEditor('${listId}')">📋</button>
-    <button class="pj-icon-btn pj-icon-btn-lg" title="Automações" onclick="pjOpenAutomationsEditor('${listId}')">⚡</button>` : ''}
+    <button class="pj-icon-btn pj-icon-btn-lg" title="Automações" onclick="pjOpenAutomationsEditor('${listId}')">⚡</button>
+    <button class="pj-icon-btn pj-icon-btn-lg" title="Mais opções (renomear, excluir...)" onclick="pjOpenListMenu(event,'${listId}')">⋯</button>` : ''}
     <button class="pj-btn pj-btn-primary" style="font-size:12px;padding:6px 14px;" onclick="pjQuickCreateTask('${listId}')">＋ Tarefa</button>
   </div>` + pjBuildFilterBar(list) + pjBuildBulkBar() + `<div class="pj-view-body" style="padding-top:8px;">`;
 
@@ -20751,6 +20750,26 @@ async function pjSaveStatuses(listId) {
   if (pjCurrentView.id===listId) pjRenderMain();
   pjRenderSidebar();
 }
+// ⋯ Menu de ações secundárias da lista (renomear, excluir, etc)
+function pjOpenListMenu(ev, listId) {
+  ev.stopPropagation();
+  const list = pjLists.find(l => l.id === listId); if (!list) return;
+  const items = [
+    { id:'edit',     label:'Renomear lista',  icon:'✏️' },
+    { id:'duplicate',label:'Duplicar lista',  icon:'⧉' },
+    { divider: true },
+    { id:'delete',   label:'Excluir lista',   icon:'🗑️' },
+  ];
+  pjShowPopupMenu(ev, items, null, (id) => {
+    if (id === 'edit')      pjOpenListForm(null, null, listId);
+    else if (id === 'delete') pjDeleteList(listId);
+    else if (id === 'duplicate') {
+      if (typeof pjDuplicateList === 'function') pjDuplicateList(listId);
+      else if (typeof showToast === 'function') showToast('info','💡','Em breve: duplicar listas');
+    }
+  });
+}
+
 // ⚡ ── Editor de AUTOMAÇÕES ──────────────────────────────
 function pjOpenAutomationsEditor(listId) {
   if (typeof userIsAdmin === 'function' && !userIsAdmin()) {
