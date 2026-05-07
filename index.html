@@ -2263,22 +2263,41 @@ function appPresenceStartHeartbeat() {
   });
 }
 
+// Recalcula isOnline com base no horário atual e re-ordena.
+// Usado tanto pelo snapshot quanto pelo timer de refresh (a cada 30s).
+function _appPresenceRecomputeOnline() {
+  const now = Date.now();
+  _appPresenceUsers.forEach(u => {
+    u.isOnline = (now - (u.lastSeenMs || 0)) < APP_PRESENCE_THRESHOLD_MS;
+  });
+  _appPresenceUsers.sort((a,b) => (b.isOnline?1:0) - (a.isOnline?1:0) || b.lastSeenMs - a.lastSeenMs);
+}
+
+let _appPresenceRefreshTimer = null;
 function appPresenceStartListener() {
   if (_appPresenceUnsub || typeof _db === 'undefined') return;
   try {
     _appPresenceUnsub = _db.collection('app_presence').onSnapshot(snap => {
-      const now = Date.now();
       _appPresenceUsers = [];
       snap.forEach(doc => {
         const d = doc.data();
         const ts = d.lastSeen?.toMillis ? d.lastSeen.toMillis() : (d.lastSeen?.seconds ? d.lastSeen.seconds*1000 : 0);
         if (!ts) return;
-        const isOnline = (now - ts) < APP_PRESENCE_THRESHOLD_MS;
-        _appPresenceUsers.push({ ...d, lastSeenMs: ts, isOnline });
+        _appPresenceUsers.push({ ...d, lastSeenMs: ts, isOnline: false });
       });
-      _appPresenceUsers.sort((a,b) => (b.isOnline?1:0) - (a.isOnline?1:0) || b.lastSeenMs - a.lastSeenMs);
+      _appPresenceRecomputeOnline();
       appPresenceRender();
     }, () => {});
+
+    // Timer: a cada 30s recalcula isOnline e atualiza UI.
+    // Necessário porque quando alguém PARA de fazer heartbeat (fechou aba),
+    // o Firestore não dispara snapshot novo — sem esse timer, o status
+    // 'online' fica grudado até alguém escrever em app_presence.
+    if (_appPresenceRefreshTimer) clearInterval(_appPresenceRefreshTimer);
+    _appPresenceRefreshTimer = setInterval(() => {
+      _appPresenceRecomputeOnline();
+      appPresenceRender();
+    }, 30 * 1000);
   } catch(e) {}
 }
 
