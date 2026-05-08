@@ -7211,46 +7211,79 @@ async function loadMetrics() {
   btn.disabled = false; btn.textContent = '↻ Atualizar';
 }
 
+// IG limita janela a 30 dias (2592000 s) por chamada de insights.
+// Quebra em pedaços de até 30 dias contíguos cobrindo [since, until].
+function _mtrSplitIgRange(since, until) {
+  const MAX = 30 * 24 * 60 * 60 * 1000; // 30 dias em ms
+  const fmt = d => d.toISOString().split('T')[0];
+  const start = new Date(since + 'T00:00:00Z').getTime();
+  const end   = new Date(until + 'T00:00:00Z').getTime();
+  if (isNaN(start) || isNaN(end) || end < start) return [{ since, until }];
+  const chunks = [];
+  let s = start;
+  while (s <= end) {
+    const e = Math.min(s + MAX - 86400000, end); // -1 dia pra não estourar 30 dias inclusivos
+    chunks.push({ since: fmt(new Date(s)), until: fmt(new Date(e)) });
+    s = e + 86400000;
+  }
+  return chunks;
+}
+
 async function mtrFetchIg(igId, token, since, until) {
   const dayMetrics = 'reach,follower_count';
   const totalMetrics = 'accounts_engaged,total_interactions,profile_views,website_clicks,likes,comments,shares,saves,views';
-
-  const url1 = `https://graph.facebook.com/v25.0/${igId}/insights?metric=${dayMetrics}&period=day&since=${since}&until=${until}&access_token=${token}`;
-  const url2 = `https://graph.facebook.com/v25.0/${igId}/insights?metric=${totalMetrics}&metric_type=total_value&period=day&since=${since}&until=${until}&access_token=${token}`;
-
-  const [r1, r2] = await Promise.all([fetch(url1), fetch(url2)]);
-  const [d1, d2] = await Promise.all([r1.json(), r2.json()]);
+  const chunks = _mtrSplitIgRange(since, until);
 
   const result = {};
-  // d1 (period=day): pode falhar — não derruba o resto
-  if (!d1.error) {
-    (d1.data || []).forEach(m => {
-      const total = (m.values || []).reduce((s, v) => s + (v.value || 0), 0);
-      result[m.name] = { total, values: m.values || [] };
-    });
-  }
-  // d2 (total_value): tenta separar; se falha em bloco, tenta uma a uma
-  if (!d2.error) {
-    (d2.data || []).forEach(m => {
-      result[m.name] = { total: m.total_value?.value ?? 0, values: [] };
-    });
-  } else {
-    // fallback: testa cada métrica isoladamente
-    await Promise.all(totalMetrics.split(',').map(async name => {
-      try {
-        const r = await fetch(`https://graph.facebook.com/v25.0/${igId}/insights?metric=${name}&metric_type=total_value&period=day&since=${since}&until=${until}&access_token=${token}`);
-        const d = await r.json();
-        if (!d.error && d.data?.[0]) result[name] = { total: d.data[0].total_value?.value ?? 0, values: [] };
-      } catch(e){}
-    }));
+  let lastErr = null;
+  let anyOk = false;
+
+  // Para cada chunk de até 30 dias, busca em paralelo as duas chamadas.
+  // Acumula no result global: 'values' concatenados (period=day), 'total' somado.
+  for (const ch of chunks) {
+    const url1 = `https://graph.facebook.com/v25.0/${igId}/insights?metric=${dayMetrics}&period=day&since=${ch.since}&until=${ch.until}&access_token=${token}`;
+    const url2 = `https://graph.facebook.com/v25.0/${igId}/insights?metric=${totalMetrics}&metric_type=total_value&period=day&since=${ch.since}&until=${ch.until}&access_token=${token}`;
+    let d1, d2;
+    try {
+      const [r1, r2] = await Promise.all([fetch(url1), fetch(url2)]);
+      [d1, d2] = await Promise.all([r1.json(), r2.json()]);
+    } catch(e) { lastErr = e; continue; }
+
+    if (!d1.error) {
+      anyOk = true;
+      (d1.data || []).forEach(m => {
+        const total = (m.values || []).reduce((s, v) => s + (v.value || 0), 0);
+        if (!result[m.name]) result[m.name] = { total: 0, values: [] };
+        result[m.name].total += total;
+        result[m.name].values = result[m.name].values.concat(m.values || []);
+      });
+    } else { lastErr = d1.error; }
+
+    if (!d2.error) {
+      anyOk = true;
+      (d2.data || []).forEach(m => {
+        if (!result[m.name]) result[m.name] = { total: 0, values: [] };
+        result[m.name].total += (m.total_value?.value ?? 0);
+      });
+    } else {
+      // fallback per-métrica neste chunk
+      await Promise.all(totalMetrics.split(',').map(async name => {
+        try {
+          const r = await fetch(`https://graph.facebook.com/v25.0/${igId}/insights?metric=${name}&metric_type=total_value&period=day&since=${ch.since}&until=${ch.until}&access_token=${token}`);
+          const d = await r.json();
+          if (!d.error && d.data?.[0]) {
+            anyOk = true;
+            if (!result[name]) result[name] = { total: 0, values: [] };
+            result[name].total += (d.data[0].total_value?.value ?? 0);
+          } else if (d.error) { lastErr = d.error; }
+        } catch(e){ lastErr = e; }
+      }));
+    }
   }
 
-  // Se as duas chamadas principais falharam totalmente, joga erro
-  if (d1.error && d2.error && Object.keys(result).length === 0) {
-    throw new Error(d1.error.message || d2.error.message);
-  }
+  if (!anyOk && lastErr) throw new Error(lastErr.message || String(lastErr));
 
-  // Perfil (followers_count, media_count)
+  // Perfil (followers_count, media_count) — não depende de período
   try {
     const pr = await fetch(`https://graph.facebook.com/v25.0/${igId}?fields=followers_count,media_count&access_token=${token}`);
     const pd = await pr.json();
