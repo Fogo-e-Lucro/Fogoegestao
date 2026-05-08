@@ -24300,8 +24300,19 @@ window.appRecorder = (() => {
     const out = canvas.captureStream(30);
     if (anyAudio) audioDest.stream.getAudioTracks().forEach(t => out.addTrack(t));
 
-    // 8) MediaRecorder com bitrate alto pra qualidade no 4K
-    const mimes = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+    // 8) MediaRecorder com bitrate alto pra qualidade no 4K.
+    //    Prioriza MP4 (H.264+AAC) — único formato que WhatsApp/iOS reproduzem
+    //    nativamente como vídeo. Chrome 126+ suporta MP4 no MediaRecorder.
+    //    Fallback pra webm/VP9 se MP4 não estiver disponível.
+    const mimes = [
+      'video/mp4;codecs=avc1.42E01E,mp4a.40.2', // H.264 Baseline + AAC (máxima compat)
+      'video/mp4;codecs=avc1,mp4a',
+      'video/mp4;codecs=h264,aac',
+      'video/mp4',
+      'video/webm;codecs=vp9,opus',
+      'video/webm;codecs=vp8,opus',
+      'video/webm',
+    ];
     mimeType = mimes.find(t => MediaRecorder.isTypeSupported(t)) || '';
     const bitrateMap = { '1080p':8_000_000, '1440p':14_000_000, '4k':24_000_000 };
     chunks = [];
@@ -24405,7 +24416,12 @@ window.appRecorder = (() => {
     const url = URL.createObjectURL(blob);
     const sizeMb = (blob.size / 1024 / 1024).toFixed(1);
     const ts = new Date();
-    const fname = `gravacao-fogo-${ts.toISOString().replace(/[:.]/g,'-').slice(0,19)}.webm`;
+    const isMp4 = (mimeType || '').includes('mp4');
+    const ext = isMp4 ? 'mp4' : 'webm';
+    const fname = `gravacao-fogo-${ts.toISOString().replace(/[:.]/g,'-').slice(0,19)}.${ext}`;
+    const compatBadge = isMp4
+      ? '<span style="background:rgba(34,197,94,.15);color:#16a34a;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;">✓ MP4 — compatível com WhatsApp/iOS</span>'
+      : '<span style="background:rgba(245,158,11,.15);color:#d97706;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;" title="WhatsApp não toca .webm inline. Pra mandar no WhatsApp, converta pra MP4.">⚠ WEBM — WhatsApp não reproduz como vídeo</span>';
     let durTxt = '';
 
     const ov = document.createElement('div');
@@ -24418,9 +24434,10 @@ window.appRecorder = (() => {
     });
     ov.innerHTML = `
       <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:760px;width:100%;max-height:92vh;overflow:auto;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.5);">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
           <span style="font-size:24px;">✅</span>
           <div style="font-size:18px;font-weight:700;color:var(--text1);">Gravação concluída</div>
+          ${compatBadge}
         </div>
         <div style="font-size:12px;color:var(--text2);margin-bottom:16px;">Pré-visualize antes de salvar. Você pode descartar ou regravar se não tiver ficado bom.</div>
 
@@ -24437,7 +24454,7 @@ window.appRecorder = (() => {
           </div>
           <div style="background:var(--bg2);border-radius:10px;padding:10px;">
             <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:3px;">Formato</div>
-            <div style="font-size:14px;font-weight:700;color:var(--text1);">${cw}×${ch} · webm</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text1);">${cw}×${ch} · ${ext}</div>
           </div>
         </div>
 
