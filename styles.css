@@ -2925,11 +2925,14 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
 .mtr-share-row { display:flex;gap:8px;justify-content:flex-end; }
 
 /* SHARED VIEW (read-only) */
-/* 🔗 SHARED VIEW (link público) — esconde tudo exceto a tab Métricas */
+/* 🔗 SHARED VIEW (link público) — esconde tudo exceto a tab Métricas e seu corpo (mtrBody) */
 body.mtr-shared-view .app-header,
 body.mtr-shared-view .topbar,
 body.mtr-shared-view .main-tabs,
+body.mtr-shared-view .mtr-header,
 body.mtr-shared-view .mtr-controls,
+body.mtr-shared-view .mtr-side,
+body.mtr-shared-view .mtr-present-exit,
 body.mtr-shared-view .pj-fab,
 body.mtr-shared-view .pj-fab-modal-overlay,
 body.mtr-shared-view .app-presence,
@@ -2943,7 +2946,10 @@ body.mtr-shared-view #pjOfflineBadge,
 body.mtr-shared-view #bdIconBtn,
 body.mtr-shared-view .pj-bell,
 body.mtr-shared-view .app-uazapi-status,
-body.mtr-shared-view #syncStatus { display:none !important; }
+body.mtr-shared-view #syncStatus,
+body.mtr-shared-view .mtr-section.mtr-section-actions,
+body.mtr-shared-view .mtr-source-tabs { display:none !important; }
+body.mtr-shared-view .mtr-wrap { padding-top:0 !important; }
 /* Também esconde TODOS os outros tab-panels — só Métricas pode aparecer */
 body.mtr-shared-view #tab-entrada,
 body.mtr-shared-view #tab-visualizar,
