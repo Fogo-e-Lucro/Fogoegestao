@@ -2757,8 +2757,19 @@ function signInWithGoogle() {
   });
 }
 
-function signOutUser() {
+async function signOutUser() {
   if (!confirm('Sair da conta?')) return;
+  // Marca offline ANTES de deslogar (sem await em sendBeacon, mas
+  // tentamos await na escrita normal pra ter mais chance de persistir
+  // antes do auth ser destruído)
+  try {
+    if (typeof appPresenceMarkOffline === 'function') await appPresenceMarkOffline();
+  } catch(_){}
+  // Para o heartbeat e cleanup de listeners
+  try {
+    if (_appPresenceHeartbeatTimer) { clearInterval(_appPresenceHeartbeatTimer); _appPresenceHeartbeatTimer = null; }
+    if (_appPresenceUnsub) { _appPresenceUnsub(); _appPresenceUnsub = null; }
+  } catch(_){}
   try { if (typeof pjCleanupListeners === 'function') pjCleanupListeners(); } catch(_){}
   _auth.signOut();
 }
