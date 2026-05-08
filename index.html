@@ -7985,6 +7985,7 @@ function _mtrSavePinnedCampaigns() {
   } catch(_) {}
 }
 function mtrTogglePinCampaign(campaignId) {
+  if (mtrIsSharedView) return;
   _mtrLoadPinnedCampaigns();
   const idx = mtrPinnedCampaigns.indexOf(campaignId);
   if (idx >= 0) mtrPinnedCampaigns.splice(idx, 1);
@@ -8047,8 +8048,13 @@ function _mtrCampaignToAdsData(c) {
 // KPIs default por campanha (usuário pode customizar)
 const MTR_PINNED_DEFAULT_KPIS = ['ad_spend','ad_reach','ad_impressions','ad_clicks','ad_ctr','ad_cpc','ad_cpm','ad_roas'];
 
-// Pega lista de KPIs da campanha (do localStorage ou default)
+// Pega lista de KPIs da campanha (do localStorage ou default).
+// Em shared view, lê do mapa do snapshot pra refletir o que o dono configurou.
 function _mtrGetPinnedCampaignKpis(campaignId) {
+  if (mtrIsSharedView && window._mtrSharedPinnedKpisMap?.[campaignId]) {
+    const arr = window._mtrSharedPinnedKpisMap[campaignId];
+    if (Array.isArray(arr) && arr.length) return arr;
+  }
   try {
     const raw = localStorage.getItem(`mtr_pinned_kpis:${campaignId}`);
     if (raw) {
@@ -8187,6 +8193,7 @@ function mtrPinnedCampShowRaw(campaignId) {
 
 // Remove um KPI específico de uma campanha fixada
 function mtrPinnedCampRemoveKpi(campaignId, kpiId) {
+  if (mtrIsSharedView) return;
   const cur = _mtrGetPinnedCampaignKpis(campaignId);
   const next = cur.filter(id => id !== kpiId);
   _mtrSetPinnedCampaignKpis(campaignId, next);
@@ -8198,6 +8205,7 @@ function mtrPinnedCampRemoveKpi(campaignId, kpiId) {
 
 // Abre popup com lista de KPIs disponíveis pra adicionar nesta campanha
 function mtrPinnedCampOpenKpiPicker(campaignId, ev) {
+  if (mtrIsSharedView) return;
   if (ev) ev.stopPropagation();
   const cur = new Set(_mtrGetPinnedCampaignKpis(campaignId));
   const available = MTR_CATALOG.filter(m => m.source === 'ad' && !cur.has(m.id));
@@ -8339,6 +8347,7 @@ function mtrRenderSidebar() {
 }
 
 function mtrToggleMetric(id, on) {
+  if (mtrIsSharedView) return;
   if (on && !mtrUserKpis.includes(id)) mtrUserKpis.push(id);
   if (!on) mtrUserKpis = mtrUserKpis.filter(x => x !== id);
   mtrRenderSidebar();
@@ -8346,6 +8355,7 @@ function mtrToggleMetric(id, on) {
 
 /* Remove um KPI direto do dashboard via botão ✕ no card */
 function mtrRemoveKpi(id) {
+  if (mtrIsSharedView) return;
   const m = MTR_CATALOG.find(x => x.id === id);
   const label = m ? m.label : id;
   if (!confirm(`Remover "${label}" do painel?\n\nVocê pode adicioná-lo de volta clicando em "+ Adicionar métrica" ou em ⚙️ Personalizar.`)) return;
@@ -9305,6 +9315,7 @@ function mtrKpiCardDragLeave(e) {
   e.currentTarget.classList.remove('mtr-kpi-drop-target');
 }
 function mtrKpiCardDrop(e, targetId) {
+  if (mtrIsSharedView) return;
   e.preventDefault();
   e.stopPropagation();
   e.currentTarget.classList.remove('mtr-kpi-drop-target');
@@ -9348,6 +9359,7 @@ function mtrPinnedKpiDragLeave(e) {
   e.currentTarget.classList.remove('mtr-kpi-drop-target');
 }
 function mtrPinnedKpiDrop(e, campId, targetKpiId) {
+  if (mtrIsSharedView) return;
   e.preventDefault();
   e.stopPropagation();
   e.currentTarget.classList.remove('mtr-kpi-drop-target');
@@ -9377,6 +9389,7 @@ function mtrFunnelDropLeave(e) {
   if (!e.currentTarget.contains(e.relatedTarget)) e.currentTarget.classList.remove('mtr-funnel-drop-active');
 }
 function mtrFunnelDrop(e) {
+  if (mtrIsSharedView) return;
   e.currentTarget.classList.remove('mtr-funnel-drop-active');
   const id = e.dataTransfer.getData('text/mtr-kpi-id');
   if (!id) return;
@@ -9388,6 +9401,7 @@ function mtrFunnelDrop(e) {
   }
 }
 function mtrFunnelRemove(id) {
+  if (mtrIsSharedView) return;
   mtrUserFunnel = mtrUserFunnel.filter(x => x !== id);
   mtrSaveFunnel();
   mtrRerender();
@@ -9421,6 +9435,7 @@ function mtrFunnelStageDragLeave(e) {
   e.currentTarget.classList.remove('mtr-stage-drop-before','mtr-stage-drop-after');
 }
 function mtrFunnelStageDrop(e, targetIdx) {
+  if (mtrIsSharedView) return;
   e.preventDefault();
   e.stopPropagation();
   e.currentTarget.classList.remove('mtr-stage-drop-before','mtr-stage-drop-after');
@@ -10100,7 +10115,12 @@ async function mtrOpenShare() {
   try {
     if (typeof firebase === 'undefined' || !firebase.firestore) throw new Error('Firebase não disponível.');
     const db = firebase.firestore();
-    // Snapshot reduzido (sem dados sensíveis em excesso)
+    // Snapshot reduzido (sem dados sensíveis em excesso).
+    // Inclui TODA a configuração visual do user pra o visitante
+    // ver exatamente o que ele montou (KPIs, campanhas fixadas, funil).
+    _mtrLoadPinnedCampaigns();
+    const pinnedKpisMap = {};
+    (mtrPinnedCampaigns||[]).forEach(id => { pinnedKpisMap[id] = _mtrGetPinnedCampaignKpis(id); });
     const snap = {
       createdAt: new Date().toISOString(),
       igUsername: mtrCurrentAcc?.igUsername,
@@ -10114,6 +10134,9 @@ async function mtrOpenShare() {
       adsPrev: mtrLastSnapshot.adsPrev,
       campaigns: (mtrLastSnapshot.campaigns||[]).map(c => ({ id:c.id, name:c.name, status:c.status, objective:c.objective, insights:c.insights })),
       kpis: mtrUserKpis,
+      pinnedCampaigns: [...(mtrPinnedCampaigns||[])],
+      pinnedKpisMap,
+      funnel: [...(mtrUserFunnel||[])],
       // demografia + posts removidos por ter URLs assinadas que expiram
     };
     const docRef = await db.collection('mtrSnapshots').add(snap);
@@ -10152,6 +10175,10 @@ async function mtrTryLoadSharedSnapshot() {
     mtrCurrentAcc = { igUsername: s.igUsername || 'shared', igId:'shared' };
     mtrCurrentAdAcc = s.adAccountName ? { name: s.adAccountName, currency:'BRL', id:'shared' } : null;
     mtrUserKpis = s.kpis || [...MTR_DEFAULT_KPIS];
+    // Restaura config visual do dono (campanhas fixadas, funil, KPIs por campanha)
+    mtrPinnedCampaigns = s.pinnedCampaigns || [];
+    window._mtrSharedPinnedKpisMap = s.pinnedKpisMap || {};
+    if (Array.isArray(s.funnel)) mtrUserFunnel = [...s.funnel];
     mtrLastSnapshot = {
       igCurr: s.igCurr, igPrev: s.igPrev,
       adsData: s.adsData, adsPrev: s.adsPrev,

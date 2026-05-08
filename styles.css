@@ -2927,6 +2927,23 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
 /* SHARED VIEW (read-only) */
 body.mtr-shared-view .topbar, body.mtr-shared-view .main-tabs, body.mtr-shared-view .mtr-controls { display:none !important; }
 body.mtr-shared-view #tab-metricas { padding-top:24px; }
+/* 🔒 Read-only: esconde TODOS os controles de edição em view compartilhada */
+body.mtr-shared-view .mtr-kpi-del,
+body.mtr-shared-view .mtr-kpi-add,
+body.mtr-shared-view .mtr-funnel-stage-remove,
+body.mtr-shared-view .mtr-pinned-camp-remove,
+body.mtr-shared-view .mtr-funnel-toolbar > div:last-child,
+body.mtr-shared-view .mtr-funnel-hint,
+body.mtr-shared-view .mtr-camp-pin-btn,
+body.mtr-shared-view .mtr-cust-btn,
+body.mtr-shared-view .mtr-side,
+body.mtr-shared-view .mtr-ai-card,
+body.mtr-shared-view .mtr-funnel-modal,
+body.mtr-shared-view .mtr-camp-drill-toggle { display:none !important; }
+/* desativa cursor de drag (ainda assim os handlers estão guardados em JS) */
+body.mtr-shared-view .mtr-kpi[draggable="true"],
+body.mtr-shared-view .mtr-funnel-stage[draggable="true"] { cursor:default !important; }
+body.mtr-shared-view .mtr-kpi-grip, body.mtr-shared-view .pj-grip { display:none !important; }
 .mtr-shared-banner { background:linear-gradient(135deg,var(--accent),var(--accent2,#a855f7));color:#fff;padding:10px 16px;border-radius:10px;margin-bottom:18px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:8px; }
 
 /* ══════════════════════════════════════════════════════
