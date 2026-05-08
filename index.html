@@ -6789,7 +6789,8 @@ const MTR_CATALOG = [
   { id:'ad_view_content', source:'ad', icon:'👓', label:'Visualizar conteúdo', fmt:'num' },
   { id:'ad_complete_registration', source:'ad', icon:'✍️', label:'Cadastros', fmt:'num' },
   { id:'ad_messaging_started', source:'ad', icon:'💬', label:'Conversas iniciadas', fmt:'num' },
-  { id:'ad_followers', source:'ad', icon:'➕', label:'Seguidores (via Ads)', fmt:'num' },
+  { id:'ad_instagram_profile_visits', source:'ad', icon:'👤', label:'Visitas ao perfil IG', fmt:'num' },
+  { id:'ad_followers', source:'ad', icon:'➕', label:'Seguidores via Ads (só engaj.)', fmt:'num' },
   { id:'ad_page_likes', source:'ad', icon:'👍', label:'Curtidas da Página', fmt:'num' },
   { id:'ad_post_engagement', source:'ad', icon:'🔥', label:'Engaj. do post', fmt:'num' },
   { id:'ad_post_reactions', source:'ad', icon:'❤️', label:'Reações no post', fmt:'num' },
@@ -7277,7 +7278,8 @@ async function mtrFetchAds(adId, token, since, until) {
     'actions','action_values','cost_per_action_type',
     'purchase_roas','website_purchase_roas',
     'video_p25_watched_actions','video_p50_watched_actions','video_p75_watched_actions',
-    'video_p95_watched_actions','video_p100_watched_actions','video_avg_time_watched_actions'
+    'video_p95_watched_actions','video_p100_watched_actions','video_avg_time_watched_actions',
+    'instagram_profile_visits'
   ].join(',');
   const timeRange = encodeURIComponent(JSON.stringify({ since, until }));
   const r = await fetch(`https://graph.facebook.com/v25.0/${adId}/insights?fields=${fields}&time_range=${timeRange}&access_token=${token}`);
@@ -7295,7 +7297,8 @@ async function mtrFetchCampaignInsights(campaignId, token, since, until) {
     'actions','action_values','cost_per_action_type',
     'purchase_roas','website_purchase_roas',
     'video_p25_watched_actions','video_p50_watched_actions','video_p75_watched_actions',
-    'video_p95_watched_actions','video_p100_watched_actions','video_avg_time_watched_actions'
+    'video_p95_watched_actions','video_p100_watched_actions','video_avg_time_watched_actions',
+    'instagram_profile_visits'
   ].join(',');
   const timeRange = encodeURIComponent(JSON.stringify({ since, until }));
   const r = await fetch(`https://graph.facebook.com/v25.0/${campaignId}/insights?fields=${fields}&time_range=${timeRange}&access_token=${token}`);
@@ -7316,6 +7319,7 @@ async function mtrFetchCampaigns(adId, token, since, until) {
     'video_p25_watched_actions','video_p50_watched_actions','video_p75_watched_actions',
     'video_p95_watched_actions','video_p100_watched_actions','video_avg_time_watched_actions',
     'quality_ranking','engagement_rate_ranking','conversion_rate_ranking',
+    'instagram_profile_visits',
     'objective','date_start','date_stop'
   ].join(',');
   const fields = `id,name,status,objective,daily_budget,lifetime_budget,effective_status,insights.time_range(${timeRange}){${insightFields}}`;
@@ -7475,6 +7479,7 @@ function mtrGetValue(id, igData, adsData) {
       case 'ad_view_content':        return firstAct(['view_content','onsite_conversion.view_content','offsite_conversion.fb_pixel_view_content']);
       case 'ad_complete_registration': return firstAct(['complete_registration','onsite_conversion.complete_registration','offsite_conversion.fb_pixel_complete_registration']);
       case 'ad_messaging_started':   return sumActs(['onsite_conversion.messaging_conversation_started_7d','onsite_conversion.total_messaging_connection']);
+      case 'ad_instagram_profile_visits': return parseFloat(adsData.instagram_profile_visits || 0) || getAct('instagram_profile_visit') || getAct('omni_view_content');
       // Seguidores: tenta múltiplas variantes que o Meta usa em diferentes objetivos.
       // (Use o botão 🔍 da campanha fixada pra ver qual action_type tá vindo na sua conta.)
       case 'ad_followers':           return firstAct([
@@ -7885,6 +7890,7 @@ function _mtrCampaignToAdsData(c) {
     video_p95_watched_actions: ins.video_p95_watched_actions,
     video_p100_watched_actions: ins.video_p100_watched_actions,
     video_avg_time_watched_actions: ins.video_avg_time_watched_actions,
+    instagram_profile_visits: ins.instagram_profile_visits,
   };
 }
 
