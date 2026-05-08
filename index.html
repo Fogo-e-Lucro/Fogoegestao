@@ -1212,6 +1212,31 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             </div>
           </div>
 
+          <!-- Como pegar URL/Key do Live Producer -->
+          <div class="live-howto">
+            <div class="live-howto-head">
+              <div class="live-howto-icon">💡</div>
+              <div style="flex:1;">
+                <div class="live-howto-title">Como pegar a URL e a Stream Key acima?</div>
+                <div class="live-howto-desc">São geradas a cada live no <strong>Live Producer</strong> do Instagram. <strong>Atenção:</strong> abra logado na conta do cliente que vai transmitir (não na sua conta pessoal).</div>
+              </div>
+              <button class="live-howto-btn" onclick="window.open('https://www.instagram.com/live/','_blank')" type="button" title="Abre em nova aba">
+                ↗ Abrir Live Producer
+              </button>
+            </div>
+            <ol class="live-howto-steps">
+              <li>Abra o link e <strong>verifique se está logado na conta certa</strong> (avatar canto superior direito do IG).</li>
+              <li>Se estiver na conta errada: troque pelo <code>instagram.com</code> normal antes (Perfil → Trocar conta).</li>
+              <li>De volta no Live Producer, dê um <strong>título</strong> e clique em <strong>Próximo</strong>.</li>
+              <li>Vão aparecer 2 campos: <strong>URL do stream</strong> e <strong>Chave de stream</strong>. Copie cada um e cole nos campos acima.</li>
+              <li>Volta aqui, preenche os outros dados e clica <strong>🔴 Iniciar live</strong>.</li>
+              <li>Quando o ffmpeg conectar, o Live Producer mostra a prévia. Aí clica <strong>Transmitir ao vivo</strong> no Instagram pra ir ao ar.</li>
+            </ol>
+            <div class="live-howto-warn">
+              ⚠️ A Stream Key é <strong>secreta</strong> e <strong>regenera a cada live</strong> — não funciona reutilizar de uma live anterior.
+            </div>
+          </div>
+
           <!-- Link CTA (comentário fixado) -->
           <div class="live-row-grid">
             <div class="live-row">
