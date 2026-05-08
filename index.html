@@ -53,21 +53,6 @@
   })();
 </script>
 
-<!-- Pré-hide da tela de login + topbar/header se for view compartilhada (antes do CSS principal carregar) -->
-<script>(function(){try{ if(location.hash.match(/#share=/)){ document.documentElement.classList.add('is-shared-view-pending'); document.body && document.body.classList.add('mtr-shared-view'); } }catch(_){}})();</script>
-<style>
-html.is-shared-view-pending #loginScreen,
-html.is-shared-view-pending .app-header,
-html.is-shared-view-pending .mtr-header,
-html.is-shared-view-pending .pj-fab,
-html.is-shared-view-pending #appSettingsBtn,
-html.is-shared-view-pending #userChip,
-html.is-shared-view-pending #themePickerBtn,
-html.is-shared-view-pending #syncStatus,
-html.is-shared-view-pending .main-tabs,
-html.is-shared-view-pending .topbar { display:none !important; }
-html.is-shared-view-pending body { padding-top:0 !important; }
-</style>
 
 <!-- LOGIN SCREEN -->
 <div class="login-screen" id="loginScreen">
@@ -1397,7 +1382,6 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           </div>
           <div class="mtr-quick-actions">
             <button class="mtr-quick-btn" onclick="mtrLoadDemo()" title="Carregar dados de exemplo">🎭</button>
-            <button class="mtr-quick-btn" onclick="mtrOpenShare()" title="Gerar link público">🔗</button>
             <button class="mtr-quick-btn" onclick="mtrEnterPresentation()" title="Modo apresentação">🎤</button>
             <button class="mtr-refresh-btn" id="mtrRefreshBtn" onclick="loadMetrics()" title="Atualizar">
               <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
@@ -3665,25 +3649,6 @@ if (_DEV_BYPASS) {
 
 _auth.onAuthStateChanged(async user => {
   if (_DEV_BYPASS) return; // Ignora estado real do Firebase em dev bypass
-
-  // 🔗 Link público (#share=...) — bypass total de login/access check.
-  // Visitante não precisa logar pra ver o snapshot read-only.
-  if (location.hash.match(/#share=/)) {
-    document.getElementById('loginScreen')?.classList.add('hidden');
-    const chip = document.getElementById('userChip');
-    if (chip) chip.style.display = 'none';
-    // Tenta auth anônimo silenciosamente — algumas regras Firestore exigem
-    // request.auth != null. Se falhar (anonymous não habilitado), tenta read
-    // mesmo assim (pode ter regra pública em mtrSnapshots).
-    if (!user) {
-      try { await firebase.auth().signInAnonymously(); return; } catch(_) {}
-    }
-    if (typeof mtrTryLoadSharedSnapshot === 'function') {
-      try { await mtrTryLoadSharedSnapshot(); } catch(_){}
-    }
-    return;
-  }
-
   if (!user) {
     _currentUser = null;
     // Cleanup listeners para evitar leituras fantasma após logout
@@ -10274,7 +10239,7 @@ async function mtrTryLoadSharedSnapshot() {
     return false;
   }
 }
-window.addEventListener('load', () => { setTimeout(mtrTryLoadSharedSnapshot, 800); });
+// (Link público removido — auto-load do snapshot desativado.)
 
 /* ─── Toggle % variação ─────────────────────────────────── */
 function mtrTogglePct() {
