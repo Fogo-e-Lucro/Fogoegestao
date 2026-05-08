@@ -7345,8 +7345,12 @@ function _mtrSplitIgRange(since, until) {
 }
 
 async function mtrFetchIg(igId, token, since, until) {
-  const dayMetrics = 'reach,follower_count';
-  const totalMetrics = 'accounts_engaged,total_interactions,profile_views,website_clicks,likes,comments,shares,saves,views';
+  // 'reach' precisa ir como metric_type=total_value pra retornar dados em
+  // qualquer período (com period=day, IG só retorna últimos ~30 dias).
+  // 'follower_count' fica com period=day mesmo — não tem suporte a total_value
+  // e o limite de 30 dias é uma restrição da API que não conseguimos contornar.
+  const dayMetrics = 'follower_count';
+  const totalMetrics = 'reach,accounts_engaged,total_interactions,profile_views,website_clicks,likes,comments,shares,saves,views';
   const chunks = _mtrSplitIgRange(since, until);
 
   const result = {};
