@@ -8669,3 +8669,204 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
 .live-active-info strong { display:block;font-size:13px;margin-bottom:2px; }
 .live-active-info .time { color:var(--text2);font-size:11px; }
 @keyframes liveBlink { 0%,100%{opacity:1}50%{opacity:.3} }
+
+/* ══════════════════════════════════════════════════════
+   🔴 LIVES — Modal de configurar backend (redesign)
+══════════════════════════════════════════════════════ */
+.live-settings-overlay { backdrop-filter:blur(8px); }
+.live-settings-box {
+  background:var(--card)!important;
+  border:1px solid var(--border)!important;
+  border-radius:18px!important;
+  padding:0!important;
+  overflow:hidden!important;
+  box-shadow:0 28px 80px rgba(0,0,0,.45)!important;
+  position:relative;
+}
+.live-settings-close {
+  position:absolute; top:14px; right:14px;
+  width:30px;height:30px;border-radius:50%;
+  background:rgba(0,0,0,.08); color:var(--text2);
+  border:0; font-size:13px; cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,transform .15s;
+  z-index:2;
+}
+.live-settings-close:hover { background:rgba(239,68,68,.15); color:#ef4444; transform:rotate(90deg); }
+
+.live-settings-header {
+  background:linear-gradient(135deg, rgba(99,102,241,.15), rgba(168,85,247,.12), rgba(239,68,68,.08));
+  padding:24px 28px 22px;
+  display:flex; align-items:center; gap:14px;
+  border-bottom:1px solid var(--border);
+}
+.live-settings-icon {
+  width:48px;height:48px;
+  background:linear-gradient(135deg, var(--accent), #a855f7);
+  border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;
+  box-shadow:0 6px 18px rgba(99,102,241,.35);
+}
+.live-settings-title { font-size:17px; font-weight:800; color:var(--text1); letter-spacing:-.01em; }
+.live-settings-sub { font-size:12.5px; color:var(--text2); margin-top:2px; line-height:1.4; }
+
+/* Stepper de progresso */
+.live-settings-steps {
+  display:flex; align-items:center; gap:8px;
+  padding:16px 28px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+}
+.live-settings-step {
+  flex:1; display:flex; align-items:center; gap:8px;
+  padding:8px 10px; border-radius:8px;
+  transition:background .2s;
+}
+.live-settings-step-num {
+  width:22px;height:22px;border-radius:50%;
+  background:var(--card); border:1.5px solid var(--border);
+  color:var(--text2); font-size:11px; font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.live-settings-step-text { font-size:11.5px; color:var(--text2); font-weight:600; line-height:1.2; }
+.live-settings-step.live-step-done .live-settings-step-num { background:#22c55e; border-color:#22c55e; color:#fff; }
+.live-settings-step.live-step-done .live-settings-step-num::before { content:'✓'; }
+.live-settings-step.live-step-done .live-settings-step-num { font-size:0; }
+.live-settings-step.live-step-done .live-settings-step-num::before { font-size:11px; }
+.live-settings-step.live-step-done .live-settings-step-text { color:var(--text1); }
+.live-settings-step.live-step-active .live-settings-step-num { background:linear-gradient(135deg,var(--accent),#a855f7); border-color:transparent; color:#fff; box-shadow:0 0 0 4px rgba(99,102,241,.15); }
+.live-settings-step.live-step-active .live-settings-step-text { color:var(--text1); }
+.live-settings-step-arrow { color:var(--text3); font-size:13px; }
+
+/* Campos */
+.live-field {
+  padding:18px 28px;
+  border-bottom:1px solid var(--border);
+}
+.live-field:last-of-type { border-bottom:0; }
+.live-field-head {
+  display:flex; align-items:flex-start; gap:12px;
+  margin-bottom:12px;
+}
+.live-field-num {
+  width:28px;height:28px;border-radius:8px;
+  background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(168,85,247,.12));
+  color:var(--accent); font-weight:800; font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  border:1px solid rgba(99,102,241,.25);
+}
+.live-field-title { font-size:14px; font-weight:700; color:var(--text1); margin-bottom:3px; }
+.live-field-desc { font-size:12px; color:var(--text2); line-height:1.5; }
+.live-field-desc code { background:var(--bg2); padding:1px 6px; border-radius:4px; font-size:11px; color:var(--accent); font-family:ui-monospace,monospace; }
+
+.live-input-mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace !important; font-size:12.5px !important; }
+.live-input-eye {
+  position:absolute; right:8px; top:50%; transform:translateY(-50%);
+  background:var(--bg2); border:1px solid var(--border); border-radius:6px;
+  padding:5px 9px; font-size:13px; cursor:pointer; color:var(--text2);
+}
+.live-input-eye:hover { color:var(--text1); border-color:var(--accent); }
+
+.live-field-examples {
+  margin-top:10px;
+  background:var(--bg2);
+  border-radius:8px; padding:10px 12px;
+  font-size:11.5px; color:var(--text2);
+  line-height:1.7;
+}
+.live-field-examples strong { color:var(--text1); font-size:11px; text-transform:uppercase; letter-spacing:.4px; display:block; margin-bottom:4px; }
+.live-field-ex { display:flex; align-items:center; gap:8px; padding:2px 0; }
+.live-field-ex code { background:var(--card); padding:2px 8px; border-radius:5px; font-size:11px; color:var(--text1); font-family:ui-monospace,monospace; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.live-field-ex-tag { font-size:10px; color:var(--text3); padding:1px 7px; background:var(--border); border-radius:999px; flex-shrink:0; }
+.live-field-ex-tag.tag-best { background:rgba(34,197,94,.15); color:#16a34a; }
+
+.live-field-tip {
+  margin-top:10px;
+  background:rgba(245,158,11,.07);
+  border:1px solid rgba(245,158,11,.25);
+  border-radius:8px;
+  padding:9px 12px;
+  font-size:11.5px; color:var(--text2);
+  line-height:1.6;
+}
+.live-field-tip strong { color:var(--text1); }
+.live-field-tip code { background:var(--card); padding:1px 6px; border-radius:4px; font-size:10.5px; color:#d97706; font-family:ui-monospace,monospace; }
+
+/* Resultado do teste */
+.live-test-result {
+  margin:0 28px;
+  font-size:12px; line-height:1.5;
+  min-height:0;
+}
+.live-test-result:not(:empty) {
+  margin-bottom:14px;
+  padding:10px 14px; border-radius:8px;
+  background:var(--bg2);
+}
+
+/* Ações */
+.live-settings-actions {
+  display:flex; align-items:center; gap:8px;
+  padding:18px 28px;
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+}
+.live-btn-test {
+  background:rgba(99,102,241,.1); color:var(--accent);
+  border:1px solid rgba(99,102,241,.3); border-radius:9px;
+  padding:9px 16px; font-size:13px; font-weight:600;
+  cursor:pointer; display:flex; align-items:center; gap:6px;
+  transition:all .15s;
+}
+.live-btn-test:hover { background:rgba(99,102,241,.18); }
+.live-btn-cancel {
+  background:transparent; color:var(--text2);
+  border:1px solid var(--border); border-radius:9px;
+  padding:9px 16px; font-size:13px; font-weight:600; cursor:pointer;
+}
+.live-btn-cancel:hover { background:var(--card); }
+.live-btn-save {
+  background:linear-gradient(135deg, var(--accent), #a855f7); color:#fff;
+  border:0; border-radius:9px;
+  padding:9px 18px; font-size:13px; font-weight:700; cursor:pointer;
+  box-shadow:0 4px 14px rgba(99,102,241,.3);
+  transition:transform .12s, box-shadow .12s;
+}
+.live-btn-save:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(99,102,241,.4); }
+
+/* CTA do guia */
+.live-settings-help {
+  display:flex; align-items:center; gap:12px;
+  padding:16px 28px 22px;
+  background:linear-gradient(135deg, rgba(99,102,241,.05), rgba(168,85,247,.04));
+  border-top:1px solid var(--border);
+}
+.live-settings-help-icon {
+  width:38px;height:38px;border-radius:10px;
+  background:var(--card); border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px; flex-shrink:0;
+}
+.live-btn-guide {
+  background:var(--card); color:var(--accent);
+  border:1px solid rgba(99,102,241,.3);
+  border-radius:8px;
+  padding:8px 14px; font-size:12px; font-weight:700;
+  cursor:pointer; flex-shrink:0;
+  transition:background .15s, color .15s;
+}
+.live-btn-guide:hover { background:var(--accent); color:#fff; }
+
+/* responsive */
+@media (max-width:560px) {
+  .live-settings-header,
+  .live-settings-steps,
+  .live-field,
+  .live-settings-actions,
+  .live-settings-help { padding-left:18px; padding-right:18px; }
+  .live-settings-step-text { font-size:10px; }
+  .live-settings-step-arrow { display:none; }
+}

@@ -1258,30 +1258,96 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
       </div><!-- /live-card -->
 
       <!-- Modal de configuração do backend -->
-      <div class="modal-overlay" id="liveSettingsModal" onclick="if(event.target===this)liveCloseSettings()" style="z-index:1001;">
-        <div class="modal-box" style="max-width:560px;">
-          <div class="modal-title">⚙️ Configurar Backend de Live</div>
-          <div class="modal-sub" style="line-height:1.55;">URL do servidor de streaming na sua VPS (Hostinger KVM, DigitalOcean, etc).</div>
+      <div class="modal-overlay live-settings-overlay" id="liveSettingsModal" onclick="if(event.target===this)liveCloseSettings()" style="z-index:1001;">
+        <div class="modal-box live-settings-box" style="max-width:620px;">
+          <button class="live-settings-close" onclick="liveCloseSettings()" aria-label="Fechar">✕</button>
 
-          <div class="live-row" style="margin-top:14px;">
-            <label class="live-label">URL do backend</label>
-            <input type="text" class="live-input" id="liveBackendUrl" placeholder="https://seu-dominio.com:3000 ou http://1.2.3.4:3000">
+          <!-- Header com gradient -->
+          <div class="live-settings-header">
+            <div class="live-settings-icon">⚙️</div>
+            <div>
+              <div class="live-settings-title">Conectar VPS de Streaming</div>
+              <div class="live-settings-sub">Aponta o app pra sua VPS rodando o servidor ffmpeg</div>
+            </div>
           </div>
 
-          <div class="live-row">
-            <label class="live-label">Token de autenticação <span class="live-hint">(secret bearer)</span></label>
-            <input type="password" class="live-input" id="liveBackendToken" placeholder="Token configurado no backend (.env)">
+          <!-- Stepper de status -->
+          <div class="live-settings-steps">
+            <div class="live-settings-step" id="liveStepInstalled">
+              <div class="live-settings-step-num">1</div>
+              <div class="live-settings-step-text">VPS com server.js rodando</div>
+            </div>
+            <div class="live-settings-step-arrow">→</div>
+            <div class="live-settings-step" id="liveStepConfig">
+              <div class="live-settings-step-num">2</div>
+              <div class="live-settings-step-text">Configura aqui</div>
+            </div>
+            <div class="live-settings-step-arrow">→</div>
+            <div class="live-settings-step" id="liveStepReady">
+              <div class="live-settings-step-num">3</div>
+              <div class="live-settings-step-text">Pronto pra streamar</div>
+            </div>
           </div>
 
-          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
-            <button class="sp-btn-secondary" onclick="liveTestBackend()">▶ Testar</button>
-            <button class="sp-btn-secondary" onclick="liveCloseSettings()">Cancelar</button>
-            <button class="sp-btn-primary" onclick="liveSaveBackend()">Salvar</button>
+          <!-- Campo URL com explicação detalhada -->
+          <div class="live-field">
+            <div class="live-field-head">
+              <span class="live-field-num">1</span>
+              <div>
+                <div class="live-field-title">🌐 URL do backend</div>
+                <div class="live-field-desc">Endereço da sua VPS Hostinger onde o <code>server.js</code> está rodando. Inclua a porta (padrão <code>3000</code>).</div>
+              </div>
+            </div>
+            <input type="text" class="live-input live-input-mono" id="liveBackendUrl" placeholder="http://123.45.67.89:3000">
+            <div class="live-field-examples">
+              <strong>Exemplos válidos:</strong>
+              <div class="live-field-ex"><code>http://123.45.67.89:3000</code> <span class="live-field-ex-tag">IP direto</span></div>
+              <div class="live-field-ex"><code>https://stream.meudominio.com.br</code> <span class="live-field-ex-tag tag-best">com domínio + SSL</span></div>
+              <div class="live-field-ex"><code>http://meu-vps.local:3000</code> <span class="live-field-ex-tag">rede local</span></div>
+            </div>
+            <div class="live-field-tip">💡 <strong>Não sabe seu IP?</strong> Painel Hostinger → VPS → "Detalhes" → IP de acesso. Geralmente algo como <code>147.93.xxx.xxx</code>.</div>
           </div>
-          <div id="liveTestResult" style="font-size:12px;margin-top:10px;"></div>
 
-          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
-            <button class="sp-btn-secondary" onclick="liveShowSetupGuide()" style="width:100%;">📖 Ver guia de instalação na VPS</button>
+          <!-- Campo Token com explicação -->
+          <div class="live-field">
+            <div class="live-field-head">
+              <span class="live-field-num">2</span>
+              <div>
+                <div class="live-field-title">🔐 Token de autenticação</div>
+                <div class="live-field-desc">Senha secreta que você definiu no comando <code>LIVE_TOKEN=...</code> ao subir o servidor. Protege seu backend de uso indevido.</div>
+              </div>
+            </div>
+            <div style="position:relative;">
+              <input type="password" class="live-input live-input-mono" id="liveBackendToken" placeholder="Cole o token que você definiu no PM2" autocomplete="off">
+              <button type="button" class="live-input-eye" onclick="liveToggleSettingsToken()" title="Mostrar/ocultar">👁</button>
+            </div>
+            <div class="live-field-tip">
+              💡 <strong>Esqueceu o token?</strong> Conecta SSH e roda: <code>pm2 env fg-live | grep LIVE_TOKEN</code><br>
+              ⚠️ <strong>Token novo?</strong> Pra trocar: <code>pm2 set fg-live:LIVE_TOKEN "novo-token-32-chars"</code> e <code>pm2 restart fg-live</code>
+            </div>
+          </div>
+
+          <!-- Resultado do teste -->
+          <div id="liveTestResult" class="live-test-result"></div>
+
+          <!-- Ações -->
+          <div class="live-settings-actions">
+            <button class="live-btn-test" onclick="liveTestBackend()">
+              <span style="font-size:14px;">▶</span> Testar conexão
+            </button>
+            <div style="flex:1;"></div>
+            <button class="live-btn-cancel" onclick="liveCloseSettings()">Cancelar</button>
+            <button class="live-btn-save" onclick="liveSaveBackend()">💾 Salvar</button>
+          </div>
+
+          <!-- CTA pro guia -->
+          <div class="live-settings-help">
+            <div class="live-settings-help-icon">📖</div>
+            <div style="flex:1;">
+              <div style="font-weight:700;color:var(--text1);font-size:13px;margin-bottom:2px;">Primeira vez? Veja o guia completo</div>
+              <div style="font-size:11.5px;color:var(--text2);line-height:1.5;">Passo-a-passo pra instalar Node, ffmpeg e PM2 na VPS Hostinger. ~5 minutos.</div>
+            </div>
+            <button class="live-btn-guide" onclick="liveShowSetupGuide()">Ver guia →</button>
           </div>
         </div>
       </div>
@@ -24713,6 +24779,15 @@ window.fgLive = (() => {
     document.getElementById('liveBackendToken').value = backendToken;
     document.getElementById('liveSettingsModal').classList.add('open');
     document.getElementById('liveSettingsModal').style.display = 'flex';
+    _updateStepperState();
+    // Atualiza stepper conforme digita
+    ['liveBackendUrl','liveBackendToken'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el._wiredStepper) {
+        el._wiredStepper = true;
+        el.addEventListener('input', _updateStepperState);
+      }
+    });
   }
   function closeSettings() {
     document.getElementById('liveSettingsModal').classList.remove('open');
@@ -24763,6 +24838,22 @@ window.fgLive = (() => {
     const i = document.getElementById('liveStreamKey');
     i.type = i.type === 'password' ? 'text' : 'password';
   }
+  function toggleSettingsToken() {
+    const i = document.getElementById('liveBackendToken');
+    i.type = i.type === 'password' ? 'text' : 'password';
+  }
+  function _updateStepperState() {
+    const url = document.getElementById('liveBackendUrl')?.value?.trim();
+    const tok = document.getElementById('liveBackendToken')?.value?.trim();
+    const stepConfig = document.getElementById('liveStepConfig');
+    const stepReady = document.getElementById('liveStepReady');
+    const stepInstalled = document.getElementById('liveStepInstalled');
+    if (!stepConfig || !stepReady || !stepInstalled) return;
+    stepInstalled.classList.add('live-step-done');
+    stepConfig.classList.toggle('live-step-active', !!(url || tok));
+    stepConfig.classList.toggle('live-step-done', !!(url && tok));
+    stepReady.classList.toggle('live-step-active', !!(url && tok));
+  }
 
   // Popula select de contas IG (reusa o do Publipost)
   function refreshIgAccounts() {
@@ -24780,7 +24871,7 @@ window.fgLive = (() => {
     setType, handleFile, handleAudio, removeMedia,
     start: startStream, stop: stopStream,
     openSettings, closeSettings, testBackend, saveBackend,
-    showSetupGuide, closeSetupGuide, copyServerCode, toggleKey,
+    showSetupGuide, closeSetupGuide, copyServerCode, toggleKey, toggleSettingsToken,
     tryPinComment,
   };
 })();
@@ -24800,6 +24891,7 @@ window.liveShowSetupGuide = () => window.fgLive.showSetupGuide();
 window.liveCloseSetupGuide = () => window.fgLive.closeSetupGuide();
 window.liveCopyServerCode = () => window.fgLive.copyServerCode();
 window.liveToggleKey = () => window.fgLive.toggleKey();
+window.liveToggleSettingsToken = () => window.fgLive.toggleSettingsToken();
 window.liveTryPinComment = (id, msg) => window.fgLive.tryPinComment(id, msg);
 
 // Init quando a aba Social abrir
