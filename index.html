@@ -10200,6 +10200,9 @@ async function mtrTryLoadSharedSnapshot() {
   if (!m) return false;
   if (mtrIsSharedView) return true; // já carregado, evita refetch duplicado
   const id = m[1];
+  // Mostra "Carregando..." imediatamente
+  const _body0 = document.getElementById('mtrBody');
+  if (_body0) _body0.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--text2,#888);"><div style="width:32px;height:32px;border:3px solid #6366f1;border-top-color:transparent;border-radius:50%;margin:0 auto 14px;animation:rec-spin 1s linear infinite;"></div><style>@keyframes rec-spin{to{transform:rotate(360deg)}}</style>Carregando relatório...</div>`;
   try {
     if (typeof firebase === 'undefined' || !firebase.firestore) throw new Error('Firebase não disponível.');
     const doc = await firebase.firestore().collection('mtrSnapshots').doc(id).get();
@@ -10240,7 +10243,34 @@ async function mtrTryLoadSharedSnapshot() {
     return true;
   } catch(e) {
     console.error('[shared snapshot]', e);
-    showToast('error','❌','Erro ao carregar snapshot: '+e.message);
+    const isPermDenied = /permission|denied|insufficient|not authorized|allow/i.test(String(e?.code||'') + ' ' + String(e?.message||''));
+    const isNotFound  = /not.*found|exist/i.test(String(e?.message||''));
+    const body = document.getElementById('mtrBody');
+    if (body) {
+      const helpHtml = isPermDenied
+        ? `<div style="font-size:13px;color:#fca5a5;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:14px 18px;margin-top:14px;text-align:left;">
+             <div style="font-weight:700;margin-bottom:6px;">🔒 Sem permissão de leitura</div>
+             <div style="line-height:1.55;">O dono do link precisa habilitar uma destas opções:</div>
+             <div style="margin-top:10px;font-size:12.5px;color:#cbd5e1;">
+               <b>Opção A:</b> Firebase Console → <em>Authentication</em> → <em>Sign-in method</em> → <b>Anonymous</b> → <b>Enable</b>.<br>
+               <b>Opção B:</b> Firestore rules:<br>
+               <code style="display:block;background:#0f172a;color:#e2e8f0;padding:8px 10px;border-radius:6px;margin-top:6px;font-size:11px;white-space:pre;">match /mtrSnapshots/{doc} {
+  allow read: if true;
+  allow create: if request.auth != null;
+  allow update, delete: if false;
+}</code>
+             </div>
+           </div>`
+        : isNotFound
+          ? `<div style="font-size:13px;color:#fcd34d;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:12px 16px;margin-top:14px;">📭 Esse link não existe ou foi removido. Peça pra quem te enviou gerar um novo.</div>`
+          : `<div style="font-size:12px;color:var(--text3,#94a3b8);margin-top:10px;font-family:monospace;">${(e?.message || String(e)).replace(/</g,'&lt;')}</div>`;
+      body.innerHTML = `<div style="max-width:560px;margin:80px auto;text-align:center;padding:20px;">
+        <div style="font-size:48px;margin-bottom:10px;">⚠️</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text1,#fff);margin-bottom:6px;">Não consegui carregar o relatório</div>
+        ${helpHtml}
+      </div>`;
+    }
+    if (typeof showToast === 'function') showToast('error','❌','Erro ao carregar snapshot.');
     return false;
   }
 }
