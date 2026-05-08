@@ -7681,8 +7681,10 @@ function mtrCampaignRowHtml(c) {
   const isCmp = mtrCmpSelected.includes(c.id);
   const statusCls = c.status === 'ACTIVE' ? 'active' : (c.status === 'PAUSED' ? 'paused' : 'other');
   const drillOpen = mtrDrillState[c.id]?.open;
+  const funnelOpen = mtrDrillState[c.id]?.funnelOpen;
   const aiBusy = mtrCampAiBusy[c.id];
   const drillRows = drillOpen ? mtrRenderDrillRows(c.id) : '';
+  const funnelRow = funnelOpen ? mtrRenderCampaignFunnel(c) : '';
   const aiResult = mtrDrillState[c.id]?.aiResult;
   const cols = mtrCampCols.map(id => MTR_CAMP_COLS.find(x => x.id === id)).filter(Boolean);
   const totalCols = 3 + cols.length;
@@ -7698,11 +7700,94 @@ function mtrCampaignRowHtml(c) {
     </td>
     ${colCells}
     <td class="actions" onclick="event.stopPropagation()">
+      <button class="mtr-camp-funnel-btn ${funnelOpen?'active':''}" onclick="mtrToggleCampaignFunnel('${c.id}')" title="Funil de conversão desta campanha">📊 Funil</button>
       <button class="mtr-camp-ai-btn" ${aiBusy?'disabled':''} onclick="mtrAnalyzeCampaignWithAI('${c.id}')">${aiBusy?'⏳':'✨'} IA</button>
     </td>
   </tr>
+  ${funnelRow}
   ${aiResultRow}
   ${drillRows}`;
+}
+
+// 📊 Funil compacto por campanha (Impressões → Alcance → Cliques → Compras)
+function mtrRenderCampaignFunnel(c) {
+  const cols = mtrCampCols.map(id => MTR_CAMP_COLS.find(x => x.id === id)).filter(Boolean);
+  const colspan = 3 + cols.length;
+
+  // Coleta as etapas do funil — só inclui as que têm valor
+  const stages = [
+    { id:'impressions', label:'Impressões',     icon:'👁️', value: parseFloat(c.impressions)||0, color:'#6366f1' },
+    { id:'reach',       label:'Alcance',        icon:'🎯', value: parseFloat(c.reach)||0,        color:'#8b5cf6' },
+    { id:'clicks',      label:'Cliques',        icon:'🖱️', value: parseFloat(c.clicks)||0,       color:'#ec4899' },
+    { id:'purchases',   label:'Conversões',     icon:'🏆', value: parseFloat(c.purchases)||parseFloat(c.results)||0, color:'#10b981' },
+  ].filter(s => s.value > 0);
+
+  if (stages.length < 2) {
+    return `<tr class="mtr-camp-funnel-row"><td colspan="${colspan}">
+      <div class="mtr-camp-funnel-empty">📊 Esta campanha ainda não tem dados suficientes pra montar o funil (precisa de pelo menos 2 etapas com valor).</div>
+    </td></tr>`;
+  }
+
+  const max = stages[0].value;
+  const stagesHtml = stages.map((s, i) => {
+    const next = stages[i+1];
+    const w = Math.max(20, (s.value/max)*100);
+    const rate = next ? ((next.value/s.value)*100).toFixed(1)+'%' : null;
+    const drop = next ? Math.round(s.value - next.value) : null;
+    return `
+      <div class="mtr-camp-funnel-stage">
+        <div class="mtr-camp-funnel-bar" style="width:${w}%; background:linear-gradient(90deg, ${s.color}, ${s.color}cc);">
+          <span class="mtr-camp-funnel-icon">${s.icon}</span>
+          <span class="mtr-camp-funnel-label">${s.label}</span>
+          <span class="mtr-camp-funnel-value">${mtrFmtNum(s.value)}</span>
+        </div>
+        ${rate ? `
+          <div class="mtr-camp-funnel-conversion">
+            <span class="mtr-camp-funnel-arrow">↓</span>
+            <span class="mtr-camp-funnel-rate"><strong>${rate}</strong> de conversão</span>
+            ${drop > 0 ? `<span class="mtr-camp-funnel-drop">−${mtrFmtNum(drop)} perdidos</span>` : ''}
+          </div>` : ''}
+      </div>`;
+  }).join('');
+
+  // Highlights da campanha (KPIs ao lado do funil)
+  const spend = parseFloat(c.spend)||0;
+  const roas = parseFloat(c.roas)||0;
+  const cpc = parseFloat(c.cpc)||0;
+  const ctr = parseFloat(c.ctr)||0;
+  const highlights = `
+    <div class="mtr-camp-funnel-highlights">
+      <div class="mtr-camp-funnel-hl"><span class="mtr-camp-funnel-hl-label">Gasto</span><span class="mtr-camp-funnel-hl-value">${spend>0?'R$ '+mtrFmtNum(spend):'—'}</span></div>
+      <div class="mtr-camp-funnel-hl"><span class="mtr-camp-funnel-hl-label">ROAS</span><span class="mtr-camp-funnel-hl-value ${roas>=2?'good':(roas>=1?'mid':(roas>0?'bad':''))}">${roas>0?roas.toFixed(2)+'x':'—'}</span></div>
+      <div class="mtr-camp-funnel-hl"><span class="mtr-camp-funnel-hl-label">CPC</span><span class="mtr-camp-funnel-hl-value">${cpc>0?'R$ '+cpc.toFixed(2):'—'}</span></div>
+      <div class="mtr-camp-funnel-hl"><span class="mtr-camp-funnel-hl-label">CTR</span><span class="mtr-camp-funnel-hl-value">${ctr>0?ctr.toFixed(2)+'%':'—'}</span></div>
+    </div>`;
+
+  return `<tr class="mtr-camp-funnel-row"><td colspan="${colspan}">
+    <div class="mtr-camp-funnel-card">
+      <div class="mtr-camp-funnel-header">
+        <span class="mtr-camp-funnel-title">📊 Funil de conversão · ${escHtml(c.name||'')}</span>
+        <button class="mtr-camp-funnel-close" onclick="mtrToggleCampaignFunnel('${c.id}')" title="Fechar">×</button>
+      </div>
+      <div class="mtr-camp-funnel-body">
+        <div class="mtr-camp-funnel-stages">${stagesHtml}</div>
+        ${highlights}
+      </div>
+    </div>
+  </td></tr>`;
+}
+
+// Toggle do funil de uma campanha específica
+function mtrToggleCampaignFunnel(campaignId) {
+  if (!mtrDrillState[campaignId]) mtrDrillState[campaignId] = {};
+  mtrDrillState[campaignId].funnelOpen = !mtrDrillState[campaignId].funnelOpen;
+  // Re-renderiza só essa linha pra evitar flicker
+  if (typeof loadMetrics === 'function' && mtrLastSnapshot) {
+    const tbody = document.getElementById('mtrCampTbody');
+    if (tbody && mtrLastSnapshot.campaigns) {
+      tbody.innerHTML = mtrLastSnapshot.campaigns.map(x => mtrCampaignRowHtml(x)).join('');
+    }
+  }
 }
 
 /* ─── Sidebar de personalização (colapsível inline) ─────── */

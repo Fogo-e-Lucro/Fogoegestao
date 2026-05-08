@@ -6188,6 +6188,140 @@ select.pj-auto-input { cursor:pointer; }
 }
 
 /* ══════════════════════════════════════════════════════
+   FUNIL POR CAMPANHA (Meta Ads)
+═══════════════════════════════════════════════════════ */
+.mtr-camp-funnel-btn {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:4px 10px; margin-right:4px;
+  background:linear-gradient(135deg, rgba(99,102,241,.1), rgba(168,85,247,.08));
+  border:1px solid rgba(99,102,241,.3);
+  border-radius:6px;
+  color:var(--accent);
+  font-size:11.5px; font-weight:600; font-family:var(--font);
+  cursor:pointer;
+  transition:all .15s;
+}
+.mtr-camp-funnel-btn:hover {
+  background:linear-gradient(135deg, var(--accent), var(--accent2,#a855f7));
+  color:#fff; border-color:transparent;
+  transform:translateY(-1px);
+}
+.mtr-camp-funnel-btn.active {
+  background:linear-gradient(135deg, var(--accent), var(--accent2,#a855f7));
+  color:#fff; border-color:transparent;
+}
+
+.mtr-camp-funnel-row td {
+  padding:0 !important;
+  background:linear-gradient(180deg, rgba(99,102,241,.04), rgba(168,85,247,.03)) !important;
+  border-bottom:1px solid var(--border);
+}
+.mtr-camp-funnel-card {
+  padding:18px 22px;
+  animation:pjFadeIn .25s ease;
+}
+.mtr-camp-funnel-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:14px;
+}
+.mtr-camp-funnel-title {
+  font-size:13.5px; font-weight:700; color:var(--text);
+  letter-spacing:.2px;
+}
+.mtr-camp-funnel-close {
+  width:26px; height:26px; border-radius:6px;
+  border:1px solid var(--border); background:var(--card);
+  color:var(--text2); font-size:16px; line-height:1;
+  cursor:pointer; transition:all .15s;
+}
+.mtr-camp-funnel-close:hover {
+  background:rgba(239,68,68,.12); color:#ef4444; border-color:transparent;
+}
+.mtr-camp-funnel-body {
+  display:grid; grid-template-columns:1fr 280px; gap:24px;
+  align-items:start;
+}
+@media (max-width:900px) {
+  .mtr-camp-funnel-body { grid-template-columns:1fr; }
+}
+
+.mtr-camp-funnel-stages {
+  display:flex; flex-direction:column; gap:6px;
+}
+.mtr-camp-funnel-stage { display:flex; flex-direction:column; gap:4px; }
+.mtr-camp-funnel-bar {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 14px;
+  border-radius:10px;
+  color:#fff;
+  min-width:200px;
+  box-shadow:0 4px 12px rgba(0,0,0,.12);
+  transition:transform .15s;
+}
+.mtr-camp-funnel-bar:hover { transform:translateX(4px); }
+.mtr-camp-funnel-icon { font-size:16px; flex-shrink:0; }
+.mtr-camp-funnel-label {
+  font-size:12.5px; font-weight:600;
+  flex:1;
+  text-shadow:0 1px 2px rgba(0,0,0,.15);
+}
+.mtr-camp-funnel-value {
+  font-size:14px; font-weight:800;
+  text-shadow:0 1px 2px rgba(0,0,0,.2);
+  font-variant-numeric:tabular-nums;
+}
+.mtr-camp-funnel-conversion {
+  display:flex; align-items:center; gap:10px;
+  padding:4px 14px 4px 28px;
+  font-size:11.5px; color:var(--text3);
+  font-weight:500;
+}
+.mtr-camp-funnel-arrow {
+  color:var(--accent); font-weight:700;
+}
+.mtr-camp-funnel-rate strong { color:var(--accent); font-weight:700; }
+.mtr-camp-funnel-drop {
+  margin-left:auto;
+  padding:2px 8px; border-radius:6px;
+  background:rgba(239,68,68,.08); color:#ef4444;
+  font-size:10.5px; font-weight:600;
+  font-variant-numeric:tabular-nums;
+}
+
+.mtr-camp-funnel-highlights {
+  display:flex; flex-direction:column; gap:6px;
+  padding:14px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px;
+  align-self:flex-start;
+}
+.mtr-camp-funnel-hl {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:8px 0;
+  border-bottom:1px dashed var(--border);
+}
+.mtr-camp-funnel-hl:last-child { border-bottom:none; }
+.mtr-camp-funnel-hl-label {
+  font-size:11px; font-weight:700;
+  color:var(--text3);
+  text-transform:uppercase; letter-spacing:.4px;
+}
+.mtr-camp-funnel-hl-value {
+  font-size:14px; font-weight:800; color:var(--text);
+  font-variant-numeric:tabular-nums;
+}
+.mtr-camp-funnel-hl-value.good { color:#10b981; }
+.mtr-camp-funnel-hl-value.mid  { color:#f59e0b; }
+.mtr-camp-funnel-hl-value.bad  { color:#ef4444; }
+
+.mtr-camp-funnel-empty {
+  padding:24px; text-align:center;
+  color:var(--text3); font-size:13px;
+  background:var(--card); border:1px dashed var(--border);
+  border-radius:10px; margin:14px 22px;
+}
+
+/* ══════════════════════════════════════════════════════
    TOAST DE UNDO (canto inferior, com botão Desfazer)
 ═══════════════════════════════════════════════════════ */
 .app-undo-toast {
