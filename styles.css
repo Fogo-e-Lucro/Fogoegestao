@@ -2724,7 +2724,7 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
 /* 10) FUNNEL */
 .mtr-funnel-card { background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px; }
 .mtr-funnel-title { font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:14px; }
-.mtr-funnel-stages { display:flex;flex-direction:column;gap:6px; }
+.mtr-funnel-stages { display:flex;flex-direction:column;align-items:center;gap:6px; }
 .mtr-funnel-stage { position:relative;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-radius:10px;color:#fff;font-weight:700;overflow:hidden;min-height:48px; }
 .mtr-funnel-stage::before { content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--accent),var(--accent2,#a855f7));opacity:1;border-radius:inherit; }
 .mtr-funnel-stage > * { position:relative;z-index:1; }
