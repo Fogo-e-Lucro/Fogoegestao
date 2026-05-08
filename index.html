@@ -7968,7 +7968,15 @@ function mtrRenderPinnedCampaignsBlock(campaigns) {
       if (!m) return '';
       const v = mtrGetValue(id, null, adsDataVirtual);
       return `
-        <div class="mtr-kpi" data-source="ad" data-kpi-id="${id}" data-camp-id="${c.id}">
+        <div class="mtr-kpi" data-source="ad" data-kpi-id="${id}" data-camp-id="${c.id}"
+             draggable="true"
+             ondragstart="mtrPinnedKpiDragStart(event,'${c.id}','${id}')"
+             ondragend="mtrPinnedKpiDragEnd(event)"
+             ondragover="mtrPinnedKpiDragOver(event,'${c.id}')"
+             ondragleave="mtrPinnedKpiDragLeave(event)"
+             ondrop="mtrPinnedKpiDrop(event,'${c.id}','${id}')"
+             title="Arraste pra reordenar dentro desta campanha"
+             style="cursor:grab;">
           <button class="mtr-kpi-del" onclick="event.stopPropagation();mtrPinnedCampRemoveKpi('${c.id}','${id}')" title="Remover este card">✕</button>
           <div class="mtr-kpi-icon">${m.icon}</div>
           <div class="mtr-kpi-label">${m.label}</div>
@@ -9192,6 +9200,54 @@ function mtrKpiCardDrop(e, targetId) {
   mtrSaveUserKpis();
   mtrRefreshKpisKeepWarnings();
 }
+/* ----- Drag KPIs DENTRO de uma campanha fixada -----
+   Escopo por campanha: só troca cards do MESMO data-camp-id.
+   Usa um type custom 'text/mtr-pinned-kpi' pra não conflitar com o drag global ou do funil. */
+let _mtrPinnedDrag = null; // {campId, kpiId}
+function mtrPinnedKpiDragStart(e, campId, kpiId) {
+  e.stopPropagation();
+  _mtrPinnedDrag = { campId, kpiId };
+  e.dataTransfer.setData('text/mtr-pinned-kpi', `${campId}::${kpiId}`);
+  e.dataTransfer.effectAllowed = 'move';
+  e.currentTarget.classList.add('mtr-dragging');
+}
+function mtrPinnedKpiDragEnd(e) {
+  _mtrPinnedDrag = null;
+  e.currentTarget.classList.remove('mtr-dragging');
+  document.querySelectorAll('.mtr-kpi-drop-target').forEach(el => el.classList.remove('mtr-kpi-drop-target'));
+}
+function mtrPinnedKpiDragOver(e, campId) {
+  // Só aceita drop se a origem foi do mesmo campId
+  if (!_mtrPinnedDrag || _mtrPinnedDrag.campId !== campId) return;
+  e.preventDefault();
+  e.stopPropagation();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('mtr-kpi-drop-target');
+}
+function mtrPinnedKpiDragLeave(e) {
+  e.currentTarget.classList.remove('mtr-kpi-drop-target');
+}
+function mtrPinnedKpiDrop(e, campId, targetKpiId) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.classList.remove('mtr-kpi-drop-target');
+  if (!_mtrPinnedDrag || _mtrPinnedDrag.campId !== campId) return;
+  const dragId = _mtrPinnedDrag.kpiId;
+  _mtrPinnedDrag = null;
+  if (!dragId || dragId === targetKpiId) return;
+  const cur = _mtrGetPinnedCampaignKpis(campId);
+  const i = cur.indexOf(dragId);
+  const j = cur.indexOf(targetKpiId);
+  if (i < 0 || j < 0) return;
+  const arr = [...cur];
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+  _mtrSetPinnedCampaignKpis(campId, arr);
+  if (mtrLastSnapshot) {
+    const s = mtrLastSnapshot;
+    renderMetrics(s.igCurr, s.igPrev, s.adsData, s.adsPrev, s.curr, s.prev, s.compare, s.warnings, s.campaigns, s.health);
+  }
+}
+
 function mtrFunnelDropOver(e) {
   if (!e.dataTransfer.types.includes('text/mtr-kpi-id') && !e.dataTransfer.types.includes('text/mtr-funnel-stage')) return;
   e.preventDefault();
