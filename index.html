@@ -7720,10 +7720,9 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
     <div class="mtr-section">
       <div class="mtr-ai-card">
         <div class="mtr-ai-head">
-          <div class="mtr-ai-title">🤖 Análise com IA <span style="font-size:11px;font-weight:400;color:var(--text2);">— Claude Haiku</span></div>
+          <div class="mtr-ai-title">💬 Pergunte à IA <span style="font-size:11px;font-weight:400;color:var(--text2);">— Claude Haiku</span></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <button class="mtr-ai-history-btn" onclick="mtrOpenAiHistory()">📚 Histórico</button>
-            <button class="mtr-ai-chat-toggle" onclick="mtrToggleAiChat()">💬 Perguntar à IA</button>
             <button class="mtr-ai-train-toggle" onclick="mtrToggleAiTraining()">🎓 Treinar a IA</button>
           </div>
         </div>
@@ -7738,14 +7737,12 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
           </div>
         </div>
 
-        <button class="mtr-ai-analyze-btn" id="mtrAiAnalyzeBtn" onclick="mtrAnalyzeWithAI()">
-          ✨ Analisar ${filteredCamp ? 'esta campanha' : 'desempenho'} com IA
-        </button>
+        <!-- Resultado/ações ainda alimentados via chat (mantidos pra compat. com handlers existentes) -->
         <div class="mtr-ai-result" id="mtrAiResult"></div>
         <div id="mtrAiActionsBox"></div>
 
-        <!-- Chat livre -->
-        <div class="mtr-ai-chat-box" id="mtrAiChatBox">
+        <!-- Chat livre — sempre aberto, IA só responde ao que o usuário perguntar -->
+        <div class="mtr-ai-chat-box open" id="mtrAiChatBox">
           <div class="mtr-ai-chat-msgs" id="mtrAiChatMsgs"></div>
           <div class="mtr-ai-chat-suggestions">
             <button class="mtr-ai-chat-suggestion" onclick="mtrAiChatAsk('Por que o CPC mudou em relação ao período anterior?')">Por que o CPC mudou?</button>
