@@ -53,6 +53,10 @@
   })();
 </script>
 
+<!-- Pré-hide da tela de login se for view compartilhada (antes do CSS carregar) -->
+<script>(function(){try{ if(location.hash.match(/#share=/)){ document.documentElement.classList.add('is-shared-view-pending'); } }catch(_){}})();</script>
+<style>html.is-shared-view-pending #loginScreen { display:none !important; }</style>
+
 <!-- LOGIN SCREEN -->
 <div class="login-screen" id="loginScreen">
   <div class="login-orb3"></div>
@@ -3649,6 +3653,25 @@ if (_DEV_BYPASS) {
 
 _auth.onAuthStateChanged(async user => {
   if (_DEV_BYPASS) return; // Ignora estado real do Firebase em dev bypass
+
+  // 🔗 Link público (#share=...) — bypass total de login/access check.
+  // Visitante não precisa logar pra ver o snapshot read-only.
+  if (location.hash.match(/#share=/)) {
+    document.getElementById('loginScreen')?.classList.add('hidden');
+    const chip = document.getElementById('userChip');
+    if (chip) chip.style.display = 'none';
+    // Tenta auth anônimo silenciosamente — algumas regras Firestore exigem
+    // request.auth != null. Se falhar (anonymous não habilitado), tenta read
+    // mesmo assim (pode ter regra pública em mtrSnapshots).
+    if (!user) {
+      try { await firebase.auth().signInAnonymously(); return; } catch(_) {}
+    }
+    if (typeof mtrTryLoadSharedSnapshot === 'function') {
+      try { await mtrTryLoadSharedSnapshot(); } catch(_){}
+    }
+    return;
+  }
+
   if (!user) {
     _currentUser = null;
     // Cleanup listeners para evitar leituras fantasma após logout
@@ -10163,6 +10186,7 @@ async function mtrTryLoadSharedSnapshot() {
   // Verifica hash #share=<id>
   const m = location.hash.match(/#share=([a-zA-Z0-9_-]+)/);
   if (!m) return false;
+  if (mtrIsSharedView) return true; // já carregado, evita refetch duplicado
   const id = m[1];
   try {
     if (typeof firebase === 'undefined' || !firebase.firestore) throw new Error('Firebase não disponível.');
