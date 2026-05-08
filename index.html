@@ -2202,8 +2202,11 @@ function appStartUazapiPolling() {
 }
 
 /* ─── Presence (quem está online) ─────────────────────── */
-const APP_PRESENCE_HEARTBEAT_MS = 25 * 1000;  // heartbeat a cada 25s
-const APP_PRESENCE_THRESHOLD_MS = 60 * 1000;  // online se heartbeat há < 60s (e flag online=true)
+const APP_PRESENCE_HEARTBEAT_MS = 15 * 1000;  // heartbeat a cada 15s (era 25)
+const APP_PRESENCE_THRESHOLD_MS = 35 * 1000;  // offline se heartbeat há > 35s (era 60)
+// Token cacheado pra usar em fetch keepalive durante beforeunload
+let _appPresenceIdToken = null;
+let _appPresenceTokenExp = 0;
 let _appPresenceHeartbeatTimer = null;
 let _appPresenceUnsub = null;
 let _appPresenceUsers = []; // [{uid,name,email,photoUrl,lastSeenMs}]
@@ -2238,21 +2241,43 @@ async function appPresenceMarkOffline() {
   } catch(e) {}
 }
 
-// Versão sync usando sendBeacon — mais confiável em beforeunload (browser
-// pode matar a aba antes de await terminar). Usa REST do Firestore via fetch.
+// Atualiza ID token cacheado periodicamente (Firebase tokens duram ~1h).
+// Permite usar fetch+keepalive em beforeunload sem precisar de await.
+async function _appPresenceRefreshToken() {
+  try {
+    const u = firebase.auth?.()?.currentUser;
+    if (!u) return;
+    const token = await u.getIdToken(false);
+    _appPresenceIdToken = token;
+    _appPresenceTokenExp = Date.now() + 50 * 60 * 1000; // renova a cada 50min
+  } catch(e) {}
+}
+
+// Versão "fire-and-forget" usando fetch keepalive — funciona em
+// beforeunload/pagehide, mantendo a request viva mesmo após a aba fechar.
+// Suporta PATCH com auth header (sendBeacon não suporta).
 function appPresenceMarkOfflineSync() {
   try {
     const u = firebase.auth?.()?.currentUser;
     if (!u) return;
     const projectId = (typeof firebase !== 'undefined' && firebase.app?.()?.options?.projectId) || null;
     if (!projectId) return;
-    // Tenta via sendBeacon na REST API do Firestore (best-effort)
+    const token = _appPresenceIdToken;
+    if (!token) return; // sem token, não dá pra autenticar — desiste
     const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/app_presence/${u.uid}?updateMask.fieldPaths=online`;
     const body = JSON.stringify({ fields: { online: { booleanValue: false } } });
-    if (navigator.sendBeacon) {
-      const blob = new Blob([body], { type: 'application/json' });
-      navigator.sendBeacon(url, blob);
-    }
+    // fetch com keepalive: a request persiste mesmo se a página
+    // fechar/navegar. Suporta qualquer método HTTP (incluindo PATCH).
+    fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body,
+      keepalive: true,
+      mode: 'cors',
+    }).catch(() => {});
   } catch(e) {}
 }
 
@@ -2260,6 +2285,9 @@ function appPresenceStartHeartbeat() {
   if (_appPresenceHeartbeatTimer) clearInterval(_appPresenceHeartbeatTimer);
   appPresenceWriteHeartbeat();
   _appPresenceHeartbeatTimer = setInterval(appPresenceWriteHeartbeat, APP_PRESENCE_HEARTBEAT_MS);
+  // Mantém ID token cacheado pra usar em beforeunload (fetch keepalive)
+  _appPresenceRefreshToken();
+  setInterval(_appPresenceRefreshToken, 30 * 60 * 1000); // renova a cada 30min
   // Atualiza ao voltar pra aba; quando esconde, marca offline (poupando writes)
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
