@@ -6784,6 +6784,40 @@ const MTR_CATALOG = [
   { id:'ad_leads', source:'ad', icon:'🧲', label:'Leads', fmt:'num' },
   { id:'ad_cpl', source:'ad', icon:'💼', label:'Custo por Lead', fmt:'currency', invert:true },
   { id:'ad_landing_page_views', source:'ad', icon:'📄', label:'Visualizações de LP', fmt:'num' },
+  { id:'ad_add_to_cart', source:'ad', icon:'🛍️', label:'Adicionar ao carrinho', fmt:'num' },
+  { id:'ad_initiate_checkout', source:'ad', icon:'🧾', label:'Iniciar checkout', fmt:'num' },
+  { id:'ad_view_content', source:'ad', icon:'👓', label:'Visualizar conteúdo', fmt:'num' },
+  { id:'ad_complete_registration', source:'ad', icon:'✍️', label:'Cadastros', fmt:'num' },
+  { id:'ad_messaging_started', source:'ad', icon:'💬', label:'Conversas iniciadas', fmt:'num' },
+  { id:'ad_followers', source:'ad', icon:'➕', label:'Seguidores (via Ads)', fmt:'num' },
+  { id:'ad_page_likes', source:'ad', icon:'👍', label:'Curtidas da Página', fmt:'num' },
+  { id:'ad_post_engagement', source:'ad', icon:'🔥', label:'Engaj. do post', fmt:'num' },
+  { id:'ad_post_reactions', source:'ad', icon:'❤️', label:'Reações no post', fmt:'num' },
+  { id:'ad_post_saves', source:'ad', icon:'🔖', label:'Salvamentos', fmt:'num' },
+  { id:'ad_post_shares', source:'ad', icon:'🔁', label:'Compartilhamentos', fmt:'num' },
+  // Anúncios — Cliques avançados
+  { id:'ad_outbound_clicks', source:'ad', icon:'↗️', label:'Cliques de saída', fmt:'num' },
+  { id:'ad_outbound_ctr', source:'ad', icon:'📤', label:'CTR de saída', fmt:'percent' },
+  { id:'ad_unique_ctr', source:'ad', icon:'🎯', label:'CTR único', fmt:'percent' },
+  { id:'ad_inline_link_click_ctr', source:'ad', icon:'🔗', label:'CTR do link', fmt:'percent' },
+  // Anúncios — Custos avançados
+  { id:'ad_cost_per_unique_click', source:'ad', icon:'💲', label:'Custo/Clique único', fmt:'currency', invert:true },
+  { id:'ad_cost_per_atc', source:'ad', icon:'🛒', label:'Custo/Add. carrinho', fmt:'currency', invert:true },
+  { id:'ad_cost_per_checkout', source:'ad', icon:'💳', label:'Custo/Checkout', fmt:'currency', invert:true },
+  { id:'ad_cost_per_lp_view', source:'ad', icon:'📑', label:'Custo/Visita LP', fmt:'currency', invert:true },
+  { id:'ad_cost_per_engagement', source:'ad', icon:'💞', label:'Custo/Engajamento', fmt:'currency', invert:true },
+  { id:'ad_cost_per_messaging', source:'ad', icon:'💬', label:'Custo/Conversa', fmt:'currency', invert:true },
+  { id:'ad_cost_per_follower', source:'ad', icon:'➕', label:'Custo/Seguidor', fmt:'currency', invert:true },
+  { id:'ad_cpp', source:'ad', icon:'📭', label:'CPP (custo por mil pessoas)', fmt:'currency', invert:true },
+  // Anúncios — Vídeo
+  { id:'ad_video_p25', source:'ad', icon:'🎬', label:'Vídeo 25%', fmt:'num' },
+  { id:'ad_video_p50', source:'ad', icon:'🎬', label:'Vídeo 50%', fmt:'num' },
+  { id:'ad_video_p75', source:'ad', icon:'🎬', label:'Vídeo 75%', fmt:'num' },
+  { id:'ad_video_p95', source:'ad', icon:'🎬', label:'Vídeo 95%', fmt:'num' },
+  { id:'ad_video_p100', source:'ad', icon:'🎬', label:'Vídeo 100%', fmt:'num' },
+  { id:'ad_video_avg_time', source:'ad', icon:'⏱️', label:'Tempo médio (s)', fmt:'decimal' },
+  // Anúncios — ROAS
+  { id:'ad_website_roas', source:'ad', icon:'🌐', label:'ROAS site', fmt:'roas' },
   // Google Meu Negócio
   { id:'gmb_rating', source:'gmb', icon:'⭐', label:'Nota Média (Google)', fmt:'decimal' },
   { id:'gmb_total_reviews', source:'gmb', icon:'💬', label:'Total Avaliações', fmt:'num' },
@@ -7236,7 +7270,15 @@ async function mtrFetchAdAccounts(token) {
 }
 
 async function mtrFetchAds(adId, token, since, until) {
-  const fields = 'spend,impressions,reach,clicks,ctr,cpm,cpc,frequency,inline_link_clicks,unique_clicks,actions,action_values,cost_per_action_type';
+  const fields = [
+    'spend','impressions','reach','clicks','unique_clicks','ctr','unique_ctr',
+    'cpm','cpc','cpp','cost_per_unique_click','frequency',
+    'inline_link_clicks','inline_link_click_ctr','outbound_clicks','outbound_clicks_ctr',
+    'actions','action_values','cost_per_action_type',
+    'purchase_roas','website_purchase_roas',
+    'video_p25_watched_actions','video_p50_watched_actions','video_p75_watched_actions',
+    'video_p95_watched_actions','video_p100_watched_actions','video_avg_time_watched_actions'
+  ].join(',');
   const timeRange = encodeURIComponent(JSON.stringify({ since, until }));
   const r = await fetch(`https://graph.facebook.com/v25.0/${adId}/insights?fields=${fields}&time_range=${timeRange}&access_token=${token}`);
   const d = await r.json();
@@ -7246,7 +7288,15 @@ async function mtrFetchAds(adId, token, since, until) {
 
 /* Métricas de uma única campanha (mesmo formato do mtrFetchAds) */
 async function mtrFetchCampaignInsights(campaignId, token, since, until) {
-  const fields = 'spend,impressions,reach,clicks,ctr,cpm,cpc,frequency,inline_link_clicks,unique_clicks,actions,action_values,cost_per_action_type';
+  const fields = [
+    'spend','impressions','reach','clicks','unique_clicks','ctr','unique_ctr',
+    'cpm','cpc','cpp','cost_per_unique_click','frequency',
+    'inline_link_clicks','inline_link_click_ctr','outbound_clicks','outbound_clicks_ctr',
+    'actions','action_values','cost_per_action_type',
+    'purchase_roas','website_purchase_roas',
+    'video_p25_watched_actions','video_p50_watched_actions','video_p75_watched_actions',
+    'video_p95_watched_actions','video_p100_watched_actions','video_avg_time_watched_actions'
+  ].join(',');
   const timeRange = encodeURIComponent(JSON.stringify({ since, until }));
   const r = await fetch(`https://graph.facebook.com/v25.0/${campaignId}/insights?fields=${fields}&time_range=${timeRange}&access_token=${token}`);
   const d = await r.json();
@@ -7393,17 +7443,26 @@ function mtrGetValue(id, igData, adsData) {
     if (!adsData) return 0;
     const getAct = type => parseFloat((adsData.actions || []).find(x => x.action_type === type)?.value || 0);
     const getActVal = type => parseFloat((adsData.action_values || []).find(x => x.action_type === type)?.value || 0);
+    const getCostAct = type => parseFloat((adsData.cost_per_action_type || []).find(x => x.action_type === type)?.value || 0);
+    const sumActs = types => types.reduce((s,t) => s + getAct(t), 0);
+    const firstAct = types => { for (const t of types) { const v = getAct(t); if (v) return v; } return 0; };
+    const firstCost = types => { for (const t of types) { const v = getCostAct(t); if (v) return v; } return 0; };
+    const videoP = p => parseFloat((adsData[`video_p${p}_watched_actions`] || []).find(x => x.action_type === 'video_view')?.value || 0);
     const sp = parseFloat(adsData.spend || 0);
     switch (id) {
       case 'ad_purchases': return getAct('purchase') || getAct('omni_purchase');
-      case 'ad_revenue': return getActVal('purchase') || getActVal('omni_purchase');
+      case 'ad_revenue':   return getActVal('purchase') || getActVal('omni_purchase');
       case 'ad_roas': {
+        // 1) usa purchase_roas direto se vier; 2) calcula a partir de receita/gasto
+        const direct = parseFloat((adsData.purchase_roas||[])[0]?.value || 0);
+        if (direct) return direct;
         const rev = getActVal('purchase') || getActVal('omni_purchase');
         return sp > 0 ? rev / sp : 0;
       }
+      case 'ad_website_roas': return parseFloat((adsData.website_purchase_roas||[])[0]?.value || 0);
       case 'ad_cpp': {
-        const purs = getAct('purchase') || getAct('omni_purchase');
-        return purs > 0 ? sp / purs : 0;
+        // CPP do Graph (custo por mil pessoas alcançadas), se vier; senão usa o cpp da conta
+        return parseFloat(adsData.cpp || 0);
       }
       case 'ad_leads': return getAct('lead') || getAct('onsite_conversion.lead_grouped');
       case 'ad_cpl': {
@@ -7411,6 +7470,38 @@ function mtrGetValue(id, igData, adsData) {
         return leads > 0 ? sp / leads : 0;
       }
       case 'ad_landing_page_views': return getAct('landing_page_view');
+      case 'ad_add_to_cart':         return firstAct(['add_to_cart','onsite_conversion.add_to_cart','offsite_conversion.fb_pixel_add_to_cart']);
+      case 'ad_initiate_checkout':   return firstAct(['initiate_checkout','onsite_conversion.initiate_checkout','offsite_conversion.fb_pixel_initiate_checkout']);
+      case 'ad_view_content':        return firstAct(['view_content','onsite_conversion.view_content','offsite_conversion.fb_pixel_view_content']);
+      case 'ad_complete_registration': return firstAct(['complete_registration','onsite_conversion.complete_registration','offsite_conversion.fb_pixel_complete_registration']);
+      case 'ad_messaging_started':   return sumActs(['onsite_conversion.messaging_conversation_started_7d','onsite_conversion.total_messaging_connection']);
+      // Seguidores: Instagram via ads (onsite_conversion.follow) + page like FB
+      case 'ad_followers':           return sumActs(['onsite_conversion.follow','follow','like']);
+      case 'ad_page_likes':          return getAct('like');
+      case 'ad_post_engagement':     return getAct('post_engagement') || getAct('page_engagement');
+      case 'ad_post_reactions':      return getAct('post_reaction');
+      case 'ad_post_saves':          return getAct('onsite_conversion.post_save');
+      case 'ad_post_shares':         return getAct('post');  // shares = action_type 'post'
+      // Cliques avançados
+      case 'ad_outbound_clicks':     return parseFloat((adsData.outbound_clicks||[])[0]?.value || 0);
+      case 'ad_outbound_ctr':        return parseFloat((adsData.outbound_clicks_ctr||[])[0]?.value || 0);
+      // Custos avançados (cost_per_action_type)
+      case 'ad_cost_per_atc':        return firstCost(['add_to_cart','onsite_conversion.add_to_cart','offsite_conversion.fb_pixel_add_to_cart']);
+      case 'ad_cost_per_checkout':   return firstCost(['initiate_checkout','onsite_conversion.initiate_checkout']);
+      case 'ad_cost_per_lp_view':    return firstCost(['landing_page_view']);
+      case 'ad_cost_per_engagement': return firstCost(['post_engagement','page_engagement']);
+      case 'ad_cost_per_messaging':  return firstCost(['onsite_conversion.messaging_conversation_started_7d','onsite_conversion.total_messaging_connection']);
+      case 'ad_cost_per_follower': {
+        const f = sumActs(['onsite_conversion.follow','follow','like']);
+        return f > 0 ? sp / f : 0;
+      }
+      // Vídeo
+      case 'ad_video_p25':  return videoP(25);
+      case 'ad_video_p50':  return videoP(50);
+      case 'ad_video_p75':  return videoP(75);
+      case 'ad_video_p95':  return videoP(95);
+      case 'ad_video_p100': return videoP(100);
+      case 'ad_video_avg_time': return parseFloat((adsData.video_avg_time_watched_actions||[])[0]?.value || 0);
       default: {
         const key = id.replace(/^ad_/, '');
         return parseFloat(adsData[key] || 0);
