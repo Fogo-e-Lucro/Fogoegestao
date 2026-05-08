@@ -6809,7 +6809,7 @@ const MTR_CATALOG = [
   { id:'ad_cost_per_engagement', source:'ad', icon:'💞', label:'Custo/Engajamento', fmt:'currency', invert:true },
   { id:'ad_cost_per_messaging', source:'ad', icon:'💬', label:'Custo/Conversa', fmt:'currency', invert:true },
   { id:'ad_cost_per_follower', source:'ad', icon:'➕', label:'Custo/Seguidor', fmt:'currency', invert:true },
-  { id:'ad_cpp', source:'ad', icon:'📭', label:'CPP (custo por mil pessoas)', fmt:'currency', invert:true },
+  { id:'ad_cost_per_mille_reached', source:'ad', icon:'📭', label:'Custo por mil pessoas', fmt:'currency', invert:true },
   // Anúncios — Vídeo
   { id:'ad_video_p25', source:'ad', icon:'🎬', label:'Vídeo 25%', fmt:'num' },
   { id:'ad_video_p50', source:'ad', icon:'🎬', label:'Vídeo 50%', fmt:'num' },
@@ -7498,7 +7498,12 @@ function mtrGetValue(id, igData, adsData) {
       }
       case 'ad_website_roas': return parseFloat((adsData.website_purchase_roas||[])[0]?.value || 0);
       case 'ad_cpp': {
-        // CPP do Graph (custo por mil pessoas alcançadas), se vier; senão usa o cpp da conta
+        // Custo por compra: gasto / nº de compras
+        const purs = getAct('purchase') || getAct('omni_purchase');
+        return purs > 0 ? sp / purs : 0;
+      }
+      case 'ad_cost_per_mille_reached': {
+        // CPP do Graph (custo por mil pessoas alcançadas) — métrica do Meta, vem direto
         return parseFloat(adsData.cpp || 0);
       }
       case 'ad_leads': return getAct('lead') || getAct('onsite_conversion.lead_grouped');
