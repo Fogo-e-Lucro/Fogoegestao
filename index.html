@@ -1111,6 +1111,330 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
         </div>
 
       </div><!-- /sp-grid -->
+
+      <!-- ═══ LIVES (vídeo/imagem como live no IG/FB via VPS+ffmpeg) ═══ -->
+      <div class="sp-card live-card" id="spLiveCard" data-reveal style="margin-top:18px;">
+        <div class="sp-card-hdr" style="border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#ef4444,#b91c1c);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;">🔴</div>
+            <div>
+              <div class="sp-card-title" style="margin:0;">Lives — Streaming RTMP</div>
+              <div style="font-size:11px;color:var(--text2);">Transmita imagem ou vídeo como live no Instagram/Facebook</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span id="liveBackendStatus" class="live-backend-status">Backend: <span style="color:var(--text3);">verificando…</span></span>
+            <button class="sp-btn-secondary" onclick="liveOpenSettings()" style="font-size:11px;padding:6px 10px;">⚙️ Config</button>
+          </div>
+        </div>
+
+        <!-- Aviso de risco -->
+        <div class="live-warn" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:10px 14px;font-size:12px;color:#d97706;margin-bottom:14px;line-height:1.5;">
+          <strong>⚠️ Importante:</strong> a Meta pode considerar streamar imagem/vídeo gravado como live "comportamento inautêntico". <strong>Use por sua conta e risco</strong> — recomendamos testar primeiro em conta sacrificável.
+        </div>
+
+        <!-- Backend não configurado -->
+        <div id="liveNoBackend" class="live-no-backend" style="display:none;background:var(--bg2);border:1px dashed var(--border);border-radius:12px;padding:24px;text-align:center;">
+          <div style="font-size:32px;margin-bottom:8px;">🔌</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text1);margin-bottom:6px;">Backend não configurado</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.55;max-width:480px;margin-left:auto;margin-right:auto;">
+            Pra streamar você precisa de uma VPS (Hostinger KVM, DigitalOcean, etc) com ffmpeg + Node rodando o servidor de streaming. Configure a URL e o token nas configurações.
+          </div>
+          <button class="sp-btn-primary" onclick="liveOpenSettings()">⚙️ Configurar backend</button>
+          <div style="margin-top:12px;font-size:11px;">
+            <a href="#" onclick="event.preventDefault();liveShowSetupGuide();return false;" style="color:var(--accent);text-decoration:underline;">📖 Ver guia de instalação na VPS</a>
+          </div>
+        </div>
+
+        <!-- Form principal -->
+        <div id="liveMainForm" style="display:none;">
+          <!-- Tipo de mídia -->
+          <div class="live-type-row" style="display:flex;gap:8px;margin-bottom:14px;">
+            <button class="live-type-tab active" data-livetype="image" onclick="liveSetType('image',this)">
+              <span style="font-size:18px;">🖼️</span> Imagem
+            </button>
+            <button class="live-type-tab" data-livetype="image_audio" onclick="liveSetType('image_audio',this)">
+              <span style="font-size:18px;">🎵</span> Imagem + áudio
+            </button>
+            <button class="live-type-tab" data-livetype="video" onclick="liveSetType('video',this)">
+              <span style="font-size:18px;">🎬</span> Vídeo
+            </button>
+          </div>
+
+          <!-- Upload de mídia -->
+          <div class="live-row">
+            <label class="live-label">Mídia <span class="live-hint" id="liveMediaHint">(JPG/PNG)</span></label>
+            <div class="live-upload" onclick="document.getElementById('liveFileInput').click()" id="liveUploadZone">
+              <input type="file" id="liveFileInput" style="display:none" accept="image/*,video/*" onchange="liveHandleFile(this.files[0])">
+              <div id="liveUploadPlaceholder" style="text-align:center;padding:18px;">
+                <div style="font-size:24px;margin-bottom:6px;">⬆️</div>
+                <div style="font-size:13px;color:var(--text1);font-weight:600;">Clique pra fazer upload</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px;" id="liveUploadSub">Imagem JPG/PNG até 5MB</div>
+              </div>
+              <div id="liveUploadPreview" style="display:none;position:relative;">
+                <img id="liveImgPreview" style="width:100%;max-height:200px;object-fit:contain;border-radius:8px;background:#000;display:none;">
+                <video id="liveVidPreview" style="width:100%;max-height:200px;object-fit:contain;border-radius:8px;background:#000;display:none;" muted playsinline></video>
+                <button class="live-remove" onclick="event.stopPropagation();liveRemoveMedia()" title="Remover">✕</button>
+                <div id="liveMediaInfo" style="position:absolute;bottom:6px;left:6px;background:rgba(0,0,0,.65);color:#fff;font-size:10px;padding:2px 8px;border-radius:6px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Áudio (modo image_audio) -->
+          <div class="live-row" id="liveAudioRow" style="display:none;">
+            <label class="live-label">Áudio de fundo <span class="live-hint">(MP3 — em loop)</span></label>
+            <div class="live-upload" onclick="document.getElementById('liveAudioInput').click()" style="padding:14px;">
+              <input type="file" id="liveAudioInput" style="display:none" accept="audio/*" onchange="liveHandleAudio(this.files[0])">
+              <div id="liveAudioName" style="font-size:13px;color:var(--text2);">🎵 Clique pra escolher MP3</div>
+            </div>
+          </div>
+
+          <!-- Loop -->
+          <div class="live-row" id="liveLoopRow">
+            <label class="live-checkbox">
+              <input type="checkbox" id="liveLoop" checked>
+              <span>Reproduzir em loop infinito (recomendado pra imagem; pra vídeo deixa ele se repetir)</span>
+            </label>
+          </div>
+
+          <!-- Stream key + URL -->
+          <div class="live-row-grid">
+            <div class="live-row">
+              <label class="live-label">URL do stream (RTMP) <span class="live-hint">do Live Producer</span></label>
+              <input type="text" class="live-input" id="liveRtmpUrl" placeholder="rtmps://edgetee-upload-xxx.fbcdn.net:443/rtmp/">
+            </div>
+            <div class="live-row">
+              <label class="live-label">Stream Key <span class="live-hint">(secreta — regenera a cada live)</span></label>
+              <div style="display:flex;gap:6px;">
+                <input type="password" class="live-input" id="liveStreamKey" placeholder="180594...?s_bl=1&s_fbp=...">
+                <button class="sp-btn-secondary" onclick="liveToggleKey()" type="button" style="padding:0 10px;font-size:14px;">👁</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;margin:-6px 0 8px;">
+            <button class="sp-btn-link" onclick="window.open('https://www.instagram.com/live/','_blank')" type="button" style="font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline;">
+              ↗ Abrir Live Producer do Instagram
+            </button>
+          </div>
+
+          <!-- Link CTA (comentário fixado) -->
+          <div class="live-row-grid">
+            <div class="live-row">
+              <label class="live-label">Link de destino <span class="live-hint">(opcional — vira comentário fixado)</span></label>
+              <input type="url" class="live-input" id="liveCtaUrl" placeholder="https://seusite.com.br/promo">
+            </div>
+            <div class="live-row">
+              <label class="live-label">Texto do comentário</label>
+              <input type="text" class="live-input" id="liveCtaText" value="🔥 Aproveite essa promoção: " maxlength="200">
+            </div>
+          </div>
+
+          <!-- Conta IG (pra postar comentário fixado) -->
+          <div class="live-row">
+            <label class="live-label">Conta IG <span class="live-hint">(pra postar e fixar o comentário com link)</span></label>
+            <select class="live-input" id="liveIgAccount">
+              <option value="">— Sem comentário automático —</option>
+            </select>
+          </div>
+
+          <!-- Botões -->
+          <div style="display:flex;gap:10px;align-items:center;margin-top:14px;">
+            <button class="live-start-btn" id="liveStartBtn" onclick="liveStart()">
+              🔴 Iniciar live
+            </button>
+            <button class="live-stop-btn" id="liveStopBtn" onclick="liveStop()" style="display:none;">
+              ⏹ Parar live
+            </button>
+            <div id="liveStatus" style="font-size:12px;color:var(--text2);margin-left:auto;"></div>
+          </div>
+
+          <!-- Lives ativas -->
+          <div id="liveActiveSection" style="margin-top:18px;display:none;">
+            <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:10px;">🔴 Lives ativas</div>
+            <div id="liveActiveList"></div>
+          </div>
+        </div>
+      </div><!-- /live-card -->
+
+      <!-- Modal de configuração do backend -->
+      <div class="modal-overlay" id="liveSettingsModal" onclick="if(event.target===this)liveCloseSettings()" style="z-index:1001;">
+        <div class="modal-box" style="max-width:560px;">
+          <div class="modal-title">⚙️ Configurar Backend de Live</div>
+          <div class="modal-sub" style="line-height:1.55;">URL do servidor de streaming na sua VPS (Hostinger KVM, DigitalOcean, etc).</div>
+
+          <div class="live-row" style="margin-top:14px;">
+            <label class="live-label">URL do backend</label>
+            <input type="text" class="live-input" id="liveBackendUrl" placeholder="https://seu-dominio.com:3000 ou http://1.2.3.4:3000">
+          </div>
+
+          <div class="live-row">
+            <label class="live-label">Token de autenticação <span class="live-hint">(secret bearer)</span></label>
+            <input type="password" class="live-input" id="liveBackendToken" placeholder="Token configurado no backend (.env)">
+          </div>
+
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+            <button class="sp-btn-secondary" onclick="liveTestBackend()">▶ Testar</button>
+            <button class="sp-btn-secondary" onclick="liveCloseSettings()">Cancelar</button>
+            <button class="sp-btn-primary" onclick="liveSaveBackend()">Salvar</button>
+          </div>
+          <div id="liveTestResult" style="font-size:12px;margin-top:10px;"></div>
+
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+            <button class="sp-btn-secondary" onclick="liveShowSetupGuide()" style="width:100%;">📖 Ver guia de instalação na VPS</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal de guia -->
+      <div class="modal-overlay" id="liveSetupGuideModal" onclick="if(event.target===this)liveCloseSetupGuide()" style="z-index:1002;">
+        <div class="modal-box" style="max-width:760px;max-height:88vh;overflow:auto;">
+          <div class="modal-title">📖 Setup do backend na VPS Hostinger (KVM)</div>
+          <div class="modal-sub">Tutorial passo-a-passo. Pré-requisito: VPS com Ubuntu 22+ e acesso SSH root.</div>
+
+          <div style="font-size:13px;line-height:1.7;margin-top:14px;color:var(--text1);">
+            <div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:14px;">
+              <strong style="color:var(--accent);">1️⃣ SSH na VPS</strong>
+              <pre style="background:#0f172a;color:#e2e8f0;padding:10px 12px;border-radius:6px;font-size:11.5px;margin-top:6px;white-space:pre;overflow-x:auto;">ssh root@SEU_IP</pre>
+            </div>
+
+            <div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:14px;">
+              <strong style="color:var(--accent);">2️⃣ Instalar Node + ffmpeg</strong>
+              <pre style="background:#0f172a;color:#e2e8f0;padding:10px 12px;border-radius:6px;font-size:11.5px;margin-top:6px;white-space:pre;overflow-x:auto;">apt update &amp;&amp; apt install -y ffmpeg curl
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install -y nodejs
+npm install -g pm2</pre>
+            </div>
+
+            <div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:14px;">
+              <strong style="color:var(--accent);">3️⃣ Criar pasta + servidor</strong>
+              <pre style="background:#0f172a;color:#e2e8f0;padding:10px 12px;border-radius:6px;font-size:11.5px;margin-top:6px;white-space:pre;overflow-x:auto;">mkdir -p /opt/fg-live &amp;&amp; cd /opt/fg-live
+npm init -y
+npm install express cors multer node-fetch@2</pre>
+            </div>
+
+            <div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:14px;">
+              <strong style="color:var(--accent);">4️⃣ Cole esse código em <code>/opt/fg-live/server.js</code></strong>
+              <button onclick="liveCopyServerCode()" style="float:right;font-size:11px;padding:4px 10px;background:var(--accent);color:#fff;border:0;border-radius:6px;cursor:pointer;margin-top:-26px;">📋 Copiar</button>
+              <pre id="liveServerCode" style="background:#0f172a;color:#e2e8f0;padding:10px 12px;border-radius:6px;font-size:10.5px;margin-top:6px;white-space:pre;overflow-x:auto;max-height:280px;">// fg-live server.js
+const express = require('express');
+const cors = require('cors');
+const multer = require('multer');
+const { spawn } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+
+const app = express();
+const TOKEN = process.env.LIVE_TOKEN || 'troque-este-token';
+const UPLOAD_DIR = path.join(os.tmpdir(), 'fg-live');
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
+
+const upload = multer({ dest: UPLOAD_DIR, limits: { fileSize: 500 * 1024 * 1024 } });
+const streams = new Map();
+
+function auth(req, res, next) {
+  const t = (req.headers.authorization || '').replace('Bearer ', '');
+  if (t !== TOKEN) return res.status(401).json({ error: 'unauthorized' });
+  next();
+}
+
+app.get('/health', (req, res) => res.json({ ok: true, version: '1.0.0', active: streams.size }));
+
+app.post('/upload', auth, upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'no file' });
+  res.json({ id: req.file.filename, path: req.file.path, size: req.file.size });
+});
+
+app.post('/stream', auth, (req, res) => {
+  const { type, mediaPath, audioPath, rtmpUrl, streamKey, loop } = req.body;
+  if (!rtmpUrl || !streamKey || !mediaPath) return res.status(400).json({ error: 'missing fields' });
+  if (!fs.existsSync(mediaPath)) return res.status(400).json({ error: 'media not found' });
+
+  const dest = rtmpUrl.replace(/\/$/, '') + '/' + streamKey;
+  let args = ['-hide_banner', '-loglevel', 'warning'];
+  if (type === 'image') {
+    args.push('-loop','1','-i', mediaPath, '-f','lavfi','-i','anullsrc=r=44100:cl=stereo',
+      '-c:v','libx264','-tune','stillimage','-preset','veryfast','-pix_fmt','yuv420p','-r','30','-g','60','-b:v','3000k',
+      '-c:a','aac','-b:a','128k','-shortest');
+  } else if (type === 'image_audio') {
+    args.push('-loop','1','-i', mediaPath);
+    if (audioPath && fs.existsSync(audioPath)) args.push('-stream_loop','-1','-i', audioPath);
+    else args.push('-f','lavfi','-i','anullsrc=r=44100:cl=stereo');
+    args.push('-c:v','libx264','-tune','stillimage','-preset','veryfast','-pix_fmt','yuv420p','-r','30','-g','60','-b:v','3000k',
+      '-c:a','aac','-b:a','128k','-shortest');
+  } else { // video
+    if (loop) args.push('-stream_loop','-1');
+    args.push('-re','-i', mediaPath,
+      '-c:v','libx264','-preset','veryfast','-pix_fmt','yuv420p','-b:v','3000k','-maxrate','3000k','-bufsize','6000k','-g','60',
+      '-c:a','aac','-b:a','128k','-ar','44100','-ac','2');
+  }
+  args.push('-f','flv', dest);
+
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  const proc = spawn('ffmpeg', args);
+  const info = { id, type, startedAt: Date.now(), stderr: [], pid: proc.pid };
+  streams.set(id, info);
+
+  proc.stderr.on('data', d => { info.stderr.push(String(d).slice(0,500)); if (info.stderr.length > 50) info.stderr.shift(); });
+  proc.on('exit', code => { info.exitedAt = Date.now(); info.exitCode = code; setTimeout(() => streams.delete(id), 60_000); });
+
+  res.json({ id, pid: proc.pid });
+});
+
+app.get('/stream/:id', auth, (req, res) => {
+  const s = streams.get(req.params.id);
+  if (!s) return res.status(404).json({ error: 'not found' });
+  res.json({ id:s.id, type:s.type, startedAt:s.startedAt, exitedAt:s.exitedAt, exitCode:s.exitCode, uptime: Date.now()-s.startedAt, lastErr: s.stderr.slice(-3) });
+});
+
+app.delete('/stream/:id', auth, (req, res) => {
+  const s = streams.get(req.params.id);
+  if (!s) return res.status(404).json({ error: 'not found' });
+  try { process.kill(s.pid, 'SIGTERM'); } catch(_){}
+  res.json({ ok: true });
+});
+
+app.get('/streams', auth, (req, res) => {
+  res.json([...streams.values()].map(s => ({ id:s.id, type:s.type, startedAt:s.startedAt, uptime: Date.now()-s.startedAt })));
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => console.log('fg-live up on', PORT));</pre>
+            </div>
+
+            <div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:14px;">
+              <strong style="color:var(--accent);">5️⃣ Subir com PM2 + porta 3000 aberta</strong>
+              <pre style="background:#0f172a;color:#e2e8f0;padding:10px 12px;border-radius:6px;font-size:11.5px;margin-top:6px;white-space:pre;overflow-x:auto;">cd /opt/fg-live
+LIVE_TOKEN=&quot;trocar-por-um-token-forte-32chars&quot; pm2 start server.js --name fg-live
+pm2 save &amp;&amp; pm2 startup
+ufw allow 3000/tcp</pre>
+              <div style="font-size:11.5px;color:var(--text2);margin-top:8px;">⚠️ Anote o <code>LIVE_TOKEN</code>. Você vai precisar dele aqui no app.</div>
+            </div>
+
+            <div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:14px;">
+              <strong style="color:var(--accent);">6️⃣ Testar</strong>
+              <pre style="background:#0f172a;color:#e2e8f0;padding:10px 12px;border-radius:6px;font-size:11.5px;margin-top:6px;white-space:pre;overflow-x:auto;">curl http://SEU_IP:3000/health
+# deve responder { ok: true, ... }</pre>
+            </div>
+
+            <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:10px;padding:14px;color:#16a34a;font-size:12.5px;line-height:1.6;">
+              ✅ Pronto! Volta aqui em <strong>⚙️ Configurar backend</strong> e cola:
+              <ul style="margin:6px 0 0 18px;">
+                <li>URL: <code>http://SEU_IP:3000</code></li>
+                <li>Token: o mesmo que setou no comando do PM2</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+            <button class="sp-btn-primary" onclick="liveCloseSetupGuide()">Entendi, fechar</button>
+          </div>
+        </div>
+      </div>
     </div><!-- /sp-wrap -->
   </div><!-- /tab-social -->
 
@@ -24113,6 +24437,384 @@ window.addEventListener('load', () => {
     }
   }, 4000);
 });
+
+/* ─────────────────────────────────────────────────────────────
+   🔴 LIVES (streaming RTMP via backend VPS+ffmpeg)
+   Fluxo:
+   1. Usuário configura URL+Token do backend (Hostinger KVM rodando server.js)
+   2. Upload da imagem/vídeo → backend guarda em /tmp e devolve mediaPath
+   3. Usuário cola RTMP+Stream Key do Live Producer do IG
+   4. POST /stream → backend dispara ffmpeg
+   5. App polla GET /stream/:id pra mostrar status
+   6. (Opcional) Posta comentário fixado com link na live via Graph API
+   ───────────────────────────────────────────────────────────── */
+window.fgLive = (() => {
+  const STORAGE_KEY = 'fg_live_backend';
+  let backendUrl = '';
+  let backendToken = '';
+  let currentType = 'image';
+  let mediaFile = null;          // File local (pré upload)
+  let audioFile = null;
+  let uploadedMediaPath = '';    // path no backend após upload
+  let uploadedAudioPath = '';
+  let activeStreams = new Map(); // id → { intervalId, info }
+
+  function loadConfig() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const c = JSON.parse(raw);
+        backendUrl = c.url || '';
+        backendToken = c.token || '';
+      }
+    } catch(_){}
+  }
+
+  function saveConfig() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ url: backendUrl, token: backendToken })); } catch(_){}
+  }
+
+  async function api(method, path, body, isFormData) {
+    if (!backendUrl) throw new Error('Backend não configurado');
+    const opts = { method, headers: { Authorization: `Bearer ${backendToken}` } };
+    if (body) {
+      if (isFormData) opts.body = body;
+      else { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    }
+    const r = await fetch(backendUrl.replace(/\/$/, '') + path, opts);
+    if (!r.ok) {
+      const e = await r.text().catch(()=>r.statusText);
+      throw new Error(`HTTP ${r.status}: ${e}`);
+    }
+    return r.json();
+  }
+
+  async function checkHealth() {
+    const badge = document.getElementById('liveBackendStatus');
+    const noBackend = document.getElementById('liveNoBackend');
+    const mainForm = document.getElementById('liveMainForm');
+    if (!backendUrl) {
+      if (badge) { badge.className = 'live-backend-status err'; badge.innerHTML = 'Backend: <span>não configurado</span>'; }
+      if (noBackend) noBackend.style.display = 'block';
+      if (mainForm) mainForm.style.display = 'none';
+      return false;
+    }
+    try {
+      const r = await fetch(backendUrl.replace(/\/$/, '') + '/health');
+      if (!r.ok) throw new Error('http ' + r.status);
+      const d = await r.json();
+      if (badge) { badge.className = 'live-backend-status ok'; badge.innerHTML = `Backend: <span>online (${d.active||0} live${(d.active||0)!==1?'s':''})</span>`; }
+      if (noBackend) noBackend.style.display = 'none';
+      if (mainForm) mainForm.style.display = 'block';
+      return true;
+    } catch(e) {
+      if (badge) { badge.className = 'live-backend-status err'; badge.innerHTML = `Backend: <span>offline</span>`; }
+      if (noBackend) noBackend.style.display = 'block';
+      if (mainForm) mainForm.style.display = 'none';
+      return false;
+    }
+  }
+
+  function setType(type, btn) {
+    currentType = type;
+    document.querySelectorAll('.live-type-tab').forEach(b => b.classList.toggle('active', b === btn));
+    const audioRow = document.getElementById('liveAudioRow');
+    const loopRow = document.getElementById('liveLoopRow');
+    const hint = document.getElementById('liveMediaHint');
+    const sub = document.getElementById('liveUploadSub');
+    const inp = document.getElementById('liveFileInput');
+    if (type === 'image') {
+      audioRow.style.display = 'none';
+      hint.textContent = '(JPG/PNG)';
+      sub.textContent = 'Imagem JPG/PNG até 5MB';
+      inp.accept = 'image/*';
+    } else if (type === 'image_audio') {
+      audioRow.style.display = 'block';
+      hint.textContent = '(JPG/PNG + áudio MP3)';
+      sub.textContent = 'Imagem JPG/PNG até 5MB';
+      inp.accept = 'image/*';
+    } else { // video
+      audioRow.style.display = 'none';
+      hint.textContent = '(MP4 H.264)';
+      sub.textContent = 'Vídeo MP4 até 500MB';
+      inp.accept = 'video/*';
+    }
+    removeMedia();
+  }
+
+  function handleFile(f) {
+    if (!f) return;
+    mediaFile = f;
+    uploadedMediaPath = '';
+    const url = URL.createObjectURL(f);
+    const img = document.getElementById('liveImgPreview');
+    const vid = document.getElementById('liveVidPreview');
+    const ph = document.getElementById('liveUploadPlaceholder');
+    const pv = document.getElementById('liveUploadPreview');
+    const info = document.getElementById('liveMediaInfo');
+    ph.style.display = 'none';
+    pv.style.display = 'block';
+    if (f.type.startsWith('video')) {
+      img.style.display = 'none'; vid.style.display = 'block'; vid.src = url;
+    } else {
+      vid.style.display = 'none'; img.style.display = 'block'; img.src = url;
+    }
+    info.textContent = `${f.name} · ${(f.size/1024/1024).toFixed(2)}MB`;
+  }
+
+  function handleAudio(f) {
+    if (!f) return;
+    audioFile = f;
+    uploadedAudioPath = '';
+    document.getElementById('liveAudioName').textContent = `🎵 ${f.name} · ${(f.size/1024/1024).toFixed(2)}MB`;
+  }
+
+  function removeMedia() {
+    mediaFile = null;
+    uploadedMediaPath = '';
+    document.getElementById('liveFileInput').value = '';
+    document.getElementById('liveUploadPlaceholder').style.display = 'block';
+    document.getElementById('liveUploadPreview').style.display = 'none';
+    document.getElementById('liveImgPreview').src = '';
+    document.getElementById('liveVidPreview').src = '';
+  }
+
+  async function uploadFile(file) {
+    const fd = new FormData();
+    fd.append('file', file);
+    const r = await api('POST', '/upload', fd, true);
+    return r.path;
+  }
+
+  async function startStream() {
+    const btn = document.getElementById('liveStartBtn');
+    const stopBtn = document.getElementById('liveStopBtn');
+    const status = document.getElementById('liveStatus');
+    const rtmpUrl = document.getElementById('liveRtmpUrl').value.trim();
+    const streamKey = document.getElementById('liveStreamKey').value.trim();
+    const loop = document.getElementById('liveLoop').checked;
+    const ctaUrl = document.getElementById('liveCtaUrl').value.trim();
+    const ctaText = document.getElementById('liveCtaText').value.trim();
+    const igAccount = document.getElementById('liveIgAccount').value;
+
+    if (!mediaFile && !uploadedMediaPath) { showToast('error','⚠️','Faça upload da mídia primeiro.'); return; }
+    if (!rtmpUrl || !streamKey) { showToast('error','⚠️','Preencha URL e Stream Key.'); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Enviando…';
+    status.textContent = '';
+
+    try {
+      // 1. Upload da mídia (se ainda não fez)
+      if (mediaFile && !uploadedMediaPath) {
+        status.textContent = 'Fazendo upload da mídia…';
+        uploadedMediaPath = await uploadFile(mediaFile);
+      }
+      if (currentType === 'image_audio' && audioFile && !uploadedAudioPath) {
+        status.textContent = 'Fazendo upload do áudio…';
+        uploadedAudioPath = await uploadFile(audioFile);
+      }
+
+      // 2. Inicia o stream
+      status.textContent = 'Iniciando ffmpeg…';
+      const r = await api('POST', '/stream', {
+        type: currentType,
+        mediaPath: uploadedMediaPath,
+        audioPath: uploadedAudioPath || null,
+        rtmpUrl, streamKey, loop,
+      });
+
+      btn.style.display = 'none';
+      stopBtn.style.display = 'flex';
+      stopBtn.dataset.streamId = r.id;
+      status.innerHTML = `<span style="color:#16a34a;font-weight:700;">🔴 No ar</span> · id ${r.id.slice(-6)}`;
+
+      // 3. Polling de status
+      const intId = setInterval(async () => {
+        try {
+          const s = await api('GET', '/stream/' + r.id);
+          if (s.exitedAt) {
+            clearInterval(intId);
+            activeStreams.delete(r.id);
+            status.innerHTML = `<span style="color:#dc2626;">⚠️ Encerrado (code ${s.exitCode})</span>`;
+            btn.style.display = 'flex'; btn.disabled = false; btn.innerHTML = '🔴 Iniciar live';
+            stopBtn.style.display = 'none';
+          } else {
+            const sec = Math.floor(s.uptime / 1000);
+            const m = Math.floor(sec/60), ss = sec%60;
+            status.innerHTML = `<span style="color:#16a34a;font-weight:700;">🔴 No ar</span> · ${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+          }
+        } catch(_){}
+      }, 5000);
+      activeStreams.set(r.id, { intervalId: intId });
+
+      // 4. (Opcional) Comentário fixado com link
+      if (ctaUrl && igAccount && ctaText) {
+        status.innerHTML += ' · 🔗 enviando comentário…';
+        setTimeout(() => liveTryPinComment(igAccount, `${ctaText}${ctaUrl}`), 8000);
+      }
+
+      showToast('success','🔴','Live iniciada!');
+    } catch(e) {
+      btn.disabled = false; btn.innerHTML = '🔴 Iniciar live';
+      status.textContent = '';
+      showToast('error','❌','Erro: ' + e.message);
+    }
+  }
+
+  async function stopStream() {
+    const stopBtn = document.getElementById('liveStopBtn');
+    const startBtn = document.getElementById('liveStartBtn');
+    const id = stopBtn.dataset.streamId;
+    if (!id) return;
+    if (!confirm('Encerrar a live?')) return;
+    try {
+      await api('DELETE', '/stream/' + id);
+      const s = activeStreams.get(id);
+      if (s?.intervalId) clearInterval(s.intervalId);
+      activeStreams.delete(id);
+      stopBtn.style.display = 'none';
+      startBtn.style.display = 'flex'; startBtn.disabled = false; startBtn.innerHTML = '🔴 Iniciar live';
+      document.getElementById('liveStatus').textContent = '';
+      showToast('success','✅','Live encerrada.');
+    } catch(e) {
+      showToast('error','❌','Erro: ' + e.message);
+    }
+  }
+
+  // Posta comentário no live_media ativo do IG e fixa
+  async function tryPinComment(igUserId, message) {
+    try {
+      if (typeof spIgToken !== 'function' && typeof getSpToken !== 'function') return;
+      const token = (typeof getSpToken === 'function') ? getSpToken() : null;
+      if (!token) return;
+      // Busca live ativa
+      const r = await fetch(`https://graph.facebook.com/v25.0/${igUserId}/live_media?access_token=${token}`);
+      const d = await r.json();
+      const live = (d.data||[])[0];
+      if (!live) return; // ainda não entrou no ar
+      // Posta comentário
+      const cf = new FormData();
+      cf.append('message', message);
+      cf.append('access_token', token);
+      const cr = await fetch(`https://graph.facebook.com/v25.0/${live.id}/comments`, { method:'POST', body: cf });
+      const cd = await cr.json();
+      if (cd.id) {
+        // Fixa
+        const pf = new FormData();
+        pf.append('access_token', token);
+        await fetch(`https://graph.facebook.com/v25.0/${cd.id}/?pinned=true`, { method:'POST', body: pf });
+      }
+    } catch(e) { console.warn('[live] pin comment failed:', e); }
+  }
+
+  function openSettings() {
+    document.getElementById('liveBackendUrl').value = backendUrl;
+    document.getElementById('liveBackendToken').value = backendToken;
+    document.getElementById('liveSettingsModal').classList.add('open');
+    document.getElementById('liveSettingsModal').style.display = 'flex';
+  }
+  function closeSettings() {
+    document.getElementById('liveSettingsModal').classList.remove('open');
+    document.getElementById('liveSettingsModal').style.display = 'none';
+    document.getElementById('liveTestResult').textContent = '';
+  }
+  async function testBackend() {
+    const url = document.getElementById('liveBackendUrl').value.trim().replace(/\/$/, '');
+    const tok = document.getElementById('liveBackendToken').value.trim();
+    const res = document.getElementById('liveTestResult');
+    res.innerHTML = '⏳ Testando…';
+    try {
+      const r = await fetch(url + '/health');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      // Testa também auth
+      const r2 = await fetch(url + '/streams', { headers:{ Authorization:'Bearer '+tok }});
+      if (!r2.ok) {
+        if (r2.status === 401) throw new Error('Token inválido');
+        throw new Error('HTTP ' + r2.status);
+      }
+      res.innerHTML = `<span style="color:#16a34a;">✅ Conectado · ${d.active||0} lives ativas</span>`;
+    } catch(e) {
+      res.innerHTML = `<span style="color:#dc2626;">❌ ${e.message}</span>`;
+    }
+  }
+  function saveBackend() {
+    backendUrl = document.getElementById('liveBackendUrl').value.trim().replace(/\/$/, '');
+    backendToken = document.getElementById('liveBackendToken').value.trim();
+    saveConfig();
+    closeSettings();
+    checkHealth();
+    showToast('success','✅','Backend configurado.');
+  }
+  function showSetupGuide() {
+    document.getElementById('liveSetupGuideModal').classList.add('open');
+    document.getElementById('liveSetupGuideModal').style.display = 'flex';
+  }
+  function closeSetupGuide() {
+    document.getElementById('liveSetupGuideModal').classList.remove('open');
+    document.getElementById('liveSetupGuideModal').style.display = 'none';
+  }
+  function copyServerCode() {
+    const code = document.getElementById('liveServerCode')?.textContent || '';
+    navigator.clipboard.writeText(code).then(() => showToast('success','✅','Código copiado!'));
+  }
+  function toggleKey() {
+    const i = document.getElementById('liveStreamKey');
+    i.type = i.type === 'password' ? 'text' : 'password';
+  }
+
+  // Popula select de contas IG (reusa o do Publipost)
+  function refreshIgAccounts() {
+    const sel = document.getElementById('liveIgAccount');
+    if (!sel) return;
+    const accounts = (typeof spAccounts !== 'undefined' && Array.isArray(spAccounts)) ? spAccounts : [];
+    sel.innerHTML = '<option value="">— Sem comentário automático —</option>' +
+      accounts.filter(a => a.igId).map(a => `<option value="${a.igId}">${escHtml ? escHtml(a.igUsername||a.name||a.igId) : (a.igUsername||a.name||a.igId)}</option>`).join('');
+  }
+
+  loadConfig();
+
+  return {
+    init: () => { loadConfig(); checkHealth(); refreshIgAccounts(); },
+    setType, handleFile, handleAudio, removeMedia,
+    start: startStream, stop: stopStream,
+    openSettings, closeSettings, testBackend, saveBackend,
+    showSetupGuide, closeSetupGuide, copyServerCode, toggleKey,
+    tryPinComment,
+  };
+})();
+
+// Exports globais (chamados via onclick)
+window.liveSetType = (t, b) => window.fgLive.setType(t, b);
+window.liveHandleFile = (f) => window.fgLive.handleFile(f);
+window.liveHandleAudio = (f) => window.fgLive.handleAudio(f);
+window.liveRemoveMedia = () => window.fgLive.removeMedia();
+window.liveStart = () => window.fgLive.start();
+window.liveStop = () => window.fgLive.stop();
+window.liveOpenSettings = () => window.fgLive.openSettings();
+window.liveCloseSettings = () => window.fgLive.closeSettings();
+window.liveTestBackend = () => window.fgLive.testBackend();
+window.liveSaveBackend = () => window.fgLive.saveBackend();
+window.liveShowSetupGuide = () => window.fgLive.showSetupGuide();
+window.liveCloseSetupGuide = () => window.fgLive.closeSetupGuide();
+window.liveCopyServerCode = () => window.fgLive.copyServerCode();
+window.liveToggleKey = () => window.fgLive.toggleKey();
+window.liveTryPinComment = (id, msg) => window.fgLive.tryPinComment(id, msg);
+
+// Init quando a aba Social abrir
+(function _wireLiveTab() {
+  const orig = window.switchTab;
+  if (typeof orig !== 'function') {
+    setTimeout(_wireLiveTab, 500);
+    return;
+  }
+  window.switchTab = function(tab, btn) {
+    const r = orig.apply(this, arguments);
+    if (tab === 'social') { setTimeout(() => window.fgLive?.init(), 200); }
+    return r;
+  };
+})();
 
 /* ─────────────────────────────────────────────────────────────
    🎥 Gravador de tela + webcam (compositor em canvas)
