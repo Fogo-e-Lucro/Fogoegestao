@@ -7475,9 +7475,17 @@ function mtrGetValue(id, igData, adsData) {
       case 'ad_view_content':        return firstAct(['view_content','onsite_conversion.view_content','offsite_conversion.fb_pixel_view_content']);
       case 'ad_complete_registration': return firstAct(['complete_registration','onsite_conversion.complete_registration','offsite_conversion.fb_pixel_complete_registration']);
       case 'ad_messaging_started':   return sumActs(['onsite_conversion.messaging_conversation_started_7d','onsite_conversion.total_messaging_connection']);
-      // Seguidores: Instagram via ads (onsite_conversion.follow) + page like FB
-      case 'ad_followers':           return sumActs(['onsite_conversion.follow','follow','like']);
-      case 'ad_page_likes':          return getAct('like');
+      // Seguidores: tenta múltiplas variantes que o Meta usa em diferentes objetivos.
+      // (Use o botão 🔍 da campanha fixada pra ver qual action_type tá vindo na sua conta.)
+      case 'ad_followers':           return firstAct([
+        'onsite_conversion.follow',
+        'follow',
+        'omni_follow',
+        'onsite_conversion.flow_complete',
+        'page_like',
+        'like'
+      ]);
+      case 'ad_page_likes':          return firstAct(['like','page_like']);
       case 'ad_post_engagement':     return getAct('post_engagement') || getAct('page_engagement');
       case 'ad_post_reactions':      return getAct('post_reaction');
       case 'ad_post_saves':          return getAct('onsite_conversion.post_save');
@@ -7947,7 +7955,10 @@ function mtrRenderPinnedCampaignsBlock(campaigns) {
             <span class="mtr-pinned-camp-name">${escHtml(c.name || '—')}</span>
             <span class="mtr-camp-status ${statusCls}">${c.status||'—'}</span>
           </div>
-          <button class="mtr-pinned-camp-remove" onclick="mtrTogglePinCampaign('${c.id}')" title="Remover dos cards do topo">×</button>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <button class="mtr-pinned-camp-remove" onclick="mtrPinnedCampShowRaw('${c.id}')" title="Ver action_types crus (debug)" style="font-size:13px;">🔍</button>
+            <button class="mtr-pinned-camp-remove" onclick="mtrTogglePinCampaign('${c.id}')" title="Remover dos cards do topo">×</button>
+          </div>
         </div>
         <div class="mtr-kpi-grid mtr-pinned-camp-grid">
           ${kpiCards}
@@ -7964,6 +7975,50 @@ function mtrRenderPinnedCampaignsBlock(campaigns) {
       </div>
       ${cards}
     </div>`;
+}
+
+// 🔍 Debug: mostra todos os action_types crus retornados pelo Graph p/ a campanha.
+// Útil pra descobrir qual action_type o Meta tá usando pra "Seguidores", etc.
+function mtrPinnedCampShowRaw(campaignId) {
+  const camps = mtrLastSnapshot?.campaigns || [];
+  const c = camps.find(x => x.id === campaignId);
+  if (!c) { if (typeof showToast === 'function') showToast('warn','⚠️','Campanha não encontrada no snapshot.'); return; }
+  const ins = c.insights || {};
+  const fmt = arr => (Array.isArray(arr) ? arr : [])
+    .map(a => ({ type:a.action_type, value:parseFloat(a.value||0) }))
+    .filter(x => x.value > 0)
+    .sort((a,b) => b.value - a.value);
+  const actions   = fmt(ins.actions);
+  const actVals   = fmt(ins.action_values);
+  const costs     = fmt(ins.cost_per_action_type);
+  const flatKeys  = ['spend','impressions','reach','clicks','unique_clicks','ctr','unique_ctr','cpm','cpc','cpp','frequency','inline_link_clicks','inline_link_click_ctr']
+    .map(k => ({ k, v: ins[k] })).filter(x => x.v != null && x.v !== '');
+  const arrToTable = (arr, valFmt = v => v.toLocaleString('pt-BR')) =>
+    arr.length ? `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+      ${arr.map(r => `<tr style="border-bottom:1px solid var(--border);"><td style="padding:6px 8px;color:var(--text2);font-family:monospace;">${escHtml(r.type)}</td><td style="padding:6px 8px;text-align:right;font-weight:700;">${valFmt(r.value)}</td><td style="padding:6px 8px;text-align:right;"><button onclick="navigator.clipboard.writeText('${r.type}');this.textContent='✓'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;">copiar</button></td></tr>`).join('')}
+    </table>` : '<div style="color:var(--text3);font-size:12px;font-style:italic;padding:8px;">Vazio</div>';
+
+  let m = document.getElementById('mtrRawModal');
+  if (!m) {
+    m = document.createElement('div');
+    m.id = 'mtrRawModal';
+    m.className = 'mtr-funnel-modal';
+    document.body.appendChild(m);
+  }
+  m.innerHTML = `<div class="mtr-funnel-modal-card" style="max-width:720px;">
+    <button class="mtr-funnel-modal-close" onclick="document.getElementById('mtrRawModal').classList.remove('show')">×</button>
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">🔍 Dados crus — ${escHtml(c.name||'')}</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:14px;">Use isso pra descobrir o <code>action_type</code> certo de cada métrica do Gerenciador de Anúncios.</div>
+    <div style="font-size:13px;font-weight:700;margin:8px 0 4px;">📋 Campos diretos</div>
+    ${flatKeys.length ? `<table style="width:100%;border-collapse:collapse;font-size:12px;">${flatKeys.map(r => `<tr style="border-bottom:1px solid var(--border);"><td style="padding:4px 8px;color:var(--text2);font-family:monospace;">${r.k}</td><td style="padding:4px 8px;text-align:right;font-weight:700;">${r.v}</td></tr>`).join('')}</table>` : '<div style="color:var(--text3);font-size:12px;">Vazio</div>'}
+    <div style="font-size:13px;font-weight:700;margin:14px 0 4px;">🎯 actions[] (${actions.length})</div>
+    ${arrToTable(actions)}
+    <div style="font-size:13px;font-weight:700;margin:14px 0 4px;">💰 action_values[] (${actVals.length})</div>
+    ${arrToTable(actVals, v => 'R$ '+v.toFixed(2).replace('.',','))}
+    <div style="font-size:13px;font-weight:700;margin:14px 0 4px;">💵 cost_per_action_type[] (${costs.length})</div>
+    ${arrToTable(costs, v => 'R$ '+v.toFixed(2).replace('.',','))}
+  </div>`;
+  m.classList.add('show');
 }
 
 // Remove um KPI específico de uma campanha fixada
