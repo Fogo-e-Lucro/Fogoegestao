@@ -7749,10 +7749,50 @@ function mtrTogglePinCampaign(campaignId) {
   }
 }
 
-// 📊 Bloco "Métricas por campanha fixada" — cards horizontais por
-// campanha selecionada com mini-grid de KPIs (Gasto, Alcance, Impressões,
-// Cliques, CTR, CPC, CPM, ROAS) — espelha os cards da visão geral mas
-// filtrado pra cada campanha individual.
+// Constrói um adsData "virtual" a partir da row de campaign — pra reusar
+// mtrGetValue(id, igData, adsData) com o catálogo padrão de KPIs.
+function _mtrCampaignToAdsData(c) {
+  if (!c) return null;
+  // Reconstrói actions array a partir dos campos achatados que vêm da row
+  const actions = [];
+  if (c.purchases) actions.push({ action_type:'purchase', value: c.purchases });
+  if (c.results)   actions.push({ action_type:'omni_purchase', value: c.results });
+  if (c.leads)     actions.push({ action_type:'lead', value: c.leads });
+  if (c.landing_page_views) actions.push({ action_type:'landing_page_view', value: c.landing_page_views });
+  const action_values = [];
+  if (c.purchase_value || c.revenue) {
+    action_values.push({ action_type:'purchase', value: c.purchase_value || c.revenue });
+  }
+  return {
+    spend: c.spend, reach: c.reach, impressions: c.impressions, clicks: c.clicks,
+    ctr: c.ctr, cpc: c.cpc, cpm: c.cpm,
+    actions, action_values,
+    // Outras métricas diretas
+    inline_link_clicks: c.inline_link_clicks, frequency: c.frequency,
+  };
+}
+
+// KPIs default por campanha (usuário pode customizar)
+const MTR_PINNED_DEFAULT_KPIS = ['ad_spend','ad_reach','ad_impressions','ad_clicks','ad_ctr','ad_cpc','ad_cpm','ad_roas'];
+
+// Pega lista de KPIs da campanha (do localStorage ou default)
+function _mtrGetPinnedCampaignKpis(campaignId) {
+  try {
+    const raw = localStorage.getItem(`mtr_pinned_kpis:${campaignId}`);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr) && arr.length) return arr;
+    }
+  } catch(_){}
+  return [...MTR_PINNED_DEFAULT_KPIS];
+}
+function _mtrSetPinnedCampaignKpis(campaignId, kpis) {
+  try { localStorage.setItem(`mtr_pinned_kpis:${campaignId}`, JSON.stringify(kpis)); } catch(_){}
+}
+
+// 📊 Bloco "Métricas por campanha fixada" — usa o MESMO padrão visual
+// dos cards de visão geral (mtr-kpi-grid + mtr-kpi). Cada campanha pode
+// ter um conjunto DIFERENTE de KPIs configurado.
 function mtrRenderPinnedCampaignsBlock(campaigns) {
   _mtrLoadPinnedCampaigns();
   if (!campaigns || !campaigns.length || !mtrPinnedCampaigns.length) return '';
@@ -7761,59 +7801,92 @@ function mtrRenderPinnedCampaignsBlock(campaigns) {
     .filter(Boolean);
   if (!pinned.length) return '';
 
-  const kpiCard = (icon, label, value, sub) => `
-    <div class="mtr-pinned-kpi">
-      <div class="mtr-pinned-kpi-icon">${icon}</div>
-      <div class="mtr-pinned-kpi-info">
-        <div class="mtr-pinned-kpi-label">${label}</div>
-        <div class="mtr-pinned-kpi-value">${value}</div>
-        ${sub?`<div class="mtr-pinned-kpi-sub">${sub}</div>`:''}
-      </div>
-    </div>`;
-
-  const fmtBRL = v => v > 0 ? 'R$ ' + (v < 100 ? v.toFixed(2).replace('.',',') : mtrFmtNum(v)) : '—';
-
   const cards = pinned.map(c => {
-    const spend = parseFloat(c.spend)||0;
-    const reach = parseFloat(c.reach)||0;
-    const impressions = parseFloat(c.impressions)||0;
-    const clicks = parseFloat(c.clicks)||0;
-    const ctr = parseFloat(c.ctr)||0;
-    const cpc = parseFloat(c.cpc)||0;
-    const cpm = parseFloat(c.cpm)||0;
-    const roas = parseFloat(c.roas)||0;
-    const purchases = parseFloat(c.purchases)||parseFloat(c.results)||0;
+    const adsDataVirtual = _mtrCampaignToAdsData(c);
+    const kpiIds = _mtrGetPinnedCampaignKpis(c.id)
+      .filter(id => {
+        const m = MTR_CATALOG.find(x => x.id === id);
+        return m && m.source === 'ad'; // só ads pra campanha
+      });
     const statusCls = c.status === 'ACTIVE' ? 'active' : (c.status === 'PAUSED' ? 'paused' : 'other');
+
+    // Renderiza cada KPI usando os mesmos componentes dos cards do topo
+    const kpiCards = kpiIds.map(id => {
+      const m = MTR_CATALOG.find(x => x.id === id);
+      if (!m) return '';
+      const v = mtrGetValue(id, null, adsDataVirtual);
+      return `
+        <div class="mtr-kpi" data-source="ad" data-kpi-id="${id}" data-camp-id="${c.id}">
+          <button class="mtr-kpi-del" onclick="event.stopPropagation();mtrPinnedCampRemoveKpi('${c.id}','${id}')" title="Remover este card">✕</button>
+          <div class="mtr-kpi-icon">${m.icon}</div>
+          <div class="mtr-kpi-label">${m.label}</div>
+          <div class="mtr-kpi-value">${mtrFmtValue(m, v)}</div>
+          <div class="mtr-kpi-bar"></div>
+        </div>`;
+    }).join('');
+
+    const addBtn = `
+      <button class="mtr-kpi-add" onclick="mtrPinnedCampOpenKpiPicker('${c.id}', event)" title="Adicionar métrica nesta campanha">
+        <div class="mtr-kpi-add-icon">+</div>
+        <div class="mtr-kpi-add-label">Adicionar</div>
+      </button>`;
+
     return `
       <div class="mtr-pinned-camp">
         <div class="mtr-pinned-camp-head">
-          <div>
-            <div class="mtr-pinned-camp-name">⭐ ${escHtml(c.name || '—')}</div>
-            <div class="mtr-pinned-camp-meta"><span class="mtr-camp-status ${statusCls}">${c.status||'—'}</span></div>
+          <div class="mtr-pinned-camp-title">
+            <span class="mtr-pinned-camp-star">⭐</span>
+            <span class="mtr-pinned-camp-name">${escHtml(c.name || '—')}</span>
+            <span class="mtr-camp-status ${statusCls}">${c.status||'—'}</span>
           </div>
           <button class="mtr-pinned-camp-remove" onclick="mtrTogglePinCampaign('${c.id}')" title="Remover dos cards do topo">×</button>
         </div>
-        <div class="mtr-pinned-camp-grid">
-          ${kpiCard('💰','GASTO', fmtBRL(spend))}
-          ${kpiCard('👀','ALCANCE', reach>0 ? mtrFmtNum(reach) : '—')}
-          ${kpiCard('📊','IMPRESSÕES', impressions>0 ? mtrFmtNum(impressions) : '—')}
-          ${kpiCard('🖱','CLIQUES', clicks>0 ? mtrFmtNum(clicks) : '—')}
-          ${kpiCard('📈','CTR', ctr>0 ? ctr.toFixed(2)+'%' : '—')}
-          ${kpiCard('💵','CPC', cpc>0 ? fmtBRL(cpc) : '—')}
-          ${kpiCard('💸','CPM', cpm>0 ? fmtBRL(cpm) : '—')}
-          ${kpiCard('🏆','ROAS', roas>0 ? roas.toFixed(2)+'x' : '—', purchases>0 ? mtrFmtNum(purchases)+' conv.' : '')}
+        <div class="mtr-kpi-grid mtr-pinned-camp-grid">
+          ${kpiCards}
+          ${addBtn}
         </div>
       </div>`;
   }).join('');
 
   return `
     <div class="mtr-pinned-section">
-      <div class="mtr-section-title" style="display:flex;align-items:center;justify-content:space-between;">
-        <span>⭐ Métricas por campanha fixada · ${pinned.length} campanha${pinned.length>1?'s':''}</span>
-        <span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">Fixe/desafixe pelo ☆/★ na tabela abaixo</span>
+      <div class="mtr-section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <span>⭐ Métricas por campanha fixada</span>
+        <span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">${pinned.length} campanha${pinned.length>1?'s':''} · cada uma tem suas próprias métricas</span>
       </div>
-      <div class="mtr-pinned-cards">${cards}</div>
+      ${cards}
     </div>`;
+}
+
+// Remove um KPI específico de uma campanha fixada
+function mtrPinnedCampRemoveKpi(campaignId, kpiId) {
+  const cur = _mtrGetPinnedCampaignKpis(campaignId);
+  const next = cur.filter(id => id !== kpiId);
+  _mtrSetPinnedCampaignKpis(campaignId, next);
+  if (mtrLastSnapshot) {
+    const s = mtrLastSnapshot;
+    renderMetrics(s.igCurr, s.igPrev, s.adsData, s.adsPrev, s.curr, s.prev, s.compare, s.warnings, s.campaigns, s.health);
+  }
+}
+
+// Abre popup com lista de KPIs disponíveis pra adicionar nesta campanha
+function mtrPinnedCampOpenKpiPicker(campaignId, ev) {
+  if (ev) ev.stopPropagation();
+  const cur = new Set(_mtrGetPinnedCampaignKpis(campaignId));
+  const available = MTR_CATALOG.filter(m => m.source === 'ad' && !cur.has(m.id));
+  if (!available.length) {
+    if (typeof showToast === 'function') showToast('info','✅','Todos os KPIs disponíveis já estão na campanha.');
+    return;
+  }
+  const items = available.map(m => ({ id:m.id, label:m.label, icon:m.icon }));
+  pjShowPopupMenu(ev, items, null, (id) => {
+    const next = [..._mtrGetPinnedCampaignKpis(campaignId), id];
+    _mtrSetPinnedCampaignKpis(campaignId, next);
+    if (mtrLastSnapshot) {
+      const s = mtrLastSnapshot;
+      renderMetrics(s.igCurr, s.igPrev, s.adsData, s.adsPrev, s.curr, s.prev, s.compare, s.warnings, s.campaigns, s.health);
+    }
+  });
 }
 
 
