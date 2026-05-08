@@ -24226,11 +24226,16 @@ window.appRecorder = (() => {
     const map = { '1080p':[1920,1080], '1440p':[2560,1440], '4k':[3840,2160] };
     [cw, ch] = map[res] || [1920,1080];
 
-    // 1) Pede tela
+    // 1) Pede tela. Por padrão o Chrome esconde a aba atual da lista
+    //    ('selfBrowserSurface: exclude'). Forçamos 'include' pra dar opção
+    //    de gravar a própria aba do Fogo & Gestão (mostrando relatórios).
     try {
       screen = await navigator.mediaDevices.getDisplayMedia({
         video: { width:{ ideal: cw }, height:{ ideal: ch }, frameRate:{ ideal: 30, max: 60 } },
-        audio: wantSys
+        audio: wantSys,
+        selfBrowserSurface: 'include',
+        surfaceSwitching: 'include',  // permite trocar de aba durante a gravação
+        systemAudio: 'include',
       });
     } catch(e) {
       try { showToast('error','❌','Tela não autorizada.'); }catch(_){}
