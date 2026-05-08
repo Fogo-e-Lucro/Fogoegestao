@@ -24240,18 +24240,30 @@ window.appRecorder = (() => {
   }
 
   function showFloatingUI() {
-    // Bolinha da webcam (posição:fixed, arrastável)
+    // Bolinha da webcam (posição:fixed, arrastável).
+    // IMPORTANTE: durante a gravação, NÃO mostra a webcam ao vivo aqui.
+    // Se mostrasse, a webcam apareceria duplicada na gravação (uma vez via
+    // captura de tela da bolinha HTML + outra vez via canvas composite).
+    // Aqui é só um placeholder com outline + ícone — a webcam de verdade
+    // é desenhada pelo canvas, que é o que entra no MediaRecorder.
     let bub = document.getElementById('recBubble');
     if (!bub) {
       bub = document.createElement('div');
       bub.id = 'recBubble';
-      bub.innerHTML = '<video id="recBubbleVideo" autoplay muted playsinline></video>';
       document.body.appendChild(bub);
     }
+    bub.innerHTML = `
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85);font-size:${Math.max(18, Math.round(window.innerWidth * bubble.sizeFrac * 0.25))}px;">📷</div>
+      <div style="position:absolute;top:6px;left:6px;background:rgba(239,68,68,.9);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px;letter-spacing:.5px;">REC</div>
+    `;
     Object.assign(bub.style, {
       position:'fixed', zIndex:99998, cursor:'grab',
-      border:'4px solid #fff', boxShadow:'0 6px 24px rgba(0,0,0,.5)',
-      overflow:'hidden', background:'#000', userSelect:'none',
+      border:'3px dashed rgba(255,255,255,.9)',
+      boxShadow:'0 4px 18px rgba(0,0,0,.4), inset 0 0 0 2px rgba(0,0,0,.4)',
+      overflow:'hidden',
+      background:'rgba(15,23,42,.6)',
+      backdropFilter:'blur(4px)',
+      userSelect:'none',
     });
     const sizePx = Math.round(window.innerWidth * bubble.sizeFrac);
     bub.style.width = sizePx+'px';
@@ -24260,9 +24272,6 @@ window.appRecorder = (() => {
     bub.style.left = Math.round(bubble.x * window.innerWidth) + 'px';
     bub.style.top  = Math.round(bubble.y * window.innerHeight) + 'px';
     bub.style.right = 'auto'; bub.style.bottom = 'auto';
-    const v = document.getElementById('recBubbleVideo');
-    Object.assign(v.style, { width:'100%', height:'100%', objectFit:'cover', transform:'scaleX(-1)' });
-    if (cam) v.srcObject = cam;
     bub.onmousedown = bubbleDragStart;
     bub.ontouchstart = bubbleTouchStart;
 
