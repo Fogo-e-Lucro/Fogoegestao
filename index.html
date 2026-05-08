@@ -139,6 +139,7 @@
     <div class="app-settings-tabs">
       <button class="app-settings-tab active" data-tab="apis" onclick="appSettingsTab('apis')">🔑 APIs</button>
       <button class="app-settings-tab" data-tab="integ" onclick="appSettingsTab('integ')">🔌 Integrações</button>
+      <button class="app-settings-tab" data-tab="rec" onclick="appSettingsTab('rec')">🎥 Gravador</button>
       <button class="app-settings-tab pj-admin-only" data-tab="equipe" onclick="appSettingsTab('equipe')">👥 Equipe</button>
       <button class="app-settings-tab" data-tab="info" onclick="appSettingsTab('info')">ℹ️ Sobre</button>
     </div>
@@ -285,6 +286,54 @@
           O app, com alguma aba aberta, lê o comando e envia o WhatsApp via <code>uazapi</code>.<br><br>
           <strong>Actions suportadas:</strong> <code>send_daily_summary</code>, <code>send_weekly_summary</code>.<br>
           <strong>Teste manual no console:</strong> <code>appSendDailySummary('UID_AQUI', '5511999999999')</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="app-settings-pane" data-pane="rec" style="display:none;">
+      <div class="app-settings-section">
+        <div class="app-settings-row-label">🎥 Gravador de tela + webcam <span class="app-settings-hint">Pra gravar relatórios em vídeo. Bolinha da webcam é arrastável durante a gravação.</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
+            <input type="checkbox" id="recOptMic" checked> 🎙️ Incluir microfone
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
+            <input type="checkbox" id="recOptSysAudio" checked> 🔊 Áudio do sistema
+          </label>
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
+            📐 Resolução:
+            <select id="recOptRes" class="app-settings-input" style="flex:1;">
+              <option value="1080p">Full HD (1920×1080)</option>
+              <option value="1440p">QHD (2560×1440)</option>
+              <option value="4k" selected>4K UHD (3840×2160)</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
+            ⭕ Forma da webcam:
+            <select id="recOptShape" class="app-settings-input" style="flex:1;">
+              <option value="circle" selected>Círculo</option>
+              <option value="square">Quadrado</option>
+            </select>
+          </div>
+          <div style="grid-column:span 2;display:flex;align-items:center;gap:10px;font-size:13px;">
+            📏 Tamanho da bolinha:
+            <input type="range" id="recOptSize" min="10" max="32" value="16" style="flex:1;">
+            <span id="recOptSizeLabel" style="font-size:11px;color:var(--text2);min-width:40px;">16%</span>
+          </div>
+        </div>
+        <div class="app-settings-action-row" style="margin-top:14px;">
+          <button class="app-settings-btn" style="background:#ef4444;color:#fff;font-weight:700;padding:10px 18px;font-size:14px;" onclick="appRecorderStart()">🔴 Iniciar gravação</button>
+          <span class="app-settings-hint">O navegador vai pedir 2 permissões: tela e webcam/mic. Ao parar, o vídeo baixa automaticamente em .webm.</span>
+        </div>
+      </div>
+      <div class="app-settings-section">
+        <div class="app-settings-info-block" style="font-size:12px;">
+          <strong>💡 Dicas:</strong><br>
+          • Pra 4K real, escolha "Tela inteira" no popup do navegador e use um monitor 4K.<br>
+          • A bolinha da webcam é uma janelinha flutuante — arraste pelo ponto que quiser na tela durante a gravação.<br>
+          • O Stop fica num botão flutuante no canto superior direito (sempre visível).<br>
+          • O arquivo final é <code>.webm</code> (codec VP9). Pra converter pra MP4, use ffmpeg ou um conversor online.<br>
+          • Áudio do sistema: nem todo navegador suporta. No Chrome só funciona se compartilhar uma <em>aba</em> (não a tela inteira).
         </div>
       </div>
     </div>
@@ -23802,6 +23851,325 @@ window.addEventListener('load', () => {
       pjFcmInit();
     }
   }, 4000);
+});
+
+/* ─────────────────────────────────────────────────────────────
+   🎥 Gravador de tela + webcam (compositor em canvas)
+   - Captura tela via getDisplayMedia (até 4K)
+   - Captura webcam+mic via getUserMedia
+   - Composita num canvas em loop, captura como MediaStream e grava com MediaRecorder
+   - Bolinha da webcam é uma <video> position:fixed arrastável
+     A posição (x,y em fração 0..1 da viewport) vira posição (x,y do canvas)
+     assumindo que o usuário compartilhou a aba/tela atual em fullscreen.
+   ───────────────────────────────────────────────────────────── */
+window.appRecorder = (() => {
+  let screen=null, cam=null, mr=null, audioCtx=null, audioDest=null;
+  let canvas=null, ctx=null, sv=null, cv=null;
+  let raf=null, t0=0, timerInt=null, chunks=[], mimeType='';
+  let cw=1920, ch=1080;
+  // bubble: x,y são frações 0..1 do canvas (top-left); size é fração da largura
+  let bubble = { x:0.78, y:0.78, sizeFrac:0.16, shape:'circle' };
+  let dragOff = null;
+
+  function fmt(n){return String(n).padStart(2,'0');}
+
+  function showFloatingUI() {
+    // Bolinha da webcam (posição:fixed, arrastável)
+    let bub = document.getElementById('recBubble');
+    if (!bub) {
+      bub = document.createElement('div');
+      bub.id = 'recBubble';
+      bub.innerHTML = '<video id="recBubbleVideo" autoplay muted playsinline></video>';
+      document.body.appendChild(bub);
+    }
+    Object.assign(bub.style, {
+      position:'fixed', zIndex:99998, cursor:'grab',
+      border:'4px solid #fff', boxShadow:'0 6px 24px rgba(0,0,0,.5)',
+      overflow:'hidden', background:'#000', userSelect:'none',
+    });
+    const sizePx = Math.round(window.innerWidth * bubble.sizeFrac);
+    bub.style.width = sizePx+'px';
+    bub.style.height = sizePx+'px';
+    bub.style.borderRadius = bubble.shape === 'circle' ? '50%' : '12px';
+    bub.style.left = Math.round(bubble.x * window.innerWidth) + 'px';
+    bub.style.top  = Math.round(bubble.y * window.innerHeight) + 'px';
+    bub.style.right = 'auto'; bub.style.bottom = 'auto';
+    const v = document.getElementById('recBubbleVideo');
+    Object.assign(v.style, { width:'100%', height:'100%', objectFit:'cover', transform:'scaleX(-1)' });
+    if (cam) v.srcObject = cam;
+    bub.onmousedown = bubbleDragStart;
+    bub.ontouchstart = bubbleTouchStart;
+
+    // Toolbar flutuante (timer + parar)
+    let tb = document.getElementById('recToolbar');
+    if (!tb) {
+      tb = document.createElement('div');
+      tb.id = 'recToolbar';
+      tb.innerHTML = `
+        <span id="recToolbarDot" style="width:10px;height:10px;border-radius:50%;background:#ef4444;animation:recBlink 1s infinite;"></span>
+        <span id="recTimer" style="font-family:ui-monospace,monospace;font-weight:700;">00:00</span>
+        <button id="recStopBtn" style="background:#ef4444;color:#fff;border:0;border-radius:8px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:13px;">⏹ Parar</button>
+      `;
+      document.body.appendChild(tb);
+      const style = document.createElement('style');
+      style.textContent = '@keyframes recBlink {0%,100%{opacity:1}50%{opacity:.25}}';
+      document.head.appendChild(style);
+      document.getElementById('recStopBtn').onclick = stop;
+    }
+    Object.assign(tb.style, {
+      position:'fixed', top:'12px', right:'12px', zIndex:99999,
+      display:'flex', alignItems:'center', gap:'10px',
+      background:'rgba(20,20,20,.92)', color:'#fff',
+      padding:'8px 12px', borderRadius:'10px',
+      boxShadow:'0 6px 20px rgba(0,0,0,.4)',
+      fontSize:'14px',
+    });
+  }
+
+  function hideFloatingUI() {
+    const bub = document.getElementById('recBubble'); if (bub) bub.remove();
+    const tb  = document.getElementById('recToolbar'); if (tb) tb.remove();
+  }
+
+  function bubbleDragStart(e) {
+    const el = document.getElementById('recBubble');
+    const r = el.getBoundingClientRect();
+    dragOff = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+    el.style.cursor = 'grabbing';
+    document.addEventListener('mousemove', bubbleDragMove);
+    document.addEventListener('mouseup', bubbleDragEnd);
+    e.preventDefault();
+  }
+  function bubbleDragMove(e) {
+    if (!dragOff) return;
+    const el = document.getElementById('recBubble');
+    if (!el) return;
+    const w = el.offsetWidth, h = el.offsetHeight;
+    let x = Math.max(0, Math.min(window.innerWidth  - w, e.clientX - dragOff.dx));
+    let y = Math.max(0, Math.min(window.innerHeight - h, e.clientY - dragOff.dy));
+    el.style.left = x+'px';
+    el.style.top  = y+'px';
+    bubble.x = x / window.innerWidth;
+    bubble.y = y / window.innerHeight;
+  }
+  function bubbleDragEnd() {
+    dragOff = null;
+    const el = document.getElementById('recBubble');
+    if (el) el.style.cursor = 'grab';
+    document.removeEventListener('mousemove', bubbleDragMove);
+    document.removeEventListener('mouseup', bubbleDragEnd);
+  }
+  function bubbleTouchStart(e) {
+    const t = e.touches[0]; if (!t) return;
+    bubbleDragStart({ clientX:t.clientX, clientY:t.clientY, preventDefault:()=>e.preventDefault() });
+    document.addEventListener('touchmove', tmove, { passive:false });
+    document.addEventListener('touchend', tend);
+    function tmove(ev) {
+      const tt = ev.touches[0]; if (!tt) return;
+      bubbleDragMove({ clientX:tt.clientX, clientY:tt.clientY });
+      ev.preventDefault();
+    }
+    function tend() {
+      document.removeEventListener('touchmove', tmove);
+      document.removeEventListener('touchend', tend);
+      bubbleDragEnd();
+    }
+  }
+
+  async function start() {
+    if (mr) { try { showToast('warn','⚠️','Gravação já em andamento.'); }catch(_){} return; }
+
+    const wantMic = document.getElementById('recOptMic')?.checked !== false;
+    const wantSys = document.getElementById('recOptSysAudio')?.checked !== false;
+    const res = document.getElementById('recOptRes')?.value || '4k';
+    const shape = document.getElementById('recOptShape')?.value || 'circle';
+    const sizePct = parseInt(document.getElementById('recOptSize')?.value || '16', 10);
+    bubble.shape = shape;
+    bubble.sizeFrac = Math.max(0.05, Math.min(0.4, sizePct/100));
+
+    const map = { '1080p':[1920,1080], '1440p':[2560,1440], '4k':[3840,2160] };
+    [cw, ch] = map[res] || [1920,1080];
+
+    // 1) Pede tela
+    try {
+      screen = await navigator.mediaDevices.getDisplayMedia({
+        video: { width:{ ideal: cw }, height:{ ideal: ch }, frameRate:{ ideal: 30, max: 60 } },
+        audio: wantSys
+      });
+    } catch(e) {
+      try { showToast('error','❌','Tela não autorizada.'); }catch(_){}
+      return;
+    }
+
+    // 2) Pede webcam+mic (opcional, se falhar segue só com tela)
+    try {
+      cam = await navigator.mediaDevices.getUserMedia({
+        video: { width:{ ideal: 1280 }, height:{ ideal: 720 }, facingMode:'user' },
+        audio: wantMic
+      });
+    } catch(e) {
+      cam = null;
+      try { showToast('warn','⚠️','Webcam/mic não autorizados — gravando só tela.'); }catch(_){}
+    }
+
+    // 3) Fecha modal de configurações
+    try { closeAppSettings(); } catch(_){}
+
+    // 4) Monta canvas no tamanho escolhido
+    canvas = document.createElement('canvas');
+    canvas.width = cw; canvas.height = ch;
+    ctx = canvas.getContext('2d');
+
+    // 5) Vídeos invisíveis com os streams
+    sv = document.createElement('video'); sv.muted=true; sv.autoplay=true; sv.playsInline=true;
+    sv.srcObject = screen;
+    cv = document.createElement('video'); cv.muted=true; cv.autoplay=true; cv.playsInline=true;
+    if (cam) cv.srcObject = cam;
+    await sv.play().catch(()=>{});
+    if (cam) await cv.play().catch(()=>{});
+
+    // 6) Mistura de áudio (mic + sistema) num único MediaStreamDestination
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    audioDest = audioCtx.createMediaStreamDestination();
+    let anyAudio = false;
+    if (wantMic && cam) {
+      const at = cam.getAudioTracks();
+      if (at.length) {
+        const ms = new MediaStream(at);
+        audioCtx.createMediaStreamSource(ms).connect(audioDest);
+        anyAudio = true;
+      }
+    }
+    if (wantSys) {
+      const at = screen.getAudioTracks();
+      if (at.length) {
+        const ms = new MediaStream(at);
+        audioCtx.createMediaStreamSource(ms).connect(audioDest);
+        anyAudio = true;
+      }
+    }
+
+    // 7) Stream de saída: canvas video + audio dest
+    const out = canvas.captureStream(30);
+    if (anyAudio) audioDest.stream.getAudioTracks().forEach(t => out.addTrack(t));
+
+    // 8) MediaRecorder com bitrate alto pra qualidade no 4K
+    const mimes = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+    mimeType = mimes.find(t => MediaRecorder.isTypeSupported(t)) || '';
+    const bitrateMap = { '1080p':8_000_000, '1440p':14_000_000, '4k':24_000_000 };
+    chunks = [];
+    mr = new MediaRecorder(out, {
+      mimeType: mimeType || undefined,
+      videoBitsPerSecond: bitrateMap[res] || 12_000_000,
+    });
+    mr.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    mr.onstop = finalize;
+    mr.start(1000);
+
+    // 9) Loop de compositing
+    const draw = () => {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      if (sv.videoWidth) {
+        // Cobre canvas mantendo proporção da tela capturada
+        const sw = sv.videoWidth, sh = sv.videoHeight;
+        const ar = sw/sh, ca = canvas.width/canvas.height;
+        let dw, dh, dx, dy;
+        if (ar > ca) { dw = canvas.width; dh = canvas.width/ar; dx=0; dy=(canvas.height-dh)/2; }
+        else         { dh = canvas.height; dw = canvas.height*ar; dy=0; dx=(canvas.width-dw)/2; }
+        ctx.drawImage(sv, dx, dy, dw, dh);
+      }
+      if (cam && cv.videoWidth) {
+        const sz = Math.round(bubble.sizeFrac * canvas.width);
+        const bx = Math.round(bubble.x * canvas.width);
+        const by = Math.round(bubble.y * canvas.height);
+        ctx.save();
+        if (bubble.shape === 'circle') {
+          ctx.beginPath();
+          ctx.arc(bx + sz/2, by + sz/2, sz/2, 0, Math.PI*2);
+          ctx.clip();
+        } else {
+          ctx.beginPath();
+          ctx.rect(bx, by, sz, sz);
+          ctx.clip();
+        }
+        // Espelha (mirror) e crop pra quadrado
+        const wcw = cv.videoWidth, wch = cv.videoHeight;
+        const side = Math.min(wcw, wch);
+        ctx.translate(bx + sz, by);
+        ctx.scale(-1, 1);
+        ctx.drawImage(cv, (wcw-side)/2, (wch-side)/2, side, side, 0, 0, sz, sz);
+        ctx.restore();
+        // Borda branca
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = Math.max(4, canvas.width * 0.003);
+        ctx.beginPath();
+        if (bubble.shape === 'circle') ctx.arc(bx + sz/2, by + sz/2, sz/2, 0, Math.PI*2);
+        else ctx.rect(bx, by, sz, sz);
+        ctx.stroke();
+      }
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+
+    // 10) Timer
+    t0 = Date.now();
+    timerInt = setInterval(() => {
+      const s = Math.floor((Date.now()-t0)/1000);
+      const m = Math.floor(s/60), ss = s%60;
+      const h = Math.floor(m/60), mm = m%60;
+      const tEl = document.getElementById('recTimer');
+      if (tEl) tEl.textContent = h ? `${fmt(h)}:${fmt(mm)}:${fmt(ss)}` : `${fmt(mm)}:${fmt(ss)}`;
+    }, 250);
+
+    // 11) UI flutuante
+    showFloatingUI();
+
+    // 12) Auto-stop se usuário cancelar via UI nativa do browser
+    screen.getVideoTracks()[0].onended = () => stop();
+
+    try { showToast('success','🔴','Gravação iniciada!'); }catch(_){}
+  }
+
+  function stop() {
+    if (!mr) return;
+    try { mr.stop(); } catch(_){}
+    if (raf) cancelAnimationFrame(raf);
+    if (timerInt) clearInterval(timerInt);
+    raf = null; timerInt = null;
+    [screen, cam].forEach(s => { if (s) s.getTracks().forEach(t => t.stop()); });
+    if (audioCtx) { try { audioCtx.close(); }catch(_){} }
+    hideFloatingUI();
+    screen = null; cam = null;
+  }
+
+  function finalize() {
+    const blob = new Blob(chunks, { type: mimeType || 'video/webm' });
+    chunks = [];
+    mr = null;
+    if (!blob.size) { try { showToast('warn','⚠️','Gravação vazia.'); }catch(_){} return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    const sizeMb = (blob.size / 1024 / 1024).toFixed(1);
+    a.download = `gravacao-fogo-${ts}.webm`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    try { showToast('success','✅','Vídeo salvo ('+sizeMb+' MB)!'); }catch(_){}
+  }
+
+  return { start, stop };
+})();
+
+window.appRecorderStart = () => window.appRecorder.start();
+
+// Atualiza label do slider de tamanho
+document.addEventListener('input', (e) => {
+  if (e.target && e.target.id === 'recOptSize') {
+    const lbl = document.getElementById('recOptSizeLabel');
+    if (lbl) lbl.textContent = e.target.value + '%';
+  }
 });
 
 </script>
