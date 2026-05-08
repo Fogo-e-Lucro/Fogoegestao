@@ -53,9 +53,20 @@
   })();
 </script>
 
-<!-- Pré-hide da tela de login se for view compartilhada (antes do CSS carregar) -->
-<script>(function(){try{ if(location.hash.match(/#share=/)){ document.documentElement.classList.add('is-shared-view-pending'); } }catch(_){}})();</script>
-<style>html.is-shared-view-pending #loginScreen { display:none !important; }</style>
+<!-- Pré-hide da tela de login + topbar/header se for view compartilhada (antes do CSS principal carregar) -->
+<script>(function(){try{ if(location.hash.match(/#share=/)){ document.documentElement.classList.add('is-shared-view-pending'); document.body && document.body.classList.add('mtr-shared-view'); } }catch(_){}})();</script>
+<style>
+html.is-shared-view-pending #loginScreen,
+html.is-shared-view-pending .app-header,
+html.is-shared-view-pending .pj-fab,
+html.is-shared-view-pending #appSettingsBtn,
+html.is-shared-view-pending #userChip,
+html.is-shared-view-pending #themePickerBtn,
+html.is-shared-view-pending #syncStatus,
+html.is-shared-view-pending .main-tabs,
+html.is-shared-view-pending .topbar { display:none !important; }
+html.is-shared-view-pending body { padding-top:0 !important; }
+</style>
 
 <!-- LOGIN SCREEN -->
 <div class="login-screen" id="loginScreen">
