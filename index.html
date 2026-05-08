@@ -7751,24 +7751,41 @@ function mtrTogglePinCampaign(campaignId) {
 
 // Constrói um adsData "virtual" a partir da row de campaign — pra reusar
 // mtrGetValue(id, igData, adsData) com o catálogo padrão de KPIs.
+// IMPORTANTE: dados reais vêm em c.insights.* (estrutura crua da Graph API),
+// NÃO em campos achatados em c.* — vide mtrFetchCampaigns().
 function _mtrCampaignToAdsData(c) {
   if (!c) return null;
-  // Reconstrói actions array a partir dos campos achatados que vêm da row
-  const actions = [];
-  if (c.purchases) actions.push({ action_type:'purchase', value: c.purchases });
-  if (c.results)   actions.push({ action_type:'omni_purchase', value: c.results });
-  if (c.leads)     actions.push({ action_type:'lead', value: c.leads });
-  if (c.landing_page_views) actions.push({ action_type:'landing_page_view', value: c.landing_page_views });
-  const action_values = [];
-  if (c.purchase_value || c.revenue) {
-    action_values.push({ action_type:'purchase', value: c.purchase_value || c.revenue });
-  }
+  // Pega o objeto insights — onde estão TODOS os números de fato
+  const ins = c.insights || {};
+  // Repassa actions/action_values/etc direto (já vêm como arrays do Graph)
   return {
-    spend: c.spend, reach: c.reach, impressions: c.impressions, clicks: c.clicks,
-    ctr: c.ctr, cpc: c.cpc, cpm: c.cpm,
-    actions, action_values,
-    // Outras métricas diretas
-    inline_link_clicks: c.inline_link_clicks, frequency: c.frequency,
+    spend:        ins.spend,
+    reach:        ins.reach,
+    impressions:  ins.impressions,
+    clicks:       ins.clicks,
+    unique_clicks: ins.unique_clicks,
+    ctr:          ins.ctr,
+    unique_ctr:   ins.unique_ctr,
+    cpc:          ins.cpc,
+    cpm:          ins.cpm,
+    cpp:          ins.cpp,
+    cost_per_unique_click: ins.cost_per_unique_click,
+    frequency:    ins.frequency,
+    inline_link_clicks: ins.inline_link_clicks,
+    inline_link_click_ctr: ins.inline_link_click_ctr,
+    outbound_clicks: ins.outbound_clicks,
+    outbound_clicks_ctr: ins.outbound_clicks_ctr,
+    actions:      ins.actions || [],
+    action_values: ins.action_values || [],
+    cost_per_action_type: ins.cost_per_action_type || [],
+    purchase_roas: ins.purchase_roas,
+    website_purchase_roas: ins.website_purchase_roas,
+    video_p25_watched_actions: ins.video_p25_watched_actions,
+    video_p50_watched_actions: ins.video_p50_watched_actions,
+    video_p75_watched_actions: ins.video_p75_watched_actions,
+    video_p95_watched_actions: ins.video_p95_watched_actions,
+    video_p100_watched_actions: ins.video_p100_watched_actions,
+    video_avg_time_watched_actions: ins.video_avg_time_watched_actions,
   };
 }
 
