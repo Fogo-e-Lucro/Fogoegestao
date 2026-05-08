@@ -7344,6 +7344,50 @@ function _mtrSplitIgRange(since, until) {
   return chunks;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   📈 Histórico próprio de seguidores (contorna limite de 30d da Meta API)
+   - Salva 1 snapshot/dia/cliente em ig_follower_history (Firestore)
+   - Doc id = `${igId}_${YYYY-MM-DD}` → idempotente, evita duplicatas
+   - Usa o followers_count que já vem do mtrFetchIg (sem chamada extra)
+   - Para períodos > 30 dias, calcula ganho via histórico próprio
+   ───────────────────────────────────────────────────────────── */
+async function _mtrSaveFollowerSnapshot(igId, count) {
+  if (!igId || !count || count <= 0) return;
+  if (typeof firebase === 'undefined' || !firebase.firestore) return;
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
+  const docId = `${igId}_${today}`;
+  try {
+    const ref = firebase.firestore().collection('ig_follower_history').doc(docId);
+    const snap = await ref.get();
+    if (snap.exists) return; // já salvo hoje, não sobrescreve
+    await ref.set({
+      igId,
+      date: today,
+      count: parseInt(count, 10),
+      savedAt: new Date().toISOString(),
+    });
+  } catch(e) {
+    console.warn('[fg] follower snapshot save failed:', e?.message || e);
+  }
+}
+
+async function _mtrLoadFollowerHistory(igId, sinceDate, untilDate) {
+  if (!igId) return [];
+  if (typeof firebase === 'undefined' || !firebase.firestore) return [];
+  try {
+    const q = await firebase.firestore().collection('ig_follower_history')
+      .where('igId', '==', igId)
+      .where('date', '>=', sinceDate)
+      .where('date', '<=', untilDate)
+      .orderBy('date', 'asc')
+      .get();
+    return q.docs.map(d => d.data());
+  } catch(e) {
+    console.warn('[fg] follower history load failed:', e?.message || e);
+    return [];
+  }
+}
+
 async function mtrFetchIg(igId, token, since, until) {
   // 'reach' precisa ir como metric_type=total_value pra retornar dados em
   // qualquer período (com period=day, IG só retorna últimos ~30 dias).
@@ -7409,8 +7453,31 @@ async function mtrFetchIg(igId, token, since, until) {
     if (!pd.error) {
       result.followers_count = { total: pd.followers_count || 0, values: [] };
       result.media_count = { total: pd.media_count || 0, values: [] };
+      // 📈 SALVA SNAPSHOT DIÁRIO (não bloqueia o render)
+      _mtrSaveFollowerSnapshot(igId, pd.followers_count || 0).catch(()=>{});
     }
   } catch(e){}
+
+  // 📈 Para períodos > 30d, sobrescreve follower_count (ganho) usando
+  // histórico próprio do Firestore — contorna o limite de 30d da Meta API.
+  try {
+    const days = (new Date(until + 'T00:00:00Z').getTime() - new Date(since + 'T00:00:00Z').getTime()) / 86400000;
+    if (days > 30) {
+      const hist = await _mtrLoadFollowerHistory(igId, since, until);
+      if (hist.length >= 2) {
+        const first = hist[0].count;
+        const last = hist[hist.length - 1].count;
+        const gain = last - first;
+        result.follower_count = {
+          total: gain,
+          values: hist.map(h => ({ end_time: h.date, value: h.count })),
+          source: 'history',
+        };
+      }
+    }
+  } catch(e) {
+    console.warn('[fg] follower history override failed:', e?.message || e);
+  }
 
   return result;
 }
