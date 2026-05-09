@@ -1244,6 +1244,51 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             </div>
           </div>
 
+          <!-- Comentário pronto pra colar manualmente no Live Producer -->
+          <details style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:18px;" id="liveCommentDetails">
+            <summary style="padding:12px 14px;cursor:pointer;font-size:13px;font-weight:700;color:#0f172a;display:flex;align-items:center;gap:10px;list-style:none;">
+              <span style="width:28px;height:28px;border-radius:8px;background:rgba(34,197,94,.12);display:flex;align-items:center;justify-content:center;font-size:14px;">💬</span>
+              <span style="flex:1;">Comentário com link <span style="font-weight:400;color:#94a3b8;font-size:11px;">(opcional)</span></span>
+              <span style="font-size:11px;color:#64748b;">▾</span>
+            </summary>
+            <div style="padding:0 14px 14px;">
+              <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:8px 12px;font-size:11.5px;color:#92400e;margin-bottom:12px;line-height:1.5;">
+                ℹ️ A Meta <strong>não permite</strong> postar comentários em lives via API. O app monta o texto pronto e você cola manualmente no Live Producer (1 clique).
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                <div>
+                  <label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px;">Texto</label>
+                  <input type="text" id="liveCtaText" value="🔥 Aproveite essa promoção:" maxlength="200"
+                         oninput="liveUpdateCommentPreview()"
+                         style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 12px;font-size:12px;color:#0f172a;box-sizing:border-box;outline:none;"
+                         onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+                </div>
+                <div>
+                  <label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px;">Link de destino</label>
+                  <input type="url" id="liveCtaUrl" placeholder="https://seusite.com.br/promo"
+                         oninput="liveUpdateCommentPreview()"
+                         style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 12px;font-size:12px;color:#0f172a;box-sizing:border-box;outline:none;"
+                         onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+                </div>
+              </div>
+
+              <!-- Preview do comentário pronto -->
+              <div id="liveCommentPreviewWrap" style="display:none;background:#0f172a;border-radius:10px;padding:12px 14px;margin-top:6px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">
+                  <div style="font-size:10.5px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">📋 Pronto pra colar</div>
+                  <button onclick="liveCopyComment()" id="liveCopyCommentBtn"
+                          style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:0;border-radius:7px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;">
+                    📋 Copiar
+                  </button>
+                </div>
+                <div id="liveCommentPreview" style="color:#e2e8f0;font-size:13px;font-family:ui-monospace,SFMono-Regular,monospace;word-break:break-all;line-height:1.55;"></div>
+                <div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,.1);font-size:10.5px;color:#64748b;line-height:1.5;">
+                  <strong style="color:#94a3b8;">Como usar:</strong> ① Copia ② Vai pro Live Producer ③ Posta no chat da live ④ Toca no comentário e <em>Fixar</em>
+                </div>
+              </div>
+            </div>
+          </details>
+
           <!-- Botões + status -->
           <div style="display:flex;gap:12px;align-items:center;padding-top:6px;">
             <button id="liveStartBtn" onclick="liveStart()"
@@ -24797,6 +24842,33 @@ window.fgLive = (() => {
     i.type = i.type === 'password' ? 'text' : 'password';
   }
 
+  // Comentário manual: monta texto+link e mostra preview com botão copiar.
+  // (API da Meta não permite postar comments em live_media — tem que ser manual.)
+  function updateCommentPreview() {
+    const txt = (document.getElementById('liveCtaText')?.value || '').trim();
+    const url = (document.getElementById('liveCtaUrl')?.value || '').trim();
+    const wrap = document.getElementById('liveCommentPreviewWrap');
+    const out = document.getElementById('liveCommentPreview');
+    if (!wrap || !out) return;
+    if (!txt && !url) { wrap.style.display = 'none'; return; }
+    const sep = (txt && url) ? ' ' : '';
+    out.textContent = `${txt}${sep}${url}`;
+    wrap.style.display = 'block';
+  }
+  function copyComment() {
+    const out = document.getElementById('liveCommentPreview');
+    const btn = document.getElementById('liveCopyCommentBtn');
+    if (!out || !out.textContent) return;
+    navigator.clipboard.writeText(out.textContent).then(() => {
+      if (btn) {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '✓ Copiado!';
+        btn.style.background = 'linear-gradient(135deg,#16a34a,#15803d)';
+        setTimeout(() => { btn.innerHTML = orig; btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)'; }, 1800);
+      }
+    });
+  }
+
   loadConfig();
 
   return {
@@ -24805,6 +24877,7 @@ window.fgLive = (() => {
     start: startStream, stop: stopStream,
     openSettings, closeSettings, testBackend, saveBackend,
     showSetupGuide, closeSetupGuide, copyServerCode, toggleKey, toggleSettingsToken,
+    updateCommentPreview, copyComment,
   };
 })();
 
@@ -24824,6 +24897,8 @@ window.liveCloseSetupGuide = () => window.fgLive.closeSetupGuide();
 window.liveCopyServerCode = () => window.fgLive.copyServerCode();
 window.liveToggleKey = () => window.fgLive.toggleKey();
 window.liveToggleSettingsToken = () => window.fgLive.toggleSettingsToken();
+window.liveUpdateCommentPreview = () => window.fgLive.updateCommentPreview();
+window.liveCopyComment = () => window.fgLive.copyComment();
 
 // Init quando a aba Social abrir
 (function _wireLiveTab() {
