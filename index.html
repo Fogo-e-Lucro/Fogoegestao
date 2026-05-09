@@ -143,7 +143,6 @@
       <button class="app-settings-tab" data-tab="integ" onclick="appSettingsTab('integ')">🔌 Integrações</button>
       <button class="app-settings-tab" data-tab="rec" onclick="appSettingsTab('rec')">🎥 Gravador</button>
       <button class="app-settings-tab pj-admin-only" data-tab="equipe" onclick="appSettingsTab('equipe')">👥 Equipe</button>
-      <button class="app-settings-tab" data-tab="info" onclick="appSettingsTab('info')">ℹ️ Sobre</button>
     </div>
 
     <div class="app-settings-pane" data-pane="apis">
@@ -213,28 +212,6 @@
 
     <div class="app-settings-pane" data-pane="integ" style="display:none;">
       <div class="app-settings-section">
-        <div class="app-settings-row-label">📲 uazapi (WhatsApp) <span class="app-settings-hint">envio e recebimento de mensagens via WhatsApp</span></div>
-        <div class="app-settings-row">
-          <input type="text" class="app-settings-input" id="cfgUazapiUrl" placeholder="https://free.uazapi.com">
-          <button class="app-settings-btn" onclick="appSettingsSave('uazapi_url','cfgUazapiUrl')">Salvar</button>
-        </div>
-        <div class="app-settings-row" style="margin-top:8px;">
-          <input type="text" class="app-settings-input" id="cfgUazapiInstance" placeholder="Instance / token de instância">
-          <button class="app-settings-btn" onclick="appSettingsSave('uazapi_instance','cfgUazapiInstance')">Salvar</button>
-        </div>
-        <div class="app-settings-row" style="margin-top:8px;">
-          <input type="password" class="app-settings-input" id="cfgUazapiToken" placeholder="Admin token (se necessário)">
-          <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('cfgUazapiToken',this)">👁</button>
-          <button class="app-settings-btn" onclick="appSettingsSave('uazapi_token','cfgUazapiToken')">Salvar</button>
-        </div>
-        <div class="app-settings-action-row">
-          <a href="https://uazapi.com" target="_blank" class="app-settings-link">Documentação uazapi →</a>
-          <button class="app-settings-btn-test" onclick="appSettingsTestUazapi()">▶ Testar conexão</button>
-          <span class="app-settings-test-result" id="cfgUazapiResult"></span>
-        </div>
-      </div>
-
-      <div class="app-settings-section">
         <div class="app-settings-row-label">🔁 n8n — Webhook global <span class="app-settings-hint">URL padrão para todos os eventos do app</span></div>
         <div class="app-settings-row">
           <input type="text" class="app-settings-input" id="cfgN8nUrl" placeholder="https://n8n.exemplo.com/webhook/...">
@@ -258,36 +235,6 @@
           <a href="https://console.firebase.google.com/project/calendario-cd198/settings/cloudmessaging" target="_blank" class="app-settings-link">Console FCM →</a>
           <button class="app-settings-btn-test" onclick="pjFcmEnable()">▶ Ativar push neste dispositivo</button>
           <span class="app-settings-test-result" id="cfgFcmResult"></span>
-        </div>
-      </div>
-
-      <div class="app-settings-section">
-        <div class="app-settings-row-label">📥 Fila de comandos (Firestore)</div>
-        <div class="app-settings-info-block">
-          n8n e uazapi escrevem na coleção <code>app_queue</code> do Firestore com <code>processed: false</code>. O app processa em tempo real.<br>
-          <strong>Schema mínimo:</strong> <code>{ module: 'projetos', action: 'create_task', processed: false, ...payload }</code>
-        </div>
-      </div>
-
-      <div class="app-settings-section">
-        <div class="app-settings-row-label">⏰ Resumo diário/semanal por WhatsApp</div>
-        <div class="app-settings-info-block">
-          Para enviar resumos automáticos (8h da manhã ou segunda-feira), configure um <strong>Schedule node</strong> no n8n que escreva na fila <code>app_queue</code>:<br><br>
-          <strong>Fluxo n8n sugerido:</strong><br>
-          1. <code>Schedule Trigger</code> (ex: cron <code>0 8 * * *</code> para diário, <code>0 8 * * 1</code> para semanal)<br>
-          2. <code>Firestore</code> nó: lê <code>pj_members</code> (lista de colaboradores)<br>
-          3. <code>Loop</code>: para cada membro com <code>whatsapp</code> preenchido, escreve em <code>app_queue</code>:<br>
-          <pre class="app-settings-pre">{
-  "module": "system",
-  "action": "send_daily_summary",
-  "uid": "{{$json.uid}}",
-  "phone": "{{$json.whatsapp}}",
-  "processed": false,
-  "createdAt": "{{$now}}"
-}</pre>
-          O app, com alguma aba aberta, lê o comando e envia o WhatsApp via <code>uazapi</code>.<br><br>
-          <strong>Actions suportadas:</strong> <code>send_daily_summary</code>, <code>send_weekly_summary</code>.<br>
-          <strong>Teste manual no console:</strong> <code>appSendDailySummary('UID_AQUI', '5511999999999')</code>
         </div>
       </div>
     </div>
@@ -402,22 +349,6 @@
           • Durante a gravação aparece uma bolinha flutuante <strong>arrastável</strong> + toolbar com <strong>⏸ Pausar</strong> e <strong>⏹ Parar</strong>.<br>
           • <strong>Áudio do sistema</strong> no Chrome só funciona se compartilhar uma <em>aba</em> (não a tela inteira).<br>
           • Arquivo final: <code>.webm</code> (VP9). Aceito por Drive, YouTube, Loom etc.
-        </div>
-      </div>
-    </div>
-
-    <div class="app-settings-pane" data-pane="info" style="display:none;">
-      <div class="app-settings-section">
-        <div class="app-settings-info-block">
-          <strong>⚠️ Sobre segurança:</strong><br>
-          As chaves agora ficam em <code>app_config/secrets</code> (Firestore), não mais no código fonte da página. Isso impede que qualquer visitante anônimo veja as chaves no source-view do navegador.<br><br>
-          <strong>Limitação:</strong> qualquer colaborador autenticado consegue ler as chaves via Firestore (precisam usar Claude/ImgBB no fluxo deles). Para isolamento real, seria necessário um backend proxy.<br><br>
-          <strong>Regras Firestore recomendadas para <code>app_config/secrets</code>:</strong>
-          <pre class="app-settings-pre">match /app_config/{doc} {
-  allow read: if request.auth != null;
-  allow write: if request.auth != null
-    &amp;&amp; request.auth.token.email == 'assessoria@fogoelucro.com.br';
-}</pre>
         </div>
       </div>
     </div>
