@@ -16329,13 +16329,15 @@ function pjAvatarHtml(key) {
 
 // ── Task Quick Create ───────────────────────────────────
 async function pjQuickCreateTask(listId, statusId) {
-  console.log('[pj] pjQuickCreateTask started', { listId, statusId });
+  console.warn('[pj-debug 1] pjQuickCreateTask started', { listId, statusId });
+  if (typeof showToast === 'function') showToast('info','🔍','DEBUG 1: pjQuickCreateTask iniciou (list='+listId+')');
   const list = pjLists.find(l => l.id === listId);
   if (!list) {
-    console.error('[pj] LISTA NÃO ENCONTRADA:', listId, '— pjLists tem:', (pjLists||[]).map(l => ({id:l.id, name:l.name})));
-    if (typeof showToast === 'function') showToast('error','⚠️','Lista não encontrada (id='+listId+'). Recarregue a página.');
+    console.warn('[pj-debug 2] LISTA NÃO ENCONTRADA:', listId, '— pjLists tem:', (pjLists||[]).map(l => ({id:l.id, name:l.name})));
+    if (typeof showToast === 'function') showToast('error','⚠️','DEBUG 2: Lista não encontrada (id='+listId+', total listas='+(pjLists||[]).length+'). Recarregue a página.');
     return;
   }
+  if (typeof showToast === 'function') showToast('info','🔍','DEBUG 3: lista achada: '+list.name);
   // Memoriza pra próximo uso do FAB de qualquer tela
   if (typeof pjSetLastUsedListId === 'function') pjSetLastUsedListId(listId);
   const statuses = list.statuses || PJ_DEFAULT_STATUSES;
@@ -20761,7 +20763,8 @@ function pjSpawnNextRecurrence(t) {
 
 // ── Task Modal ──────────────────────────────────────────
 async function pjOpenTask(taskId) {
-  console.log('[pj] pjOpenTask called', taskId);
+  console.warn('[pj-debug 4] pjOpenTask called', taskId);
+  if (typeof showToast === 'function') showToast('info','🔍','DEBUG 4: pjOpenTask chamado (id='+String(taskId).slice(0,8)+')');
   pjCurrentTaskId = taskId;
   // CRÍTICO: zera comentários da tarefa anterior ANTES de tudo, pra
   // não vazar histórico de uma tarefa pra outra enquanto o snapshot
@@ -20770,12 +20773,13 @@ async function pjOpenTask(taskId) {
   if (typeof appCoEditStart === 'function') appCoEditStart('task:'+taskId);
   const overlay = document.getElementById('pjTaskOverlay');
   if (!overlay) {
-    console.error('[pj] pjTaskOverlay NÃO existe no DOM');
-    if (typeof showToast === 'function') showToast('error','⚠️','Modal não encontrado no DOM. Recarregue a página.');
+    console.warn('[pj-debug 5] pjTaskOverlay NÃO existe no DOM');
+    if (typeof showToast === 'function') showToast('error','⚠️','DEBUG 5: Modal não está no DOM. Recarregue a página.');
     return;
   }
   overlay.classList.add('open');
-  console.log('[pj] modal overlay aberto');
+  if (typeof showToast === 'function') showToast('success','✅','DEBUG 6: Modal aberto');
+  console.warn('[pj-debug 6] modal overlay aberto');
   // Trava scroll do body — evita URL bar do iOS aparecer/sumir e empurrar a bottombar pra fora
   document.body.classList.add('pj-task-open');
   document.getElementById('pjModalLeft').style.opacity = '0.5';
