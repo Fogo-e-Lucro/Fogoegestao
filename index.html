@@ -24528,8 +24528,10 @@ window.addEventListener('load', () => {
 window.fgLive = (() => {
   const STORAGE_KEY = 'fg_live_backend';
   // 🔧 Backend padrão pré-configurado (VPS Hostinger da agência).
-  // O usuário ainda pode sobrescrever em ⚙️ Config (localStorage tem prioridade).
-  const DEFAULT_BACKEND_URL = 'http://89.116.30.126:3000';
+  // HTTPS via Caddy + sslip.io + Let's Encrypt — necessário pra o app
+  // (rodando em https://fogoegestao.com.br) conseguir fazer fetch
+  // sem ser bloqueado por Mixed Content.
+  const DEFAULT_BACKEND_URL = 'https://89-116-30-126.sslip.io';
   const DEFAULT_BACKEND_TOKEN = '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
   let backendUrl = DEFAULT_BACKEND_URL;
   let backendToken = DEFAULT_BACKEND_TOKEN;
