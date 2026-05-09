@@ -1276,97 +1276,70 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
         </div>
       </div><!-- /live-card -->
 
-      <!-- Modal de configuração do backend -->
-      <div class="modal-overlay live-settings-overlay" id="liveSettingsModal" onclick="if(event.target===this)liveCloseSettings()" style="z-index:1001;">
-        <div class="modal-box live-settings-box" style="max-width:620px;">
-          <button class="live-settings-close" onclick="liveCloseSettings()" aria-label="Fechar">✕</button>
+      <!-- Modal de configuração do backend (clean) -->
+      <div id="liveSettingsModal" onclick="if(event.target===this)liveCloseSettings()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:10000;align-items:center;justify-content:center;padding:20px;">
+        <div style="background:#fff;border-radius:18px;width:100%;max-width:480px;max-height:90vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.4);position:relative;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
 
-          <!-- Header com gradient -->
-          <div class="live-settings-header">
-            <div class="live-settings-icon">⚙️</div>
-            <div>
-              <div class="live-settings-title">Conectar VPS de Streaming</div>
-              <div class="live-settings-sub">Aponta o app pra sua VPS rodando o servidor ffmpeg</div>
-            </div>
-          </div>
-
-          <!-- Stepper de status -->
-          <div class="live-settings-steps">
-            <div class="live-settings-step" id="liveStepInstalled">
-              <div class="live-settings-step-num">1</div>
-              <div class="live-settings-step-text">VPS com server.js rodando</div>
-            </div>
-            <div class="live-settings-step-arrow">→</div>
-            <div class="live-settings-step" id="liveStepConfig">
-              <div class="live-settings-step-num">2</div>
-              <div class="live-settings-step-text">Configura aqui</div>
-            </div>
-            <div class="live-settings-step-arrow">→</div>
-            <div class="live-settings-step" id="liveStepReady">
-              <div class="live-settings-step-num">3</div>
-              <div class="live-settings-step-text">Pronto pra streamar</div>
-            </div>
-          </div>
-
-          <!-- Campo URL com explicação detalhada -->
-          <div class="live-field">
-            <div class="live-field-head">
-              <span class="live-field-num">1</span>
+          <!-- Header -->
+          <div style="padding:24px 28px 20px;border-bottom:1px solid #f1f5f9;position:relative;">
+            <button onclick="liveCloseSettings()" style="position:absolute;top:18px;right:18px;width:30px;height:30px;border-radius:50%;background:#f1f5f9;border:0;cursor:pointer;font-size:13px;color:#64748b;display:flex;align-items:center;justify-content:center;transition:all .15s;" onmouseover="this.style.background='#fee2e2';this.style.color='#dc2626'" onmouseout="this.style.background='#f1f5f9';this.style.color='#64748b'">✕</button>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;box-shadow:0 6px 16px rgba(99,102,241,.35);">⚙️</div>
               <div>
-                <div class="live-field-title">🌐 URL do backend</div>
-                <div class="live-field-desc">Endereço da sua VPS Hostinger onde o <code>server.js</code> está rodando. Inclua a porta (padrão <code>3000</code>).</div>
+                <div style="font-size:17px;font-weight:800;color:#0f172a;letter-spacing:-.01em;">Conectar VPS de Streaming</div>
+                <div style="font-size:12.5px;color:#64748b;margin-top:2px;">Configure as credenciais da sua VPS</div>
               </div>
             </div>
-            <input type="text" class="live-input live-input-mono" id="liveBackendUrl" placeholder="http://123.45.67.89:3000">
-            <div class="live-field-examples">
-              <strong>Exemplos válidos:</strong>
-              <div class="live-field-ex"><code>http://123.45.67.89:3000</code> <span class="live-field-ex-tag">IP direto</span></div>
-              <div class="live-field-ex"><code>https://stream.meudominio.com.br</code> <span class="live-field-ex-tag tag-best">com domínio + SSL</span></div>
-              <div class="live-field-ex"><code>http://meu-vps.local:3000</code> <span class="live-field-ex-tag">rede local</span></div>
-            </div>
-            <div class="live-field-tip">💡 <strong>Não sabe seu IP?</strong> Painel Hostinger → VPS → "Detalhes" → IP de acesso. Geralmente algo como <code>147.93.xxx.xxx</code>.</div>
           </div>
 
-          <!-- Campo Token com explicação -->
-          <div class="live-field">
-            <div class="live-field-head">
-              <span class="live-field-num">2</span>
-              <div>
-                <div class="live-field-title">🔐 Token de autenticação</div>
-                <div class="live-field-desc">Senha secreta que você definiu no comando <code>LIVE_TOKEN=...</code> ao subir o servidor. Protege seu backend de uso indevido.</div>
+          <!-- Body -->
+          <div style="padding:22px 28px;">
+
+            <!-- URL -->
+            <div style="margin-bottom:18px;">
+              <label style="display:block;font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">URL do backend</label>
+              <input type="text" id="liveBackendUrl" placeholder="http://89.116.30.126:3000"
+                     style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 14px;font-size:13px;color:#0f172a;font-family:ui-monospace,SFMono-Regular,monospace;box-sizing:border-box;outline:none;transition:border-color .15s;"
+                     onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+              <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Endereço da VPS com a porta. Ex: <code style="background:#f1f5f9;padding:1px 5px;border-radius:3px;">http://89.116.30.126:3000</code></div>
+            </div>
+
+            <!-- Token -->
+            <div style="margin-bottom:18px;">
+              <label style="display:block;font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">Token</label>
+              <div style="position:relative;">
+                <input type="password" id="liveBackendToken" placeholder="Cole o token gerado"
+                       autocomplete="off"
+                       style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 44px 12px 14px;font-size:13px;color:#0f172a;font-family:ui-monospace,SFMono-Regular,monospace;box-sizing:border-box;outline:none;transition:border-color .15s;"
+                       onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+                <button type="button" onclick="liveToggleSettingsToken()" title="Mostrar/ocultar"
+                        style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#fff;border:1px solid #e2e8f0;border-radius:7px;padding:5px 9px;font-size:13px;cursor:pointer;color:#64748b;transition:all .15s;"
+                        onmouseover="this.style.borderColor='#6366f1';this.style.color='#6366f1'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">👁</button>
               </div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Senha secreta que protege o backend.</div>
             </div>
-            <div style="position:relative;">
-              <input type="password" class="live-input live-input-mono" id="liveBackendToken" placeholder="Cole o token que você definiu no PM2" autocomplete="off">
-              <button type="button" class="live-input-eye" onclick="liveToggleSettingsToken()" title="Mostrar/ocultar">👁</button>
-            </div>
-            <div class="live-field-tip">
-              💡 <strong>Esqueceu o token?</strong> Conecta SSH e roda: <code>pm2 env fg-live | grep LIVE_TOKEN</code><br>
-              ⚠️ <strong>Token novo?</strong> Pra trocar: <code>pm2 set fg-live:LIVE_TOKEN "novo-token-32-chars"</code> e <code>pm2 restart fg-live</code>
-            </div>
+
+            <!-- Resultado do teste -->
+            <div id="liveTestResult" style="font-size:12.5px;line-height:1.5;min-height:0;"></div>
+
           </div>
 
-          <!-- Resultado do teste -->
-          <div id="liveTestResult" class="live-test-result"></div>
-
-          <!-- Ações -->
-          <div class="live-settings-actions">
-            <button class="live-btn-test" onclick="liveTestBackend()">
-              <span style="font-size:14px;">▶</span> Testar conexão
+          <!-- Actions -->
+          <div style="display:flex;gap:10px;align-items:center;padding:16px 28px;background:#f8fafc;border-top:1px solid #f1f5f9;border-radius:0 0 18px 18px;">
+            <button onclick="liveTestBackend()"
+                    style="background:rgba(99,102,241,.1);color:#6366f1;border:1.5px solid rgba(99,102,241,.3);border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;"
+                    onmouseover="this.style.background='rgba(99,102,241,.18)'" onmouseout="this.style.background='rgba(99,102,241,.1)'">
+              ▶ Testar
             </button>
             <div style="flex:1;"></div>
-            <button class="live-btn-cancel" onclick="liveCloseSettings()">Cancelar</button>
-            <button class="live-btn-save" onclick="liveSaveBackend()">💾 Salvar</button>
-          </div>
-
-          <!-- CTA pro guia -->
-          <div class="live-settings-help">
-            <div class="live-settings-help-icon">📖</div>
-            <div style="flex:1;">
-              <div style="font-weight:700;color:var(--text1);font-size:13px;margin-bottom:2px;">Primeira vez? Veja o guia completo</div>
-              <div style="font-size:11.5px;color:var(--text2);line-height:1.5;">Passo-a-passo pra instalar Node, ffmpeg e PM2 na VPS Hostinger. ~5 minutos.</div>
-            </div>
-            <button class="live-btn-guide" onclick="liveShowSetupGuide()">Ver guia →</button>
+            <button onclick="liveCloseSettings()"
+                    style="background:#fff;color:#64748b;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;"
+                    onmouseover="this.style.borderColor='#94a3b8'" onmouseout="this.style.borderColor='#e2e8f0'">Cancelar</button>
+            <button onclick="liveSaveBackend()"
+                    style="background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;border:0;border-radius:9px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(99,102,241,.3);transition:all .12s;"
+                    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 18px rgba(99,102,241,.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 12px rgba(99,102,241,.3)'">
+              💾 Salvar
+            </button>
           </div>
         </div>
       </div>
@@ -24796,41 +24769,33 @@ window.fgLive = (() => {
   function openSettings() {
     document.getElementById('liveBackendUrl').value = backendUrl;
     document.getElementById('liveBackendToken').value = backendToken;
-    document.getElementById('liveSettingsModal').classList.add('open');
     document.getElementById('liveSettingsModal').style.display = 'flex';
-    _updateStepperState();
-    // Atualiza stepper conforme digita
-    ['liveBackendUrl','liveBackendToken'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el && !el._wiredStepper) {
-        el._wiredStepper = true;
-        el.addEventListener('input', _updateStepperState);
-      }
-    });
   }
   function closeSettings() {
-    document.getElementById('liveSettingsModal').classList.remove('open');
     document.getElementById('liveSettingsModal').style.display = 'none';
-    document.getElementById('liveTestResult').textContent = '';
+    document.getElementById('liveTestResult').innerHTML = '';
   }
   async function testBackend() {
     const url = document.getElementById('liveBackendUrl').value.trim().replace(/\/$/, '');
     const tok = document.getElementById('liveBackendToken').value.trim();
     const res = document.getElementById('liveTestResult');
-    res.innerHTML = '⏳ Testando…';
+    if (!url || !tok) {
+      res.innerHTML = '<div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:9px 12px;color:#92400e;margin-top:6px;">⚠️ Preencha URL e Token antes de testar.</div>';
+      return;
+    }
+    res.innerHTML = '<div style="background:#f1f5f9;border-radius:8px;padding:9px 12px;color:#475569;margin-top:6px;">⏳ Testando…</div>';
     try {
       const r = await fetch(url + '/health');
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const d = await r.json();
-      // Testa também auth
       const r2 = await fetch(url + '/streams', { headers:{ Authorization:'Bearer '+tok }});
       if (!r2.ok) {
         if (r2.status === 401) throw new Error('Token inválido');
         throw new Error('HTTP ' + r2.status);
       }
-      res.innerHTML = `<span style="color:#16a34a;">✅ Conectado · ${d.active||0} lives ativas</span>`;
+      res.innerHTML = `<div style="background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:10px 12px;color:#15803d;font-weight:600;margin-top:6px;">✅ Conectado · ${d.active||0} live${(d.active||0)!==1?'s':''} ativa${(d.active||0)!==1?'s':''}</div>`;
     } catch(e) {
-      res.innerHTML = `<span style="color:#dc2626;">❌ ${e.message}</span>`;
+      res.innerHTML = `<div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:10px 12px;color:#b91c1c;margin-top:6px;"><strong>❌ Falha</strong><br><span style="font-size:11.5px;font-family:ui-monospace,monospace;">${e.message}</span></div>`;
     }
   }
   function saveBackend() {
@@ -24860,18 +24825,6 @@ window.fgLive = (() => {
   function toggleSettingsToken() {
     const i = document.getElementById('liveBackendToken');
     i.type = i.type === 'password' ? 'text' : 'password';
-  }
-  function _updateStepperState() {
-    const url = document.getElementById('liveBackendUrl')?.value?.trim();
-    const tok = document.getElementById('liveBackendToken')?.value?.trim();
-    const stepConfig = document.getElementById('liveStepConfig');
-    const stepReady = document.getElementById('liveStepReady');
-    const stepInstalled = document.getElementById('liveStepInstalled');
-    if (!stepConfig || !stepReady || !stepInstalled) return;
-    stepInstalled.classList.add('live-step-done');
-    stepConfig.classList.toggle('live-step-active', !!(url || tok));
-    stepConfig.classList.toggle('live-step-done', !!(url && tok));
-    stepReady.classList.toggle('live-step-active', !!(url && tok));
   }
 
   // Popula select de contas IG (reusa o do Publipost)
