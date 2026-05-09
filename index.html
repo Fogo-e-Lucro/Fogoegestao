@@ -24547,7 +24547,15 @@ window.fgLive = (() => {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const c = JSON.parse(raw);
-        // Só sobrescreve o default se o user salvou algo de fato
+        // 🔧 Migração: se o user tem URL antiga (HTTP, IP direto), descarta
+        // e usa o default HTTPS (necessário pra evitar Mixed Content em
+        // https://fogoegestao.com.br). Acontece 1x; depois usa o que ele salvar.
+        const isOldHttpUrl = c.url && /^http:\/\/89\.116\.30\.126/i.test(c.url);
+        if (isOldHttpUrl) {
+          // Limpa o localStorage antigo e mantém os defaults novos
+          localStorage.removeItem(STORAGE_KEY);
+          return;
+        }
         if (c.url) backendUrl = c.url;
         if (c.token) backendToken = c.token;
       }
