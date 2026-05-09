@@ -24508,8 +24508,12 @@ window.addEventListener('load', () => {
    ───────────────────────────────────────────────────────────── */
 window.fgLive = (() => {
   const STORAGE_KEY = 'fg_live_backend';
-  let backendUrl = '';
-  let backendToken = '';
+  // 🔧 Backend padrão pré-configurado (VPS Hostinger da agência).
+  // O usuário ainda pode sobrescrever em ⚙️ Config (localStorage tem prioridade).
+  const DEFAULT_BACKEND_URL = 'http://89.116.30.126:3000';
+  const DEFAULT_BACKEND_TOKEN = '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
+  let backendUrl = DEFAULT_BACKEND_URL;
+  let backendToken = DEFAULT_BACKEND_TOKEN;
   let currentType = 'image';
   let mediaFile = null;          // File local (pré upload)
   let audioFile = null;
@@ -24522,8 +24526,9 @@ window.fgLive = (() => {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const c = JSON.parse(raw);
-        backendUrl = c.url || '';
-        backendToken = c.token || '';
+        // Só sobrescreve o default se o user salvou algo de fato
+        if (c.url) backendUrl = c.url;
+        if (c.token) backendToken = c.token;
       }
     } catch(_){}
   }
