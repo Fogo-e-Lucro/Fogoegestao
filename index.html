@@ -2136,9 +2136,29 @@ ufw allow 3000/tcp</pre>
           <textarea class="pj-modal-title-input" id="pjModalTitle" placeholder="Nome da tarefa..." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';pjModalTitleChanged()"></textarea>
           <div class="app-coedit-badge-wrap" id="appCoEditBadgeWrap"></div>
           <div class="pj-modal-meta" id="pjModalMeta"></div>
-          <div class="pj-desc-wrap">
-            <button type="button" class="pj-desc-preview-btn" id="pjModalDescPreviewBtn" onclick="pjToggleDescPreview()">👁 Preview</button>
-            <textarea class="pj-modal-desc" id="pjModalDesc" placeholder="Adicione uma descrição... (suporta **negrito**, *itálico*, `código`, [link](url), # título, - lista, @menção)" oninput="pjModalDescChanged()" ondragover="pjDescDragOver(event)" ondragleave="pjDescDragLeave(event)" ondrop="pjDescDrop(event)"></textarea>
+          <div class="pj-desc-wrap" style="position:relative;">
+            <!-- Toolbar de formatação -->
+            <div class="pj-desc-toolbar" id="pjDescToolbar" style="display:flex;flex-wrap:wrap;align-items:center;gap:1px;padding:6px 8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px 10px 0 0;border-bottom:0;">
+              <button type="button" onclick="pjDescFormat('bold')" title="Negrito (Cmd/Ctrl+B)" class="pj-desc-tb-btn" style="background:transparent;border:0;padding:5px 9px;border-radius:5px;cursor:pointer;font-weight:800;color:#0f172a;font-size:13px;line-height:1;min-width:28px;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">B</button>
+              <button type="button" onclick="pjDescFormat('italic')" title="Itálico (Cmd/Ctrl+I)" class="pj-desc-tb-btn" style="background:transparent;border:0;padding:5px 9px;border-radius:5px;cursor:pointer;font-style:italic;color:#0f172a;font-size:13px;line-height:1;min-width:28px;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">I</button>
+              <button type="button" onclick="pjDescFormat('strike')" title="Riscado" class="pj-desc-tb-btn" style="background:transparent;border:0;padding:5px 9px;border-radius:5px;cursor:pointer;text-decoration:line-through;color:#0f172a;font-size:13px;line-height:1;min-width:28px;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">S</button>
+              <button type="button" onclick="pjDescFormat('code')" title="Código" class="pj-desc-tb-btn" style="background:transparent;border:0;padding:5px 9px;border-radius:5px;cursor:pointer;color:#0f172a;font-size:11px;font-family:ui-monospace,monospace;line-height:1;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">&lt;/&gt;</button>
+              <span style="width:1px;height:18px;background:#cbd5e1;margin:0 4px;"></span>
+              <button type="button" onclick="pjDescFormat('h1')" title="Título" class="pj-desc-tb-btn" style="background:transparent;border:0;padding:5px 9px;border-radius:5px;cursor:pointer;font-weight:700;color:#0f172a;font-size:12px;line-height:1;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">H</button>
+              <button type="button" onclick="pjDescFormat('list')" title="Lista" class="pj-desc-tb-btn" style="background:transparent;border:0;padding:5px 9px;border-radius:5px;cursor:pointer;color:#0f172a;font-size:12px;line-height:1;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">• Lista</button>
+              <button type="button" onclick="pjDescFormat('numList')" title="Lista numerada" class="pj-desc-tb-btn" style="background:transparent;border:0;padding:5px 9px;border-radius:5px;cursor:pointer;color:#0f172a;font-size:12px;line-height:1;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">1. Num</button>
+              <button type="button" onclick="pjDescFormat('quote')" title="Citação" class="pj-desc-tb-btn" style="background:transparent;border:0;padding:5px 9px;border-radius:5px;cursor:pointer;color:#0f172a;font-size:13px;line-height:1;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">❝</button>
+              <span style="width:1px;height:18px;background:#cbd5e1;margin:0 4px;"></span>
+              <button type="button" onclick="pjDescFormat('link')" title="Link (Cmd/Ctrl+K)" class="pj-desc-tb-btn" style="background:transparent;border:0;padding:5px 9px;border-radius:5px;cursor:pointer;color:#0f172a;font-size:13px;line-height:1;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">🔗</button>
+              <button type="button" onclick="pjDescInsertImage()" title="Inserir imagem" class="pj-desc-tb-btn" style="background:transparent;border:0;padding:5px 9px;border-radius:5px;cursor:pointer;color:#0f172a;font-size:13px;line-height:1;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">📷</button>
+              <input type="file" id="pjDescImgInput" style="display:none" accept="image/*" onchange="pjDescImgChosen(event)">
+              <span style="flex:1;"></span>
+              <button type="button" onclick="pjDescCopyText()" title="Copiar texto" class="pj-desc-tb-btn" style="background:transparent;border:0;padding:5px 9px;border-radius:5px;cursor:pointer;color:#0f172a;font-size:11.5px;line-height:1;font-weight:600;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">📋 Copiar</button>
+              <button type="button" onclick="pjDescCopyHtml()" title="Copiar como HTML (cola formatado em Word/Canva/Gmail)" class="pj-desc-tb-btn" style="background:transparent;border:0;padding:5px 9px;border-radius:5px;cursor:pointer;color:#0f172a;font-size:11.5px;line-height:1;font-weight:600;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">📋 HTML</button>
+              <button type="button" onclick="pjDescExpand()" title="Expandir tela cheia (Esc fecha)" class="pj-desc-tb-btn" style="background:transparent;border:0;padding:5px 9px;border-radius:5px;cursor:pointer;color:#0f172a;font-size:14px;line-height:1;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">⛶</button>
+              <button type="button" class="pj-desc-preview-btn" id="pjModalDescPreviewBtn" onclick="pjToggleDescPreview()" style="background:#0f172a;color:#fff;border:0;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11.5px;font-weight:700;margin-left:4px;">👁 Preview</button>
+            </div>
+            <textarea class="pj-modal-desc pj-modal-desc-tb" id="pjModalDesc" placeholder="Adicione uma descrição... (use a toolbar acima ou markdown manual: **negrito**, *itálico*, `código`, [link](url), # título, - lista, @menção)" oninput="pjModalDescChanged()" ondragover="pjDescDragOver(event)" ondragleave="pjDescDragLeave(event)" ondrop="pjDescDrop(event)" onkeydown="pjDescKeyDown(event)" style="border-top-left-radius:0;border-top-right-radius:0;min-height:160px;"></textarea>
             <div class="pj-modal-desc-preview pj-md" id="pjModalDescPreview" style="display:none;"></div>
           </div>
           <div id="pjModalCustomFields"></div>
@@ -21595,6 +21615,198 @@ async function pjDescDrop(ev) {
   await pjSendComment();
   if (typeof showToast === 'function') showToast('📎 Anexo enviado como comentário.', 'info');
 }
+
+/* ═══════════════════════════════════════════════════════════
+   📝 Toolbar de formatação da descrição da tarefa (Projetos)
+   - Operações de markdown na seleção atual
+   - Upload de imagem inline via ImgBB
+   - Copiar texto / HTML formatado
+   - Expandir em modo tela cheia
+   ═══════════════════════════════════════════════════════════ */
+
+function _pjDescTextarea() { return document.getElementById('pjModalDesc'); }
+
+// Envolve a seleção com prefixo/sufixo OU adiciona prefixo no início da linha atual
+function _pjDescWrap(prefix, suffix, options) {
+  const ta = _pjDescTextarea();
+  if (!ta) return;
+  options = options || {};
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const value = ta.value;
+  const sel = value.substring(start, end);
+  let newText, cursorPos;
+  if (options.linePrefix) {
+    // Prefixo de linha (lista, título, citação) — adiciona no início da linha atual ou de cada linha selecionada
+    const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+    if (sel.includes('\n')) {
+      const block = value.substring(lineStart, end);
+      const transformed = block.split('\n').map(l => l ? prefix + l : l).join('\n');
+      newText = value.substring(0, lineStart) + transformed + value.substring(end);
+      cursorPos = lineStart + transformed.length;
+    } else {
+      const before = value.substring(0, lineStart);
+      const lineEnd = value.indexOf('\n', start);
+      const restLine = lineEnd === -1 ? value.substring(lineStart) : value.substring(lineStart, lineEnd);
+      const after = lineEnd === -1 ? '' : value.substring(lineEnd);
+      newText = before + prefix + restLine + after;
+      cursorPos = before.length + prefix.length + restLine.length;
+    }
+  } else {
+    // Envolve seleção (negrito, itálico, código, link)
+    const placeholder = options.placeholder || '';
+    const inner = sel || placeholder;
+    newText = value.substring(0, start) + prefix + inner + suffix + value.substring(end);
+    cursorPos = sel ? start + prefix.length + sel.length + suffix.length : start + prefix.length + placeholder.length;
+  }
+  ta.value = newText;
+  ta.focus();
+  if (sel) ta.setSelectionRange(start + prefix.length, start + prefix.length + sel.length);
+  else if (options.placeholder) ta.setSelectionRange(start + prefix.length, start + prefix.length + options.placeholder.length);
+  else ta.setSelectionRange(cursorPos, cursorPos);
+  if (typeof pjModalDescChanged === 'function') pjModalDescChanged();
+}
+
+window.pjDescFormat = function(type) {
+  switch (type) {
+    case 'bold':    return _pjDescWrap('**', '**', { placeholder: 'texto em negrito' });
+    case 'italic':  return _pjDescWrap('*', '*', { placeholder: 'texto em itálico' });
+    case 'strike':  return _pjDescWrap('~~', '~~', { placeholder: 'texto riscado' });
+    case 'code':    return _pjDescWrap('`', '`', { placeholder: 'código' });
+    case 'h1':      return _pjDescWrap('## ', '', { linePrefix: true });
+    case 'list':    return _pjDescWrap('- ', '', { linePrefix: true });
+    case 'numList': return _pjDescWrap('1. ', '', { linePrefix: true });
+    case 'quote':   return _pjDescWrap('> ', '', { linePrefix: true });
+    case 'link': {
+      const ta = _pjDescTextarea(); if (!ta) return;
+      const sel = ta.value.substring(ta.selectionStart, ta.selectionEnd);
+      const url = prompt('URL do link:', 'https://');
+      if (!url) return;
+      _pjDescWrap('[', '](' + url + ')', { placeholder: sel || 'texto do link' });
+      return;
+    }
+  }
+};
+
+window.pjDescInsertImage = function() {
+  const inp = document.getElementById('pjDescImgInput');
+  if (inp) inp.click();
+};
+
+window.pjDescImgChosen = async function(ev) {
+  const file = ev.target.files[0];
+  ev.target.value = '';
+  if (!file) return;
+  const ta = _pjDescTextarea();
+  if (!ta) return;
+  if (typeof getSpImgbbKey !== 'function' || !getSpImgbbKey()) {
+    if (typeof showToast === 'function') showToast('warn','⚠️','Configure a chave ImgBB em Configurações pra anexar imagens.');
+    return;
+  }
+  // Insere placeholder enquanto faz upload
+  const start = ta.selectionStart;
+  const placeholder = '![' + file.name.replace(/\.[^.]+$/,'') + '](enviando...)';
+  ta.value = ta.value.substring(0,start) + placeholder + ta.value.substring(start);
+  ta.setSelectionRange(start, start + placeholder.length);
+  if (typeof pjModalDescChanged === 'function') pjModalDescChanged();
+  try {
+    const url = await uploadImage(file);
+    const final = '![' + file.name.replace(/\.[^.]+$/,'') + '](' + url + ')';
+    ta.value = ta.value.replace(placeholder, final);
+    ta.setSelectionRange(start + final.length, start + final.length);
+    if (typeof pjModalDescChanged === 'function') pjModalDescChanged();
+    if (typeof showToast === 'function') showToast('success','✅','Imagem inserida.');
+  } catch(e) {
+    ta.value = ta.value.replace(placeholder, '');
+    if (typeof showToast === 'function') showToast('error','❌','Falha no upload: ' + (e?.message || 'erro'));
+  }
+};
+
+window.pjDescCopyText = function() {
+  const ta = _pjDescTextarea();
+  if (!ta) return;
+  navigator.clipboard.writeText(ta.value || '').then(() => {
+    if (typeof showToast === 'function') showToast('success','📋','Texto copiado!');
+  });
+};
+
+window.pjDescCopyHtml = function() {
+  const ta = _pjDescTextarea();
+  if (!ta) return;
+  // Renderiza markdown → HTML usando o mesmo render do preview se disponível
+  let html = '';
+  try {
+    if (typeof pjMd === 'function') html = pjMd(ta.value || '');
+    else html = (ta.value || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  } catch(_) {
+    html = (ta.value || '').replace(/\n/g,'<br>');
+  }
+  // Copia como HTML usando ClipboardItem (cola formatado em Word/Canva/Gmail)
+  if (window.ClipboardItem && navigator.clipboard.write) {
+    const blob = new Blob([html], { type: 'text/html' });
+    const blobTxt = new Blob([ta.value || ''], { type: 'text/plain' });
+    navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': blobTxt })]).then(() => {
+      if (typeof showToast === 'function') showToast('success','📋','HTML copiado! Cola em Word/Canva/Gmail formatado.');
+    }).catch(() => {
+      navigator.clipboard.writeText(html);
+      if (typeof showToast === 'function') showToast('success','📋','HTML copiado (como texto).');
+    });
+  } else {
+    navigator.clipboard.writeText(html);
+    if (typeof showToast === 'function') showToast('success','📋','HTML copiado.');
+  }
+};
+
+window.pjDescExpand = function() {
+  const ta = _pjDescTextarea();
+  if (!ta) return;
+  // Modal full-screen com textarea grande
+  let ov = document.getElementById('pjDescExpandOv');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'pjDescExpandOv';
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML = `
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;" onclick="if(event.target===this)pjDescExpandClose()">
+      <div style="background:#fff;border-radius:14px;width:100%;max-width:900px;height:88vh;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.4);overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid #f1f5f9;">
+          <div style="font-weight:800;color:#0f172a;font-size:14px;">📝 Editor de descrição em tela cheia</div>
+          <div style="flex:1;"></div>
+          <span style="font-size:11px;color:#94a3b8;">Esc fecha • Cmd/Ctrl+B/I/K atalhos</span>
+          <button onclick="pjDescExpandClose()" style="background:#f1f5f9;border:0;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;color:#0f172a;cursor:pointer;">✕ Fechar</button>
+        </div>
+        <textarea id="pjDescExpandTa" style="flex:1;border:0;padding:24px 28px;font-size:14px;line-height:1.65;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;outline:none;resize:none;color:#0f172a;background:#fff;">${(ta.value||'').replace(/</g,'&lt;')}</textarea>
+      </div>
+    </div>
+  `;
+  const exTa = document.getElementById('pjDescExpandTa');
+  if (exTa) {
+    exTa.focus();
+    // Sincroniza ao digitar
+    exTa.addEventListener('input', () => {
+      ta.value = exTa.value;
+      if (typeof pjModalDescChanged === 'function') pjModalDescChanged();
+    });
+    exTa.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') pjDescExpandClose();
+    });
+  }
+};
+window.pjDescExpandClose = function() {
+  const ov = document.getElementById('pjDescExpandOv');
+  if (ov) ov.remove();
+  const ta = _pjDescTextarea();
+  if (ta) ta.focus();
+};
+
+// Atalhos de teclado: Cmd/Ctrl+B (negrito), +I (itálico), +K (link)
+window.pjDescKeyDown = function(e) {
+  if (!e.metaKey && !e.ctrlKey) return;
+  const key = (e.key || '').toLowerCase();
+  if (key === 'b') { e.preventDefault(); pjDescFormat('bold'); }
+  else if (key === 'i') { e.preventDefault(); pjDescFormat('italic'); }
+  else if (key === 'k') { e.preventDefault(); pjDescFormat('link'); }
+};
 
 function pjCloseTaskModal() {
   if (typeof appCoEditStop === 'function') appCoEditStop();
