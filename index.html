@@ -1244,35 +1244,6 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             </div>
           </div>
 
-          <!-- Comentário fixado com link (opcional) -->
-          <details style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:18px;">
-            <summary style="padding:12px 14px;cursor:pointer;font-size:13px;font-weight:700;color:#0f172a;display:flex;align-items:center;gap:10px;list-style:none;">
-              <span style="width:28px;height:28px;border-radius:8px;background:rgba(34,197,94,.12);display:flex;align-items:center;justify-content:center;font-size:14px;">🔗</span>
-              <span style="flex:1;">Comentário fixado com link <span style="font-weight:400;color:#94a3b8;font-size:11px;">(opcional)</span></span>
-              <span style="font-size:11px;color:#64748b;">▾</span>
-            </summary>
-            <div style="padding:0 14px 14px;">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-                <div>
-                  <label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px;">Link de destino</label>
-                  <input type="url" id="liveCtaUrl" placeholder="https://seusite.com.br/promo"
-                         style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 12px;font-size:12px;color:#0f172a;box-sizing:border-box;outline:none;"
-                         onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-                <div>
-                  <label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px;">Texto</label>
-                  <input type="text" id="liveCtaText" value="🔥 Aproveite essa promoção: " maxlength="200"
-                         style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 12px;font-size:12px;color:#0f172a;box-sizing:border-box;outline:none;"
-                         onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-              </div>
-              <label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px;">Conta IG</label>
-              <select id="liveIgAccount" style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 12px;font-size:12px;color:#0f172a;box-sizing:border-box;outline:none;cursor:pointer;">
-                <option value="">— Sem comentário automático —</option>
-              </select>
-            </div>
-          </details>
-
           <!-- Botões + status -->
           <div style="display:flex;gap:12px;align-items:center;padding-top:6px;">
             <button id="liveStartBtn" onclick="liveStart()"
@@ -24685,9 +24656,6 @@ window.fgLive = (() => {
     const rtmpUrl = document.getElementById('liveRtmpUrl').value.trim();
     const streamKey = document.getElementById('liveStreamKey').value.trim();
     const loop = document.getElementById('liveLoop').checked;
-    const ctaUrl = document.getElementById('liveCtaUrl').value.trim();
-    const ctaText = document.getElementById('liveCtaText').value.trim();
-    const igAccount = document.getElementById('liveIgAccount').value;
 
     if (!mediaFile && !uploadedMediaPath) { showToast('error','⚠️','Faça upload da mídia primeiro.'); return; }
     if (!rtmpUrl || !streamKey) { showToast('error','⚠️','Preencha URL e Stream Key.'); return; }
@@ -24740,12 +24708,6 @@ window.fgLive = (() => {
       }, 5000);
       activeStreams.set(r.id, { intervalId: intId });
 
-      // 4. (Opcional) Comentário fixado com link
-      if (ctaUrl && igAccount && ctaText) {
-        status.innerHTML += ' · 🔗 enviando comentário…';
-        setTimeout(() => liveTryPinComment(igAccount, `${ctaText}${ctaUrl}`), 8000);
-      }
-
       showToast('success','🔴','Live iniciada!');
     } catch(e) {
       btn.disabled = false; btn.innerHTML = '🔴 Iniciar live';
@@ -24772,32 +24734,6 @@ window.fgLive = (() => {
     } catch(e) {
       showToast('error','❌','Erro: ' + e.message);
     }
-  }
-
-  // Posta comentário no live_media ativo do IG e fixa
-  async function tryPinComment(igUserId, message) {
-    try {
-      if (typeof spIgToken !== 'function' && typeof getSpToken !== 'function') return;
-      const token = (typeof getSpToken === 'function') ? getSpToken() : null;
-      if (!token) return;
-      // Busca live ativa
-      const r = await fetch(`https://graph.facebook.com/v25.0/${igUserId}/live_media?access_token=${token}`);
-      const d = await r.json();
-      const live = (d.data||[])[0];
-      if (!live) return; // ainda não entrou no ar
-      // Posta comentário
-      const cf = new FormData();
-      cf.append('message', message);
-      cf.append('access_token', token);
-      const cr = await fetch(`https://graph.facebook.com/v25.0/${live.id}/comments`, { method:'POST', body: cf });
-      const cd = await cr.json();
-      if (cd.id) {
-        // Fixa
-        const pf = new FormData();
-        pf.append('access_token', token);
-        await fetch(`https://graph.facebook.com/v25.0/${cd.id}/?pinned=true`, { method:'POST', body: pf });
-      }
-    } catch(e) { console.warn('[live] pin comment failed:', e); }
   }
 
   function openSettings() {
@@ -24861,24 +24797,14 @@ window.fgLive = (() => {
     i.type = i.type === 'password' ? 'text' : 'password';
   }
 
-  // Popula select de contas IG (reusa o do Publipost)
-  function refreshIgAccounts() {
-    const sel = document.getElementById('liveIgAccount');
-    if (!sel) return;
-    const accounts = (typeof spAccounts !== 'undefined' && Array.isArray(spAccounts)) ? spAccounts : [];
-    sel.innerHTML = '<option value="">— Sem comentário automático —</option>' +
-      accounts.filter(a => a.igId).map(a => `<option value="${a.igId}">${escHtml ? escHtml(a.igUsername||a.name||a.igId) : (a.igUsername||a.name||a.igId)}</option>`).join('');
-  }
-
   loadConfig();
 
   return {
-    init: () => { loadConfig(); checkHealth(); refreshIgAccounts(); },
+    init: () => { loadConfig(); checkHealth(); },
     setType, handleFile, handleAudio, removeMedia,
     start: startStream, stop: stopStream,
     openSettings, closeSettings, testBackend, saveBackend,
     showSetupGuide, closeSetupGuide, copyServerCode, toggleKey, toggleSettingsToken,
-    tryPinComment,
   };
 })();
 
@@ -24898,7 +24824,6 @@ window.liveCloseSetupGuide = () => window.fgLive.closeSetupGuide();
 window.liveCopyServerCode = () => window.fgLive.copyServerCode();
 window.liveToggleKey = () => window.fgLive.toggleKey();
 window.liveToggleSettingsToken = () => window.fgLive.toggleSettingsToken();
-window.liveTryPinComment = (id, msg) => window.fgLive.tryPinComment(id, msg);
 
 // Init quando a aba Social abrir
 (function _wireLiveTab() {
