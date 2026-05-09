@@ -16353,14 +16353,20 @@ async function pjQuickCreateTask(listId, statusId) {
   // Som NÃO toca aqui (você está criando a tarefa).
   // Toca apenas quando outra pessoa marcar você → ver pjMaybeNotifyAssignment
 
-  // Tenta sincronizar com Firestore (silencioso em modo demo/offline)
+  // ABRE O MODAL IMEDIATAMENTE — não espera Firestore. Se o sync demorar
+  // (rede lenta, regra Firestore bloqueando, etc), o user já vê o editor
+  // pra preencher enquanto o doc é criado em background.
+  try { pjOpenTask(id); } catch(e) { console.warn('[pj] pjOpenTask falhou:', e); }
+
+  // Sincroniza com Firestore em background (silencioso em modo demo/offline)
   try {
     const fsTask = { ...localTask, createdAt:pjNow(), updatedAt:pjNow() };
     delete fsTask.id;
     await pjC('pj_tasks').doc(id).set(fsTask);
-  } catch(err){}
-  pjFireWebhook('task.created', pjTaskPayload(localTask));
-  pjOpenTask(id);
+  } catch(err){
+    console.warn('[pj] sync Firestore falhou (tarefa local fica disponível):', err);
+  }
+  try { pjFireWebhook('task.created', pjTaskPayload(localTask)); } catch(_){}
 }
 
 // ── Som de notificação para menções/atribuições ───────
