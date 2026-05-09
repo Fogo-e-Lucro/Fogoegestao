@@ -23,6 +23,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
   <script>window.fbAsyncInit = function() {
     FB.init({ appId: '1972040954188233', cookie: true, xfbml: false, version: 'v25.0' });
     // Suprime erros de console do FB SDK quando rodando em HTTP (não HTTPS)
@@ -21197,34 +21198,56 @@ async function pjTaskAttachFileChosen(ev) {
   for (const f of files) await pjAddTaskAttachment(f);
 }
 
+// Sobe arquivo pro Firebase Storage e devolve URL pública.
+// Sem limite de tamanho aplicado (free tier de 5GB total no plano Spark).
+async function pjUploadToStorage(file, pathPrefix) {
+  if (typeof firebase === 'undefined' || !firebase.storage) {
+    throw new Error('Firebase Storage não inicializado');
+  }
+  const safeName = (file.name || 'file').replace(/[^\w.\-]/g, '_');
+  const ts = Date.now();
+  const rand = Math.random().toString(36).slice(2, 8);
+  const path = `${pathPrefix}/${ts}_${rand}_${safeName}`;
+  const ref = firebase.storage().ref().child(path);
+  const snap = await ref.put(file, { contentType: file.type || 'application/octet-stream' });
+  return await snap.ref.getDownloadURL();
+}
+
 async function pjAddTaskAttachment(file) {
   if (!pjCurrentTaskId) return;
   const isImg = (file.type||'').startsWith('image/');
-  const maxSize = isImg ? 10*1024*1024 : 900*1024;
-  if (file.size > maxSize) {
-    const lim = isImg ? '10MB' : '900KB';
-    if (typeof showToast === 'function') showToast('warn','⚠️',`Arquivo muito grande (máx ${lim} para ${isImg?'imagens':'documentos'}).`);
-    return;
-  }
+  // Sem limite: imagens vão pro ImgBB (até 32MB free), outros vão pro Firebase Storage (até 5GB free)
   let url = null, dataUrl = null;
   if (isImg) {
     if (typeof getSpImgbbKey !== 'function' || !getSpImgbbKey()) {
-      if (typeof showToast === 'function') showToast('warn','⚠️','Configure ImgBB nas Configurações pra anexar imagens.');
-      return;
+      // Fallback: sem chave ImgBB → manda imagem pro Storage também
+      try {
+        url = await pjUploadToStorage(file, `task_attachments/${pjCurrentTaskId}`);
+      } catch(e) {
+        if (typeof showToast === 'function') showToast('error','❌','Falha no upload: '+(e?.message||''));
+        return;
+      }
+    } else {
+      try {
+        url = await uploadImage(file);
+      } catch(e) {
+        // Fallback: ImgBB falhou (arquivo > 32MB ou outra coisa) → tenta Storage
+        try {
+          url = await pjUploadToStorage(file, `task_attachments/${pjCurrentTaskId}`);
+        } catch(e2) {
+          if (typeof showToast === 'function') showToast('error','❌','Falha no upload: '+(e2?.message||e?.message||''));
+          return;
+        }
+      }
     }
+  } else {
+    // Arquivos não-imagem: vai direto pro Firebase Storage
     try {
-      url = await uploadImage(file);
+      url = await pjUploadToStorage(file, `task_attachments/${pjCurrentTaskId}`);
     } catch(e) {
       if (typeof showToast === 'function') showToast('error','❌','Falha no upload: '+(e?.message||''));
       return;
     }
-  } else {
-    dataUrl = await new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = () => res(r.result);
-      r.onerror = rej;
-      r.readAsDataURL(file);
-    });
   }
   const uid = _auth?.currentUser?.uid || _currentUser?.uid || null;
   const att = {
@@ -21470,36 +21493,42 @@ async function pjCommentFileChosen(ev) {
   const file = ev.target.files?.[0];
   if (!file) return;
   const isImg = file.type.startsWith('image/');
-  const maxSize = isImg ? 10*1024*1024 : 900*1024; // 10MB imagens (ImgBB), 900KB outros (Firestore)
-  if (file.size > maxSize) {
-    const lim = isImg ? '10MB' : '900KB';
-    if (typeof showToast === 'function') showToast('warn', '⚠️', `Arquivo muito grande (máx ${lim} para ${isImg?'imagens':'documentos'}).`);
-    ev.target.value = '';
-    return;
-  }
-  // Imagens: ImgBB obrigatório (evita inflar o Firestore com base64)
+  // Sem limite: imagens via ImgBB (32MB free), outros via Firebase Storage (5GB free)
   let url = null, dataUrl = null;
+  const taskFolder = pjCurrentTaskId ? `comment_attachments/${pjCurrentTaskId}` : `comment_attachments/_general`;
   if (isImg) {
     if (!getSpImgbbKey || !getSpImgbbKey()) {
-      if (typeof showToast === 'function') showToast('warn', '⚠️', 'Chave ImgBB não configurada. Vá em Configurações → ImgBB para ativar upload de imagens.');
-      ev.target.value = '';
-      return;
+      // Sem chave ImgBB → fallback pro Storage
+      try {
+        url = await pjUploadToStorage(file, taskFolder);
+      } catch(e) {
+        if (typeof showToast === 'function') showToast('error', '❌', 'Falha no upload: ' + (e?.message||'erro desconhecido'));
+        ev.target.value = '';
+        return;
+      }
+    } else {
+      try {
+        url = await uploadImage(file);
+      } catch(e) {
+        // ImgBB falhou (>32MB etc) → fallback pro Storage
+        try {
+          url = await pjUploadToStorage(file, taskFolder);
+        } catch(e2) {
+          if (typeof showToast === 'function') showToast('error', '❌', 'Falha no upload: ' + (e2?.message||e?.message||'erro desconhecido'));
+          ev.target.value = '';
+          return;
+        }
+      }
     }
+  } else {
+    // Não-imagem (PDF, doc, vídeo, etc): vai direto pro Firebase Storage
     try {
-      url = await uploadImage(file);
+      url = await pjUploadToStorage(file, taskFolder);
     } catch(e) {
       if (typeof showToast === 'function') showToast('error', '❌', 'Falha no upload: ' + (e?.message||'erro desconhecido'));
       ev.target.value = '';
       return;
     }
-  } else {
-    // Não-imagem (PDF, doc): dataUrl é aceitável pelo tamanho pequeno
-    dataUrl = await new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = () => res(r.result);
-      r.onerror = rej;
-      r.readAsDataURL(file);
-    });
   }
   pjPendingAttachment = { name:file.name, type:file.type, ...(url?{url}:{dataUrl}) };
   const prev = document.getElementById('pjCommentAttachPreview');
@@ -21583,31 +21612,22 @@ async function pjDescDrop(ev) {
   ev.currentTarget.classList.remove('drag-over');
   const file = ev.dataTransfer?.files?.[0];
   if (!file) return;
-  if (file.size > 900*1024) {
-    if (typeof showToast === 'function') showToast('Arquivo muito grande (máx 900KB).','warn');
-    return;
-  }
-  // Imagens: ImgBB obrigatório. Outros arquivos: dataUrl ok pelo tamanho.
+  // Sem limite — imagens via ImgBB ou Storage, outros via Storage
   const isImg = (file.type||'').startsWith('image/');
-  let url = null, dataUrl = null;
-  if (isImg) {
-    if (typeof getSpImgbbKey !== 'function' || !getSpImgbbKey()) {
-      if (typeof showToast === 'function') showToast('Configure a chave ImgBB para anexar imagens.', 'warn');
-      return;
-    }
+  let url = null;
+  const taskFolder = pjCurrentTaskId ? `comment_attachments/${pjCurrentTaskId}` : `comment_attachments/_general`;
+  if (isImg && typeof getSpImgbbKey === 'function' && getSpImgbbKey()) {
     try {
       url = await uploadImage(file);
-    } catch(e) {
-      if (typeof showToast === 'function') showToast('Falha no upload: ' + (e?.message||'erro'), 'warn');
-      return;
+    } catch(_) {
+      try { url = await pjUploadToStorage(file, taskFolder); }
+      catch(e2) { if (typeof showToast === 'function') showToast('Falha no upload: ' + (e2?.message||'erro'), 'warn'); return; }
     }
   } else {
-    dataUrl = await new Promise((res, rej) => {
-      const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej;
-      r.readAsDataURL(file);
-    });
+    try { url = await pjUploadToStorage(file, taskFolder); }
+    catch(e) { if (typeof showToast === 'function') showToast('Falha no upload: ' + (e?.message||'erro'), 'warn'); return; }
   }
-  pjPendingAttachment = { name:file.name, type:file.type, ...(url?{url}:{dataUrl}) };
+  pjPendingAttachment = { name:file.name, type:file.type, url };
   // auto-send as comment with attachment
   await pjSendComment();
   if (typeof showToast === 'function') showToast('📎 Anexo enviado como comentário.', 'info');
