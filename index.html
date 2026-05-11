@@ -21647,7 +21647,7 @@ async function pjCommentPaste(ev) {
   // Procura por imagem
   let imgItem = null;
   for (const it of items) {
-    if (it.kind === 'file' && it.type.startsWith('image/')) { imgItem = it; break; }
+    if (it.kind === 'file' && (it.type||'').startsWith('image/')) { imgItem = it; break; }
   }
   if (!imgItem) return; // sem imagem → deixa o paste normal de texto rolar
   ev.preventDefault();
@@ -21658,14 +21658,18 @@ async function pjCommentPaste(ev) {
   const ext = (file.type.split('/')[1] || 'png').toLowerCase();
   const named = new File([file], `print-${ts}.${ext}`, { type: file.type });
   if (typeof showToast === 'function') showToast('info', '📋', 'Subindo print...');
-  // Reusa o mesmo fluxo de pjCommentFileChosen via DataTransfer fake
-  const dt = new DataTransfer();
-  dt.items.add(named);
-  const fakeInp = document.getElementById('pjCommentFile');
-  if (fakeInp) {
-    fakeInp.files = dt.files;
-    await pjCommentFileChosen({ target: fakeInp });
-    if (typeof showToast === 'function') showToast('success', '✅', 'Print anexado — clica Enviar.');
+  try {
+    // Passa direto pro pjCommentFileChosen via event mock — mais robusto que mexer no input.files
+    await pjCommentFileChosen({ target: { files: [named], value: '' } });
+    // Se chegou aqui sem erro, o upload completou e pjPendingAttachment foi setado
+    if (window.pjPendingAttachment) {
+      if (typeof showToast === 'function') showToast('success', '✅', 'Print anexado — clica Enviar.');
+    } else {
+      if (typeof showToast === 'function') showToast('warn', '⚠️', 'Print não foi anexado. Verifique o Console (F12) ou tente o botão 📎.');
+    }
+  } catch(e) {
+    console.error('[pjCommentPaste] falhou:', e);
+    if (typeof showToast === 'function') showToast('error', '❌', 'Falha ao anexar print: ' + (e?.message || 'erro desconhecido'));
   }
 }
 
