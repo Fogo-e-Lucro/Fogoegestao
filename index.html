@@ -2109,7 +2109,7 @@ ufw allow 3000/tcp</pre>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
               </button>
             </div>
-            <textarea class="pj-modal-desc pj-modal-desc-tb" id="pjModalDesc" placeholder="Adicione uma descrição..." oninput="pjModalDescChanged()" ondragover="pjDescDragOver(event)" ondragleave="pjDescDragLeave(event)" ondrop="pjDescDrop(event)" onkeydown="pjDescKeyDown(event)" style="border-top-left-radius:0;border-top-right-radius:0;min-height:140px;"></textarea>
+            <textarea class="pj-modal-desc pj-modal-desc-tb" id="pjModalDesc" placeholder="Adicione uma descrição... (⌘V cola print)" oninput="pjModalDescChanged()" ondragover="pjDescDragOver(event)" ondragleave="pjDescDragLeave(event)" ondrop="pjDescDrop(event)" onkeydown="pjDescKeyDown(event)" onpaste="pjDescPaste(event)" style="border-top-left-radius:0;border-top-right-radius:0;min-height:140px;"></textarea>
             <div class="pj-modal-desc-preview pj-md" id="pjModalDescPreview" style="display:none;"></div>
           </div>
           <div id="pjModalCustomFields"></div>
@@ -2149,7 +2149,7 @@ ufw allow 3000/tcp</pre>
           <div class="pj-activity-list" id="pjActivityList"></div>
           <div class="pj-reply-banner" id="pjReplyBanner" style="display:none;"></div>
           <div class="pj-comment-input-wrap">
-            <textarea class="pj-comment-input" id="pjCommentInput" placeholder="Escreva um comentário... (use @ para mencionar)" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+            <textarea class="pj-comment-input" id="pjCommentInput" placeholder="Escreva um comentário... (use @ para mencionar, ⌘V cola print)" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" onpaste="pjCommentPaste(event)"></textarea>
             <input type="file" id="pjCommentFile" style="display:none" onchange="pjCommentFileChosen(event)">
             <button class="pj-comment-mention-btn" title="Mencionar membro (@)" onclick="pjInsertMention()" type="button">@</button>
             <button class="pj-comment-attach-btn" title="Anexar arquivo" onclick="document.getElementById('pjCommentFile').click()" type="button">📎</button>
@@ -21636,6 +21636,83 @@ function pjRenderActivity() {
     if (banner) banner.style.display = 'none';
   }
 }
+
+// ── Paste de imagem (Ctrl/Cmd+V) no comentário ──────────
+// Detecta print/imagem no clipboard, sobe via ImgBB (com fallback pro Storage)
+// e marca como pjPendingAttachment pro próximo Enviar — preserva o texto que
+// o usuário já tinha digitado.
+async function pjCommentPaste(ev) {
+  const items = ev.clipboardData?.items;
+  if (!items || !items.length) return;
+  // Procura por imagem
+  let imgItem = null;
+  for (const it of items) {
+    if (it.kind === 'file' && it.type.startsWith('image/')) { imgItem = it; break; }
+  }
+  if (!imgItem) return; // sem imagem → deixa o paste normal de texto rolar
+  ev.preventDefault();
+  const file = imgItem.getAsFile();
+  if (!file) return;
+  // Gera nome amigável (ex: print-2026-05-09-12-46.png)
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const ext = (file.type.split('/')[1] || 'png').toLowerCase();
+  const named = new File([file], `print-${ts}.${ext}`, { type: file.type });
+  if (typeof showToast === 'function') showToast('info', '📋', 'Subindo print...');
+  // Reusa o mesmo fluxo de pjCommentFileChosen via DataTransfer fake
+  const dt = new DataTransfer();
+  dt.items.add(named);
+  const fakeInp = document.getElementById('pjCommentFile');
+  if (fakeInp) {
+    fakeInp.files = dt.files;
+    await pjCommentFileChosen({ target: fakeInp });
+    if (typeof showToast === 'function') showToast('success', '✅', 'Print anexado — clica Enviar.');
+  }
+}
+
+// Mesma coisa pra descrição da tarefa: paste insere ![](url) no markdown
+async function pjDescPaste(ev) {
+  const items = ev.clipboardData?.items;
+  if (!items || !items.length) return;
+  let imgItem = null;
+  for (const it of items) {
+    if (it.kind === 'file' && it.type.startsWith('image/')) { imgItem = it; break; }
+  }
+  if (!imgItem) return;
+  ev.preventDefault();
+  const file = imgItem.getAsFile();
+  if (!file) return;
+  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const ext = (file.type.split('/')[1] || 'png').toLowerCase();
+  const named = new File([file], `print-${ts}.${ext}`, { type: file.type });
+  const ta = document.getElementById('pjModalDesc');
+  if (!ta) return;
+  const start = ta.selectionStart;
+  const placeholder = `![print enviando...](enviando)`;
+  ta.value = ta.value.substring(0, start) + placeholder + ta.value.substring(start);
+  ta.setSelectionRange(start, start + placeholder.length);
+  if (typeof pjModalDescChanged === 'function') pjModalDescChanged();
+  if (typeof showToast === 'function') showToast('info', '📋', 'Subindo print...');
+  try {
+    let url = null;
+    if (typeof getSpImgbbKey === 'function' && getSpImgbbKey()) {
+      try { url = await uploadImage(named); } catch(_) {}
+    }
+    if (!url && typeof pjUploadToStorage === 'function') {
+      url = await pjUploadToStorage(named, pjCurrentTaskId ? `task_attachments/${pjCurrentTaskId}` : 'task_attachments/_general');
+    }
+    if (!url) throw new Error('upload failed');
+    const final = `![print](${url})`;
+    ta.value = ta.value.replace(placeholder, final);
+    if (typeof pjModalDescChanged === 'function') pjModalDescChanged();
+    if (typeof showToast === 'function') showToast('success', '✅', 'Print inserido.');
+  } catch(e) {
+    ta.value = ta.value.replace(placeholder, '');
+    if (typeof showToast === 'function') showToast('error', '❌', 'Falha no upload do print: ' + (e?.message || ''));
+  }
+}
+
+window.pjCommentPaste = pjCommentPaste;
+window.pjDescPaste = pjDescPaste;
 
 // ── Anexos no comentário ────────────────────────────────
 let pjPendingAttachment = null;
