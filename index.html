@@ -21423,10 +21423,10 @@ window.addEventListener('load', () => {
 async function pjAddTaskAttachment(file) {
   if (!pjCurrentTaskId) return;
   const taskId = pjCurrentTaskId;
-  // 1) Comprime imagem grande (paraleliza com preview otimista abaixo)
-  const compressPromise = _pjCompressImage(file);
-  // 2) Preview otimista: cria entrada local com dataUrl temporário pra
-  //    aparecer imediato na lista de anexos enquanto o upload roda em background.
+  // Preview otimista: cria entrada local com dataUrl temporário pra
+  // aparecer imediato na lista de anexos enquanto o upload roda em background.
+  // (Sem compressão: arquivos sobem ORIGINAIS pra preservar qualidade
+  // máxima — necessário pra uso em social media.)
   const uid = _auth?.currentUser?.uid || _currentUser?.uid || null;
   const tempId = '_tmp_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
   let tempDataUrl = null;
@@ -21446,9 +21446,8 @@ async function pjAddTaskAttachment(file) {
     taskLocal.attachments.push(tempAtt);
     pjRenderTaskAttachments(taskId);
   }
-  // 3) Espera compressão terminar e faz upload pro Storage
-  let toUpload = file;
-  try { toUpload = await compressPromise || file; } catch(_) {}
+  // Upload do arquivo ORIGINAL pro Storage — sem mexer em qualidade
+  const toUpload = file;
   let url = null;
   try {
     url = await pjUploadToStorage(toUpload, `task_attachments/${taskId}`);
@@ -21469,7 +21468,7 @@ async function pjAddTaskAttachment(file) {
   const att = {
     name: file.name,
     type: file.type,
-    size: toUpload.size, // size pós-compressão (real)
+    size: file.size,
     uploadedAt: Date.now(),
     uploadedBy: uid,
     url,
@@ -21789,13 +21788,12 @@ let pjPendingAttachment = null;
 async function pjCommentFileChosen(ev) {
   const file = ev.target.files?.[0];
   if (!file) return;
-  // Comprime imagem grande antes de subir (rápido + sem perda visível)
-  const toUpload = await _pjCompressImage(file);
+  // Sem compressão — sobe ORIGINAL pra preservar qualidade pra social media
   let url = null;
   const taskFolder = pjCurrentTaskId ? `comment_attachments/${pjCurrentTaskId}` : `comment_attachments/_general`;
   try {
     // Storage direto — rápido, sem rate limit, qualquer tipo
-    url = await pjUploadToStorage(toUpload, taskFolder);
+    url = await pjUploadToStorage(file, taskFolder);
   } catch(e) {
     if (typeof showToast === 'function') showToast('error', '❌', 'Falha no upload: ' + (e?.message||'erro desconhecido'));
     ev.target.value = '';
