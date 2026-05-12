@@ -20617,10 +20617,14 @@ function pjOpenPriorityMenu(ev, taskId) {
     if (pjCurrentView.type === 'list' || pjCurrentView.type === 'kanban' || pjCurrentView.type === 'inbox') pjRenderMain();
   });
 }
-function pjSpawnNextRecurrence(t) {
-  // RECORRÊNCIA "IN-PLACE": em vez de criar uma nova tarefa-clone, a própria
-  // tarefa é REABERTA pra próxima data — mantém o mesmo id, comentários,
-  // anexos, histórico, atribuições. Mais limpo, sem poluir as listas.
+async function pjSpawnNextRecurrence(t) {
+  // RECORRÊNCIA com IMPORT DE HISTÓRICO:
+  // - Cria uma nova tarefa-clone com próxima data (cada ciclo é uma tarefa
+  //   separada — útil pra otimizações de tráfego onde cada mês é uma campanha).
+  // - DUPLICA comentários, descrição e anexos da tarefa anterior, pra que a
+  //   nova ocorrência abra com o contexto completo do que foi conversado.
+  // - Marca os comentários copiados como historical:true (mantém autor original
+  //   e timestamp), permitindo distinguir conversa antiga × atual.
   const r = t.recurrence;
   if (!r?.pattern || !t.dueDate) return;
   const interval = r.interval || 1;
@@ -20632,40 +20636,100 @@ function pjSpawnNextRecurrence(t) {
   else if (r.pattern === 'yearly')  d.setFullYear(d.getFullYear() + interval);
   const nextDate = pjDateStr(d);
 
+  // 🛡️ Anti-duplicação: se já existe uma tarefa-clone pra essa data, não cria
+  const dup = (pjAllTasks||[]).find(x =>
+    x.id !== t.id &&
+    x.listId === t.listId &&
+    x.title === t.title &&
+    x.dueDate === nextDate &&
+    x.recurrence?.pattern === r.pattern
+  );
+  if (dup) return;
+
+  const id = (typeof pjId === 'function') ? pjId() : ('tk_' + Date.now());
   const list = pjLists.find(l => l.id === t.listId);
   const firstStatus = (list?.statuses || PJ_DEFAULT_STATUSES)[0];
-  const firstStatusId = firstStatus?.id || 'todo';
 
-  // 🛡️ Anti-loop: se já tá na data nova com status aberto, não faz nada
-  if (t.dueDate === nextDate && t.statusId === firstStatusId && !t.completedAt) return;
+  // Clone — herda configuração, anexos e descrição. Limpa estado de fechada.
+  const clone = {
+    ...t,
+    id,
+    dueDate: nextDate,
+    statusId: firstStatus?.id || 'todo',
+    createdAt: { toMillis: () => Date.now() },
+    updatedAt: { toMillis: () => Date.now() },
+    parentTaskId: t.id, // referência pra rastrear ocorrências
+  };
+  delete clone.completedAt;
+  delete clone.archived;
+  delete clone.activity;
+  // Anexos: HERDA da tarefa anterior (campanha continua referenciando os
+  // mesmos criativos/briefings). Se não quiser, comente a linha abaixo.
+  clone.attachments = Array.isArray(t.attachments) ? [...t.attachments] : [];
 
-  // Atualiza estado local da MESMA tarefa
-  t.dueDate = nextDate;
-  t.statusId = firstStatusId;
-  t.completedAt = null;
-  t.archived = false;
-  t.updatedAt = { toMillis: () => Date.now() };
+  if (!pjTasks[t.listId]) pjTasks[t.listId] = [];
+  pjTasks[t.listId].push(clone);
+  pjAllTasks.push(clone);
 
-  // Re-render pra refletir a mudança
+  // Persiste a nova tarefa no Firestore
+  try {
+    const persistData = { ...clone };
+    delete persistData.completedAt;
+    delete persistData.archived;
+    delete persistData.activity;
+    persistData.createdAt = pjNow();
+    persistData.updatedAt = pjNow();
+    await pjC('pj_tasks').doc(id).set(persistData);
+  } catch(e) { console.warn('[pj] erro ao salvar próxima recorrência:', e); }
+
+  // 📋 IMPORTA HISTÓRICO de comentários da tarefa anterior pra nova ocorrência.
+  // Faz async em background pra não bloquear a UI — comentários aparecem
+  // gradualmente conforme são persistidos no Firestore.
+  try {
+    const snap = await pjC('pj_comments').where('taskId', '==', t.id).get();
+    const oldComments = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => {
+        const tsA = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt || 0);
+        const tsB = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt || 0);
+        return tsA - tsB;
+      });
+    if (oldComments.length) {
+      // Cabeçalho marcando início do histórico importado
+      const [_yy, mm, dd] = t.dueDate.split('-');
+      const headerText = `📋 **Histórico da ocorrência anterior (${dd}/${mm})** — ${oldComments.length} mensagem${oldComments.length!==1?'s':''} importada${oldComments.length!==1?'s':''} abaixo.`;
+      const headerDoc = {
+        taskId: id,
+        text: headerText,
+        createdBy: 'system',
+        senderName: 'Sistema',
+        createdAt: pjNow(),
+        type: 'comment',
+        system: true,
+        historical: true,
+      };
+      try { await pjC('pj_comments').add(headerDoc); } catch(_){}
+      // Copia cada comentário pra nova tarefa (preserva timestamp e autor)
+      for (const c of oldComments) {
+        const copy = { ...c };
+        delete copy.id;
+        copy.taskId = id;
+        copy.historical = true;
+        copy.originalTaskId = t.id;
+        copy.originalCommentId = c.id;
+        try { await pjC('pj_comments').add(copy); } catch(_){}
+      }
+    }
+  } catch(e) { console.warn('[pj] erro ao importar histórico:', e); }
+
+  // Re-render
   if (typeof pjRenderMain === 'function') pjRenderMain();
   if (typeof pjRenderSidebar === 'function') pjRenderSidebar();
-
-  // Persiste no Firestore
-  try {
-    pjC('pj_tasks').doc(t.id).update({
-      dueDate: nextDate,
-      statusId: firstStatusId,
-      completedAt: null,
-      archived: false,
-      updatedAt: pjNow(),
-    });
-  } catch(e) { console.warn('[pj] erro ao reagendar recorrência:', e); }
 
   if (typeof showToast === 'function') {
     const [yyyy, mm, dd] = nextDate.split('-');
     const dayLabels = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
     const weekday = dayLabels[d.getDay()];
-    showToast('info', '🔁', `Reagendada para ${weekday}, ${dd}/${mm}`);
+    showToast('info', '🔁', `Nova ocorrência criada para ${weekday}, ${dd}/${mm} (com histórico)`);
   }
 }
 
@@ -21541,10 +21605,13 @@ function pjRenderActivityComment(c, isReply) {
   const replies = pjComments.filter(x => x.parentId === c.id && x.taskId === pjCurrentTaskId);
   const repliesHtml = replies.length
     ? `<div class="pj-comment-replies">${replies.map(r => pjRenderActivityComment(r, true)).join('')}</div>` : '';
-  return `<div class="pj-activity-item ${isReply?'reply':''}">
+  // Estilo sutil pra mensagens históricas (importadas de ocorrência anterior)
+  const histClass = c.historical ? ' pj-historical' : '';
+  const histStyle = c.historical ? 'style="opacity:0.78;border-left:2px solid rgba(99,102,241,.35);padding-left:10px;margin-left:-12px;"' : '';
+  return `<div class="pj-activity-item ${isReply?'reply':''}${histClass}" ${histStyle}>
     ${pjAvatarHtml(c.userId)}
     <div style="flex:1;min-width:0;">
-      <div class="pj-activity-text"><strong>${escHtml(name)}</strong> <span class="pj-md">${pjMd(c.text||'')}</span></div>
+      <div class="pj-activity-text"><strong>${escHtml(name)}</strong>${c.historical?' <span style="font-size:9.5px;color:var(--accent);font-weight:600;background:rgba(99,102,241,.1);padding:1px 6px;border-radius:8px;margin-left:4px;">↪ histórico</span>':''} <span class="pj-md">${pjMd(c.text||'')}</span></div>
       ${attachHtml}
       ${reacHtml}
       <div class="pj-comment-actions">
