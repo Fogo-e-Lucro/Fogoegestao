@@ -17488,7 +17488,13 @@ function pjAfterStatusChange(task, prevStatusId, newStatusId) {
   if (willClose && !wasClosed) {
     if (!task.completedAt) task.completedAt = Date.now();
     if (task.recurrence?.pattern && task.dueDate) {
-      try { pjSpawnNextRecurrence(task); } catch(_) {}
+      // Roda em background sem bloquear o status update. Loga erros (era
+      // silenciado com catch(_) e a função virou async — agora exige await
+      // pra capturar rejections do Firestore.)
+      pjSpawnNextRecurrence(task).catch(err => {
+        console.error('[pj-recur] erro em pjSpawnNextRecurrence:', err);
+        if (typeof showToast === 'function') showToast('error','⚠️','Recorrência falhou: '+(err?.message||'erro desconhecido'));
+      });
     }
     try { pjOnTaskClosed(task); } catch(_) {}
     try { pjFireWebhook('task.completed', pjTaskPayload(task)); } catch(_) {}
@@ -18233,8 +18239,13 @@ async function pjChangeTaskStatus(taskId, newStatusId) {
   try {
     pjAfterStatusChange(t, prevStatusId, newStatusId);
   } catch(e) { console.warn('[pjChangeTaskStatus] erro pjAfterStatusChange', e); }
-  // Recorrência: ao concluir, gera próxima ocorrência
-  if (willClose && !wasClosed && t.recurrence?.pattern && t.dueDate) pjSpawnNextRecurrence(t);
+  // Recorrência: ao concluir, gera próxima ocorrência (async — não bloqueia)
+  if (willClose && !wasClosed && t.recurrence?.pattern && t.dueDate) {
+    pjSpawnNextRecurrence(t).catch(err => {
+      console.error('[pj-recur] erro em pjSpawnNextRecurrence:', err);
+      if (typeof showToast === 'function') showToast('error','⚠️','Recorrência falhou: '+(err?.message||'erro desconhecido'));
+    });
+  }
   pjRenderMain(); pjRenderSidebar();
   // Pop-up de progresso do dia (parabéns / tudo pronto) — pjAfterStatusChange já chama pjOnTaskClosed via willClose, mas mantemos compat
   if (willClose && !wasClosed) pjFireWebhook('task.completed', pjTaskPayload(t));
@@ -20625,8 +20636,13 @@ async function pjSpawnNextRecurrence(t) {
   //   nova ocorrência abra com o contexto completo do que foi conversado.
   // - Marca os comentários copiados como historical:true (mantém autor original
   //   e timestamp), permitindo distinguir conversa antiga × atual.
+  console.warn('[pj-recur] pjSpawnNextRecurrence chamado:', { id: t?.id, title: t?.title, dueDate: t?.dueDate, recurrence: t?.recurrence });
   const r = t.recurrence;
-  if (!r?.pattern || !t.dueDate) return;
+  if (!r?.pattern || !t.dueDate) {
+    console.warn('[pj-recur] saiu cedo: sem pattern ou dueDate', { pattern: r?.pattern, dueDate: t?.dueDate });
+    if (typeof showToast === 'function') showToast('warn','⚠️','Recorrência: sem pattern ou dueDate definidos.');
+    return;
+  }
   const interval = r.interval || 1;
   // Calcula próxima data preservando o "dia da semana / mês / ano"
   const d = new Date(t.dueDate + 'T00:00:00');
@@ -20644,7 +20660,12 @@ async function pjSpawnNextRecurrence(t) {
     x.dueDate === nextDate &&
     x.recurrence?.pattern === r.pattern
   );
-  if (dup) return;
+  if (dup) {
+    console.warn('[pj-recur] duplicata já existe, abortando:', dup.id);
+    if (typeof showToast === 'function') showToast('info','ℹ️','Próxima ocorrência já existe pra essa data.');
+    return;
+  }
+  console.warn('[pj-recur] nextDate=', nextDate, 'criando clone...');
 
   const id = (typeof pjId === 'function') ? pjId() : ('tk_' + Date.now());
   const list = pjLists.find(l => l.id === t.listId);
