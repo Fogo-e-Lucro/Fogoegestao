@@ -21159,6 +21159,45 @@ async function pjTaskAttachFileChosen(ev) {
   for (const f of files) await pjAddTaskAttachment(f);
 }
 
+// Comprime imagem grande antes do upload. Reduz 5-10x em tamanho sem
+// perda visível. Pula PSD/TIFF/RAW/SVG (canvas não consegue) e qualquer
+// imagem já pequena.
+async function _pjCompressImage(file) {
+  try {
+    const type = (file?.type || '').toLowerCase();
+    if (!type.startsWith('image/')) return file;
+    // Só comprime formatos que canvas decodifica
+    if (!/(jpeg|jpg|png|webp|gif|bmp|heic)/.test(type)) return file;
+    if (file.size < 300 * 1024) return file; // já é pequeno (<300KB)
+    const url = URL.createObjectURL(file);
+    const img = await new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.onerror = rej;
+      im.src = url;
+    }).catch(() => null);
+    if (!img) { URL.revokeObjectURL(url); return file; }
+    const MAX = 1920;
+    let w = img.naturalWidth, h = img.naturalHeight;
+    if (w > MAX || h > MAX) {
+      const r = Math.min(MAX / w, MAX / h);
+      w = Math.round(w * r); h = Math.round(h * r);
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(url);
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.85));
+    if (!blob || blob.size >= file.size) return file; // não compensou
+    const base = (file.name || 'image').replace(/\.[^.]+$/, '');
+    return new File([blob], base + '.jpg', { type: 'image/jpeg' });
+  } catch(e) {
+    console.warn('[pj] compress falhou:', e);
+    return file;
+  }
+}
+
 // Verifica se um arquivo é compatível com ImgBB (imagens "normais" que abrem
 // no browser). Tipos como PSD, AI, EPS, TIFF, RAW, HEIC ImgBB rejeita —
 // vão direto pro Firebase Storage. Detecta tanto via MIME quanto via extensão
@@ -21383,40 +21422,57 @@ window.addEventListener('load', () => {
 
 async function pjAddTaskAttachment(file) {
   if (!pjCurrentTaskId) return;
-  // ImgBB só aceita JPG/PNG/GIF/WEBP/BMP. PSD, AI, TIFF, RAW, EPS, HEIC, SVG
-  // e qualquer não-imagem (ZIP, PDF, MP4, etc) vão direto pro Firebase Storage.
-  const useImgbb = _pjIsImgbbCompatible(file);
-  let url = null, dataUrl = null;
-  if (useImgbb && typeof getSpImgbbKey === 'function' && getSpImgbbKey()) {
-    try {
-      url = await uploadImage(file);
-    } catch(e) {
-      // ImgBB falhou (>32MB, rate limit, etc) → fallback pro Storage
-      try {
-        url = await pjUploadToStorage(file, `task_attachments/${pjCurrentTaskId}`);
-      } catch(e2) {
-        if (typeof showToast === 'function') showToast('error','❌','Falha no upload: '+(e2?.message||e?.message||''));
-        return;
-      }
-    }
-  } else {
-    // Tudo o resto: vai direto pro Firebase Storage (sem tentativa frustrada
-    // de ImgBB que rejeita formatos exóticos como PSD/AI/RAW)
-    try {
-      url = await pjUploadToStorage(file, `task_attachments/${pjCurrentTaskId}`);
-    } catch(e) {
-      if (typeof showToast === 'function') showToast('error','❌','Falha no upload: '+(e?.message||''));
-      return;
-    }
-  }
+  const taskId = pjCurrentTaskId;
+  // 1) Comprime imagem grande (paraleliza com preview otimista abaixo)
+  const compressPromise = _pjCompressImage(file);
+  // 2) Preview otimista: cria entrada local com dataUrl temporário pra
+  //    aparecer imediato na lista de anexos enquanto o upload roda em background.
   const uid = _auth?.currentUser?.uid || _currentUser?.uid || null;
+  const tempId = '_tmp_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+  let tempDataUrl = null;
+  if ((file.type||'').startsWith('image/') && file.size < 5*1024*1024) {
+    try { tempDataUrl = await new Promise(r => { const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.onerror=()=>r(null); fr.readAsDataURL(file); }); } catch(_){}
+  }
+  const tempAtt = {
+    tempId,
+    name: file.name, type: file.type, size: file.size,
+    uploadedAt: Date.now(), uploadedBy: uid,
+    ...(tempDataUrl ? { dataUrl: tempDataUrl } : {}),
+    uploading: true,
+  };
+  const taskLocal = pjAllTasks.find(t => t.id === taskId);
+  if (taskLocal) {
+    if (!Array.isArray(taskLocal.attachments)) taskLocal.attachments = [];
+    taskLocal.attachments.push(tempAtt);
+    pjRenderTaskAttachments(taskId);
+  }
+  // 3) Espera compressão terminar e faz upload pro Storage
+  let toUpload = file;
+  try { toUpload = await compressPromise || file; } catch(_) {}
+  let url = null;
+  try {
+    url = await pjUploadToStorage(toUpload, `task_attachments/${taskId}`);
+  } catch(e) {
+    // Remove o preview otimista que falhou
+    if (taskLocal && Array.isArray(taskLocal.attachments)) {
+      taskLocal.attachments = taskLocal.attachments.filter(a => a.tempId !== tempId);
+      pjRenderTaskAttachments(taskId);
+    }
+    if (typeof showToast === 'function') showToast('error','❌','Falha no upload: '+(e?.message||''));
+    return;
+  }
+  // 4) Substitui o tempAtt pelo definitivo (mantém ordem)
+  if (taskLocal && Array.isArray(taskLocal.attachments)) {
+    const idx = taskLocal.attachments.findIndex(a => a.tempId === tempId);
+    if (idx >= 0) taskLocal.attachments.splice(idx, 1);
+  }
   const att = {
     name: file.name,
     type: file.type,
-    size: file.size,
+    size: toUpload.size, // size pós-compressão (real)
     uploadedAt: Date.now(),
     uploadedBy: uid,
-    ...(url ? {url} : {dataUrl}),
+    url,
   };
   // Update local
   const task = pjAllTasks.find(t => t.id === pjCurrentTaskId);
@@ -21733,33 +21789,17 @@ let pjPendingAttachment = null;
 async function pjCommentFileChosen(ev) {
   const file = ev.target.files?.[0];
   if (!file) return;
-  // ImgBB só aceita JPG/PNG/GIF/WEBP/BMP. PSD/AI/TIFF/RAW/EPS/HEIC/SVG/ZIP/PDF/etc
-  // vão direto pro Firebase Storage.
-  const useImgbb = _pjIsImgbbCompatible(file);
-  let url = null, dataUrl = null;
+  // Comprime imagem grande antes de subir (rápido + sem perda visível)
+  const toUpload = await _pjCompressImage(file);
+  let url = null;
   const taskFolder = pjCurrentTaskId ? `comment_attachments/${pjCurrentTaskId}` : `comment_attachments/_general`;
-  if (useImgbb && typeof getSpImgbbKey === 'function' && getSpImgbbKey()) {
-    try {
-      url = await uploadImage(file);
-    } catch(e) {
-      // ImgBB falhou (>32MB etc) → fallback pro Storage
-      try {
-        url = await pjUploadToStorage(file, taskFolder);
-      } catch(e2) {
-        if (typeof showToast === 'function') showToast('error', '❌', 'Falha no upload: ' + (e2?.message||e?.message||'erro desconhecido'));
-        ev.target.value = '';
-        return;
-      }
-    }
-  } else {
-    // Storage direto — qualquer tipo de arquivo (PSD/AI/PDF/MP4/ZIP/etc)
-    try {
-      url = await pjUploadToStorage(file, taskFolder);
-    } catch(e) {
-      if (typeof showToast === 'function') showToast('error', '❌', 'Falha no upload: ' + (e?.message||'erro desconhecido'));
-      ev.target.value = '';
-      return;
-    }
+  try {
+    // Storage direto — rápido, sem rate limit, qualquer tipo
+    url = await pjUploadToStorage(toUpload, taskFolder);
+  } catch(e) {
+    if (typeof showToast === 'function') showToast('error', '❌', 'Falha no upload: ' + (e?.message||'erro desconhecido'));
+    ev.target.value = '';
+    return;
   }
   pjPendingAttachment = { name:file.name, type:file.type, ...(url?{url}:{dataUrl}) };
   const prev = document.getElementById('pjCommentAttachPreview');
