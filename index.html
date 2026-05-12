@@ -21067,11 +21067,17 @@ function _pjTriggerDl(href, filename, isObjUrl) {
 //   4. Proxy images.weserv.nl (imagens) — adiciona CORS headers
 //   5. Último: window.open + toast
 async function pjDownloadFile(src, filename) {
-  if (!src) return;
+  if (!src) {
+    console.warn('[pj-dl] src vazio', { filename });
+    if (typeof showToast === 'function') showToast('error','⚠️','Anexo sem URL — provavelmente corrompido.');
+    return;
+  }
   // Decoda entidades HTML que possam ter sido double-escaped no template
   src = src.replace(/&amp;/g, '&').replace(/&#39;/g, "'");
+  console.log('[pj-dl] tentando baixar:', { filename, srcStart: src.slice(0,80), srcLen: src.length });
   // 1. dataUrl direto
   if (src.startsWith('data:')) {
+    console.log('[pj-dl] estratégia: dataUrl direto');
     _pjTriggerDl(src, filename);
     return;
   }
@@ -21109,14 +21115,18 @@ async function pjDownloadFile(src, filename) {
 
   // 3. Fetch direto (cross-origin com CORS allow)
   try {
+    console.log('[pj-dl] estratégia: fetch direto');
     const res = await fetch(src, { mode: 'cors', credentials: 'omit' });
+    console.log('[pj-dl] fetch status:', res.status, 'ok:', res.ok);
     if (res.ok) {
       const blob = await res.blob();
       const objUrl = URL.createObjectURL(blob);
       _pjTriggerDl(objUrl, filename, true);
       return;
     }
-  } catch(_) {}
+  } catch(e) {
+    console.warn('[pj-dl] fetch direto falhou:', e.message);
+  }
 
   // 4. Proxy images.weserv.nl (só imagens — adiciona CORS headers)
   if (isImg) {
@@ -21134,9 +21144,9 @@ async function pjDownloadFile(src, filename) {
   }
 
   // 5. Último fallback: nova aba
-  console.warn('[pj] download direto falhou — abrindo em nova aba');
+  console.warn('[pj-dl] todas estratégias falharam — abrindo em nova aba. URL:', src);
   if (typeof showToast === 'function') {
-    showToast('warn','⚠️','Abrindo em nova aba — clique com botão direito → "Salvar imagem como..."');
+    showToast('warn','⚠️','Download direto bloqueado — abrindo em nova aba (botão direito → "Salvar como").');
   }
   window.open(src, '_blank');
 }
