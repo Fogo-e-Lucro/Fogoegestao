@@ -20618,11 +20618,13 @@ function pjOpenPriorityMenu(ev, taskId) {
   });
 }
 function pjSpawnNextRecurrence(t) {
+  // RECORRÊNCIA "IN-PLACE": em vez de criar uma nova tarefa-clone, a própria
+  // tarefa é REABERTA pra próxima data — mantém o mesmo id, comentários,
+  // anexos, histórico, atribuições. Mais limpo, sem poluir as listas.
   const r = t.recurrence;
   if (!r?.pattern || !t.dueDate) return;
   const interval = r.interval || 1;
   // Calcula próxima data preservando o "dia da semana / mês / ano"
-  // — segunda → próxima segunda, dia 5 → próximo dia 5, etc.
   const d = new Date(t.dueDate + 'T00:00:00');
   if (r.pattern === 'daily')        d.setDate(d.getDate() + interval);
   else if (r.pattern === 'weekly')  d.setDate(d.getDate() + 7 * interval);
@@ -20630,59 +20632,40 @@ function pjSpawnNextRecurrence(t) {
   else if (r.pattern === 'yearly')  d.setFullYear(d.getFullYear() + interval);
   const nextDate = pjDateStr(d);
 
-  // 🛡️ Anti-duplicação: pjSpawnNextRecurrence é chamado de 3 lugares
-  // (pjUpdateTaskStatus, pjToggleTaskDone, setStatus). Se o usuário
-  // toggle ✓ rápido várias vezes, ou se 2 listeners disparam, não cria
-  // duplicata pra mesma data.
-  const dup = (pjAllTasks||[]).find(x =>
-    x.id !== t.id &&
-    x.listId === t.listId &&
-    x.title === t.title &&
-    x.dueDate === nextDate &&
-    x.recurrence?.pattern === r.pattern
-  );
-  if (dup) return;
-
-  const id = (typeof pjId === 'function') ? pjId() : ('tk_' + Date.now());
   const list = pjLists.find(l => l.id === t.listId);
   const firstStatus = (list?.statuses || PJ_DEFAULT_STATUSES)[0];
+  const firstStatusId = firstStatus?.id || 'todo';
 
-  // Clone LIMPO — herda configuração mas remove estado de "fechada"
-  const clone = {
-    ...t,
-    id,
-    dueDate: nextDate,
-    statusId: firstStatus?.id || 'todo',
-    createdAt: { toMillis: () => Date.now() },
-    updatedAt: { toMillis: () => Date.now() },
-  };
-  // Remove campos que não pertencem à nova ocorrência:
-  delete clone.completedAt;  // sem isso aparecia "concluída" no spread
-  delete clone.archived;     // não herda arquivamento da anterior
-  delete clone.activity;     // log de mudanças fica só na original
-  delete clone.attachments;  // anexos ficam só na original (se quiser, pode mudar)
+  // 🛡️ Anti-loop: se já tá na data nova com status aberto, não faz nada
+  if (t.dueDate === nextDate && t.statusId === firstStatusId && !t.completedAt) return;
 
-  if (!pjTasks[t.listId]) pjTasks[t.listId] = [];
-  pjTasks[t.listId].push(clone);
-  pjAllTasks.push(clone);
+  // Atualiza estado local da MESMA tarefa
+  t.dueDate = nextDate;
+  t.statusId = firstStatusId;
+  t.completedAt = null;
+  t.archived = false;
+  t.updatedAt = { toMillis: () => Date.now() };
 
-  // Persistência: monta payload limpo com timestamps do servidor
+  // Re-render pra refletir a mudança
+  if (typeof pjRenderMain === 'function') pjRenderMain();
+  if (typeof pjRenderSidebar === 'function') pjRenderSidebar();
+
+  // Persiste no Firestore
   try {
-    const persistData = { ...clone };
-    delete persistData.completedAt;
-    delete persistData.archived;
-    delete persistData.activity;
-    persistData.createdAt = pjNow();
-    persistData.updatedAt = pjNow();
-    pjC('pj_tasks').doc(id).set(persistData);
-  } catch(e) { console.warn('[pj] erro ao salvar próxima recorrência:', e); }
+    pjC('pj_tasks').doc(t.id).update({
+      dueDate: nextDate,
+      statusId: firstStatusId,
+      completedAt: null,
+      archived: false,
+      updatedAt: pjNow(),
+    });
+  } catch(e) { console.warn('[pj] erro ao reagendar recorrência:', e); }
 
   if (typeof showToast === 'function') {
-    // Formata data BR pra ficar mais legível
     const [yyyy, mm, dd] = nextDate.split('-');
     const dayLabels = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
     const weekday = dayLabels[d.getDay()];
-    showToast('info', '🔁', `Próxima ocorrência criada para ${weekday}, ${dd}/${mm}`);
+    showToast('info', '🔁', `Reagendada para ${weekday}, ${dd}/${mm}`);
   }
 }
 
