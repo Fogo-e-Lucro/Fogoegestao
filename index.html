@@ -21134,8 +21134,25 @@ async function pjDownloadFile(src, filename) {
     console.warn('[pj-dl] fetch direto falhou:', e.message);
   }
 
-  // 4. Proxy images.weserv.nl (só imagens — adiciona CORS headers)
-  if (isImg) {
+  // 4. Proxy próprio na VPS (funciona pra QUALQUER tipo — Firebase Storage,
+  //    ibb, imgur. Re-serve com Access-Control-Allow-Origin: *)
+  try {
+    const proxy = 'https://89-116-30-126.sslip.io/proxy?url=' + encodeURIComponent(src);
+    console.log('[pj-dl] estratégia: proxy VPS');
+    const res = await fetch(proxy);
+    console.log('[pj-dl] proxy status:', res.status, 'ok:', res.ok);
+    if (res.ok) {
+      const blob = await res.blob();
+      const objUrl = URL.createObjectURL(blob);
+      _pjTriggerDl(objUrl, filename, true);
+      return;
+    }
+  } catch(e) {
+    console.warn('[pj-dl] proxy VPS falhou:', e.message);
+  }
+
+  // 5. Proxy images.weserv.nl (só imagens em CDNs públicas — não serve pra Firebase)
+  if (isImg && !/firebasestorage\.googleapis\.com/.test(src)) {
     try {
       const noProto = src.replace(/^https?:\/\//, '');
       const proxy = `https://images.weserv.nl/?url=${encodeURIComponent(noProto)}`;
