@@ -21068,12 +21068,14 @@ function _pjTriggerDl(href, filename, isObjUrl) {
 //   5. Último: window.open + toast
 async function pjDownloadFile(src, filename) {
   if (!src) return;
+  // Decoda entidades HTML que possam ter sido double-escaped no template
+  src = src.replace(/&amp;/g, '&').replace(/&#39;/g, "'");
   // 1. dataUrl direto
   if (src.startsWith('data:')) {
     _pjTriggerDl(src, filename);
     return;
   }
-  const isImg = /\.(jpe?g|png|gif|webp|bmp|svg|avif)(\?|$|#)/i.test(src) || /ibb\.co/.test(src);
+  const isImg = /\.(jpe?g|png|gif|webp|bmp|svg|avif)($|\?|#|%)/i.test(src) || /ibb\.co/.test(src) || /firebasestorage\.googleapis\.com/.test(src);
 
   // 2. CANVAS pra imagens — funciona melhor pq a tag <img> já carrega a
   //    imagem com crossOrigin, e o canvas exporta o blob pra download
@@ -21171,33 +21173,36 @@ function pjRenderTaskAttachments(taskId) {
     grid.innerHTML = '';
     return;
   }
+  // Guarda os anexos em uma referência global pra os handlers acessarem
+  // por índice (evita escapar URLs com & / ' / etc em template strings).
+  window._pjCurrentAttachments = items;
+
   grid.innerHTML = items.map((a, i) => {
     const isImg = (a.type||'').startsWith('image/');
     const src = a.url || a.dataUrl || '';
-    const safeSrc = (src || '').replace(/'/g, '&#39;');
     const size = pjFmtBytes(a.size);
     const dt = a.uploadedAt && typeof a.uploadedAt === 'number'
       ? new Date(a.uploadedAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})
       : '';
-    // Quem subiu (nome do membro)
     const uploader = (a.uploadedBy && Array.isArray(pjMembers))
       ? pjMembers.find(m => m.uid === a.uploadedBy || m.id === a.uploadedBy)
       : null;
     const uploaderName = uploader?.name || uploader?.email?.split('@')[0] || '';
     const meta = [size, dt, uploaderName].filter(Boolean).join(' · ');
-    const safeName = (a.name||'').replace(/'/g,'&#39;');
+    const nameEsc = escHtml(a.name||'');
+
     if (isImg) {
-      return `<div class="pj-attach-item pj-attach-img" onclick="pjOpenLightbox('${safeSrc}','${escHtml(a.name||'')}')" title="Clique para ampliar">
-        <div class="pj-attach-img-wrap"><img src="${src}" alt="${escHtml(a.name||'')}" loading="lazy"></div>
+      return `<div class="pj-attach-item pj-attach-img" data-attach-idx="${i}" data-action="lightbox" title="Clique para ampliar">
+        <div class="pj-attach-img-wrap"><img src="${escHtml(src)}" alt="${nameEsc}" loading="lazy"></div>
         <div class="pj-attach-meta">
-          <span class="pj-attach-name" title="${escHtml(a.name||'')}">${escHtml(a.name||'imagem')}</span>
+          <span class="pj-attach-name" title="${nameEsc}">${nameEsc || 'imagem'}</span>
           ${meta ? `<span class="pj-attach-sub">${escHtml(meta)}</span>` : ''}
         </div>
         <div class="pj-attach-actions">
-          <button class="pj-attach-action" onclick="event.stopPropagation();pjDownloadFile('${safeSrc}','${safeName}')" title="Baixar">
+          <button class="pj-attach-action" data-attach-idx="${i}" data-action="download" title="Baixar">
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
           </button>
-          <button class="pj-attach-action danger" onclick="event.stopPropagation();pjRemoveTaskAttachment(${i})" title="Remover">
+          <button class="pj-attach-action danger" data-attach-idx="${i}" data-action="remove" title="Remover">
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
           </button>
         </div>
@@ -21205,20 +21210,45 @@ function pjRenderTaskAttachments(taskId) {
     }
     const ic = pjAttachIconFor(a.name, a.type);
     return `<div class="pj-attach-item pj-attach-doc">
-      <button class="pj-attach-doc-link" type="button" onclick="pjDownloadFile('${safeSrc}','${safeName}')" title="Baixar ${escHtml(a.name||'arquivo')}">
+      <button class="pj-attach-doc-link" type="button" data-attach-idx="${i}" data-action="download" title="Baixar ${nameEsc || 'arquivo'}">
         <span class="pj-attach-doc-icon ${ic.cls}">${ic.icon}</span>
         <div class="pj-attach-info">
-          <span class="pj-attach-name" title="${escHtml(a.name||'')}">${escHtml(a.name||'arquivo')}</span>
+          <span class="pj-attach-name" title="${nameEsc}">${nameEsc || 'arquivo'}</span>
           <span class="pj-attach-sub">${escHtml(meta || ic.label)}</span>
         </div>
       </button>
       <div class="pj-attach-actions">
-        <button class="pj-attach-action danger" onclick="event.stopPropagation();pjRemoveTaskAttachment(${i})" title="Remover">
+        <button class="pj-attach-action danger" data-attach-idx="${i}" data-action="remove" title="Remover">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
         </button>
       </div>
     </div>`;
   }).join('');
+
+  // Listener delegado — robusto contra URLs com '&', "'", etc.
+  if (!grid._pjAttachWired) {
+    grid._pjAttachWired = true;
+    grid.addEventListener('click', (e) => {
+      const target = e.target.closest('[data-action]');
+      if (!target) return;
+      const idx = parseInt(target.dataset.attachIdx, 10);
+      const action = target.dataset.action;
+      const list = window._pjCurrentAttachments || [];
+      const att = list[idx];
+      if (!att && action !== 'remove') return;
+      e.stopPropagation();
+      const src = att?.url || att?.dataUrl || '';
+      if (action === 'download') {
+        pjDownloadFile(src, att.name || 'arquivo');
+      } else if (action === 'lightbox') {
+        // Só dispara lightbox se NÃO foi click em um botão de ação
+        if (e.target.closest('.pj-attach-action')) return;
+        pjOpenLightbox(src, att.name || '');
+      } else if (action === 'remove') {
+        pjRemoveTaskAttachment(idx);
+      }
+    });
+  }
 }
 
 async function pjTaskAttachFileChosen(ev) {
