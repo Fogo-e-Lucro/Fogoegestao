@@ -2,7 +2,7 @@
 // V2: cache app-shell para modo offline. Mutations Firestore são tratadas
 // pela própria persistência IndexedDB do Firestore (queue automática).
 // Bump cache version cada vez que mudar lógica:
-const SW_VERSION = 'fg-v3.12.1';
+const SW_VERSION = 'fg-v3.12.2';
 const SHELL_CACHE = `fg-shell-${SW_VERSION}`;
 const RUNTIME_CACHE = `fg-runtime-${SW_VERSION}`;
 

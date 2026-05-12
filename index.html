@@ -21083,10 +21083,16 @@ async function pjDownloadFile(src, filename) {
   }
   const isImg = /\.(jpe?g|png|gif|webp|bmp|svg|avif)($|\?|#|%)/i.test(src) || /ibb\.co/.test(src) || /firebasestorage\.googleapis\.com/.test(src);
 
+  // Cache-bypass: força nova request com CORS habilitado.
+  // Necessário quando a imagem foi cacheada SEM crossOrigin (antes do fix
+  // do <img crossorigin>). Adiciona um query param que muda a chave de cache.
+  const srcNoCache = src + (src.includes('?') ? '&' : '?') + '_cb=' + Date.now();
+
   // 2. CANVAS pra imagens — funciona melhor pq a tag <img> já carrega a
   //    imagem com crossOrigin, e o canvas exporta o blob pra download
   if (isImg) {
     try {
+      console.log('[pj-dl] estratégia: canvas (cache-bypass)');
       const blob = await new Promise((resolve, reject) => {
         const img = new Image();
         img.crossOrigin = 'anonymous';
@@ -21101,7 +21107,7 @@ async function pjDownloadFile(src, filename) {
           } catch(e) { reject(e); }
         };
         img.onerror = () => reject(new Error('img load falhou'));
-        img.src = src;
+        img.src = srcNoCache;
         // Timeout de segurança
         setTimeout(() => reject(new Error('timeout')), 8000);
       });
@@ -21109,14 +21115,14 @@ async function pjDownloadFile(src, filename) {
       _pjTriggerDl(objUrl, filename, true);
       return;
     } catch(e) {
-      console.log('[pj] canvas download falhou, tentando próxima estratégia:', e);
+      console.log('[pj-dl] canvas download falhou, tentando próxima estratégia:', e.message);
     }
   }
 
-  // 3. Fetch direto (cross-origin com CORS allow)
+  // 3. Fetch direto (cross-origin com CORS allow) — também com cache-bypass
   try {
-    console.log('[pj-dl] estratégia: fetch direto');
-    const res = await fetch(src, { mode: 'cors', credentials: 'omit' });
+    console.log('[pj-dl] estratégia: fetch direto (cache-bypass)');
+    const res = await fetch(srcNoCache, { mode: 'cors', credentials: 'omit', cache: 'no-store' });
     console.log('[pj-dl] fetch status:', res.status, 'ok:', res.ok);
     if (res.ok) {
       const blob = await res.blob();
@@ -21203,7 +21209,7 @@ function pjRenderTaskAttachments(taskId) {
 
     if (isImg) {
       return `<div class="pj-attach-item pj-attach-img" data-attach-idx="${i}" data-action="lightbox" title="Clique para ampliar">
-        <div class="pj-attach-img-wrap"><img src="${escHtml(src)}" alt="${nameEsc}" loading="lazy"></div>
+        <div class="pj-attach-img-wrap"><img src="${escHtml(src)}" alt="${nameEsc}" loading="lazy" crossorigin="anonymous" referrerpolicy="no-referrer"></div>
         <div class="pj-attach-meta">
           <span class="pj-attach-name" title="${nameEsc}">${nameEsc || 'imagem'}</span>
           ${meta ? `<span class="pj-attach-sub">${escHtml(meta)}</span>` : ''}
