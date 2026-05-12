@@ -21159,6 +21159,24 @@ async function pjTaskAttachFileChosen(ev) {
   for (const f of files) await pjAddTaskAttachment(f);
 }
 
+// Verifica se um arquivo é compatível com ImgBB (imagens "normais" que abrem
+// no browser). Tipos como PSD, AI, EPS, TIFF, RAW, HEIC ImgBB rejeita —
+// vão direto pro Firebase Storage. Detecta tanto via MIME quanto via extensão
+// (alguns OS deixam file.type vazio).
+function _pjIsImgbbCompatible(file) {
+  const type = (file?.type || '').toLowerCase();
+  const name = (file?.name || '').toLowerCase();
+  // Tipos que ImgBB aceita
+  const okTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
+  if (okTypes.includes(type)) return true;
+  // Se MIME vazio, verifica extensão
+  if (!type || type === 'image/') {
+    return /\.(jpe?g|png|gif|webp|bmp)$/i.test(name);
+  }
+  // Qualquer outro image/* (PSD, TIFF, RAW, AI, EPS, HEIC, SVG, etc): rejeita
+  return false;
+}
+
 // Sobe arquivo pro Firebase Storage e devolve URL pública.
 // Sem limite de tamanho aplicado (free tier de 5GB total no plano Spark).
 async function pjUploadToStorage(file, pathPrefix) {
@@ -21365,33 +21383,25 @@ window.addEventListener('load', () => {
 
 async function pjAddTaskAttachment(file) {
   if (!pjCurrentTaskId) return;
-  const isImg = (file.type||'').startsWith('image/');
-  // Sem limite: imagens vão pro ImgBB (até 32MB free), outros vão pro Firebase Storage (até 5GB free)
+  // ImgBB só aceita JPG/PNG/GIF/WEBP/BMP. PSD, AI, TIFF, RAW, EPS, HEIC, SVG
+  // e qualquer não-imagem (ZIP, PDF, MP4, etc) vão direto pro Firebase Storage.
+  const useImgbb = _pjIsImgbbCompatible(file);
   let url = null, dataUrl = null;
-  if (isImg) {
-    if (typeof getSpImgbbKey !== 'function' || !getSpImgbbKey()) {
-      // Fallback: sem chave ImgBB → manda imagem pro Storage também
+  if (useImgbb && typeof getSpImgbbKey === 'function' && getSpImgbbKey()) {
+    try {
+      url = await uploadImage(file);
+    } catch(e) {
+      // ImgBB falhou (>32MB, rate limit, etc) → fallback pro Storage
       try {
         url = await pjUploadToStorage(file, `task_attachments/${pjCurrentTaskId}`);
-      } catch(e) {
-        if (typeof showToast === 'function') showToast('error','❌','Falha no upload: '+(e?.message||''));
+      } catch(e2) {
+        if (typeof showToast === 'function') showToast('error','❌','Falha no upload: '+(e2?.message||e?.message||''));
         return;
-      }
-    } else {
-      try {
-        url = await uploadImage(file);
-      } catch(e) {
-        // Fallback: ImgBB falhou (arquivo > 32MB ou outra coisa) → tenta Storage
-        try {
-          url = await pjUploadToStorage(file, `task_attachments/${pjCurrentTaskId}`);
-        } catch(e2) {
-          if (typeof showToast === 'function') showToast('error','❌','Falha no upload: '+(e2?.message||e?.message||''));
-          return;
-        }
       }
     }
   } else {
-    // Arquivos não-imagem: vai direto pro Firebase Storage
+    // Tudo o resto: vai direto pro Firebase Storage (sem tentativa frustrada
+    // de ImgBB que rejeita formatos exóticos como PSD/AI/RAW)
     try {
       url = await pjUploadToStorage(file, `task_attachments/${pjCurrentTaskId}`);
     } catch(e) {
@@ -21723,36 +21733,26 @@ let pjPendingAttachment = null;
 async function pjCommentFileChosen(ev) {
   const file = ev.target.files?.[0];
   if (!file) return;
-  const isImg = file.type.startsWith('image/');
-  // Sem limite: imagens via ImgBB (32MB free), outros via Firebase Storage (5GB free)
+  // ImgBB só aceita JPG/PNG/GIF/WEBP/BMP. PSD/AI/TIFF/RAW/EPS/HEIC/SVG/ZIP/PDF/etc
+  // vão direto pro Firebase Storage.
+  const useImgbb = _pjIsImgbbCompatible(file);
   let url = null, dataUrl = null;
   const taskFolder = pjCurrentTaskId ? `comment_attachments/${pjCurrentTaskId}` : `comment_attachments/_general`;
-  if (isImg) {
-    if (!getSpImgbbKey || !getSpImgbbKey()) {
-      // Sem chave ImgBB → fallback pro Storage
+  if (useImgbb && typeof getSpImgbbKey === 'function' && getSpImgbbKey()) {
+    try {
+      url = await uploadImage(file);
+    } catch(e) {
+      // ImgBB falhou (>32MB etc) → fallback pro Storage
       try {
         url = await pjUploadToStorage(file, taskFolder);
-      } catch(e) {
-        if (typeof showToast === 'function') showToast('error', '❌', 'Falha no upload: ' + (e?.message||'erro desconhecido'));
+      } catch(e2) {
+        if (typeof showToast === 'function') showToast('error', '❌', 'Falha no upload: ' + (e2?.message||e?.message||'erro desconhecido'));
         ev.target.value = '';
         return;
       }
-    } else {
-      try {
-        url = await uploadImage(file);
-      } catch(e) {
-        // ImgBB falhou (>32MB etc) → fallback pro Storage
-        try {
-          url = await pjUploadToStorage(file, taskFolder);
-        } catch(e2) {
-          if (typeof showToast === 'function') showToast('error', '❌', 'Falha no upload: ' + (e2?.message||e?.message||'erro desconhecido'));
-          ev.target.value = '';
-          return;
-        }
-      }
     }
   } else {
-    // Não-imagem (PDF, doc, vídeo, etc): vai direto pro Firebase Storage
+    // Storage direto — qualquer tipo de arquivo (PSD/AI/PDF/MP4/ZIP/etc)
     try {
       url = await pjUploadToStorage(file, taskFolder);
     } catch(e) {
@@ -21843,11 +21843,11 @@ async function pjDescDrop(ev) {
   ev.currentTarget.classList.remove('drag-over');
   const file = ev.dataTransfer?.files?.[0];
   if (!file) return;
-  // Sem limite — imagens via ImgBB ou Storage, outros via Storage
-  const isImg = (file.type||'').startsWith('image/');
+  // Qualquer tipo de arquivo aceito. PSD/AI/RAW/etc vão direto pro Storage.
+  const useImgbb = _pjIsImgbbCompatible(file);
   let url = null;
   const taskFolder = pjCurrentTaskId ? `comment_attachments/${pjCurrentTaskId}` : `comment_attachments/_general`;
-  if (isImg && typeof getSpImgbbKey === 'function' && getSpImgbbKey()) {
+  if (useImgbb && typeof getSpImgbbKey === 'function' && getSpImgbbKey()) {
     try {
       url = await uploadImage(file);
     } catch(_) {
