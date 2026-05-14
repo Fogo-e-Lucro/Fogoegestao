@@ -25672,22 +25672,30 @@ window.appRecorder = (() => {
 
   function showFloatingUI() {
     // Bolinha da webcam (posição:fixed, arrastável).
-    // IMPORTANTE: durante a gravação, NÃO mostra a webcam ao vivo aqui.
-    // Se mostrasse, a webcam apareceria duplicada na gravação (uma vez via
-    // captura de tela da bolinha HTML + outra vez via canvas composite).
-    // Aqui é só um placeholder com outline + ícone — a webcam de verdade
-    // é desenhada pelo canvas, que é o que entra no MediaRecorder.
+    // Mostra a webcam AO VIVO aqui — fica natural pro usuário enquanto grava.
+    // O canvas composite desenha a webcam exatamente sobre a mesma posição
+    // (ver "scrDX + bubble.x * scrDW" no draw loop), então no vídeo final
+    // a webcam aparece UMA vez só, sem duplicação.
     let bub = document.getElementById('recBubble');
     if (!bub) {
       bub = document.createElement('div');
       bub.id = 'recBubble';
       document.body.appendChild(bub);
     }
-    // Bolinha intencionalmente vazia: serve só como guia visual (borda tracejada)
-    // de onde a webcam vai aparecer no vídeo final. Mostrar 📷/REC aqui confunde
-    // o usuário, que enxerga a câmera de verdade composta pelo canvas e acha
-    // que está duplicada.
     bub.innerHTML = '';
+    if (cam) {
+      const liveVideo = document.createElement('video');
+      liveVideo.autoplay = true;
+      liveVideo.muted = true;
+      liveVideo.playsInline = true;
+      liveVideo.srcObject = cam;
+      Object.assign(liveVideo.style, {
+        position:'absolute', inset:'0', width:'100%', height:'100%',
+        objectFit:'cover', transform:'scaleX(-1)', // espelha igual ao canvas
+        pointerEvents:'none',
+      });
+      bub.appendChild(liveVideo);
+    }
     Object.assign(bub.style, {
       position:'fixed', zIndex:99998, cursor:'grab',
       border:'3px dashed rgba(255,255,255,.9)',
@@ -25964,6 +25972,8 @@ window.appRecorder = (() => {
     const draw = () => {
       ctx.fillStyle = '#000';
       ctx.fillRect(0,0,canvas.width,canvas.height);
+      // Guarda o retângulo onde a tela foi desenhada (pode ter letterbox)
+      let scrDX = 0, scrDY = 0, scrDW = canvas.width, scrDH = canvas.height;
       if (sv.videoWidth) {
         // Cobre canvas mantendo proporção da tela capturada
         const sw = sv.videoWidth, sh = sv.videoHeight;
@@ -25972,11 +25982,14 @@ window.appRecorder = (() => {
         if (ar > ca) { dw = canvas.width; dh = canvas.width/ar; dx=0; dy=(canvas.height-dh)/2; }
         else         { dh = canvas.height; dw = canvas.height*ar; dy=0; dx=(canvas.width-dw)/2; }
         ctx.drawImage(sv, dx, dy, dw, dh);
+        scrDX = dx; scrDY = dy; scrDW = dw; scrDH = dh;
       }
       if (cam && cv.videoWidth) {
-        const sz = Math.round(bubble.sizeFrac * canvas.width);
-        const bx = Math.round(bubble.x * canvas.width);
-        const by = Math.round(bubble.y * canvas.height);
+        // Webcam é posicionada relativa à área da TELA capturada (não do canvas inteiro),
+        // pra ficar exatamente em cima da bolinha guia que aparece no screen capture.
+        const sz = Math.round(bubble.sizeFrac * scrDW);
+        const bx = Math.round(scrDX + bubble.x * scrDW);
+        const by = Math.round(scrDY + bubble.y * scrDH);
         ctx.save();
         if (bubble.shape === 'circle') {
           ctx.beginPath();
