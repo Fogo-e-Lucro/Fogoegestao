@@ -25683,10 +25683,11 @@ window.appRecorder = (() => {
       bub.id = 'recBubble';
       document.body.appendChild(bub);
     }
-    bub.innerHTML = `
-      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85);font-size:${Math.max(18, Math.round(window.innerWidth * bubble.sizeFrac * 0.25))}px;">📷</div>
-      <div style="position:absolute;top:6px;left:6px;background:rgba(239,68,68,.9);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px;letter-spacing:.5px;">REC</div>
-    `;
+    // Bolinha intencionalmente vazia: serve só como guia visual (borda tracejada)
+    // de onde a webcam vai aparecer no vídeo final. Mostrar 📷/REC aqui confunde
+    // o usuário, que enxerga a câmera de verdade composta pelo canvas e acha
+    // que está duplicada.
+    bub.innerHTML = '';
     Object.assign(bub.style, {
       position:'fixed', zIndex:99998, cursor:'grab',
       border:'3px dashed rgba(255,255,255,.9)',
