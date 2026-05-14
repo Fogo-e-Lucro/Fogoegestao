@@ -25671,37 +25671,29 @@ window.appRecorder = (() => {
   }
 
   function showFloatingUI() {
-    // Bolinha da webcam (posição:fixed, arrastável).
-    // Mostra a webcam AO VIVO aqui — fica natural pro usuário enquanto grava.
-    // O canvas composite desenha a webcam exatamente sobre a mesma posição
-    // (ver "scrDX + bubble.x * scrDW" no draw loop), então no vídeo final
-    // a webcam aparece UMA vez só, sem duplicação.
+    // Bolinha = handle de arrastar INVISÍVEL durante a gravação.
+    // Quem desenha a webcam no vídeo final é o canvas composite (independente
+    // de aba ativa). A bolinha não tem borda nem fundo, então a captura de
+    // tela não pega nada visível — sem duplicação.
+    // Só aparece um outline sutil ao hover, pra você achar quando precisar
+    // reposicionar (esse outline também é capturado, mas só enquanto mouse
+    // está em cima, então é raro aparecer no vídeo final).
     let bub = document.getElementById('recBubble');
     if (!bub) {
       bub = document.createElement('div');
       bub.id = 'recBubble';
       document.body.appendChild(bub);
+      // Outline aparece só ao passar o mouse — não polui o vídeo final
+      const hoverStyle = document.createElement('style');
+      hoverStyle.textContent = '#recBubble:hover { outline:2px dashed rgba(255,255,255,.7); outline-offset:-2px; }';
+      document.head.appendChild(hoverStyle);
     }
     bub.innerHTML = '';
-    if (cam) {
-      const liveVideo = document.createElement('video');
-      liveVideo.autoplay = true;
-      liveVideo.muted = true;
-      liveVideo.playsInline = true;
-      liveVideo.srcObject = cam;
-      Object.assign(liveVideo.style, {
-        position:'absolute', inset:'0', width:'100%', height:'100%',
-        objectFit:'cover', transform:'scaleX(-1)', // espelha igual ao canvas
-        pointerEvents:'none',
-      });
-      bub.appendChild(liveVideo);
-    }
     Object.assign(bub.style, {
       position:'fixed', zIndex:99998, cursor:'grab',
-      border:'4px solid #fff',
-      boxShadow:'0 6px 22px rgba(0,0,0,.45)',
+      border:'0',
+      background:'transparent',
       overflow:'hidden',
-      background:'#000',
       userSelect:'none',
     });
     const sizePx = Math.round(window.innerWidth * bubble.sizeFrac);
@@ -25983,11 +25975,38 @@ window.appRecorder = (() => {
         ctx.drawImage(sv, dx, dy, dw, dh);
         scrDX = dx; scrDY = dy; scrDW = dw; scrDH = dh;
       }
-      // OBS: a webcam NÃO é desenhada pelo canvas. A bolinha HTML mostra a
-      // webcam ao vivo via <video>, e o getDisplayMedia já captura ela junto
-      // com a tela. Tentar redesenhar aqui causa duplicação (uma camada via
-      // captura de tela, outra via canvas), com offset por causa do letterbox
-      // / DPR / captura full-screen vs viewport.
+      // Webcam é desenhada PELO CANVAS (independente de qual aba está visível
+      // — não congela ao trocar de tab). A bolinha HTML fica invisível no
+      // screen capture, então não tem duplicação.
+      if (cam && cv.videoWidth) {
+        const sz = Math.round(bubble.sizeFrac * canvas.width);
+        const bx = Math.round(bubble.x * canvas.width);
+        const by = Math.round(bubble.y * canvas.height);
+        ctx.save();
+        if (bubble.shape === 'circle') {
+          ctx.beginPath();
+          ctx.arc(bx + sz/2, by + sz/2, sz/2, 0, Math.PI*2);
+          ctx.clip();
+        } else {
+          ctx.beginPath();
+          ctx.rect(bx, by, sz, sz);
+          ctx.clip();
+        }
+        // Espelha (mirror) e crop pra quadrado
+        const wcw = cv.videoWidth, wch = cv.videoHeight;
+        const side = Math.min(wcw, wch);
+        ctx.translate(bx + sz, by);
+        ctx.scale(-1, 1);
+        ctx.drawImage(cv, (wcw-side)/2, (wch-side)/2, side, side, 0, 0, sz, sz);
+        ctx.restore();
+        // Borda branca em volta da webcam composta
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = Math.max(4, canvas.width * 0.003);
+        ctx.beginPath();
+        if (bubble.shape === 'circle') ctx.arc(bx + sz/2, by + sz/2, sz/2, 0, Math.PI*2);
+        else ctx.rect(bx, by, sz, sz);
+        ctx.stroke();
+      }
       raf = requestAnimationFrame(draw);
     };
     draw();
