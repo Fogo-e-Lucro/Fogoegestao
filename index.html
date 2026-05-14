@@ -25685,6 +25685,7 @@ window.appRecorder = (() => {
     bub.innerHTML = '';
     if (cam) {
       const liveVideo = document.createElement('video');
+      liveVideo.id = 'recBubbleVideo';
       liveVideo.autoplay = true;
       liveVideo.muted = true;
       liveVideo.playsInline = true;
@@ -25695,6 +25696,17 @@ window.appRecorder = (() => {
         pointerEvents:'none',
       });
       bub.appendChild(liveVideo);
+      // PiP nativo: faz a webcam flutuar SOBRE qualquer aba/app (estilo Loom).
+      // O usuário se vê o tempo todo, mesmo gravando outra aba do Chrome ou
+      // outro app. Como PiP é uma janela separada do navegador, NÃO entra na
+      // captura de aba/janela (só entra em captura de tela inteira).
+      setTimeout(() => {
+        if (document.pictureInPictureEnabled && !document.pictureInPictureElement) {
+          liveVideo.requestPictureInPicture().catch(err => {
+            console.warn('[recorder] PiP não disponível:', err.message);
+          });
+        }
+      }, 400);
     }
     Object.assign(bub.style, {
       position:'fixed', zIndex:99998, cursor:'grab',
@@ -25782,6 +25794,12 @@ window.appRecorder = (() => {
   }
 
   function hideFloatingUI() {
+    // Sai do Picture-in-Picture se estiver ativo (a câmera flutuante do Loom-style)
+    try {
+      if (document.pictureInPictureElement) {
+        document.exitPictureInPicture().catch(()=>{});
+      }
+    } catch(_) {}
     const bub = document.getElementById('recBubble'); if (bub) bub.remove();
     const tb  = document.getElementById('recToolbar'); if (tb) tb.remove();
   }
