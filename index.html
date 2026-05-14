@@ -25706,14 +25706,22 @@ window.appRecorder = (() => {
     bub.onmousedown = bubbleDragStart;
     bub.ontouchstart = bubbleTouchStart;
 
-    // Toolbar flutuante (timer + pausar + parar)
+    // Toolbar flutuante (timer + pausar + parar + posição da câmera)
     let tb = document.getElementById('recToolbar');
     if (!tb) {
       tb = document.createElement('div');
       tb.id = 'recToolbar';
+      const cornerBtnStyle = 'background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;padding:0;';
       tb.innerHTML = `
         <span id="recToolbarDot" style="width:10px;height:10px;border-radius:50%;background:#ef4444;animation:recBlink 1s infinite;"></span>
         <span id="recTimer" style="font-family:ui-monospace,monospace;font-weight:700;letter-spacing:.5px;">00:00</span>
+        <div style="display:flex;gap:4px;border-left:1px solid rgba(255,255,255,.15);padding-left:10px;margin-left:4px;" title="Posição da câmera no vídeo">
+          <button id="recPosTL" style="${cornerBtnStyle}" title="Câmera no canto superior esquerdo">↖</button>
+          <button id="recPosTR" style="${cornerBtnStyle}" title="Câmera no canto superior direito">↗</button>
+          <button id="recPosBL" style="${cornerBtnStyle}" title="Câmera no canto inferior esquerdo">↙</button>
+          <button id="recPosBR" style="${cornerBtnStyle}" title="Câmera no canto inferior direito">↘</button>
+          <button id="recPosHide" style="${cornerBtnStyle}" title="Esconder câmera no vídeo">🚫</button>
+        </div>
         <button id="recPauseBtn" style="background:#f59e0b;color:#fff;border:0;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer;font-size:13px;">⏸ Pausar</button>
         <button id="recStopBtn" style="background:#ef4444;color:#fff;border:0;border-radius:8px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:13px;">⏹ Parar</button>
       `;
@@ -25723,6 +25731,37 @@ window.appRecorder = (() => {
       document.head.appendChild(style);
       document.getElementById('recStopBtn').onclick = stop;
       document.getElementById('recPauseBtn').onclick = togglePause;
+      // Botões de posição: ajustam bubble.x, bubble.y (frações do canvas).
+      // bubble.sizeFrac é fração da LARGURA; pra encostar no bottom do canvas,
+      // precisamos converter pra fração de ALTURA via aspect ratio do canvas.
+      const setCorner = (corner) => {
+        if (!canvas) return;
+        const margin = 0.02;
+        const wFrac = bubble.sizeFrac;
+        const hFrac = bubble.sizeFrac * (canvas.width / canvas.height);
+        if (corner === 'tl') { bubble.x = margin;             bubble.y = margin; }
+        if (corner === 'tr') { bubble.x = 1 - wFrac - margin; bubble.y = margin; }
+        if (corner === 'bl') { bubble.x = margin;             bubble.y = 1 - hFrac - margin; }
+        if (corner === 'br') { bubble.x = 1 - wFrac - margin; bubble.y = 1 - hFrac - margin; }
+        // Move a bolinha HTML também (pra drag continuar funcionando)
+        const bubEl = document.getElementById('recBubble');
+        if (bubEl) {
+          bubEl.style.left = Math.round(bubble.x * window.innerWidth) + 'px';
+          bubEl.style.top  = Math.round(bubble.y * window.innerHeight) + 'px';
+        }
+      };
+      document.getElementById('recPosTL').onclick = () => setCorner('tl');
+      document.getElementById('recPosTR').onclick = () => setCorner('tr');
+      document.getElementById('recPosBL').onclick = () => setCorner('bl');
+      document.getElementById('recPosBR').onclick = () => setCorner('br');
+      document.getElementById('recPosHide').onclick = () => {
+        bubble.hidden = !bubble.hidden;
+        const btn = document.getElementById('recPosHide');
+        btn.textContent = bubble.hidden ? '📷' : '🚫';
+        btn.title = bubble.hidden ? 'Mostrar câmera no vídeo' : 'Esconder câmera no vídeo';
+        const bubEl = document.getElementById('recBubble');
+        if (bubEl) bubEl.style.display = bubble.hidden ? 'none' : 'block';
+      };
     }
     Object.assign(tb.style, {
       position:'fixed', top:'12px', right:'12px', zIndex:99999,
@@ -25978,7 +26017,7 @@ window.appRecorder = (() => {
       // Webcam é desenhada PELO CANVAS (independente de qual aba está visível
       // — não congela ao trocar de tab). A bolinha HTML fica invisível no
       // screen capture, então não tem duplicação.
-      if (cam && cv.videoWidth) {
+      if (cam && cv.videoWidth && !bubble.hidden) {
         const sz = Math.round(bubble.sizeFrac * canvas.width);
         const bx = Math.round(bubble.x * canvas.width);
         const by = Math.round(bubble.y * canvas.height);
