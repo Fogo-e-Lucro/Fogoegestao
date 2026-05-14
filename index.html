@@ -25916,11 +25916,16 @@ window.appRecorder = (() => {
         video: { width:{ ideal: cw }, height:{ ideal: ch }, frameRate:{ ideal: 30, max: 60 } },
         audio: wantSys,
         selfBrowserSurface: 'include',
-        surfaceSwitching: 'include',  // permite trocar de aba durante a gravação
+        surfaceSwitching: 'include',     // permite trocar de aba durante a gravação
+        monitorTypeSurfaces: 'include',  // habilita opção de "Tela inteira" no dialog
         systemAudio: 'include',
+        preferCurrentTab: false,         // não força a aba atual; deixa usuário escolher
       });
     } catch(e) {
-      try { showToast('error','❌','Tela não autorizada.'); }catch(_){}
+      const msg = (e && e.name === 'NotAllowedError')
+        ? 'Permissão de tela negada. No macOS: Configurações → Privacidade → Gravação de Tela → marca o Chrome.'
+        : 'Tela não autorizada.';
+      try { showToast('error','❌', msg); }catch(_){}
       return;
     }
 
