@@ -7843,18 +7843,30 @@ async function mtrFetchIg(igId, token, since, until) {
   // 📈 Para períodos > 30d, sobrescreve follower_count (ganho) usando
   // histórico próprio do Firestore — contorna o limite de 30d da Meta API.
   try {
-    const days = (new Date(until + 'T00:00:00Z').getTime() - new Date(since + 'T00:00:00Z').getTime()) / 86400000;
-    if (days > 30) {
+    const reqDays = Math.round((new Date(until + 'T00:00:00Z').getTime() - new Date(since + 'T00:00:00Z').getTime()) / 86400000);
+    if (reqDays > 30) {
       const hist = await _mtrLoadFollowerHistory(igId, since, until);
       if (hist.length >= 2) {
         const first = hist[0].count;
         const last = hist[hist.length - 1].count;
         const gain = last - first;
+        const histDays = Math.round((new Date(hist[hist.length-1].date + 'T00:00:00Z') - new Date(hist[0].date + 'T00:00:00Z')) / 86400000);
+        const isPartial = histDays < reqDays - 3; // tolerância de 3 dias
         result.follower_count = {
           total: gain,
           values: hist.map(h => ({ end_time: h.date, value: h.count })),
           source: 'history',
+          _histDays: histDays,
+          _reqDays: reqDays,
+          _partial: isPartial,
         };
+      } else {
+        // Sem histórico suficiente — marca dado da API (30d) como parcial
+        if (!result.follower_count) result.follower_count = { total: 0, values: [] };
+        result.follower_count._histDays = 0;
+        result.follower_count._reqDays = reqDays;
+        result.follower_count._partial = true;
+        result.follower_count.source = 'api_partial';
       }
     }
   } catch(e) {
@@ -8182,6 +8194,11 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
     const mainVal = mtrShowPct && pctD !== null
       ? `<div class="mtr-kpi-value" style="color:${pctD>=0?(m.invert?'#ef4444':'#22c55e'):(m.invert?'#22c55e':'#ef4444')}">${pctD>=0?'+':''}${pctD.toFixed(1)}%</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">${mtrFmtValue(m, cv)}</div>`
       : `<div class="mtr-kpi-value">${mtrFmtValue(m, cv)}</div>`;
+    // Aviso de cobertura parcial (só follower_count quando histórico não cobre o período todo)
+    const rawFollower = id === 'ig_follower_count' ? igCurr?.follower_count : null;
+    const coverageNote = rawFollower?._partial
+      ? `<div class="mtr-kpi-coverage">⚠️ ${rawFollower._histDays > 0 ? rawFollower._histDays + 'd' : '≤30d'} de ${rawFollower._reqDays}d</div>`
+      : '';
     return `
       <div class="mtr-kpi" data-source="${m.source}" data-kpi-id="${id}" draggable="true"
            ondragstart="mtrKpiDragStart(event,'${id}')"
@@ -8194,6 +8211,7 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
         <div class="mtr-kpi-icon">${m.icon}</div>
         <div class="mtr-kpi-label">${m.label}</div>
         ${mainVal}
+        ${coverageNote}
         ${showDelta ? mtrDeltaHtml(cv, pv, m.invert) : ''}
         ${spark}
         <div class="mtr-kpi-bar"></div>

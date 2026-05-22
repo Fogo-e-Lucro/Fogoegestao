@@ -2300,6 +2300,7 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .mtr-kpi-delta.down { color:#ef4444; }
 .mtr-kpi-delta.neutral { color:var(--text2); }
 .mtr-kpi-sub { font-size:11px;color:var(--text2);margin-top:3px; }
+.mtr-kpi-coverage { font-size:10px;color:#f59e0b;font-weight:700;margin-top:3px;letter-spacing:.02em; }
 .mtr-kpi-bar { position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),transparent); }
 
 .mtr-chart-card { background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px; }
