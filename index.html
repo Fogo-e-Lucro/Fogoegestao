@@ -21244,7 +21244,7 @@ function pjRenderTaskAttachments(taskId) {
 
     if (isImg) {
       return `<div class="pj-attach-item pj-attach-img" data-attach-idx="${i}" data-action="lightbox" title="Clique para ampliar">
-        <div class="pj-attach-img-wrap"><img src="${escHtml(src)}" alt="${nameEsc}" loading="lazy" crossorigin="anonymous" referrerpolicy="no-referrer"></div>
+        <div class="pj-attach-img-wrap"><img src="${escHtml(src)}" alt="${nameEsc}" loading="lazy" referrerpolicy="no-referrer"></div>
         <div class="pj-attach-meta">
           <span class="pj-attach-name" title="${nameEsc}">${nameEsc || 'imagem'}</span>
           ${meta ? `<span class="pj-attach-sub">${escHtml(meta)}</span>` : ''}
