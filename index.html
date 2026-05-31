@@ -7260,8 +7260,8 @@ const MTR_CATALOG = [
   { id:'ig_profile_views', source:'ig', icon:'👤', label:'Visitas ao Perfil', fmt:'num' },
   { id:'ig_website_clicks', source:'ig', icon:'🔗', label:'Cliques no Site', fmt:'num' },
   // Instagram — Perfil
-  { id:'ig_followers_count', source:'ig', icon:'👥', label:'Seguidores Totais', fmt:'num', noCompare:true },
-  { id:'ig_media_count', source:'ig', icon:'📷', label:'Total de Posts', fmt:'num', noCompare:true },
+  { id:'ig_followers_count', source:'ig', icon:'👥', label:'Seguidores Totais', fmt:'num', noSeries:true },
+  { id:'ig_media_count', source:'ig', icon:'📷', label:'Total de Posts', fmt:'num', noSeries:true },
   // Anúncios — Métricas básicas
   { id:'ad_spend', source:'ad', icon:'💰', label:'Gasto (Ads)', fmt:'currency' },
   { id:'ad_reach', source:'ad', icon:'👀', label:'Alcance (Ads)', fmt:'num' },
@@ -7696,6 +7696,25 @@ async function loadMetrics() {
   mtrDemoCache = demoR.ok ? demoR.value : null;
   mtrDailyAdsCache = dailyAdsR.ok ? dailyAdsR.value : null;
   const health = healthR.ok ? healthR.value : null;
+
+  // 🆕 Comparação sintética pra "Seguidores Totais" e "Total de Posts"
+  // A API só devolve o total ATUAL — o `igPrev` viria igualzinho ao `igCurr`,
+  // matando a comparação. Aqui derivamos o "anterior" subtraindo o que
+  // aconteceu DURANTE o período atual.
+  if (compare && igCurr && igPrev) {
+    // Seguidores Totais anterior = total atual − ganho líquido do período
+    const periodGain = igCurr.follower_count?.total || 0;
+    if (igCurr.followers_count) {
+      const currTotal = igCurr.followers_count.total || 0;
+      igPrev.followers_count = { total: currTotal - periodGain, values: [], _derived: true };
+    }
+    // Total de Posts anterior = total atual − posts publicados no período
+    if (igCurr.media_count && mtrPostsCache && mtrPostsCache.postsCountReliable !== false) {
+      const currMedia = igCurr.media_count.total || 0;
+      const postsInPeriod = mtrPostsCache.postsCountInPeriod || 0;
+      igPrev.media_count = { total: currMedia - postsInPeriod, values: [], _derived: true };
+    }
+  }
 
   // Snapshot para a IA analisar depois
   mtrLastSnapshot = { igCurr, igPrev, adsData, adsPrev, campaigns, curr, prev, compare, warnings,
@@ -8189,7 +8208,7 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
     const series = mtrGetSeries(id, igCurr);
     const spark = series && series.length >= 2
       ? `<div class="mtr-kpi-spark">${mtrSparkSvg(series)}</div>`
-      : (m.noCompare ? '' : `<div class="mtr-kpi-spark-empty">série diária indisponível</div>`);
+      : ((m.noSeries || m.noCompare) ? '' : `<div class="mtr-kpi-spark-empty">série diária indisponível</div>`);
     const pctD = (cv !== null && pv !== null && pv !== 0) ? ((cv - pv) / Math.abs(pv) * 100) : null;
     const mainVal = mtrShowPct && pctD !== null
       ? `<div class="mtr-kpi-value" style="color:${pctD>=0?(m.invert?'#ef4444':'#22c55e'):(m.invert?'#22c55e':'#ef4444')}">${pctD>=0?'+':''}${pctD.toFixed(1)}%</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">${mtrFmtValue(m, cv)}</div>`
@@ -10327,6 +10346,11 @@ async function mtrFetchPostsAndStories(igId, token, since, until) {
   // Separa stories (deprecated mas mantém) de feed/reels
   const posts = inRange.filter(p => p.media_product_type !== 'STORY');
   const stories = inRange.filter(p => p.media_product_type === 'STORY');
+  // Contagem total (não-sliced) e flag de confiabilidade pra comparação de "Total de Posts"
+  const postsCountInPeriod = posts.length;
+  // Se bateu no limite de 50 e o mais antigo do batch ainda é >= since, pode ter mais posts antigos não buscados
+  const oldestTs = all.length ? new Date(all[all.length - 1].timestamp).getTime() : Infinity;
+  const postsCountReliable = !(all.length >= 50 && oldestTs >= sinceTs);
 
   // Busca insights de cada post (limitado a 30 para performance)
   const postsToFetch = posts.slice(0, 30);
@@ -10358,7 +10382,7 @@ async function mtrFetchPostsAndStories(igId, token, since, until) {
       }
     } catch(e){}
   }));
-  return { posts: postsToFetch, stories: storiesToFetch };
+  return { posts: postsToFetch, stories: storiesToFetch, postsCountInPeriod, postsCountReliable };
 }
 function mtrRenderPosts() {
   if (!mtrPostsCache?.posts?.length) return '';
