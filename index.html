@@ -10765,6 +10765,13 @@ const MTR_DEFINITIONS = {
 function mtrOpenKpiModal(id) {
   const m = MTR_CATALOG.find(x => x.id === id);
   if (!m || !mtrLastSnapshot) return;
+  // Portal: move o modal pro <body> pra escapar do transform da .tab-panel
+  // (transform cria containing block, quebra o position:fixed → modal aparece
+  // no meio da tab inteira em vez do viewport).
+  const modalEl = document.getElementById('mtrKpiModal');
+  if (modalEl && modalEl.parentElement !== document.body) {
+    document.body.appendChild(modalEl);
+  }
   const s = mtrLastSnapshot;
   const cv = mtrGetValue(id, s.igCurr, s.adsData);
   const pv = mtrGetValue(id, s.igPrev, s.adsPrev);
