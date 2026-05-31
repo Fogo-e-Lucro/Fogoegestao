@@ -7243,6 +7243,16 @@ let mtrIsSharedView = false;
 let mtrShowPct = false;            // toggle % variação vs valor absoluto
 let mtrCustomMetrics = JSON.parse(localStorage.getItem('mtrCustomMetrics') || '[]'); // [{id,label,value}]
 let mtrSourceTab = localStorage.getItem('mtrSourceTab') || 'all'; // 'ig' | 'ad' | 'all' — qual aba está ativa quando ambas estão disponíveis
+let mtrCampStatusFilter = localStorage.getItem('mtrCampStatusFilter') || 'active'; // 'active' | 'all' — filtro da tabela de campanhas
+
+// Considera campanha "ativa" se o effective_status (real, considerando ad set/ad)
+// ou o status configurado é ACTIVE. Meta às vezes só devolve um dos dois.
+function _mtrIsCampActive(c) {
+  if (!c) return false;
+  const es = (c.effective_status || '').toUpperCase();
+  const st = (c.status || '').toUpperCase();
+  return es === 'ACTIVE' || (!es && st === 'ACTIVE');
+}
 
 /* Catálogo completo de métricas disponíveis */
 const MTR_CATALOG = [
@@ -8321,13 +8331,33 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
 
   const cols = mtrCampCols.map(id => MTR_CAMP_COLS.find(x => x.id === id)).filter(Boolean);
   const colHeaders = cols.map(col => `<th class="num">${col.label}</th>`).join('');
+  // Filtro de status: por padrão mostra só as ativas, com toggle pra ver todas
+  const activeCount = campaigns.filter(_mtrIsCampActive).length;
+  const totalCount = campaigns.length;
+  const visibleCampaigns = mtrCampStatusFilter === 'active'
+    ? campaigns.filter(_mtrIsCampActive)
+    : campaigns;
+  const filterLabel = mtrCampStatusFilter === 'active'
+    ? `${activeCount} ativa(s) de ${totalCount}`
+    : `${totalCount} no total · ${activeCount} ativa(s)`;
+  const filterToggleLabel = mtrCampStatusFilter === 'active'
+    ? `👁️ Ver todas (${totalCount})`
+    : `✓ Só ativas (${activeCount})`;
   const campaignsHtml = (mtrCurrentAdAcc && campaigns && campaigns.length) ? `
     <div class="mtr-section">
       <div class="mtr-section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-        <span>📢 Campanhas do anúncio &nbsp;<span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">${campaigns.length} no período · clique para filtrar · use ⊕ para drill-down</span></span>
-        <button class="mtr-camp-cols-btn" onclick="mtrOpenCampColsModal()" title="Escolher colunas">⚙️ Colunas (${cols.length})</button>
+        <span>📢 Campanhas do anúncio &nbsp;<span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">${filterLabel} · clique para filtrar · use ⊕ para drill-down</span></span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="mtr-camp-cols-btn" onclick="mtrToggleCampStatusFilter()" title="Alternar entre só ativas e todas">${filterToggleLabel}</button>
+          <button class="mtr-camp-cols-btn" onclick="mtrOpenCampColsModal()" title="Escolher colunas">⚙️ Colunas (${cols.length})</button>
+        </div>
       </div>
       ${cmpToolbar}
+      ${visibleCampaigns.length === 0 ? `
+        <div style="padding:24px;text-align:center;color:var(--text2);font-size:13px;background:var(--bg2);border-radius:8px;">
+          Nenhuma campanha ativa no período. <button class="mtr-cmp-clear" style="display:inline-block;margin-left:6px;" onclick="mtrToggleCampStatusFilter()">Mostrar todas (${totalCount})</button>
+        </div>
+      ` : `
       <div style="overflow-x:auto;">
       <table class="mtr-camp-table">
         <thead>
@@ -8339,10 +8369,11 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
           </tr>
         </thead>
         <tbody id="mtrCampTbody">
-          ${campaigns.map(c => mtrCampaignRowHtml(c)).join('')}
+          ${visibleCampaigns.map(c => mtrCampaignRowHtml(c)).join('')}
         </tbody>
       </table>
       </div>
+      `}
     </div>` : '';
 
   // Posts top/bottom
@@ -10227,6 +10258,11 @@ function mtrToggleCmp(id, on) {
 }
 function mtrClearCmp() {
   mtrCmpSelected = [];
+  if (mtrLastSnapshot) renderMetrics(mtrLastSnapshot.igCurr, mtrLastSnapshot.igPrev, mtrLastSnapshot.adsData, mtrLastSnapshot.adsPrev, mtrLastSnapshot.curr, mtrLastSnapshot.prev, mtrLastSnapshot.compare, [], mtrLastSnapshot.campaigns, mtrLastSnapshot.health);
+}
+function mtrToggleCampStatusFilter() {
+  mtrCampStatusFilter = mtrCampStatusFilter === 'active' ? 'all' : 'active';
+  localStorage.setItem('mtrCampStatusFilter', mtrCampStatusFilter);
   if (mtrLastSnapshot) renderMetrics(mtrLastSnapshot.igCurr, mtrLastSnapshot.igPrev, mtrLastSnapshot.adsData, mtrLastSnapshot.adsPrev, mtrLastSnapshot.curr, mtrLastSnapshot.prev, mtrLastSnapshot.compare, [], mtrLastSnapshot.campaigns, mtrLastSnapshot.health);
 }
 function mtrOpenCompare() {
