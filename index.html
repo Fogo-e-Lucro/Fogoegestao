@@ -24355,8 +24355,8 @@ function _bdSectionIdent(c) {
       ${_bdInput(c,'nome','Nome fantasia')}
       ${_bdInput(c,'razaoSocial','Razão social')}
       ${_bdInput(c,'cnpj','CNPJ')}
-      ${_bdInput(c,'logoUrl','Logo (URL)')}
-      ${_bdInput(c,'fotoUrl','Foto/avatar (URL)')}
+      ${_bdImageInput(c,'logoUrl','Logo')}
+      ${_bdImageInput(c,'fotoUrl','Foto/avatar')}
       ${_bdInput(c,'tipoCozinha','Tipo de cozinha')}
     </div>
   `, {open:true});
@@ -24759,26 +24759,54 @@ function _bdSectionVisual(c) {
   `);
 }
 
-window.bdUploadPhoto = async function(id, input) {
+window.bdUploadPhoto = async function(id, input, field) {
+  const targetField = field || input?.dataset?.field || 'fotoUrl';
   const file = input.files?.[0]; if (!file) return;
   if (file.size > 4 * 1024 * 1024) { alert('Imagem muito grande (máx 4MB).'); return; }
-  // Upload via ImgBB se chave configurada
-  const imgbbKey = (typeof getApiKey === 'function' ? getApiKey('imgbb') : null) || (typeof getSpImgbbKey === 'function' ? getSpImgbbKey() : null);
-  if (!imgbbKey) {
-    // Fallback: data URL
-    const reader = new FileReader();
-    reader.onload = () => bdSaveField(id, 'fotoUrl', reader.result);
-    reader.readAsDataURL(file);
-    return;
-  }
+  const btn = input.closest('.bd-img-upload-wrap')?.querySelector('.bd-img-upload-btn');
+  const setBusy = (busy) => { if (btn) { btn.disabled = !!busy; btn.style.opacity = busy ? '.6' : ''; btn.textContent = busy ? '⏳ Enviando…' : '📎 Anexar arquivo'; } };
+  setBusy(true);
   try {
+    // Upload via ImgBB se chave configurada
+    const imgbbKey = (typeof getApiKey === 'function' ? getApiKey('imgbb') : null) || (typeof getSpImgbbKey === 'function' ? getSpImgbbKey() : null);
+    if (!imgbbKey) {
+      // Fallback: data URL
+      const reader = new FileReader();
+      reader.onload = () => { bdSaveField(id, targetField, reader.result); showToast && showToast('success','🖼️','Imagem salva localmente.'); };
+      reader.readAsDataURL(file);
+      return;
+    }
     const fd = new FormData(); fd.append('image', file);
     const r = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method:'POST', body: fd });
     const j = await r.json();
-    if (j?.data?.url) bdSaveField(id, 'fotoUrl', j.data.url);
+    if (j?.data?.url) { bdSaveField(id, targetField, j.data.url); showToast && showToast('success','🖼️','Imagem enviada!'); }
     else alert('Erro no upload.');
   } catch(e) { alert('Erro: '+e.message); }
+  finally { setBusy(false); input.value = ''; }
 };
+
+// Input de URL + botão de anexar arquivo (upload p/ ImgBB) para campos de imagem
+function _bdImageInput(c, field, label) {
+  if (_bdGetHiddenFields().includes(field)) return '';
+  const v = c[field]||'';
+  const safeId = (c.id||'').replace(/[^a-zA-Z0-9_-]/g,'_');
+  const inputId = `bd-img-file-${safeId}-${field}`;
+  const preview = v
+    ? `<img src="${_bdEsc(v)}" alt="" style="width:36px;height:36px;border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;">`
+    : `<div style="width:36px;height:36px;border-radius:8px;background:var(--bg2);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text3);flex-shrink:0;">🖼️</div>`;
+  return `<div class="bd-field">
+    <div class="bd-field-label">${label}</div>
+    <div class="bd-img-upload-wrap" style="display:flex;flex-direction:column;gap:6px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${preview}
+        <input class="bd-field-input" type="text" value="${_bdEsc(v)}" placeholder="Cole uma URL ou anexe um arquivo" onchange="bdSaveField('${c.id}','${field}',this.value)" style="flex:1;">
+        ${_bdCopyHtml(v)}
+      </div>
+      <label class="bd-img-upload-btn" for="${inputId}" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2);cursor:pointer;align-self:flex-start;font-weight:500;">📎 Anexar arquivo</label>
+      <input id="${inputId}" type="file" accept="image/*" data-field="${field}" style="display:none;" onchange="bdUploadPhoto('${c.id}',this,'${field}')">
+    </div>
+  </div>`;
+}
 
 // ── Campos customizáveis (schema dinâmico) ──────────────────────────
 // Schema salvo em Firestore: config/clientes_schema → { fields: [{id,label,type,section,order}] }
