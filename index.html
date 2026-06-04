@@ -21490,8 +21490,23 @@ async function pjCleanupOldAttachments(daysOld) {
       const completedAt = (t.completedAt && t.completedAt.toMillis) ? t.completedAt.toMillis() : (t.completedAt || 0);
       if (!completedAt || completedAt > cutoffMs) continue;
 
+      // 🛡️ Defesa: confirma que a tarefa ESTÁ de fato concluída AGORA
+      // (statusId no bucket 'closed'). Se foi reaberta mas o completedAt
+      // ficou stale, não apaga os anexos.
+      const list = pjLists.find(l => l.id === t.listId);
+      const statuses = list?.statuses || (typeof PJ_DEFAULT_STATUSES !== 'undefined' ? PJ_DEFAULT_STATUSES : []);
+      const currSt = statuses.find(s => s.id === t.statusId);
+      const isClosedNow = currSt && typeof pjStatusBucket === 'function' && pjStatusBucket(currSt) === 'closed';
+      if (!isClosedNow) {
+        console.warn('[pjCleanup] pulando tarefa com completedAt antigo mas status NÃO concluído:', doc.id, t.title, 'status:', currSt?.name);
+        continue;
+      }
+
       const atts = Array.isArray(t.attachments) ? t.attachments : [];
       if (!atts.length) continue;
+
+      // 🪵 Log destrutivo — pra rastrear no DevTools quem está apagando
+      console.warn(`[pjCleanup] vai apagar ${atts.length} anexo(s) da tarefa "${t.title}" (id=${doc.id}, completedAt=${new Date(completedAt).toISOString()}, daysOld=${daysOld})`);
 
       scanned++;
       let cleanedFromTask = 0;
