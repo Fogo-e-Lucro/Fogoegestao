@@ -21070,7 +21070,20 @@ function pjAttachStartListener(taskId) {
       // Atualiza task local com os anexos do server (fonte da verdade)
       const task = pjAllTasks.find(t => t.id === taskId);
       if (task) {
-        task.attachments = Array.isArray(data.attachments) ? data.attachments : [];
+        const prevAtts = Array.isArray(task.attachments) ? task.attachments : [];
+        const newAtts = Array.isArray(data.attachments) ? data.attachments : [];
+        // 🪵 Diagnóstico: se anexo SUMIU do server, loga loud no console
+        // pra rastrear o bug 'sobe e some horas depois'.
+        if (newAtts.length < prevAtts.length) {
+          const lost = prevAtts.filter(a => !newAtts.some(n => (n.url && n.url === a.url) || (n.name === a.name && n.uploadedAt === a.uploadedAt)));
+          console.warn('[pj-attach-debug] anexo SUMIU do server na tarefa', taskId, {
+            antes: prevAtts.length, depois: newAtts.length, perdidos: lost,
+            timestamp: new Date().toISOString(),
+            origem: data.updatedBy || 'desconhecido',
+            updatedAt: data.updatedAt?.toMillis?.() || data.updatedAt,
+          });
+        }
+        task.attachments = newAtts;
         pjRenderTaskAttachments(taskId);
       }
     }, (err) => { console.warn('[pj] erro listener anexos:', err); });
