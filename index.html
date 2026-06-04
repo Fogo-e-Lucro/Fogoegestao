@@ -21671,7 +21671,8 @@ async function pjAddTaskAttachment(file) {
     // Remove o preview otimista que falhou
     if (taskLocal && Array.isArray(taskLocal.attachments)) {
       taskLocal.attachments = taskLocal.attachments.filter(a => a.tempId !== tempId);
-      pjRenderTaskAttachments(taskId);
+      // Só re-renderiza se o user ainda está na tarefa original
+      if (pjCurrentTaskId === taskId) pjRenderTaskAttachments(taskId);
     }
     if (typeof showToast === 'function') showToast('error','❌','Falha no upload: '+(e?.message||''));
     return;
@@ -21689,30 +21690,47 @@ async function pjAddTaskAttachment(file) {
     uploadedBy: uid,
     url,
   };
-  // Update local
-  const task = pjAllTasks.find(t => t.id === pjCurrentTaskId);
-  if (!task) return;
+  // Update local — usa taskId capturado no início (NÃO pjCurrentTaskId).
+  // Uploads grandes (video/PSD) demoram, e se o user trocou de tarefa
+  // o pjCurrentTaskId mudou — escrever em pjCurrentTaskId aqui salva o
+  // anexo na tarefa errada e faz sumir da tarefa original.
+  const task = pjAllTasks.find(t => t.id === taskId);
+  if (!task) {
+    // Tarefa original sumiu da memória (raríssimo) — ainda assim persiste
+    // no Firestore pra não perder o arquivo já enviado pro Storage.
+    try {
+      if (typeof firebase !== 'undefined' && firebase?.firestore?.FieldValue) {
+        await pjC('pj_tasks').doc(taskId).update({
+          attachments: firebase.firestore.FieldValue.arrayUnion(att),
+          updatedAt: pjNow(),
+        });
+      }
+    } catch(e) { console.warn('[pj] erro ao salvar anexo (task local sumiu):', e); }
+    return;
+  }
   if (!Array.isArray(task.attachments)) task.attachments = [];
   task.attachments.push(att);
-  pjRenderTaskAttachments(pjCurrentTaskId);
-  // Garante seção aberta pra usuário ver
-  if (!pjAttachOpen) pjToggleAttach();
-  // Persiste no Firestore
+  // Só re-renderiza se o user ainda está nessa mesma tarefa
+  if (pjCurrentTaskId === taskId) {
+    pjRenderTaskAttachments(taskId);
+    if (!pjAttachOpen) pjToggleAttach();
+  }
+  // Persiste no Firestore — sempre na tarefa onde o upload começou
   try {
     if (typeof firebase !== 'undefined' && firebase?.firestore?.FieldValue) {
-      await pjC('pj_tasks').doc(pjCurrentTaskId).update({
+      await pjC('pj_tasks').doc(taskId).update({
         attachments: firebase.firestore.FieldValue.arrayUnion(att),
         updatedAt: pjNow(),
       });
     } else {
-      await pjC('pj_tasks').doc(pjCurrentTaskId).update({
+      await pjC('pj_tasks').doc(taskId).update({
         attachments: task.attachments, updatedAt: pjNow()
       });
     }
   } catch(e) { console.warn('[pj] erro ao salvar anexo:', e); }
-  // Log de atividade
+  // Log de atividade na tarefa correta
   if (typeof pjLogActivity === 'function') {
-    pjLogActivity(pjCurrentTaskId, { type:'attach', action:'add', name:file.name });
+    pjLogActivity(taskId, { type:'attach', action:'add', name:file.name });
   }
   if (typeof showToast === 'function') showToast('success','📎','Anexo adicionado.');
 }
