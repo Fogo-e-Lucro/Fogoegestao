@@ -8917,3 +8917,24 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
   line-height:1.5;
 }
 .live-howto-warn strong { color:var(--text1); }
+
+/* ─────────────────────────────────────────────────────────────
+   Safe area (iOS notch/Dynamic Island/status bar) — PWA + mobile
+   No standalone, status bar passa por cima do conteúdo.
+   Empurra o hamburger + padding-top do conteúdo abaixo dela.
+   ───────────────────────────────────────────────────────────── */
+.pj-drawer-toggle {
+  top: calc(8px + env(safe-area-inset-top)) !important;
+  left: calc(8px + env(safe-area-inset-left)) !important;
+}
+@media (max-width: 900px) {
+  .pj-main { padding-top: calc(56px + env(safe-area-inset-top)) !important; }
+  /* Sino de notificações também fica colado no topo */
+  .pj-notif-bell-wrap { top: calc(8px + env(safe-area-inset-top)) !important; }
+  /* Tabs/headers que ficam fixos no topo respiram embaixo da status bar */
+  .topbar, .app-header, .main-tabs {
+    padding-top: calc(8px + env(safe-area-inset-top)) !important;
+  }
+}
+/* Em standalone (PWA instalada), o sw bump quando muda CSS sem mudar HTML
+   pode demorar. Versão: pwa-safearea-1 */
