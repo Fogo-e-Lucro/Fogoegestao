@@ -8510,13 +8510,7 @@ function mtrTogglePinCampaign(campaignId) {
   _mtrLoadPinnedCampaigns();
   const idx = mtrPinnedCampaigns.indexOf(campaignId);
   if (idx >= 0) mtrPinnedCampaigns.splice(idx, 1);
-  else {
-    if (mtrPinnedCampaigns.length >= 4) {
-      if (typeof showToast === 'function') showToast('warn','⭐','Máximo de 4 campanhas fixadas. Remova alguma antes de adicionar nova.');
-      return;
-    }
-    mtrPinnedCampaigns.push(campaignId);
-  }
+  else mtrPinnedCampaigns.push(campaignId);
   _mtrSavePinnedCampaigns();
   // Re-renderiza tudo (cards do topo + tabela com nova estrelinha)
   if (typeof loadMetrics === 'function' && mtrLastSnapshot) {
