@@ -5597,6 +5597,12 @@ body.pj-task-open .pj-fab { display:none !important; }
 .pj-attach-item:hover .pj-attach-actions {
   opacity:1; transform:translateY(0);
 }
+/* Touch (mobile/tablet): sempre visível, e maior pra clicar com o dedo */
+@media (pointer:coarse) {
+  .pj-attach-actions { opacity:1 !important; transform:none !important; }
+  .pj-attach-action { width:32px; height:32px; }
+  .pj-attach-action svg { width:15px; height:15px; }
+}
 .pj-attach-action {
   width:24px; height:24px; border-radius:50%;
   border:none;
