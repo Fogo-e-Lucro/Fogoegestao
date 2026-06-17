@@ -14245,29 +14245,30 @@ async function pjSendDailyReport() {
     return;
   }
 
-  // Diagnóstico: mixed content (https → http) é bloqueado pelo browser.
-  if (location.protocol === 'https:' && webhookUrl.startsWith('http://')) {
-    alert(
-      '❌ Webhook é HTTP mas o app está em HTTPS — o browser bloqueia (mixed content).\n\n' +
-      'URL configurada: ' + webhookUrl + '\n\n' +
-      'Conserto: configure HTTPS no n8n (Caddy/Cloudflare Tunnel) e atualize a URL pra https://.'
-    );
-    return;
-  }
-
   const payload = {
     type: 'daily_report',
     message: text,
     generatedAt: new Date().toISOString(),
   };
 
-  console.log('[pj-daily] enviando relatório', { url: webhookUrl, length: text.length });
+  // Se o webhook é HTTP e estamos em HTTPS, browser bloqueia (mixed content).
+  // Solução: roteia pelo /api/n8n-relay (serverless do Vercel) que faz a
+  // ponte server-side — sem CORS, sem mixed content, zero infra no n8n.
+  const needsRelay = (location.protocol === 'https:' && webhookUrl.startsWith('http://'));
+  const fetchUrl  = needsRelay ? '/api/n8n-relay' : webhookUrl;
+  const fetchBody = needsRelay
+    ? JSON.stringify({ url: webhookUrl, payload })
+    : JSON.stringify(payload);
+
+  console.log('[pj-daily] enviando relatório', {
+    finalUrl: fetchUrl, viaRelay: needsRelay, originalWebhook: webhookUrl, length: text.length,
+  });
 
   try {
-    const res = await fetch(webhookUrl, {
+    const res = await fetch(fetchUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: fetchBody,
     });
     if (res.ok) {
       if (typeof showToast === 'function') showToast('ok', '✓', 'Relatório enviado para o n8n!');
