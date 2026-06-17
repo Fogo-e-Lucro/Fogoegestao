@@ -14239,30 +14239,75 @@ function pjCopyDailyReport() {
 async function pjSendDailyReport() {
   const modal = document.getElementById('pjWaModal');
   const text = modal?._raw || pjGenerateDailyReport();
-  // Tenta usar webhook configurado
   const webhookUrl = (typeof getApiKey === 'function') ? (getApiKey('n8n_daily_report_webhook') || getApiKey('n8n_webhook') || '') : '';
   if (!webhookUrl) {
     alert('Configure o webhook do n8n em Configurações → Integrações primeiro.\n\nA chave esperada é "n8n_daily_report_webhook".');
     return;
   }
+
+  // Diagnóstico: mixed content (https → http) é bloqueado pelo browser.
+  if (location.protocol === 'https:' && webhookUrl.startsWith('http://')) {
+    alert(
+      '❌ Webhook é HTTP mas o app está em HTTPS — o browser bloqueia (mixed content).\n\n' +
+      'URL configurada: ' + webhookUrl + '\n\n' +
+      'Conserto: configure HTTPS no n8n (Caddy/Cloudflare Tunnel) e atualize a URL pra https://.'
+    );
+    return;
+  }
+
+  const payload = {
+    type: 'daily_report',
+    message: text,
+    generatedAt: new Date().toISOString(),
+  };
+
+  console.log('[pj-daily] enviando relatório', { url: webhookUrl, length: text.length });
+
   try {
     const res = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'daily_report',
-        message: text,
-        generatedAt: new Date().toISOString()
-      })
+      body: JSON.stringify(payload),
     });
     if (res.ok) {
       if (typeof showToast === 'function') showToast('ok', '✓', 'Relatório enviado para o n8n!');
       pjCloseDailyReport();
     } else {
-      alert('Falha ao enviar (status ' + res.status + ').');
+      const bodyTxt = await res.text().catch(() => '');
+      console.warn('[pj-daily] n8n retornou erro', res.status, bodyTxt);
+      alert(`n8n respondeu com erro ${res.status}.\n\nURL: ${webhookUrl}\n\n${bodyTxt.slice(0, 300)}`);
     }
   } catch (e) {
-    alert('Erro ao enviar: ' + e.message);
+    console.error('[pj-daily] falha no fetch:', e, 'URL tentada:', webhookUrl);
+    // Failed to fetch é típico de: CORS bloqueado, servidor fora do ar, ou DNS errado.
+    // Tenta fallback no-cors (fire-and-forget). Se passar, mensagem provavelmente chegou.
+    const isFailedToFetch = /failed to fetch|networkerror|fetch failed/i.test(e.message || '');
+    if (isFailedToFetch) {
+      const tryNoCors = confirm(
+        '⚠️ "Failed to fetch" — possíveis causas:\n\n' +
+        '• n8n fora do ar (Contabo)\n' +
+        '• CORS não libera fogoegestao.com.br\n' +
+        '• URL errada nas configurações\n\n' +
+        'URL tentada:\n' + webhookUrl + '\n\n' +
+        'Posso tentar reenviar em modo "no-cors" (fire-and-forget). Continuar?'
+      );
+      if (tryNoCors) {
+        try {
+          await fetch(webhookUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          if (typeof showToast === 'function') showToast('ok', '✓', 'Enviado em modo no-cors (não dá pra confirmar resposta).');
+          pjCloseDailyReport();
+        } catch (e2) {
+          alert('Falhou em no-cors também:\n' + e2.message + '\n\nProvavelmente n8n está fora do ar.');
+        }
+      }
+    } else {
+      alert('Erro ao enviar: ' + e.message + '\n\nURL: ' + webhookUrl);
+    }
   }
 }
 
