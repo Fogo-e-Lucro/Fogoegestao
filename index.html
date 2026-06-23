@@ -21257,7 +21257,26 @@ async function pjDownloadFile(src, filename) {
     }
   }
 
-  // 3. Fetch direto (cross-origin com CORS allow) — também com cache-bypass
+  // 3. Firebase Storage: anexa response-content-disposition=attachment pra
+  //    forçar Content-Disposition no header. Aí o <a download> cross-origin
+  //    funciona direto, sem precisar baixar blob inteiro (essencial pra
+  //    vídeos/PSDs grandes em iOS Safari).
+  const isFirebase = /firebasestorage\.googleapis\.com/.test(src);
+  if (isFirebase && !isImg) {
+    try {
+      console.log('[pj-dl] estratégia: Firebase Storage + response-content-disposition');
+      const fbName = (filename || 'arquivo').replace(/"/g, "'");
+      const dispParam = encodeURIComponent(`attachment; filename="${fbName}"`);
+      const sep = src.includes('?') ? '&' : '?';
+      const dlUrl = `${src}${sep}response-content-disposition=${dispParam}`;
+      _pjTriggerDl(dlUrl, filename, false);
+      return;
+    } catch(e) {
+      console.warn('[pj-dl] FB content-disposition falhou:', e.message);
+    }
+  }
+
+  // 4. Fetch direto (cross-origin com CORS allow) — também com cache-bypass
   try {
     console.log('[pj-dl] estratégia: fetch direto (cache-bypass)');
     const res = await fetch(srcNoCache, { mode: 'cors', credentials: 'omit', cache: 'no-store' });
@@ -21272,22 +21291,8 @@ async function pjDownloadFile(src, filename) {
     console.warn('[pj-dl] fetch direto falhou:', e.message);
   }
 
-  // 4. Proxy próprio na VPS (funciona pra QUALQUER tipo — Firebase Storage,
-  //    ibb, imgur. Re-serve com Access-Control-Allow-Origin: *)
-  try {
-    const proxy = 'https://89-116-30-126.sslip.io/proxy?url=' + encodeURIComponent(src);
-    console.log('[pj-dl] estratégia: proxy VPS');
-    const res = await fetch(proxy);
-    console.log('[pj-dl] proxy status:', res.status, 'ok:', res.ok);
-    if (res.ok) {
-      const blob = await res.blob();
-      const objUrl = URL.createObjectURL(blob);
-      _pjTriggerDl(objUrl, filename, true);
-      return;
-    }
-  } catch(e) {
-    console.warn('[pj-dl] proxy VPS falhou:', e.message);
-  }
+  // (Removida: estratégia proxy VPS Contabo — servidor offline, demorava 30s
+  // pra falhar antes do fallback. Se voltar a precisar, restaura aqui.)
 
   // 5. Proxy images.weserv.nl (só imagens em CDNs públicas — não serve pra Firebase)
   if (isImg && !/firebasestorage\.googleapis\.com/.test(src)) {
@@ -21491,12 +21496,20 @@ async function pjUploadToStorage(file, pathPrefix) {
   if (typeof firebase === 'undefined' || !firebase.storage) {
     throw new Error('Firebase Storage não inicializado');
   }
-  const safeName = (file.name || 'file').replace(/[^\w.\-]/g, '_');
+  const origName = file.name || 'file';
+  const safeName = origName.replace(/[^\w.\-]/g, '_');
   const ts = Date.now();
   const rand = Math.random().toString(36).slice(2, 8);
   const path = `${pathPrefix}/${ts}_${rand}_${safeName}`;
   const ref = firebase.storage().ref().child(path);
-  const snap = await ref.put(file, { contentType: file.type || 'application/octet-stream' });
+  // contentDisposition: attachment força o browser a BAIXAR em vez de abrir
+  // (essencial pra vídeos/PSDs que senão tocam/abrem inline em vez de baixar).
+  // RFC 5987: filename* usa UTF-8 pra preservar acentos.
+  const utf8Name = encodeURIComponent(origName);
+  const snap = await ref.put(file, {
+    contentType: file.type || 'application/octet-stream',
+    contentDisposition: `attachment; filename="${safeName}"; filename*=UTF-8''${utf8Name}`,
+  });
   return await snap.ref.getDownloadURL();
 }
 
