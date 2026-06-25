@@ -12,12 +12,29 @@
 //   FIREBASE_SERVICE_ACCOUNT_JSON  — JSON inteiro do service account (ou base64)
 //   WA_GROUP_TEAM_JID              — JID do grupo "TIME Fogo & Lucro" (120363...@g.us)
 
-import { db } from './_lib/firebase.js';
+import { db, verifyAdminFromIdToken } from './_lib/firebase.js';
 import { buildDailyReportText } from './_lib/daily-report.js';
 import { sendWhatsAppText } from './_lib/uazapi.js';
 
 function unauthorized(res, reason) {
   res.status(401).json({ ok: false, error: 'unauthorized', reason });
+}
+
+// Aceita dois caminhos de auth:
+//   1. Authorization: Bearer <CRON_SECRET>      → cron do Vercel
+//   2. x-firebase-id-token: <token>             → admin logado no app
+async function authenticate(req) {
+  const secret = process.env.CRON_SECRET;
+  const bearer = req.headers.authorization || '';
+  if (secret && bearer === `Bearer ${secret}`) {
+    return { kind: 'cron' };
+  }
+  const idToken = req.headers['x-firebase-id-token'];
+  if (idToken) {
+    const who = await verifyAdminFromIdToken(idToken);
+    return { kind: 'admin', who };
+  }
+  throw new Error('credenciais ausentes (use CRON_SECRET ou x-firebase-id-token)');
 }
 
 // Converte qualquer Timestamp do Firestore pra millis pra ficar igual ao
@@ -37,15 +54,9 @@ function normalizeDoc(doc) {
 }
 
 export default async function handler(req, res) {
-  // Auth: Vercel Cron injeta o Bearer automaticamente. Chamadas manuais
-  // de fora precisam mandar o mesmo header.
-  const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = req.headers.authorization || '';
-    if (auth !== `Bearer ${secret}`) {
-      return unauthorized(res, 'authorization header não bate com CRON_SECRET');
-    }
-  }
+  let actor;
+  try { actor = await authenticate(req); }
+  catch (e) { return unauthorized(res, e.message); }
 
   const url = new URL(req.url, `https://${req.headers.host}`);
   const isPreview = url.searchParams.get('preview') === '1';
@@ -110,6 +121,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       ok: true, mode: 'sent', target, charCount: text.length, counts, uazapiStatus: result.status,
+      actor: actor.kind === 'admin' ? actor.who.email : 'cron',
     });
   } catch (e) {
     console.error('[daily-report-cron] erro:', e);

@@ -14220,7 +14220,7 @@ function pjOpenDailyReport() {
       </div>
       <div class="pj-wa-actions">
         <button class="copy" onclick="pjCopyDailyReport()">📋 Copiar texto</button>
-        <button class="send" onclick="pjSendDailyReport()">📤 Enviar via n8n</button>
+        <button class="send" onclick="pjSendDailyReport()">📤 Enviar pro grupo</button>
       </div>
     </div>`;
   document.body.appendChild(modal);
@@ -14236,79 +14236,46 @@ function pjCopyDailyReport() {
     if (typeof showToast === 'function') showToast('ok', '✓', 'Texto copiado! Cole no WhatsApp.');
   }).catch(() => alert('Não foi possível copiar.'));
 }
+// Envia o relatório direto via uazapi (sem n8n).
+// O server-side (/api/daily-report-cron) regenera o texto a partir do
+// Firestore, então não precisa enviar o "text" — só autentica e dispara.
 async function pjSendDailyReport() {
-  const modal = document.getElementById('pjWaModal');
-  const text = modal?._raw || pjGenerateDailyReport();
-  const webhookUrl = (typeof getApiKey === 'function') ? (getApiKey('n8n_daily_report_webhook') || getApiKey('n8n_webhook') || '') : '';
-  if (!webhookUrl) {
-    alert('Configure o webhook do n8n em Configurações → Integrações primeiro.\n\nA chave esperada é "n8n_daily_report_webhook".');
+  const user = _auth?.currentUser;
+  if (!user) {
+    alert('Você precisa estar logado.');
+    return;
+  }
+  let idToken;
+  try { idToken = await user.getIdToken(false); }
+  catch (e) {
+    alert('Falha ao obter token de autenticação: ' + e.message);
     return;
   }
 
-  const payload = {
-    type: 'daily_report',
-    message: text,
-    generatedAt: new Date().toISOString(),
-  };
-
-  // Se o webhook é HTTP e estamos em HTTPS, browser bloqueia (mixed content).
-  // Solução: roteia pelo /api/n8n-relay (serverless do Vercel) que faz a
-  // ponte server-side — sem CORS, sem mixed content, zero infra no n8n.
-  const needsRelay = (location.protocol === 'https:' && webhookUrl.startsWith('http://'));
-  const fetchUrl  = needsRelay ? '/api/n8n-relay' : webhookUrl;
-  const fetchBody = needsRelay
-    ? JSON.stringify({ url: webhookUrl, payload })
-    : JSON.stringify(payload);
-
-  console.log('[pj-daily] enviando relatório', {
-    finalUrl: fetchUrl, viaRelay: needsRelay, originalWebhook: webhookUrl, length: text.length,
-  });
+  console.log('[pj-daily] enviando relatório direto via uazapi (server-side)');
 
   try {
-    const res = await fetch(fetchUrl, {
+    const res = await fetch('/api/daily-report-cron', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: fetchBody,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-firebase-id-token': idToken,
+      },
     });
-    if (res.ok) {
-      if (typeof showToast === 'function') showToast('ok', '✓', 'Relatório enviado para o n8n!');
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.ok) {
+      const counts = data.counts || {};
+      const msg = `Enviado! ${counts.overdue || 0} atrasada(s), ${counts.today || 0} pra hoje.`;
+      if (typeof showToast === 'function') showToast('ok', '✓', msg);
       pjCloseDailyReport();
     } else {
-      const bodyTxt = await res.text().catch(() => '');
-      console.warn('[pj-daily] n8n retornou erro', res.status, bodyTxt);
-      alert(`n8n respondeu com erro ${res.status}.\n\nURL: ${webhookUrl}\n\n${bodyTxt.slice(0, 300)}`);
+      console.warn('[pj-daily] backend retornou erro', res.status, data);
+      const reason = data.error || data.reason || `HTTP ${res.status}`;
+      alert(`Falha ao enviar: ${reason}\n\n${data.uazapiBody ? JSON.stringify(data.uazapiBody).slice(0,300) : ''}`);
     }
   } catch (e) {
-    console.error('[pj-daily] falha no fetch:', e, 'URL tentada:', webhookUrl);
-    // Failed to fetch é típico de: CORS bloqueado, servidor fora do ar, ou DNS errado.
-    // Tenta fallback no-cors (fire-and-forget). Se passar, mensagem provavelmente chegou.
-    const isFailedToFetch = /failed to fetch|networkerror|fetch failed/i.test(e.message || '');
-    if (isFailedToFetch) {
-      const tryNoCors = confirm(
-        '⚠️ "Failed to fetch" — possíveis causas:\n\n' +
-        '• n8n fora do ar (Contabo)\n' +
-        '• CORS não libera fogoegestao.com.br\n' +
-        '• URL errada nas configurações\n\n' +
-        'URL tentada:\n' + webhookUrl + '\n\n' +
-        'Posso tentar reenviar em modo "no-cors" (fire-and-forget). Continuar?'
-      );
-      if (tryNoCors) {
-        try {
-          await fetch(webhookUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          if (typeof showToast === 'function') showToast('ok', '✓', 'Enviado em modo no-cors (não dá pra confirmar resposta).');
-          pjCloseDailyReport();
-        } catch (e2) {
-          alert('Falhou em no-cors também:\n' + e2.message + '\n\nProvavelmente n8n está fora do ar.');
-        }
-      }
-    } else {
-      alert('Erro ao enviar: ' + e.message + '\n\nURL: ' + webhookUrl);
-    }
+    console.error('[pj-daily] falha no fetch:', e);
+    alert('Erro de rede: ' + e.message);
   }
 }
 
