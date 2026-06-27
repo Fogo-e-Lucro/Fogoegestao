@@ -212,17 +212,6 @@
 
     <div class="app-settings-pane" data-pane="integ" style="display:none;">
       <div class="app-settings-section">
-        <div class="app-settings-row-label">🔁 n8n — Webhook global <span class="app-settings-hint">URL padrão para todos os eventos do app</span></div>
-        <div class="app-settings-row">
-          <input type="text" class="app-settings-input" id="cfgN8nUrl" placeholder="https://n8n.exemplo.com/webhook/...">
-          <button class="app-settings-btn" onclick="appSettingsSave('n8n_global_url','cfgN8nUrl')">Salvar</button>
-        </div>
-        <div class="app-settings-action-row">
-          <span class="app-settings-hint">Cada módulo (Projetos, Social, GMB…) tem seus próprios eventos configuráveis em "Integrações" no painel do módulo. Esta URL é o fallback global.</span>
-        </div>
-      </div>
-
-      <div class="app-settings-section">
         <div class="app-settings-row-label">🔔 Push Notifications (FCM) <span class="app-settings-hint">notificações push em qualquer dispositivo, mesmo com aba fechada</span></div>
         <div class="app-settings-row">
           <input type="text" class="app-settings-input" id="cfgFcmVapid" placeholder="VAPID Public Key (Firebase Console → Cloud Messaging → Web Push certificates)">
@@ -2417,7 +2406,7 @@ async function appConfigLoad() {
       } else if (userIsAdmin()) {
         // Primeira vez admin: sobe o cache local pro Firestore
         const seed = {};
-        ['claude','imagebb','uazapi_url','uazapi_instance','uazapi_token','n8n_global_url']
+        ['claude','imagebb','uazapi_url','uazapi_instance','uazapi_token']
           .forEach(k => { if (window._appConfig[k]) seed[k] = window._appConfig[k]; });
         if (Object.keys(seed).length) {
           try { await _db.collection('app_config').doc('secrets').set(seed, { merge: true }); } catch(e) {}
@@ -5054,7 +5043,6 @@ function openAppSettings() {
   fill('cfgUazapiUrl', cfg.uazapi_url);
   fill('cfgUazapiInstance', cfg.uazapi_instance);
   fill('cfgUazapiToken', cfg.uazapi_token);
-  fill('cfgN8nUrl', cfg.n8n_global_url);
   fill('cfgFcmVapid', cfg.fcm_vapid || (function(){ try { return localStorage.getItem('pj_fcm_vapid')||''; } catch(_) { return ''; }})());
   // Status do Meta token
   const ts = document.getElementById('cfgMetaTokenStatus');
