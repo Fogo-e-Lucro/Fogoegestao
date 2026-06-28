@@ -92,18 +92,38 @@
   <div style="display:flex;align-items:center;gap:10px;">
     <div class="sync-dot syncing" id="syncStatus" title="Conectando..."></div>
     <div class="main-tabs">
-      <button class="main-tab" id="tabProjetos" onclick="switchTab('projetos',this)">🎯 <span class="main-tab-label">Gestão Central</span></button>
+      <button class="main-tab" id="tabProjetos" onclick="switchTab('projetos',this)">
+        <svg class="main-tab-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+        <span class="main-tab-label">Gestão Central</span>
+      </button>
       <!-- Ferramentas dropdown (todas as outras abas) -->
       <div class="main-tab-more" id="tabMoreWrap">
         <button class="main-tab" id="tabMoreBtn" onclick="toggleTabMoreMenu(event)">
-          ⊞ <span class="main-tab-label">Ferramentas</span> <span style="font-size:10px;opacity:.7;">▾</span>
+          <svg class="main-tab-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          <span class="main-tab-label">Ferramentas</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.6;margin-left:-2px;"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div class="main-tab-more-menu" id="tabMoreMenu">
-          <button class="main-tab-more-item" id="tabEntrada" onclick="switchTab('entrada',this);closeTabMoreMenu()">✏️ Criar Post</button>
-          <button class="main-tab-more-item" id="tabVisualizar" onclick="switchTab('visualizar',this);closeTabMoreMenu()">📅 Calendário Social Media</button>
-          <button class="main-tab-more-item" id="tabSocial" onclick="switchTab('social',this);closeTabMoreMenu()">🚀 Publipost</button>
-          <button class="main-tab-more-item" id="tabGmb" onclick="switchTab('gmb',this);closeTabMoreMenu()">📍 Google</button>
-          <button class="main-tab-more-item" id="tabMetricas" onclick="switchTab('metricas',this);closeTabMoreMenu()">📊 Métricas</button>
+          <button class="main-tab-more-item" id="tabEntrada" onclick="switchTab('entrada',this);closeTabMoreMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <span>Criar Post</span>
+          </button>
+          <button class="main-tab-more-item" id="tabVisualizar" onclick="switchTab('visualizar',this);closeTabMoreMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>Calendário Social Media</span>
+          </button>
+          <button class="main-tab-more-item" id="tabSocial" onclick="switchTab('social',this);closeTabMoreMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+            <span>Publipost</span>
+          </button>
+          <button class="main-tab-more-item" id="tabGmb" onclick="switchTab('gmb',this);closeTabMoreMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Google</span>
+          </button>
+          <button class="main-tab-more-item" id="tabMetricas" onclick="switchTab('metricas',this);closeTabMoreMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
+            <span>Métricas</span>
+          </button>
         </div>
       </div>
     </div>
@@ -851,7 +871,9 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
       <!-- Page header -->
       <div class="sp-page-header" data-reveal>
         <div class="sp-page-title-wrap">
-          <div class="sp-page-icon">🚀</div>
+          <div class="sp-page-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+          </div>
           <div>
             <div class="sp-page-title">Publipost</div>
             <div class="sp-page-sub">Publique diretamente nas redes sociais</div>
@@ -862,17 +884,20 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
       <!-- Config bar -->
       <div class="sp-config" id="spConfigBar" data-reveal>
         <div class="sp-config-header">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3)"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text3)"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
           <span class="sp-config-header-label">Conexão de contas</span>
         </div>
         <div class="sp-config-inner">
           <div class="sp-config-group">
             <button class="sp-fb-btn" id="spFbLoginBtn" onclick="spFbLogin()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073c0 6.019 4.388 11.003 10.125 11.927v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.931-1.956 1.886v2.267h3.328l-.532 3.49h-2.796v8.437C19.612 23.076 24 18.092 24 12.073z"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073c0 6.019 4.388 11.003 10.125 11.927v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.931-1.956 1.886v2.267h3.328l-.532 3.49h-2.796v8.437C19.612 23.076 24 18.092 24 12.073z"/></svg>
               Conectar com Facebook
             </button>
             <span id="spTokenStatus" class="sp-token-status"></span>
-            <span class="sp-config-hint">⚙️ Token Meta e ImgBB → <strong>Configurações</strong></span>
+            <span class="sp-config-hint">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Token Meta e ImgBB em <strong>Configurações</strong>
+            </span>
           </div>
         </div>
       </div>
@@ -894,16 +919,16 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           <!-- Post type tabs -->
           <div class="sp-type-row">
             <button class="sp-type-tab active" data-type="FEED" onclick="spSetType('FEED',this)">
-              <span class="sp-type-icon">📸</span><span>Feed</span>
+              <span class="sp-type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span><span>Feed</span>
             </button>
             <button class="sp-type-tab" data-type="CAROUSEL" onclick="spSetType('CAROUSEL',this)">
-              <span class="sp-type-icon">🎠</span><span>Carrossel</span>
+              <span class="sp-type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="5" width="14" height="14" rx="2.5"/><path d="M3 17V8a3 3 0 0 1 1-2"/></svg></span><span>Carrossel</span>
             </button>
             <button class="sp-type-tab" data-type="REELS" onclick="spSetType('REELS',this)">
-              <span class="sp-type-icon">🎬</span><span>Reels</span>
+              <span class="sp-type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/><path d="m8 3 4 6"/><path d="m16 3 4 6"/><path d="m10 14 5 2.5L10 19v-5z" fill="currentColor"/></svg></span><span>Reels</span>
             </button>
             <button class="sp-type-tab" data-type="STORIES" onclick="spSetType('STORIES',this)">
-              <span class="sp-type-icon">⭕</span><span>Story</span>
+              <span class="sp-type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-dasharray="3 2.5"/><circle cx="12" cy="12" r="4"/></svg></span><span>Story</span>
             </button>
           </div>
 
@@ -911,7 +936,9 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           <div id="spUploadZone" class="sp-upload-zone" onclick="document.getElementById('spFileInput').click()" ondragover="spDragOver(event)" ondragleave="spDragLeave(event)" ondrop="spDrop(event)">
             <input type="file" id="spFileInput" style="display:none" accept="image/*,video/*" onchange="spHandleFile(this.files[0])">
             <div id="spUploadPlaceholder" class="sp-upload-placeholder">
-              <div class="sp-upload-icon">⬆️</div>
+              <div class="sp-upload-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
               <div class="sp-upload-text">Arraste ou clique para enviar</div>
               <div class="sp-upload-sub" id="spUploadSub">Imagem JPG, PNG ou vídeo MP4</div>
             </div>
@@ -940,7 +967,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
                 <div class="sp-phone">
                   <div class="sp-phone-screen" id="spPhoneScreen">
                     <div class="sp-phone-empty" id="spPhoneEmpty">
-                      <span>⬆️</span>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                       <span style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px;">Envie uma imagem acima</span>
                     </div>
                     <!-- Link sticker -->
@@ -971,11 +998,12 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
                   <label class="sp-label">Foto/Vídeo do Story</label>
                   <div class="sp-story-upload-btn" onclick="document.getElementById('spStoryFileInput').click()">
                     <input type="file" id="spStoryFileInput" style="display:none" accept="image/*,video/*" onchange="spHandleStoryFile(this.files[0])">
-                    <span>⬆️ Escolher arquivo</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Escolher arquivo
                   </div>
                 </div>
                 <div class="sp-field">
-                  <label class="sp-label">🔗 Link do Sticker</label>
+                  <label class="sp-label">Link do Sticker</label>
                   <input id="spStoryLink" type="url" placeholder="https://link-de-pedidos.com" class="sp-input" oninput="spUpdateSticker()">
                 </div>
                 <div class="sp-field">
@@ -1008,7 +1036,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
 
           <!-- Collab -->
           <div class="sp-field" id="spCollabField">
-            <label class="sp-label">🤝 Post em Collab <span style="font-size:10px;font-weight:400;color:var(--text2);">(opcional · Feed, Carrossel e Reels)</span></label>
+            <label class="sp-label">Post em Collab <span style="font-size:10px;font-weight:400;color:var(--text2);text-transform:none;letter-spacing:0;">(opcional · Feed, Carrossel e Reels)</span></label>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
               <input id="spCollabUser1" type="text" class="sp-input" placeholder="@usuario1" style="max-width:180px;" oninput="this.value=this.value.replace('@','')">
               <input id="spCollabUser2" type="text" class="sp-input" placeholder="@usuario2 (opcional)" style="max-width:180px;" oninput="this.value=this.value.replace('@','')">
@@ -1035,7 +1063,8 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           <!-- Submit -->
           <div class="sp-submit-row">
             <button class="sp-publish-btn" id="spPublishBtn" onclick="spSubmitPost()">
-              <span id="spPublishBtnText">🚀 Publicar</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+              <span id="spPublishBtnText">Publicar</span>
             </button>
             <div id="spPostStatus" class="sp-post-status"></div>
           </div>
@@ -1045,7 +1074,9 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
         <div class="sp-sidebar">
           <div class="sp-card sp-queue-card" data-reveal>
             <div class="sp-card-hdr">
-              <div class="sp-card-title">📋 Fila</div>
+              <div class="sp-card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;color:var(--text2);"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg>Fila
+              </div>
               <button onclick="spClearQueue()" style="font-size:11px;color:var(--text2);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">Limpar</button>
             </div>
             <div id="spQueue" class="sp-queue-list">
@@ -6659,17 +6690,18 @@ function spUpdateTokenStatus() {
   const status = document.getElementById('spTokenStatus');
   if (!status) return;
   if (!getSpToken()) { status.innerHTML = ''; return; }
+  const dot = (c) => `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${c};margin-right:6px;vertical-align:middle;"></span>`;
   if (!expiry) {
-    status.innerHTML = '<span style="color:#22c55e;font-size:12px;font-weight:600;">✅ Salvo</span>';
+    status.innerHTML = `<span style="color:#22c55e;font-size:12px;font-weight:600;">${dot('#22c55e')}Conectado</span>`;
     return;
   }
   const days = Math.ceil((parseInt(expiry) - Date.now()) / 86400000);
   if (days > 7) {
-    status.innerHTML = `<span style="color:#22c55e;font-size:12px;font-weight:600;">✅ Expira em ${days} dias</span>`;
+    status.innerHTML = `<span style="color:#22c55e;font-size:12px;font-weight:600;">${dot('#22c55e')}Expira em ${days} dias</span>`;
   } else if (days > 0) {
-    status.innerHTML = `<span style="color:#f59e0b;font-size:12px;font-weight:600;">⚠️ Expira em ${days} dias — <a href="#" onclick="spFbLogin();return false;" style="color:#f59e0b;">Renovar</a></span>`;
+    status.innerHTML = `<span style="color:#f59e0b;font-size:12px;font-weight:600;">${dot('#f59e0b')}Expira em ${days} dias — <a href="#" onclick="spFbLogin();return false;" style="color:#f59e0b;">Renovar</a></span>`;
   } else {
-    status.innerHTML = `<span style="color:#ef4444;font-size:12px;font-weight:600;">❌ Expirado — <a href="#" onclick="spFbLogin();return false;" style="color:#ef4444;">Renovar agora</a></span>`;
+    status.innerHTML = `<span style="color:#ef4444;font-size:12px;font-weight:600;">${dot('#ef4444')}Expirado — <a href="#" onclick="spFbLogin();return false;" style="color:#ef4444;">Renovar agora</a></span>`;
   }
 }
 
@@ -6693,7 +6725,7 @@ async function spSaveAndActivateToken(rawToken) {
     // Se falhar a troca, salva o token original mesmo assim
     localStorage.setItem('metaAccessToken', rawToken);
     localStorage.removeItem('metaTokenExpiry');
-    if (status) status.innerHTML = '<span style="color:#22c55e;font-size:12px;font-weight:600;">✅ Salvo</span>';
+    if (status) status.innerHTML = '<span style="color:#22c55e;font-size:12px;font-weight:600;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#22c55e;margin-right:6px;vertical-align:middle;"></span>Conectado</span>';
     loadSpAccounts().then(() => mtrPopulateAccounts()).catch(() => {});
   }
 }
