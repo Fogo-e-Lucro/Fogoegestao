@@ -146,23 +146,24 @@ body {
 .main-tab-svg { display:inline-block;flex-shrink:0; }
 .main-tab-more-menu {
   display: none;
-  position: absolute; top: calc(100% + 8px); right: 0;
+  position: absolute; top: calc(100% + 6px); right: 0;
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 12px; padding: 6px; min-width: 220px;
-  box-shadow: 0 12px 40px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.06);
+  border-radius: 10px; padding: 4px; min-width: 168px;
+  box-shadow: 0 10px 32px rgba(0,0,0,.14), 0 2px 6px rgba(0,0,0,.05);
   z-index: 200; flex-direction: column; gap: 1px;
 }
 .main-tab-more-menu.open { display: flex; }
 .main-tab-more-item {
-  padding: 9px 12px; border-radius: 8px; border: none;
+  padding: 7px 10px; border-radius: 6px; border: none;
   background: transparent; color: var(--text2);
-  font-size: 13px; font-weight: 500; cursor: pointer;
-  font-family: var(--font); display: flex; align-items: center; gap: 10px;
+  font-size: 12.5px; font-weight: 500; cursor: pointer;
+  font-family: var(--font); display: flex; align-items: center; gap: 9px;
   text-align: left; width: 100%; transition: background .12s, color .12s;
-  letter-spacing: .1px;
+  letter-spacing: .1px; white-space: nowrap;
+  line-height: 1.2;
 }
 .main-tab-more-item svg {
-  width: 16px; height: 16px; flex-shrink: 0; color: var(--text3);
+  width: 15px; height: 15px; flex-shrink: 0; color: var(--text3);
   transition: color .12s;
 }
 .main-tab-more-item:hover { background: var(--bg2); color: var(--text); }
