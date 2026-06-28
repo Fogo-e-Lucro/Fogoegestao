@@ -908,10 +908,10 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
         <!-- LEFT: Post Creator -->
         <div class="sp-creator sp-card" data-reveal>
           <div class="sp-card-hdr">
-            <div class="sp-card-title">Nova Publicação</div>
+            <div class="sp-card-title">Nova publicação</div>
             <div class="sp-account-select-wrap">
               <select id="spAccountSelect" class="sp-account-select" onchange="spOnAccountChange()">
-                <option value="">— Selecione a conta —</option>
+                <option value="">Para qual conta?</option>
               </select>
             </div>
           </div>
@@ -931,6 +931,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
               <span class="sp-type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-dasharray="3 2.5"/><circle cx="12" cy="12" r="4"/></svg></span><span>Story</span>
             </button>
           </div>
+          <div class="sp-type-hint" id="spTypeHint">Formato 1:1 ou 4:5 · Imagem JPG/PNG</div>
 
           <!-- Upload area: Feed / Reels -->
           <div id="spUploadZone" class="sp-upload-zone" onclick="document.getElementById('spFileInput').click()" ondragover="spDragOver(event)" ondragleave="spDragLeave(event)" ondrop="spDrop(event)">
@@ -1034,14 +1035,20 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             </div>
           </div>
 
-          <!-- Collab -->
+          <!-- Collab (progressive disclosure) -->
           <div class="sp-field" id="spCollabField">
-            <label class="sp-label">Post em Collab <span style="font-size:10px;font-weight:400;color:var(--text2);text-transform:none;letter-spacing:0;">(opcional · Feed, Carrossel e Reels)</span></label>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-              <input id="spCollabUser1" type="text" class="sp-input" placeholder="@usuario1" style="max-width:180px;" oninput="this.value=this.value.replace('@','')">
-              <input id="spCollabUser2" type="text" class="sp-input" placeholder="@usuario2 (opcional)" style="max-width:180px;" oninput="this.value=this.value.replace('@','')">
+            <button type="button" class="sp-collab-toggle" id="spCollabToggle" onclick="spToggleCollab()" aria-expanded="false">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Marcar parceiro de Collab</span>
+              <span class="sp-collab-toggle-hint">opcional</span>
+            </button>
+            <div class="sp-collab-body" id="spCollabBody" hidden>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <input id="spCollabUser1" type="text" class="sp-input" placeholder="@usuario1" style="max-width:180px;" oninput="this.value=this.value.replace('@','')">
+                <input id="spCollabUser2" type="text" class="sp-input" placeholder="@usuario2 (opcional)" style="max-width:180px;" oninput="this.value=this.value.replace('@','')">
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:6px;">Os colaboradores recebem convite pra aceitar o post.</div>
             </div>
-            <div style="font-size:11px;color:var(--text2);margin-top:4px;">Os colaboradores receberão um convite para aceitar o post</div>
           </div>
 
           <!-- Schedule -->
@@ -1056,16 +1063,17 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
               </label>
             </div>
             <div id="spScheduleRow" style="display:none;margin-top:12px;">
-              <input type="datetime-local" id="spScheduleDate" class="sp-input" style="width:auto;">
+              <input type="datetime-local" id="spScheduleDate" class="sp-input" style="width:auto;" onchange="spUpdatePublishBtn()">
             </div>
           </div>
 
           <!-- Submit -->
           <div class="sp-submit-row">
-            <button class="sp-publish-btn" id="spPublishBtn" onclick="spSubmitPost()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
-              <span id="spPublishBtnText">Publicar</span>
+            <button class="sp-publish-btn" id="spPublishBtn" onclick="spSubmitPost()" disabled>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+              <span id="spPublishBtnText">Adicione uma mídia</span>
             </button>
+            <span class="sp-publish-kbd" title="Atalho">⌘ ⏎</span>
             <div id="spPostStatus" class="sp-post-status"></div>
           </div>
         </div>
@@ -1080,7 +1088,13 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
               <button onclick="spClearQueue()" style="font-size:11px;color:var(--text2);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">Limpar</button>
             </div>
             <div id="spQueue" class="sp-queue-list">
-              <div class="sp-queue-empty">Nenhuma publicação agendada</div>
+              <div class="sp-queue-empty">
+                <div class="sp-queue-empty-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div class="sp-queue-empty-title">Tudo limpo por aqui</div>
+                <div class="sp-queue-empty-sub">Quando você publicar ou agendar um post, ele aparece nesta lista.</div>
+              </div>
             </div>
           </div>
         </div>
@@ -4881,6 +4895,7 @@ function switchTab(tab, btn) {
     const ki = document.getElementById('spImgbbKey');
     if (imgbbKey && ki) ki.value = imgbbKey.substring(0,6) + '••••••';
     if (typeof renderSpQueue === 'function') renderSpQueue();
+    if (typeof spUpdatePublishBtn === 'function') spUpdatePublishBtn();
   }
   if (tab === 'projetos') {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -6780,10 +6795,18 @@ async function loadSpAccounts() {
       if (spAccounts.length === 0) {
         sel.innerHTML = '<option value="">Nenhuma conta Instagram vinculada</option>';
       } else {
-        sel.innerHTML = '<option value="">— Selecione a conta —</option>' +
-          spAccounts.map((a,i) => `<option value="${i}">${escHtml(a.pageName||a.igUsername)}</option>`).join('');
+        sel.innerHTML = '<option value="">Para qual conta?</option>' +
+          spAccounts.map((a,i) => `<option value="${i}">@${escHtml(a.igUsername||a.pageName)}</option>`).join('');
+        try {
+          const last = localStorage.getItem('spLastAccount');
+          if (last !== null && spAccounts[parseInt(last)]) {
+            sel.value = last;
+            spOnAccountChange();
+          }
+        } catch(_) {}
       }
     }
+    spUpdatePublishBtn();
   } catch(e) {
     if (sel) sel.innerHTML = '<option value="">Erro ao carregar contas</option>';
     showToast('Erro: ' + e.message);
@@ -6793,13 +6816,22 @@ async function loadSpAccounts() {
 
 function spOnAccountChange() {
   const idx = document.getElementById('spAccountSelect').value;
+  try { if (idx !== '') localStorage.setItem('spLastAccount', idx); } catch(_) {}
   if (idx !== '' && spAccounts[parseInt(idx)]) {
     const acc = spAccounts[parseInt(idx)];
-    document.getElementById('spStoryUsername').textContent = '@' + acc.igUsername;
+    const usernameEl = document.getElementById('spStoryUsername');
+    if (usernameEl) usernameEl.textContent = '@' + acc.igUsername;
   }
+  spUpdatePublishBtn();
 }
 
 // ── Type ──
+const SP_TYPE_HINT = {
+  FEED:     'Formato 1:1 ou 4:5 · Imagem JPG/PNG',
+  CAROUSEL: '2–10 imagens · Mesmo aspecto pra todas (1:1 recomendado)',
+  REELS:    'Vertical 9:16 · Vídeo MP4 até 1 GB · 60s ideal',
+  STORIES:  'Vertical 9:16 · Sai do ar em 24h · Sticker de link opcional'
+};
 function spSetType(type, btn) {
   spCurrentType = type;
   document.querySelectorAll('.sp-type-tab').forEach(b => b.classList.remove('active'));
@@ -6813,8 +6845,66 @@ function spSetType(type, btn) {
   document.getElementById('spCaptionField').style.display = isStory ? 'none' : 'flex';
   document.getElementById('spCollabField').style.display = isStory ? 'none' : 'flex';
   document.getElementById('spUploadSub').textContent = isReel ? 'Vídeo MP4 (até 1GB)' : 'Imagem JPG ou PNG';
+  const hint = document.getElementById('spTypeHint');
+  if (hint) hint.textContent = SP_TYPE_HINT[type] || '';
   if (isStory && spCurrentFile) spHandleStoryFile(spCurrentFile);
+  spUpdatePublishBtn();
 }
+
+function spToggleCollab() {
+  const body = document.getElementById('spCollabBody');
+  const btn = document.getElementById('spCollabToggle');
+  const open = !body.hasAttribute('hidden');
+  if (open) {
+    body.setAttribute('hidden', '');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.classList.remove('open');
+  } else {
+    body.removeAttribute('hidden');
+    btn.setAttribute('aria-expanded', 'true');
+    btn.classList.add('open');
+    setTimeout(() => document.getElementById('spCollabUser1')?.focus(), 50);
+  }
+}
+
+function spUpdatePublishBtn() {
+  const btn  = document.getElementById('spPublishBtn');
+  const text = document.getElementById('spPublishBtnText');
+  if (!btn || !text) return;
+  const accSel = document.getElementById('spAccountSelect');
+  const accIdx = accSel?.value;
+  const when = document.querySelector('input[name="spWhen"]:checked')?.value || 'now';
+  const date = document.getElementById('spScheduleDate')?.value;
+  const hasMedia = spCurrentType === 'CAROUSEL'
+    ? (typeof spCarouselFiles !== 'undefined' && spCarouselFiles.length >= 2)
+    : (spCurrentType === 'STORIES' ? !!spStoryFile : !!spCurrentFile);
+
+  if (accIdx === '' || accIdx == null) {
+    btn.disabled = true; text.textContent = 'Escolha a conta'; return;
+  }
+  if (!hasMedia) {
+    btn.disabled = true;
+    text.textContent = spCurrentType === 'CAROUSEL' ? 'Adicione 2+ imagens' : 'Adicione uma mídia';
+    return;
+  }
+  if (when === 'schedule') {
+    if (!date) { btn.disabled = true; text.textContent = 'Escolha data e hora'; return; }
+    const d = new Date(date);
+    const lbl = d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    btn.disabled = false; text.textContent = `Agendar para ${lbl}`; return;
+  }
+  btn.disabled = false; text.textContent = 'Publicar agora';
+}
+
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    const tab = document.getElementById('tab-social');
+    if (tab && tab.classList.contains('active')) {
+      const btn = document.getElementById('spPublishBtn');
+      if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
+    }
+  }
+});
 
 // ── File upload (Feed/Reels) ──
 function spDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
@@ -6833,6 +6923,7 @@ function spHandleFile(file) {
     const vid = document.getElementById('spPreviewVid');
     if (isVideo) { img.style.display='none'; vid.style.display='block'; vid.src=ev.target.result; }
     else { vid.style.display='none'; img.style.display='block'; img.src=ev.target.result; }
+    spUpdatePublishBtn();
   };
   reader.readAsDataURL(file);
 }
@@ -6844,6 +6935,7 @@ function spRemoveMedia(e) {
   document.getElementById('spUploadPreview').style.display = 'none';
   document.getElementById('spPreviewImg').src = '';
   document.getElementById('spPreviewVid').src = '';
+  spUpdatePublishBtn();
 }
 
 // ── Carousel ──
@@ -6853,6 +6945,7 @@ function spHandleCarousel(files) {
     spCarouselFiles.push(file);
   });
   renderCarouselStrip();
+  spUpdatePublishBtn();
 }
 
 function renderCarouselStrip() {
@@ -6888,6 +6981,7 @@ function spHandleStoryFile(file) {
     document.getElementById('spPhoneEmpty').style.display = 'none';
     document.getElementById('spLinkSticker').style.display = 'flex';
     spCurrentFile = file;
+    spUpdatePublishBtn();
   };
   reader.readAsDataURL(file);
 }
@@ -6982,6 +7076,7 @@ function spStickerDragMove(e) {
 function spOnWhenChange() {
   const val = document.querySelector('input[name="spWhen"]:checked').value;
   document.getElementById('spScheduleRow').style.display = val === 'schedule' ? 'block' : 'none';
+  spUpdatePublishBtn();
 }
 
 // ── Upload: ImgBB (images) + Meta Direct (videos) ──
@@ -7064,7 +7159,7 @@ async function spSubmitPost() {
   if (when === 'schedule' && !scheduleDate) { showToast('Selecione data e hora para agendamento'); return; }
 
   btn.disabled = true;
-  document.getElementById('spPublishBtnText').textContent = '⏳ Enviando...';
+  document.getElementById('spPublishBtnText').textContent = 'Enviando…';
   statusEl.textContent = '';
 
   try {
@@ -7154,10 +7249,10 @@ async function spSubmitPost() {
       const r2 = await fetch(`https://graph.facebook.com/v25.0/${acc.igId}/media_publish`, { method: 'POST', body: new URLSearchParams({ creation_id: containerId, access_token: acc.pageToken }) });
       const d2 = await r2.json();
       if (d2.error) throw new Error(d2.error.message);
-      statusEl.innerHTML = '<span style="color:#22c55e;font-weight:700;">✅ Publicado com sucesso!</span>';
+      statusEl.innerHTML = '<span class="sp-status-ok"><span class="sp-status-dot"></span>Publicado</span>';
       spAddToQueue({ acc, type: spCurrentType, caption, when: 'now', status: 'published', date: new Date().toISOString(), mediaUrl: firstMediaUrl });
     } else {
-      statusEl.innerHTML = '<span style="color:#22c55e;font-weight:700;">✅ Agendado!</span>';
+      statusEl.innerHTML = '<span class="sp-status-ok"><span class="sp-status-dot"></span>Agendado</span>';
       spAddToQueue({ acc, type: spCurrentType, caption, when: scheduleDate, status: 'pending', date: new Date().toISOString(), mediaUrl: firstMediaUrl });
     }
     // Reset
@@ -7168,10 +7263,10 @@ async function spSubmitPost() {
     document.getElementById('spCaptionCount').textContent = '0';
     if (storyLink) document.getElementById('spStoryLink').value = '';
   } catch(e) {
-    statusEl.innerHTML = `<span style="color:#ef4444;font-weight:600;">❌ ${e.message}</span>`;
+    statusEl.innerHTML = `<span class="sp-status-err"><span class="sp-status-dot"></span>${e.message}</span>`;
   }
   btn.disabled = false;
-  document.getElementById('spPublishBtnText').textContent = '🚀 Publicar';
+  spUpdatePublishBtn();
 }
 
 // ── Queue ──
@@ -7216,16 +7311,28 @@ function spClearQueue() {
 function renderSpQueue() {
   const el = document.getElementById('spQueue');
   if (!el) return;
-  if (spQueue.length === 0) { el.innerHTML = '<div class="sp-queue-empty">Nenhuma publicação agendada</div>'; return; }
-  const typeLabel = { FEED:'📸 Feed', CAROUSEL:'🎠 Carrossel', REELS:'🎬 Reels', STORIES:'⭕ Story' };
-  const statusLabel = { published:'✅ Publicado', pending:'⏳ Agendado', failed:'❌ Falhou', uploading:'⬆️ Enviando' };
-  el.innerHTML = spQueue.map((item,i) => {
+  if (spQueue.length === 0) {
+    el.innerHTML = `<div class="sp-queue-empty">
+      <div class="sp-queue-empty-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="sp-queue-empty-title">Tudo limpo por aqui</div>
+      <div class="sp-queue-empty-sub">Quando você publicar ou agendar um post, ele aparece nesta lista.</div>
+    </div>`;
+    return;
+  }
+  const typeLabel  = { FEED:'Feed', CAROUSEL:'Carrossel', REELS:'Reels', STORIES:'Story' };
+  const statusLabel = { published:'Publicado', pending:'Agendado', failed:'Falhou', uploading:'Enviando' };
+  el.innerHTML = spQueue.map((item) => {
     const dateStr = item.when === 'now' ? new Date(item.date).toLocaleString('pt-BR') : new Date(item.when).toLocaleString('pt-BR');
+    const thumb = item.mediaUrl
+      ? `<img class="sp-queue-thumb" src="${item.mediaUrl}" onerror="this.style.opacity='.3'">`
+      : `<div class="sp-queue-thumb sp-queue-thumb-empty"></div>`;
     return `<div class="sp-queue-item">
-      ${item.mediaUrl ? `<img class="sp-queue-thumb" src="${item.mediaUrl}" onerror="this.style.opacity='.3'">` : `<div class="sp-queue-thumb" style="display:flex;align-items:center;justify-content:center;font-size:20px;">${typeLabel[item.type]?.split(' ')[0]||'📷'}</div>`}
+      ${thumb}
       <div class="sp-queue-info">
         <div class="sp-queue-account">@${item.acc.igUsername}</div>
-        <div class="sp-queue-caption">${typeLabel[item.type]||item.type} · ${item.caption||'(sem legenda)'}</div>
+        <div class="sp-queue-caption">${typeLabel[item.type]||item.type} · ${item.caption||'sem legenda'}</div>
         <div class="sp-queue-meta">${dateStr}</div>
       </div>
       <span class="sp-queue-badge ${item.status}">${statusLabel[item.status]||item.status}</span>

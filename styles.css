@@ -2240,21 +2240,71 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 
 /* ── SUBMIT ──────────────────────────────────────────── */
 .sp-submit-row {
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: center; gap: 10px;
   flex-wrap: wrap; padding-top: 14px; margin-top: 2px;
   border-top: 1px solid var(--border);
 }
 .sp-publish-btn {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 18px; border-radius: 8px;
+  padding: 8px 16px; border-radius: 8px;
   background: var(--text); color: var(--card); border: none; cursor: pointer;
   font-size: 13px; font-weight: 600; font-family: var(--font);
-  transition: opacity .15s; letter-spacing: 0;
+  transition: opacity .15s, transform .12s; letter-spacing: 0;
 }
-.sp-publish-btn:hover { opacity: .85; }
-.sp-publish-btn:active { opacity: .75; }
-.sp-publish-btn:disabled { opacity: .4; cursor: not-allowed; }
-.sp-post-status { font-size: 12.5px; font-weight: 500; color: var(--text2); }
+.sp-publish-btn:hover:not(:disabled) { opacity: .85; }
+.sp-publish-btn:active:not(:disabled) { transform: scale(.98); }
+.sp-publish-btn:disabled {
+  background: var(--bg2); color: var(--text3); cursor: not-allowed;
+  border: 1px solid var(--border); padding: 7px 15px;
+}
+.sp-publish-btn:disabled svg { opacity: .4; }
+.sp-publish-kbd {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10.5px; font-weight: 500; color: var(--text3);
+  padding: 4px 7px; border-radius: 5px;
+  background: var(--bg2); border: 1px solid var(--border);
+  letter-spacing: .4px; font-family: var(--font);
+}
+.sp-post-status { font-size: 12.5px; font-weight: 500; color: var(--text2); margin-left: auto; }
+.sp-status-ok, .sp-status-err {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 500;
+}
+.sp-status-ok { color: #22c55e; }
+.sp-status-err { color: #ef4444; }
+.sp-status-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: currentColor;
+}
+
+/* ── TYPE HINT ───────────────────────────────────────── */
+.sp-type-hint {
+  font-size: 11.5px; color: var(--text3);
+  margin-top: -8px; padding-left: 4px;
+  letter-spacing: 0;
+}
+
+/* ── COLLAB TOGGLE (progressive disclosure) ──────────── */
+.sp-collab-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; border-radius: 8px;
+  background: var(--bg2); border: 1px dashed var(--border);
+  color: var(--text2); font-size: 12.5px; font-weight: 500;
+  font-family: var(--font); cursor: pointer;
+  align-self: flex-start;
+  transition: all .15s;
+}
+.sp-collab-toggle:hover { color: var(--text); border-color: var(--text3); }
+.sp-collab-toggle.open {
+  background: transparent; border-style: solid;
+  border-color: var(--border); color: var(--text);
+}
+.sp-collab-toggle.open svg { transform: rotate(45deg); }
+.sp-collab-toggle svg { transition: transform .2s ease; }
+.sp-collab-toggle-hint {
+  font-size: 10.5px; color: var(--text3); font-weight: 400;
+  padding-left: 4px; border-left: 1px solid var(--border); margin-left: 2px;
+}
+.sp-collab-body { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 
 /* ── QUEUE SIDEBAR ───────────────────────────────────── */
 .sp-sidebar { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 16px; }
@@ -2265,8 +2315,26 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
   max-height: 480px; overflow-y: auto; scrollbar-width: thin;
 }
 .sp-queue-empty {
-  text-align: center; color: var(--text3); font-size: 12.5px;
-  padding: 36px 16px; line-height: 1.5;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; padding: 36px 18px; gap: 6px;
+}
+.sp-queue-empty-icon {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg2); border: 1px solid var(--border);
+  color: var(--text3); margin-bottom: 6px;
+}
+.sp-queue-empty-title {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  letter-spacing: -0.01em;
+}
+.sp-queue-empty-sub {
+  font-size: 11.5px; color: var(--text3); line-height: 1.45;
+  max-width: 220px;
+}
+.sp-queue-thumb-empty {
+  background: var(--bg2);
+  background-image: repeating-linear-gradient(45deg, transparent 0 4px, var(--border) 4px 5px);
 }
 .sp-queue-item {
   display: flex; gap: 10px; align-items: flex-start;
