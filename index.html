@@ -20549,9 +20549,9 @@ function pjRenderDatePicker() {
     <div class="pj-dp-header">
       <div class="pj-dp-title">${months[viewMonth]} ${viewYear}</div>
       <div class="pj-dp-nav">
-        <button class="pj-dp-nav-btn" onclick="pjDpNav(-1)">‹</button>
-        <button class="pj-dp-nav-btn" onclick="pjDpToday()" title="Hoje">•</button>
-        <button class="pj-dp-nav-btn" onclick="pjDpNav(1)">›</button>
+        <button class="pj-dp-nav-btn" data-pj-act="prev" type="button" aria-label="Mês anterior">‹</button>
+        <button class="pj-dp-nav-btn" data-pj-act="today" type="button" title="Hoje">•</button>
+        <button class="pj-dp-nav-btn" data-pj-act="next" type="button" aria-label="Próximo mês">›</button>
       </div>
     </div>
     <div class="pj-dp-grid">
@@ -20561,13 +20561,26 @@ function pjRenderDatePicker() {
         const cls = [];
         if (c.ymd === todayStr) cls.push('today');
         if (c.ymd === selDate) cls.push('selected');
-        return `<button class="pj-dp-day ${cls.join(' ')}" onclick="pjDpPick('${c.ymd}')">${c.day}</button>`;
+        return `<button class="pj-dp-day ${cls.join(' ')}" data-pj-pick="${c.ymd}" type="button">${c.day}</button>`;
       }).join('')}
     </div>
     <div class="pj-dp-actions">
-      <button class="pj-dp-btn danger" onclick="pjDpClear()">Limpar</button>
-      <button class="pj-dp-btn primary" onclick="pjDpPick('${todayStr}')">Hoje</button>
+      <button class="pj-dp-btn danger" data-pj-act="clear" type="button">Limpar</button>
+      <button class="pj-dp-btn primary" data-pj-pick="${todayStr}" type="button">Hoje</button>
     </div>`;
+
+  // Handlers via addEventListener com stopPropagation pra não trombar com o
+  // listener global que fecha o picker quando clica fora.
+  const stopAndRun = (fn) => (e) => { e.stopPropagation(); fn(); };
+  pop.querySelector('[data-pj-act="prev"]')?.addEventListener('click', stopAndRun(() => pjDpNav(-1)));
+  pop.querySelector('[data-pj-act="next"]')?.addEventListener('click', stopAndRun(() => pjDpNav(1)));
+  pop.querySelector('[data-pj-act="today"]')?.addEventListener('click', stopAndRun(() => pjDpToday()));
+  pop.querySelector('[data-pj-act="clear"]')?.addEventListener('click', stopAndRun(() => pjDpClear()));
+  pop.querySelectorAll('[data-pj-pick]').forEach(btn => {
+    const ymd = btn.getAttribute('data-pj-pick');
+    if (!ymd) return;
+    btn.addEventListener('click', stopAndRun(() => pjDpPick(ymd)));
+  });
 }
 function pjDpNav(dir) {
   _pjDpState.viewMonth += dir;
