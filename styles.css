@@ -5499,7 +5499,9 @@ body.pj-task-open .pj-fab { display:none !important; }
 .pj-bc-stat.overdue strong { color:#ef4444; }
 
 .pj-bc-filter-bar {
-  display: flex; align-items: flex-end; gap: 12px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
   flex-wrap: wrap;
   margin: 18px 0 14px;
   padding: 12px 14px;
@@ -5508,8 +5510,12 @@ body.pj-task-open .pj-fab { display:none !important; }
   border-radius: 12px;
 }
 .pj-bc-filter-group {
-  display: flex; flex-direction: column; gap: 4px;
-  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 180px;
+  min-width: 160px;
+  max-width: 240px;
 }
 .pj-bc-filter-label {
   font-size: 10.5px;
@@ -5518,14 +5524,24 @@ body.pj-task-open .pj-fab { display:none !important; }
   letter-spacing: .5px;
   color: var(--text3, var(--text2));
 }
-.pj-bc-filter-group .fx-select-wrap { min-width: 140px; }
+/* Sobrescreve o width:100% padrão do .fx-select-wrap dentro dos filtros
+   pra ele ficar dentro do container do filter-group */
+.pj-bc-filter-group .fx-select-wrap {
+  width: 100% !important;
+  display: block !important;
+}
 .pj-bc-filter-count {
   margin-left: auto;
-  display: inline-flex; align-items: center; gap: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   padding: 8px 12px;
-  font-size: 12.5px; color: var(--text2);
-  background: var(--card); border: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--text2);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 8px;
+  white-space: nowrap;
 }
 .pj-bc-filter-count strong { color: var(--text); font-size: 14px; }
 .pj-bc-filter-reset {
@@ -5544,8 +5560,16 @@ body.pj-task-open .pj-fab { display:none !important; }
 }
 @media (max-width: 720px) {
   .pj-bc-filter-bar { padding: 10px; }
-  .pj-bc-filter-group { min-width: calc(50% - 6px); flex: 1 1 calc(50% - 6px); }
-  .pj-bc-filter-count { margin-left: 0; width: 100%; justify-content: space-between; }
+  .pj-bc-filter-group {
+    min-width: calc(50% - 5px);
+    max-width: none;
+    flex: 1 1 calc(50% - 5px);
+  }
+  .pj-bc-filter-count {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 .pj-bc-tasks-list { display:flex; flex-direction:column; gap:6px; }
@@ -9212,57 +9236,90 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
    FX CUSTOM SELECT — substitui todos os <select> nativos por um
    dropdown estilizado. Aplicado automaticamente pelo enhancer JS
    no fim do index.html. Opt-out: <select data-fx-skip>.
+   Estilos !important pra sobrepor inline styles legados dos
+   selects antigos (mtr-select, pj-field-value etc).
    ══════════════════════════════════════════════════════════════ */
 .fx-select-wrap {
-  position: relative;
-  display: inline-block;
-  width: auto;
+  position: relative !important;
+  display: block !important;
+  width: 100%;
   font-family: var(--font);
+  box-sizing: border-box;
 }
 .fx-select-wrap > select.fx-hidden {
-  position: absolute; inset: 0;
-  opacity: 0; pointer-events: none;
-  width: 100%; height: 100%;
-  margin: 0; padding: 0; border: 0;
+  display: none !important;
 }
 .fx-select-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  width: 100%; padding: 8px 12px;
-  background: var(--bg2, var(--bg));
-  color: var(--text, #e5e7eb);
-  border: 1px solid var(--border, rgba(255,255,255,.1));
-  border-radius: 8px;
-  font-size: 13px; font-family: var(--font);
-  font-weight: 500;
-  cursor: pointer; text-align: left; box-sizing: border-box;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-height: 34px;
+  padding: 8px 12px !important;
+  background: var(--bg2, var(--bg, #1a1a1a)) !important;
+  color: var(--text, #e5e7eb) !important;
+  border: 1px solid var(--border, rgba(255,255,255,.1)) !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-family: var(--font) !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-sizing: border-box !important;
+  line-height: 1.3 !important;
   transition: border-color .14s ease, box-shadow .14s ease, background .14s ease;
 }
 .fx-select-btn:hover:not(:disabled) {
-  border-color: var(--accent, #7c3aed);
+  border-color: var(--accent, #7c3aed) !important;
 }
 .fx-select-btn:focus,
 .fx-select-btn[aria-expanded="true"] {
-  outline: none;
-  border-color: var(--accent, #7c3aed);
-  box-shadow: 0 0 0 3px rgba(124,58,237,.18);
+  outline: none !important;
+  border-color: var(--accent, #7c3aed) !important;
+  box-shadow: 0 0 0 3px rgba(124,58,237,.18) !important;
 }
-.fx-select-btn:disabled { opacity: .5; cursor: not-allowed; }
-
+.fx-select-btn:disabled {
+  opacity: .5 !important;
+  cursor: not-allowed !important;
+}
 .fx-select-btn-label {
-  flex: 1; min-width: 0;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  font-family: var(--font);
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  font-family: var(--font) !important;
+  font-weight: inherit !important;
 }
 .fx-select-btn-label.fx-placeholder {
-  color: var(--text3, var(--text2, #94a3b8));
-  font-weight: 400;
+  color: var(--text3, var(--text2, #94a3b8)) !important;
+  font-weight: 400 !important;
 }
 .fx-select-btn-icon {
-  flex-shrink: 0; width: 14px; height: 14px;
-  color: var(--text3, var(--text2, #94a3b8));
+  flex: 0 0 auto !important;
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  max-width: 14px !important;
+  max-height: 14px !important;
+  color: var(--text3, var(--text2, #94a3b8)) !important;
   transition: transform .18s ease;
+  display: block !important;
 }
-.fx-select-btn[aria-expanded="true"] .fx-select-btn-icon { transform: rotate(180deg); }
+.fx-select-btn[aria-expanded="true"] .fx-select-btn-icon {
+  transform: rotate(180deg);
+}
+.fx-select-opt-check {
+  flex: 0 0 auto !important;
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  max-width: 14px !important;
+  max-height: 14px !important;
+  display: block !important;
+}
 
 .fx-select-menu {
   position: fixed; z-index: 12100;
