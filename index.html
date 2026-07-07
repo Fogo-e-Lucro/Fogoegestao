@@ -15969,8 +15969,18 @@ function pjMapFocus(card, addrEncoded) {
 
 // ── Visão por Cliente ──────────────────────────────────
 let _pjByClientSelected = null; // nome do cliente selecionado no grid (null = mostrar grid)
+let _pjByClientFilter = { date: 'all', assignee: 'all', status: 'open' };
 function pjByClientSelect(name) {
   _pjByClientSelected = (_pjByClientSelected === name) ? null : name;
+  _pjByClientFilter = { date: 'all', assignee: 'all', status: 'open' };
+  pjRenderMain();
+}
+function pjByClientSetFilter(key, value) {
+  _pjByClientFilter[key] = value;
+  pjRenderMain();
+}
+function pjByClientResetFilter() {
+  _pjByClientFilter = { date: 'all', assignee: 'all', status: 'open' };
   pjRenderMain();
 }
 function pjBuildByClient() {
@@ -16019,13 +16029,57 @@ function pjBuildByClient() {
 
   // ── MODO 1: Cliente selecionado → mostra detalhes ─────────────
   if (_pjByClientSelected && groups[_pjByClientSelected]) {
-    const items = groups[_pjByClientSelected];
-    const s = stats(items);
+    const allItems = groups[_pjByClientSelected];
+
+    // Aplica filtros ativos
+    const today = pjDateStr(new Date());
+    const tomorrow = pjDateStr(new Date(Date.now() + 86400000));
+    const in7 = pjDateStr(new Date(Date.now() + 7*86400000));
+    const in30 = pjDateStr(new Date(Date.now() + 30*86400000));
+    const f = _pjByClientFilter;
+    const items = allItems.filter(t => {
+      // Status filter
+      const isDone = pjIsDone(t);
+      if (f.status === 'open' && isDone) return false;
+      if (f.status === 'done' && !isDone) return false;
+      // Assignee filter
+      if (f.assignee !== 'all') {
+        const uids = t.assignees || [];
+        if (f.assignee === 'none') { if (uids.length > 0) return false; }
+        else if (!uids.includes(f.assignee)) return false;
+      }
+      // Date filter
+      if (f.date !== 'all') {
+        if (f.date === 'nodate') { if (t.dueDate) return false; }
+        else if (f.date === 'overdue') { if (!t.dueDate || t.dueDate >= today || isDone) return false; }
+        else if (f.date === 'today') { if (t.dueDate !== today) return false; }
+        else if (f.date === 'tomorrow') { if (t.dueDate !== tomorrow) return false; }
+        else if (f.date === 'week') { if (!t.dueDate || t.dueDate > in7 || t.dueDate < today) return false; }
+        else if (f.date === 'month') { if (!t.dueDate || t.dueDate > in30 || t.dueDate < today) return false; }
+      }
+      return true;
+    });
+
+    const s = stats(allItems);
+    const filteredCount = items.length;
     const c = bdMap[_pjByClientSelected];
     const display = _pjByClientSelected === '__none__' ? '— Sem cliente —' : (c?.nome || _pjByClientSelected);
     const subtitle = c ? [c.tipoCozinha, c.cidade, c.ig?'@'+String(c.ig).replace('@',''):''].filter(Boolean).join(' · ') : '';
     const initial = (display || '?').trim().charAt(0).toUpperCase();
     const fotoStyle = c?.fotoUrl ? `background-image:url('${c.fotoUrl}');background-size:cover;background-position:center;` : '';
+
+    // Lista de responsáveis únicos das tarefas deste cliente (pra popular o select)
+    const clientUids = new Set();
+    allItems.forEach(t => (t.assignees || []).forEach(u => clientUids.add(u)));
+    const memberList = pjMembers
+      .filter(m => clientUids.has(m.id) || clientUids.has(m.uid))
+      .map(m => ({ id: m.id || m.uid, name: m.name || m.displayName || m.email?.split('@')[0] || m.id }))
+      .filter(m => m.name)
+      .sort((a,b) => a.name.localeCompare(b.name));
+    const anyUnassigned = allItems.some(t => !(t.assignees || []).length);
+
+    const hasFilter = f.status !== 'open' || f.date !== 'all' || f.assignee !== 'all';
+
     let h = `<div class="pj-view-header">
       <button class="pj-bc-back" onclick="pjByClientSelect(null)">← Voltar</button>
       <div class="pj-view-title" style="margin-left:6px;">🏢 ${escHtml(display)}</div>
@@ -16044,9 +16098,47 @@ function pjBuildByClient() {
           </div>
         </div>
       </div>
+
+      <div class="pj-bc-filter-bar">
+        <div class="pj-bc-filter-group">
+          <label class="pj-bc-filter-label">Status</label>
+          <select onchange="pjByClientSetFilter('status', this.value)">
+            <option value="open" ${f.status==='open'?'selected':''}>Abertas</option>
+            <option value="all" ${f.status==='all'?'selected':''}>Todas</option>
+            <option value="done" ${f.status==='done'?'selected':''}>Concluídas</option>
+          </select>
+        </div>
+        <div class="pj-bc-filter-group">
+          <label class="pj-bc-filter-label">Data</label>
+          <select onchange="pjByClientSetFilter('date', this.value)">
+            <option value="all" ${f.date==='all'?'selected':''}>Qualquer data</option>
+            <option value="overdue" ${f.date==='overdue'?'selected':''}>Atrasadas</option>
+            <option value="today" ${f.date==='today'?'selected':''}>Hoje</option>
+            <option value="tomorrow" ${f.date==='tomorrow'?'selected':''}>Amanhã</option>
+            <option value="week" ${f.date==='week'?'selected':''}>Próximos 7 dias</option>
+            <option value="month" ${f.date==='month'?'selected':''}>Próximos 30 dias</option>
+            <option value="nodate" ${f.date==='nodate'?'selected':''}>Sem prazo</option>
+          </select>
+        </div>
+        <div class="pj-bc-filter-group">
+          <label class="pj-bc-filter-label">Responsável</label>
+          <select onchange="pjByClientSetFilter('assignee', this.value)">
+            <option value="all" ${f.assignee==='all'?'selected':''}>Todos</option>
+            ${memberList.map(m => `<option value="${escHtml(m.id)}" ${f.assignee===m.id?'selected':''}>${escHtml(m.name)}</option>`).join('')}
+            ${anyUnassigned ? `<option value="none" ${f.assignee==='none'?'selected':''}>— Sem responsável</option>` : ''}
+          </select>
+        </div>
+        <div class="pj-bc-filter-count">
+          <strong>${filteredCount}</strong> ${filteredCount===1?'tarefa':'tarefas'}${hasFilter?` <button class="pj-bc-filter-reset" onclick="pjByClientResetFilter()" title="Limpar filtros">✕ limpar</button>`:''}
+        </div>
+      </div>
+
       <div class="pj-bc-tasks-list">`;
     if (!items.length) {
-      h += `<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">Nenhuma tarefa para este cliente ainda.</div>`;
+      const emptyMsg = hasFilter
+        ? 'Nenhuma tarefa com esses filtros. Tente ajustar ou <a href="#" onclick="pjByClientResetFilter();return false;" style="color:var(--accent);text-decoration:underline;">limpar tudo</a>.'
+        : 'Nenhuma tarefa para este cliente ainda.';
+      h += `<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">${emptyMsg}</div>`;
     } else {
       items.forEach(t => {
         const list = pjLists.find(l=>l.id===t.listId);
