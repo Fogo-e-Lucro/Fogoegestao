@@ -7700,23 +7700,36 @@ function mtrUseSamePeriodAsPrev() {
   const since = document.getElementById('mtrMainSince')?.value;
   const until = document.getElementById('mtrMainUntil')?.value;
   if (!since || !until) return;
-  const d1 = new Date(since); const d2 = new Date(until);
+  // Interpreta como local (T00:00:00 sem Z) pra não ter off-by-one em BRT
+  const d1 = new Date(since + 'T00:00:00');
+  const d2 = new Date(until + 'T00:00:00');
   const diffMs = d2 - d1;
   const prevUntil = new Date(d1); prevUntil.setDate(prevUntil.getDate() - 1);
   const prevSince = new Date(prevUntil.getTime() - diffMs);
-  const fmt = d => d.toISOString().split('T')[0];
   const cs = document.getElementById('mtrCompareSince');
   const cu = document.getElementById('mtrCompareUntil');
-  if (cs) cs.value = fmt(prevSince);
-  if (cu) cu.value = fmt(prevUntil);
+  if (cs) cs.value = mtrFmtLocalDate(prevSince);
+  if (cu) cu.value = mtrFmtLocalDate(prevUntil);
   if (mtrCurrentAcc) loadMetrics();
+}
+
+/**
+ * Formata Date como YYYY-MM-DD respeitando timezone LOCAL do browser.
+ * Substitui d.toISOString().split('T')[0] que dava off-by-one em BRT-3
+ * quando rodava depois das 21h (00:00 UTC = 21:00 BRT do dia anterior).
+ * Usar pra tudo que vira/vem de <input type="date"> ou de "data BRT".
+ */
+function mtrFmtLocalDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function mtrGetDateRange(days, offset = 0) {
   const until = new Date(); until.setDate(until.getDate() - offset);
   const since = new Date(until); since.setDate(since.getDate() - days);
-  const fmt = d => d.toISOString().split('T')[0];
-  return { since: fmt(since), until: fmt(until) };
+  return { since: mtrFmtLocalDate(since), until: mtrFmtLocalDate(until) };
 }
 
 function mtrFmtNum(n) {
@@ -7816,12 +7829,12 @@ async function loadMetrics() {
   if (compare) {
     if (cmpSince && cmpUntil) prev = { since: cmpSince, until: cmpUntil };
     else {
-      // Calcula a partir do período principal
-      const d1 = new Date(mainSince); const d2 = new Date(mainUntil);
+      // Calcula a partir do período principal (parse LOCAL)
+      const d1 = new Date(mainSince + 'T00:00:00');
+      const d2 = new Date(mainUntil + 'T00:00:00');
       const prevUntil = new Date(d1); prevUntil.setDate(prevUntil.getDate() - 1);
       const prevSince = new Date(prevUntil.getTime() - (d2 - d1));
-      const fmt = d => d.toISOString().split('T')[0];
-      prev = { since: fmt(prevSince), until: fmt(prevUntil) };
+      prev = { since: mtrFmtLocalDate(prevSince), until: mtrFmtLocalDate(prevUntil) };
     }
   }
 
@@ -7906,15 +7919,16 @@ async function loadMetrics() {
 // Quebra em pedaços de até 30 dias contíguos cobrindo [since, until].
 function _mtrSplitIgRange(since, until) {
   const MAX = 30 * 24 * 60 * 60 * 1000; // 30 dias em ms
-  const fmt = d => d.toISOString().split('T')[0];
-  const start = new Date(since + 'T00:00:00Z').getTime();
-  const end   = new Date(until + 'T00:00:00Z').getTime();
+  // Parse LOCAL (sem Z) pra manter consistência com mtrFmtLocalDate:
+  // se parsear em UTC e formatar em local, o dia sofre off-by-one em BRT.
+  const start = new Date(since + 'T00:00:00').getTime();
+  const end   = new Date(until + 'T00:00:00').getTime();
   if (isNaN(start) || isNaN(end) || end < start) return [{ since, until }];
   const chunks = [];
   let s = start;
   while (s <= end) {
     const e = Math.min(s + MAX - 86400000, end); // -1 dia pra não estourar 30 dias inclusivos
-    chunks.push({ since: fmt(new Date(s)), until: fmt(new Date(e)) });
+    chunks.push({ since: mtrFmtLocalDate(new Date(s)), until: mtrFmtLocalDate(new Date(e)) });
     s = e + 86400000;
   }
   return chunks;
@@ -7930,7 +7944,7 @@ function _mtrSplitIgRange(since, until) {
 async function _mtrSaveFollowerSnapshot(igId, count) {
   if (!igId || !count || count <= 0) return;
   if (typeof firebase === 'undefined' || !firebase.firestore) return;
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
+  const today = mtrFmtLocalDate(new Date()); // YYYY-MM-DD local BRT
   const docId = `${igId}_${today}`;
   try {
     const ref = firebase.firestore().collection('ig_follower_history').doc(docId);
@@ -9880,7 +9894,7 @@ function mtrRenderNotes(curr) {
     </div>
     <div class="mtr-notes-list">${list}</div>
     <div class="mtr-notes-form" id="mtrNotesForm" style="display:none;">
-      <input type="date" id="mtrNoteDate" class="mtr-notes-input-date" value="${new Date().toISOString().split('T')[0]}">
+      <input type="date" id="mtrNoteDate" class="mtr-notes-input-date" value="${mtrFmtLocalDate(new Date())}">
       <input type="text" id="mtrNoteText" class="mtr-notes-input-text" placeholder="Ex.: Início campanha Black Friday" onkeydown="if(event.key==='Enter')mtrAddNote()">
       <button class="mtr-notes-save" onclick="mtrAddNote()">Salvar</button>
     </div>
