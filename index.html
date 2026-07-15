@@ -7789,15 +7789,24 @@ async function loadMetrics() {
   document.getElementById('mtrBody').innerHTML = mtrSkeletonHtml();
 
   const compare = document.getElementById('mtrCompare').checked;
-  // Período principal: lê dos inputs (fonte da verdade); se vazio, usa preset atual
+  // Período principal: lê dos inputs (fonte da verdade)
   let mainSince = document.getElementById('mtrMainSince')?.value;
   let mainUntil = document.getElementById('mtrMainUntil')?.value;
-  if (!mainSince || !mainUntil) {
+  // Só preenche do preset se AMBOS estiverem vazios (carga inicial em
+  // mtrOnAccountChange). Se apenas UM está vazio, é porque o <input type="date">
+  // do Chrome está retornando "" durante a edição do usuário (segmento de ano
+  // vazio, blur intermediário) — se sobrescrevermos, jogamos fora o que ele
+  // estava digitando e o range 90d volta silenciosamente. Aborta e espera.
+  if (!mainSince && !mainUntil) {
     const r = mtrGetDateRange(mtrDays);
-    mainSince = mainSince || r.since;
-    mainUntil = mainUntil || r.until;
+    mainSince = r.since;
+    mainUntil = r.until;
     if (document.getElementById('mtrMainSince')) document.getElementById('mtrMainSince').value = mainSince;
     if (document.getElementById('mtrMainUntil')) document.getElementById('mtrMainUntil').value = mainUntil;
+  } else if (!mainSince || !mainUntil) {
+    btn.disabled = false; btn.textContent = '↻ Atualizar';
+    document.getElementById('mtrBody').innerHTML = '<div class="mtr-empty" style="padding:24px 20px;">Termine de preencher as datas antes de atualizar.</div>';
+    return;
   }
   const curr = { since: mainSince, until: mainUntil };
   // Período de comparação: lê dos inputs; se vazio mas Comparar marcado, usa período imediatamente anterior
