@@ -13140,7 +13140,21 @@ async function pjInit() {
     console.warn('[Projetos] Firestore indisponível, modo offline:', e.message);
   }
   pjRenderSidebar();
-  pjNavigate('dashboard');
+  // Restaura view/cliente/filtro do Por Cliente do localStorage (fallback: dashboard)
+  let _savedView = null;
+  try { _savedView = JSON.parse(localStorage.getItem('pj_current_view') || 'null'); } catch(_){}
+  try {
+    const _sel = localStorage.getItem('pj_byclient_sel');
+    if (_sel) _pjByClientSelected = _sel;
+    const _f = localStorage.getItem('pj_byclient_filter');
+    if (_f) _pjByClientFilter = Object.assign({ date:'all', dateValue:'', assignee:'all', status:'open' }, JSON.parse(_f));
+  } catch(_){}
+  // Se salvou uma lista específica, checa que ainda existe (senão cai no dashboard)
+  if (_savedView && (_savedView.type === 'list' || _savedView.type === 'kanban')) {
+    if (!_savedView.id || !pjLists.find(l => l.id === _savedView.id)) _savedView = null;
+  }
+  if (_savedView && _savedView.type) pjNavigate(_savedView.type, _savedView.id || null);
+  else pjNavigate('dashboard');
   pjUpdateNotifBell();
   // Integrações: iniciar listener de fila e checar prazos
   setTimeout(() => { pjStartQueueListener(); pjCheckDueSoon(); }, 2000);
@@ -13753,6 +13767,13 @@ function pjNavigate(type, id = null) {
     type = 'dashboard'; id = null;
   }
   pjCurrentView = { type, id };
+  // Persiste view atual pra sobreviver a F5. Modo Demo é excluído
+  // pra não gravar estado sintético.
+  try {
+    if (typeof _pjDemoActive === 'undefined' || !_pjDemoActive) {
+      localStorage.setItem('pj_current_view', JSON.stringify({ type, id }));
+    }
+  } catch(_){}
   document.querySelectorAll('.pj-nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.pj-list-row').forEach(b => b.classList.remove('active'));
   if (type === 'inbox') document.getElementById('pjBtnInbox')?.classList.add('active');
@@ -15999,6 +16020,11 @@ let _pjByClientFilter = { date: 'all', dateValue: '', assignee: 'all', status: '
 function pjByClientSelect(name) {
   _pjByClientSelected = (_pjByClientSelected === name) ? null : name;
   _pjByClientFilter = { date: 'all', dateValue: '', assignee: 'all', status: 'open' };
+  try {
+    if (_pjByClientSelected) localStorage.setItem('pj_byclient_sel', _pjByClientSelected);
+    else localStorage.removeItem('pj_byclient_sel');
+    localStorage.setItem('pj_byclient_filter', JSON.stringify(_pjByClientFilter));
+  } catch(_){}
   pjRenderMain();
 }
 function pjByClientSetFilter(key, value) {
@@ -16011,10 +16037,12 @@ function pjByClientSetFilter(key, value) {
   if (key === 'date' && value !== 'custom') {
     _pjByClientFilter.dateValue = '';
   }
+  try { localStorage.setItem('pj_byclient_filter', JSON.stringify(_pjByClientFilter)); } catch(_){}
   pjRenderMain();
 }
 function pjByClientResetFilter() {
   _pjByClientFilter = { date: 'all', dateValue: '', assignee: 'all', status: 'open' };
+  try { localStorage.setItem('pj_byclient_filter', JSON.stringify(_pjByClientFilter)); } catch(_){}
   pjRenderMain();
 }
 function pjBuildByClient() {
