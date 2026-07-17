@@ -7923,6 +7923,61 @@ body.pj-task-open .pj-modal-body { touch-action:pan-y; }
 }
 .pj-askai-send:hover:not(:disabled) { transform:translateY(-1px); }
 .pj-askai-send:disabled { opacity:.5; cursor:not-allowed; }
+
+/* Botão de anexar imagem */
+.pj-askai-attach {
+  flex:0 0 auto;
+  width:36px; height:36px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--bg); color:var(--text2);
+  border:1px solid var(--border); border-radius:10px;
+  cursor:pointer; transition:all .15s ease;
+}
+.pj-askai-attach:hover:not(:disabled) {
+  color:var(--accent); border-color:var(--accent); transform:translateY(-1px);
+}
+.pj-askai-attach:disabled { opacity:.4; cursor:not-allowed; }
+
+/* Preview de imagens anexadas antes de enviar */
+.pj-askai-attach-preview {
+  display:none;
+  gap:8px; flex-wrap:wrap;
+  padding:8px; margin-bottom:6px;
+  background:var(--bg2); border:1px dashed var(--border); border-radius:10px;
+}
+.pj-askai-attach-chip {
+  position:relative;
+  width:64px; height:64px;
+  border-radius:8px; overflow:hidden;
+  background:var(--bg);
+  border:1px solid var(--border);
+}
+.pj-askai-attach-chip img {
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+.pj-askai-attach-remove {
+  position:absolute; top:2px; right:2px;
+  width:18px; height:18px; padding:0;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.7); color:#fff;
+  border:none; border-radius:50%;
+  font-size:10px; cursor:pointer;
+  transition:background .15s ease;
+}
+.pj-askai-attach-remove:hover { background:#e53e3e; }
+
+/* Imagens dentro das mensagens (histórico) */
+.pj-askai-msg-images {
+  display:flex; gap:6px; flex-wrap:wrap;
+  margin-bottom:8px;
+}
+.pj-askai-msg-images img {
+  max-width:200px; max-height:200px;
+  border-radius:8px; cursor:pointer;
+  border:1px solid var(--border);
+  transition:opacity .15s ease;
+}
+.pj-askai-msg-images img:hover { opacity:.85; }
 .pj-askai-hint {
   font-size:11px; color:var(--text3); text-align:center;
   padding:0 4px;

@@ -19133,10 +19133,27 @@ function pjAskAiBuildContext() {
   (pjMembers||[]).forEach(m => { memberMap[m.uid] = m.name || m.email || m.uid; });
   const listMap = {};
   (pjLists||[]).forEach(l => { listMap[l.id] = l; });
+  const folderMap = {};
+  (pjFolders||[]).forEach(f => { folderMap[f.id] = f; });
   const spaceMap = {};
   (pjSpaces||[]).forEach(s => { spaceMap[s.id] = s.name || s.id; });
   const cliMap = {};
   (typeof _bdClientes !== 'undefined' ? _bdClientes : []).forEach(c => { cliMap[c.id] = c.nome || c.razaoSocial || c.id; });
+  // Fallback extra: folder "Cliente: X" ou lista "Cliente: X".
+  // Normaliza p/ comparar com nomes de clientes cadastrados (sem acento/caso).
+  const norm = (s) => (s||'').toString().normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+  const cliByNorm = {};
+  (typeof _bdClientes !== 'undefined' ? _bdClientes : []).forEach(c => {
+    const nm = c.nome || c.razaoSocial || '';
+    if (nm) cliByNorm[norm(nm)] = nm;
+  });
+  const extractClientFromName = (name) => {
+    if (!name) return null;
+    const m = name.match(/cliente\s*[:\-–]\s*(.+)/i);
+    const raw = m ? m[1].trim() : null;
+    if (!raw) return null;
+    return cliByNorm[norm(raw)] || raw;
+  };
 
   // Helper para converter timestamps do Firestore (Timestamp/number) em ISO YYYY-MM-DD.
   const toIso = (v) => {
@@ -19188,11 +19205,23 @@ function pjAskAiBuildContext() {
       } catch(_) {}
     }
     if (!clienteNome && t.client) clienteNome = t.client;
+    // Fallback final: folder "Cliente: X" ou lista "Cliente: X".
+    // Muitos clientes tao amarrados so no nome da pasta (Marketing/Sucesso do
+    // Cliente costumam trabalhar assim), o que fazia a IA perder essas tasks.
+    const folder = list?.folderId ? folderMap[list.folderId] : null;
+    if (!clienteNome && folder) clienteNome = extractClientFromName(folder.name);
+    if (!clienteNome && list) clienteNome = extractClientFromName(list.name);
+    // Normaliza pra usar SEMPRE o nome canônico do cliente cadastrado quando bater
+    if (clienteNome) {
+      const canonical = cliByNorm[norm(clienteNome)];
+      if (canonical) clienteNome = canonical;
+    }
     return {
       id: t.id,
       title: t.title || '',
       description: (t.description || '').slice(0, 300) || null,
       list: list?.name || null,
+      folder: folder?.name || null,
       space: list?.spaceId ? spaceMap[list.spaceId] || null : null,
       cliente: clienteNome,
       assignees: (t.assignees||[]).map(uid => memberMap[uid] || uid),
@@ -19238,7 +19267,13 @@ function pjAskAiBuildContext() {
   const lists = (pjLists||[]).map(l => ({
     id: l.id, name: l.name,
     space: l.spaceId ? spaceMap[l.spaceId] : null,
+    folder: l.folderId ? folderMap[l.folderId]?.name || null : null,
     statuses: (l.statuses || []).map(s => ({ name: s.name, bucket: typeof pjStatusBucket==='function'? pjStatusBucket(s) : null }))
+  }));
+  const folders = (pjFolders||[]).map(f => ({
+    name: f.name,
+    space: f.spaceId ? spaceMap[f.spaceId] : null,
+    cliente: extractClientFromName(f.name) || null
   }));
   const members = (pjMembers||[]).map(m => ({ name: m.name || m.email, role: m.role || 'member' }));
   const clientes = (typeof _bdClientes !== 'undefined' ? _bdClientes : []).map(c => ({
@@ -19261,7 +19296,7 @@ function pjAskAiBuildContext() {
       clientes: clientes.length,
       truncatedTasks: truncated ? (tasks.length - tasksOut.length) : 0
     },
-    members, lists, clientes, tasks: tasksOut
+    members, lists, folders, clientes, tasks: tasksOut
   };
 }
 
@@ -19346,7 +19381,12 @@ function pjBuildAskAi() {
         <div class="pj-askai-suggest" id="pjAskAiSuggest">
           ${sugestoes.map(q => `<button class="pj-askai-chip" onclick="pjAskAiAsk(this.dataset.q)" data-q="${escHtml(q)}">${escHtml(q)}</button>`).join('')}
         </div>
+        <div class="pj-askai-attach-preview" id="pjAskAiAttachPreview"></div>
         <div class="pj-askai-inputbar">
+          <input type="file" id="pjAskAiFileInput" accept="image/jpeg,image/png,image/gif,image/webp" multiple style="display:none" onchange="pjAskAiHandleFiles(this.files)">
+          <button class="pj-askai-attach" id="pjAskAiAttachBtn" title="Anexar imagem" onclick="document.getElementById('pjAskAiFileInput').click()" ${!hasKey?'disabled':''}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          </button>
           <textarea id="pjAskAiInput" class="pj-askai-input" rows="1" placeholder="Pergunte qualquer coisa sobre as tarefas, clientes, equipe…" ${!hasKey?'disabled':''}></textarea>
           <button class="pj-askai-send" id="pjAskAiSendBtn" onclick="pjAskAiSend()" ${!hasKey?'disabled':''}>
             <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.926A.75.75 0 004.41 8.7l8.59-1.075a.25.25 0 010 .495L4.41 9.196a.75.75 0 00-.717.535L2.279 14.66a.75.75 0 00.95.826l16-5.5a.75.75 0 000-1.418l-16-5.281z"/></svg>
@@ -19403,7 +19443,12 @@ function pjAskAiRenderMsgs() {
     let content;
     let actionsHtml = '';
     if (m.role === 'user') {
-      content = `<p>${escHtml(m.text).replace(/\n/g,'<br>')}</p>`;
+      // Renderiza imagens anexadas (se houver) + texto
+      const imgsHtml = (m.images && m.images.length)
+        ? `<div class="pj-askai-msg-images">${m.images.map(i => `<img src="${i.dataUrl}" alt="${escHtml(i.name||'')}" onclick="window.open(this.src,'_blank')">`).join('')}</div>`
+        : '';
+      const txt = m.text ? `<p>${escHtml(m.text).replace(/\n/g,'<br>')}</p>` : '';
+      content = imgsHtml + txt;
     } else {
       const split = pjAskAiSplitActions(m.text);
       content = pjAskAiMarkdown(split.text);
@@ -19504,19 +19549,86 @@ async function pjAskAiCopy(idx, btnEl) {
   }
 }
 
+// Anexos pendentes pra próxima mensagem enviada. Cada item:
+// { id, name, mediaType, dataUrl (data URI completo p/ preview), base64 (só o payload) }
+window.pjAskAiPendingImages = window.pjAskAiPendingImages || [];
+const PJ_ASKAI_MAX_IMAGES = 4;
+const PJ_ASKAI_MAX_SIZE = 5 * 1024 * 1024; // 5MB Claude Vision limit
+
+function pjAskAiHandleFiles(files) {
+  if (!files || !files.length) return;
+  const arr = Array.from(files);
+  arr.forEach(f => {
+    if (window.pjAskAiPendingImages.length >= PJ_ASKAI_MAX_IMAGES) {
+      showToast?.('warn','⚠️',`Máx ${PJ_ASKAI_MAX_IMAGES} imagens por mensagem`);
+      return;
+    }
+    if (!/^image\/(jpeg|jpg|png|gif|webp)$/i.test(f.type)) {
+      showToast?.('warn','⚠️','Formato inválido (use JPG, PNG, GIF ou WEBP)');
+      return;
+    }
+    if (f.size > PJ_ASKAI_MAX_SIZE) {
+      showToast?.('warn','⚠️',`"${f.name}" passou de 5MB`);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      const base64 = dataUrl.split(',')[1] || '';
+      window.pjAskAiPendingImages.push({
+        id: 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+        name: f.name, mediaType: f.type, dataUrl, base64,
+      });
+      pjAskAiRenderAttachPreview();
+    };
+    reader.readAsDataURL(f);
+  });
+  // Reset input pra permitir escolher o mesmo arquivo de novo
+  const inp = document.getElementById('pjAskAiFileInput');
+  if (inp) inp.value = '';
+}
+
+function pjAskAiRemoveImage(id) {
+  window.pjAskAiPendingImages = window.pjAskAiPendingImages.filter(i => i.id !== id);
+  pjAskAiRenderAttachPreview();
+}
+
+function pjAskAiRenderAttachPreview() {
+  const box = document.getElementById('pjAskAiAttachPreview');
+  if (!box) return;
+  const list = window.pjAskAiPendingImages;
+  if (!list.length) { box.innerHTML = ''; box.style.display = 'none'; return; }
+  box.style.display = 'flex';
+  box.innerHTML = list.map(img => `
+    <div class="pj-askai-attach-chip" title="${escHtml(img.name)}">
+      <img src="${img.dataUrl}" alt="">
+      <button class="pj-askai-attach-remove" onclick="pjAskAiRemoveImage('${img.id}')" title="Remover">✕</button>
+    </div>
+  `).join('');
+}
+
 async function pjAskAiSend() {
   if (window.pjAskAiBusy) return;
   const inp = document.getElementById('pjAskAiInput');
   const sendBtn = document.getElementById('pjAskAiSendBtn');
   const q = (inp?.value || '').trim();
-  if (!q) return;
+  const pendingImages = window.pjAskAiPendingImages || [];
+  if (!q && !pendingImages.length) return;
   const key = (typeof getClaudeKey === 'function') ? getClaudeKey() : '';
   if (!key) {
     if (typeof showToast === 'function') showToast('error','🔑','Configure a Claude API Key em Configurações.');
     return;
   }
 
-  window.pjAskAiHistory.push({ role:'user', text:q });
+  // Salva no histórico com imagens (pra render + pra API)
+  const userMsg = { role:'user', text: q };
+  if (pendingImages.length) {
+    userMsg.images = pendingImages.map(i => ({ dataUrl: i.dataUrl, mediaType: i.mediaType, base64: i.base64, name: i.name }));
+  }
+  window.pjAskAiHistory.push(userMsg);
+  // Limpa imagens pendentes e preview
+  window.pjAskAiPendingImages = [];
+  pjAskAiRenderAttachPreview();
   if (inp) { inp.value = ''; inp.style.height = 'auto'; }
   // Esconde chips ao iniciar conversa
   const chips = document.getElementById('pjAskAiSuggest');
@@ -19545,7 +19657,7 @@ Responda em português brasileiro, direto, profissional e amigável. Use markdow
 Use APENAS os dados fornecidos abaixo. Se não houver dado suficiente, diga isso explicitamente.
 Quando der números, indique o período de referência. Para relatórios, use tabelas markdown.
 
-O snapshot inclui tarefas ABERTAS e CONCLUÍDAS. Filtre por \`cliente\` (nome do restaurante), \`assignees\` (lista de NOMES dos responsáveis, já resolvidos) e \`completedAt\`/\`dueDate\` (ISO YYYY-MM-DD) para relatórios de "o que foi feito" por período/cliente/pessoa. \`done: true\` = concluída.
+O snapshot inclui tarefas ABERTAS e CONCLUÍDAS de TODOS os espaços (Tráfego, Marketing, Sucesso do Cliente, GMB, CRM, etc). Filtre por \`cliente\` (nome do restaurante), \`assignees\` (lista de NOMES dos responsáveis, já resolvidos) e \`completedAt\`/\`dueDate\` (ISO YYYY-MM-DD) para relatórios de "o que foi feito" por período/cliente/pessoa. \`done: true\` = concluída. Cada tarefa também tem \`space\` (área da agência), \`list\` e \`folder\` (pasta, que muitas vezes carrega o nome do cliente no formato "Cliente: X"). Quando o usuário pedir um resumo de um cliente, VARRA todos os espaços, não só Tráfego/Performance.
 Cada tarefa carrega até 3 comentários mais recentes em \`comments: [{author, at, text, isAutomation?}]\`. Comentários históricos (copiados de recorrência anterior) já são filtrados no lado do app, então cada comentário é único da tarefa. Cite trechos literais quando o usuário perguntar "o que foi comentado", "o que o cliente disse" ou "o que ficou combinado". Se \`commentCount\` for maior que \`comments.length\`, avise que há mais comentários não mostrados e sugira abrir a tarefa. Comentários com \`isAutomation: true\` são do sistema, não são fala humana.
 
 Se o usuário pedir "todas as tarefas" ou "resumo/relatório do cliente/pessoa/período", seja EXAUSTIVO: liste TODAS as tarefas do snapshot que satisfazem o critério, não só as principais. Tarefas recorrentes podem aparecer múltiplas vezes com o mesmo título — trate cada ocorrência como distinta (diferenciada por \`completedAt\`/\`dueDate\`), a menos que o usuário peça pra agrupar.
@@ -19569,11 +19681,21 @@ Tipos suportados: "navigate" (view: dashboard|inbox|all|workload|byclient|timeli
 DADOS (JSON):
 ${JSON.stringify(ctx)}`;
 
-  // Histórico p/ a API (sem o "pensando")
-  const apiMessages = window.pjAskAiHistory.filter(m => !m.pending).map(m => ({
-    role: m.role === 'bot' ? 'assistant' : 'user',
-    content: m.text
-  }));
+  // Histórico p/ a API (sem o "pensando"). Se a mensagem tem imagens,
+  // content vira array com image blocks + text block (formato Claude Vision).
+  const apiMessages = window.pjAskAiHistory.filter(m => !m.pending).map(m => {
+    const role = m.role === 'bot' ? 'assistant' : 'user';
+    if (m.images && m.images.length) {
+      const content = m.images.map(img => ({
+        type: 'image',
+        source: { type: 'base64', media_type: img.mediaType, data: img.base64 }
+      }));
+      if (m.text) content.push({ type: 'text', text: m.text });
+      else content.push({ type: 'text', text: '(sem texto)' });
+      return { role, content };
+    }
+    return { role, content: m.text };
+  });
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
