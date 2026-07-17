@@ -15992,18 +15992,26 @@ function pjMapFocus(card, addrEncoded) {
 
 // ── Visão por Cliente ──────────────────────────────────
 let _pjByClientSelected = null; // nome do cliente selecionado no grid (null = mostrar grid)
-let _pjByClientFilter = { date: 'all', assignee: 'all', status: 'open' };
+let _pjByClientFilter = { date: 'all', dateValue: '', assignee: 'all', status: 'open' };
 function pjByClientSelect(name) {
   _pjByClientSelected = (_pjByClientSelected === name) ? null : name;
-  _pjByClientFilter = { date: 'all', assignee: 'all', status: 'open' };
+  _pjByClientFilter = { date: 'all', dateValue: '', assignee: 'all', status: 'open' };
   pjRenderMain();
 }
 function pjByClientSetFilter(key, value) {
   _pjByClientFilter[key] = value;
+  // Ao trocar pra 'custom' e ainda não ter dateValue, pré-preenche com hoje.
+  if (key === 'date' && value === 'custom' && !_pjByClientFilter.dateValue) {
+    _pjByClientFilter.dateValue = pjDateStr(new Date());
+  }
+  // Ao sair de 'custom', limpa dateValue pra não deixar restos.
+  if (key === 'date' && value !== 'custom') {
+    _pjByClientFilter.dateValue = '';
+  }
   pjRenderMain();
 }
 function pjByClientResetFilter() {
-  _pjByClientFilter = { date: 'all', assignee: 'all', status: 'open' };
+  _pjByClientFilter = { date: 'all', dateValue: '', assignee: 'all', status: 'open' };
   pjRenderMain();
 }
 function pjBuildByClient() {
@@ -16079,6 +16087,11 @@ function pjBuildByClient() {
         else if (f.date === 'tomorrow') { if (t.dueDate !== tomorrow) return false; }
         else if (f.date === 'week') { if (!t.dueDate || t.dueDate > in7 || t.dueDate < today) return false; }
         else if (f.date === 'month') { if (!t.dueDate || t.dueDate > in30 || t.dueDate < today) return false; }
+        else if (f.date === 'custom') {
+          // Filtra exatamente pelo dia escolhido no input. Se dateValue vazio,
+          // o filtro fica desligado (evita tela em branco antes de digitar).
+          if (f.dateValue) { if (t.dueDate !== f.dateValue) return false; }
+        }
       }
       return true;
     });
@@ -16101,7 +16114,7 @@ function pjBuildByClient() {
       .sort((a,b) => a.name.localeCompare(b.name));
     const anyUnassigned = allItems.some(t => !(t.assignees || []).length);
 
-    const hasFilter = f.status !== 'open' || f.date !== 'all' || f.assignee !== 'all';
+    const hasFilter = f.status !== 'open' || f.date !== 'all' || f.assignee !== 'all' || !!f.dateValue;
 
     let h = `<div class="pj-view-header">
       <button class="pj-bc-back" onclick="pjByClientSelect(null)">← Voltar</button>
@@ -16141,8 +16154,15 @@ function pjBuildByClient() {
             <option value="week" ${f.date==='week'?'selected':''}>Próximos 7 dias</option>
             <option value="month" ${f.date==='month'?'selected':''}>Próximos 30 dias</option>
             <option value="nodate" ${f.date==='nodate'?'selected':''}>Sem prazo</option>
+            <option value="custom" ${f.date==='custom'?'selected':''}>Data específica…</option>
           </select>
         </div>
+        ${f.date === 'custom' ? `
+        <div class="pj-bc-filter-group">
+          <label class="pj-bc-filter-label">Escolha a data</label>
+          <input type="date" class="pj-bc-date-input" value="${escHtml(f.dateValue||'')}"
+                 onchange="pjByClientSetFilter('dateValue', this.value)">
+        </div>` : ''}
         <div class="pj-bc-filter-group">
           <label class="pj-bc-filter-label">Responsável</label>
           <select onchange="pjByClientSetFilter('assignee', this.value)">

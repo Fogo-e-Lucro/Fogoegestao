@@ -5530,6 +5530,27 @@ body.pj-task-open .pj-fab { display:none !important; }
   width: 100% !important;
   display: block !important;
 }
+/* Input de data específica que aparece quando o filtro Data = 'custom' */
+.pj-bc-date-input {
+  width: 100%;
+  padding: 8px 12px;
+  min-height: 34px;
+  background: var(--bg2, var(--bg));
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: var(--font);
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: border-color .14s, box-shadow .14s;
+}
+.pj-bc-date-input:hover { border-color: var(--accent); }
+.pj-bc-date-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124,58,237,.18);
+}
 .pj-bc-filter-count {
   margin-left: auto;
   display: inline-flex;
