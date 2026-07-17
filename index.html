@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260717">
+<link rel="stylesheet" href="styles.css?v=20260717-2">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -19712,6 +19712,9 @@ function pjAskAiOpenScopePicker() {
   pop.style.left = left + 'px';
   pop.style.top = Math.max(8, top) + 'px';
   pjAskAiRenderScopePickerList('');
+  // Delegated click nas rows (evita bug de aspas em onclick inline).
+  const listBox = document.getElementById('pjAskAiScopeList');
+  if (listBox) listBox.addEventListener('click', pjAskAiScopePickerClick);
   const search = document.getElementById('pjAskAiScopeSearch');
   if (search) {
     search.addEventListener('input', e => pjAskAiRenderScopePickerList(e.target.value));
@@ -19727,6 +19730,21 @@ function pjAskAiCloseScopePicker() {
   if (bd) bd.remove();
 }
 
+// Delegated click handler: le data-scope-* das rows.
+// Evita bug de aspas em onclick inline quando o nome tem caractere especial.
+function pjAskAiScopePickerClick(ev) {
+  const row = ev.target.closest('.pj-askai-scope-row');
+  if (!row) return;
+  ev.preventDefault();
+  ev.stopPropagation();
+  const type = row.dataset.scopeType;
+  const id = row.dataset.scopeId || null;
+  const label = row.dataset.scopeLabel || (type === 'all' ? 'Tudo' : '');
+  const color = row.dataset.scopeColor || null;
+  pjAskAiSetScope({ type, id: type === 'all' ? null : id, label, color });
+  pjAskAiCloseScopePicker();
+}
+
 function pjAskAiRenderScopePickerList(query) {
   const box = document.getElementById('pjAskAiScopeList');
   if (!box) return;
@@ -19735,10 +19753,11 @@ function pjAskAiRenderScopePickerList(query) {
   const isActive = (type, id) => scope.type === type && scope.id === id;
   const check = `<svg class="pj-askai-scope-check" viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l4 4 8-8"/></svg>`;
   const matches = (s) => !q || (s||'').toLowerCase().includes(q);
+  const attr = (v) => escHtml(v == null ? '' : String(v));
   let html = '';
-  // Linha "Tudo" fixa
+  // Linha "Tudo" fixa (sempre no topo, ignora busca)
   html += `
-    <div class="pj-askai-scope-row pj-askai-scope-all${scope.type==='all'?' active':''}" onclick="pjAskAiSetScope({type:'all',id:null,label:'Tudo',color:null});pjAskAiCloseScopePicker();">
+    <div class="pj-askai-scope-row pj-askai-scope-all${scope.type==='all'?' active':''}" data-scope-type="all">
       <span class="pj-askai-scope-dot" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);"></span>
       <span class="pj-askai-scope-name">Todos os espaços</span>
       ${scope.type==='all' ? check : ''}
@@ -19752,47 +19771,47 @@ function pjAskAiRenderScopePickerList(query) {
     const spName = sp.name || '?';
     const spFolders = (pjFolders||[]).filter(f => f.spaceId === sp.id);
     const directLists = (pjLists||[]).filter(l => l.spaceId === sp.id && !l.folderId);
-    // Filtro de busca: mostra o space se ele OU algum filho bate
     const spMatch = matches(spName);
     const anyFolderChild = spFolders.some(f => matches(f.name) || (pjLists||[]).some(l => l.folderId===f.id && matches(l.name)));
     const anyDirectChild = directLists.some(l => matches(l.name));
     if (!(spMatch || anyFolderChild || anyDirectChild)) return;
     renderedAny = true;
     html += `
-      <div class="pj-askai-scope-row pj-askai-scope-space${isActive('space', sp.id)?' active':''}" onclick="pjAskAiSetScope({type:'space',id:'${sp.id}',label:${JSON.stringify(spName)},color:'${spColor}'});pjAskAiCloseScopePicker();">
+      <div class="pj-askai-scope-row pj-askai-scope-space${isActive('space', sp.id)?' active':''}" data-scope-type="space" data-scope-id="${attr(sp.id)}" data-scope-label="${attr(spName)}" data-scope-color="${attr(spColor)}">
         <span class="pj-askai-scope-dot" style="background:${spColor}"></span>
         <span class="pj-askai-scope-name">${escHtml(spName)}</span>
         ${isActive('space', sp.id) ? check : ''}
       </div>
     `;
-    // Direct lists (sem folder)
     directLists.filter(l => spMatch || matches(l.name)).forEach(l => {
+      const lname = l.name || 'Lista';
       html += `
-        <div class="pj-askai-scope-row pj-askai-scope-list${isActive('list', l.id)?' active':''}" style="padding-left:32px" onclick="pjAskAiSetScope({type:'list',id:'${l.id}',label:${JSON.stringify(l.name||'Lista')},color:'${spColor}'});pjAskAiCloseScopePicker();">
+        <div class="pj-askai-scope-row pj-askai-scope-list${isActive('list', l.id)?' active':''}" style="padding-left:32px" data-scope-type="list" data-scope-id="${attr(l.id)}" data-scope-label="${attr(lname)}" data-scope-color="${attr(spColor)}">
           <span class="pj-askai-scope-glyph">📋</span>
-          <span class="pj-askai-scope-name">${escHtml(l.name||'')}</span>
+          <span class="pj-askai-scope-name">${escHtml(lname)}</span>
           ${isActive('list', l.id) ? check : ''}
         </div>
       `;
     });
-    // Folders + suas lists
     spFolders.forEach(f => {
       const fMatch = matches(f.name);
       const fLists = (pjLists||[]).filter(l => l.folderId === f.id);
       const showFolder = spMatch || fMatch || fLists.some(l => matches(l.name));
       if (!showFolder) return;
+      const fname = f.name || 'Pasta';
       html += `
-        <div class="pj-askai-scope-row pj-askai-scope-folder${isActive('folder', f.id)?' active':''}" style="padding-left:32px" onclick="pjAskAiSetScope({type:'folder',id:'${f.id}',label:${JSON.stringify(f.name||'Pasta')},color:'${spColor}'});pjAskAiCloseScopePicker();">
+        <div class="pj-askai-scope-row pj-askai-scope-folder${isActive('folder', f.id)?' active':''}" style="padding-left:32px" data-scope-type="folder" data-scope-id="${attr(f.id)}" data-scope-label="${attr(fname)}" data-scope-color="${attr(spColor)}">
           <span class="pj-askai-scope-glyph">📁</span>
-          <span class="pj-askai-scope-name">${escHtml(f.name||'')}</span>
+          <span class="pj-askai-scope-name">${escHtml(fname)}</span>
           ${isActive('folder', f.id) ? check : ''}
         </div>
       `;
       fLists.filter(l => spMatch || fMatch || matches(l.name)).forEach(l => {
+        const lname = l.name || 'Lista';
         html += `
-          <div class="pj-askai-scope-row pj-askai-scope-list${isActive('list', l.id)?' active':''}" style="padding-left:48px" onclick="pjAskAiSetScope({type:'list',id:'${l.id}',label:${JSON.stringify(l.name||'Lista')},color:'${spColor}'});pjAskAiCloseScopePicker();">
+          <div class="pj-askai-scope-row pj-askai-scope-list${isActive('list', l.id)?' active':''}" style="padding-left:48px" data-scope-type="list" data-scope-id="${attr(l.id)}" data-scope-label="${attr(lname)}" data-scope-color="${attr(spColor)}">
             <span class="pj-askai-scope-glyph">📋</span>
-            <span class="pj-askai-scope-name">${escHtml(l.name||'')}</span>
+            <span class="pj-askai-scope-name">${escHtml(lname)}</span>
             ${isActive('list', l.id) ? check : ''}
           </div>
         `;
