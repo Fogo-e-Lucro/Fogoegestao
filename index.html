@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=20260717">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -19647,39 +19647,43 @@ function pjAskAiRenderScopePill() {
     }
   } catch(_){}
   const isAll = scope.type === 'all';
-  const label = isAll ? 'Escopo: tudo' : `Escopo: ${scope.label}`;
+  const kindLabel = scope.type === 'space' ? 'Espaço' : scope.type === 'folder' ? 'Pasta' : scope.type === 'list' ? 'Lista' : '';
+  const label = isAll ? 'Todos os espaços' : scope.label;
   const kindIcon = isAll ? '🎯' : (scope.type === 'space' ? '🗂️' : scope.type === 'folder' ? '📁' : '📋');
   const clearBtn = isAll ? '' : `<span class="pj-askai-scope-x" onclick="event.stopPropagation();pjAskAiClearScope()" title="Remover filtro">✕</span>`;
   const activeCls = isAll ? '' : ' active';
   const styleColor = (!isAll && scope.color) ? ` style="--scope-color:${scope.color}"` : '';
+  const titleAttr = isAll ? 'Filtrar por espaço, pasta ou lista' : `${kindLabel}: ${scope.label} — clique pra trocar`;
   bar.innerHTML = `
-    <button type="button" class="pj-askai-scope-pill${activeCls}" id="pjAskAiScopeBtn"${styleColor} onclick="pjAskAiOpenScopePicker()">
+    <button type="button" class="pj-askai-scope-pill${activeCls}" id="pjAskAiScopeBtn"${styleColor} title="${escHtml(titleAttr)}" onclick="pjAskAiOpenScopePicker()">
       <span class="pj-askai-scope-icon">${kindIcon}</span>
       <span class="pj-askai-scope-label">${escHtml(label)}</span>
       ${emptyBadge}
       ${clearBtn}
     </button>
-    ${(!isAll && count===0) ? `<span class="pj-askai-scope-warn">A IA vai responder so com clientes e equipe (sem tarefas neste escopo).</span>` : ''}
+    ${(!isAll && count===0) ? `<span class="pj-askai-scope-warn">A IA vai responder só com clientes e equipe (sem tarefas neste escopo).</span>` : ''}
   `;
 }
 
 // Popover picker: input de busca + arvore agrupada por espaco.
 function pjAskAiOpenScopePicker() {
-  // Se ja tem popover aberto, fecha (toggle).
+  // Toggle se ja tiver aberto.
   const existing = document.getElementById('pjAskAiScopePop');
   if (existing) { pjAskAiCloseScopePicker(); return; }
   const anchor = document.getElementById('pjAskAiScopeBtn');
   if (!anchor) return;
   const rect = anchor.getBoundingClientRect();
+  const POP_W = Math.min(360, window.innerWidth - 24);
+  const POP_H_MAX = Math.min(440, Math.floor(window.innerHeight * 0.6));
+  // Cria backdrop primeiro (fica atras)
+  const backdrop = document.createElement('div');
+  backdrop.className = 'pj-askai-scope-backdrop';
+  backdrop.onclick = pjAskAiCloseScopePicker;
+  document.body.appendChild(backdrop);
+  // Popover
   const pop = document.createElement('div');
   pop.id = 'pjAskAiScopePop';
   pop.className = 'pj-askai-scope-pop';
-  // Ancora acima do pill (dropup) se nao couber embaixo
-  const spaceBelow = window.innerHeight - rect.bottom;
-  const dropUp = spaceBelow < 340;
-  pop.style.left = rect.left + 'px';
-  if (dropUp) pop.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
-  else pop.style.top = (rect.bottom + 6) + 'px';
   pop.innerHTML = `
     <div class="pj-askai-scope-pop-head">
       <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><path d="M14 14l4 4"/></svg>
@@ -19688,10 +19692,25 @@ function pjAskAiOpenScopePicker() {
     <div class="pj-askai-scope-list" id="pjAskAiScopeList"></div>
   `;
   document.body.appendChild(pop);
-  const backdrop = document.createElement('div');
-  backdrop.className = 'pj-askai-scope-backdrop';
-  backdrop.onclick = pjAskAiCloseScopePicker;
-  document.body.appendChild(backdrop);
+  // Posiciona: prefere abaixo; se nao couber, joga acima. Se ainda estourar viewport, prende dentro.
+  const spaceBelow = window.innerHeight - rect.bottom - 8;
+  const spaceAbove = rect.top - 8;
+  const useBelow = spaceBelow >= 220 || spaceBelow >= spaceAbove;
+  let top;
+  if (useBelow) {
+    top = rect.bottom + 6;
+    const maxH = Math.min(POP_H_MAX, window.innerHeight - top - 8);
+    pop.style.maxHeight = Math.max(180, maxH) + 'px';
+  } else {
+    const desiredH = Math.min(POP_H_MAX, spaceAbove);
+    top = rect.top - desiredH - 6;
+    pop.style.maxHeight = Math.max(180, desiredH) + 'px';
+  }
+  let left = rect.left;
+  if (left + POP_W > window.innerWidth - 8) left = window.innerWidth - POP_W - 8;
+  if (left < 8) left = 8;
+  pop.style.left = left + 'px';
+  pop.style.top = Math.max(8, top) + 'px';
   pjAskAiRenderScopePickerList('');
   const search = document.getElementById('pjAskAiScopeSearch');
   if (search) {

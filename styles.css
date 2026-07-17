@@ -7745,8 +7745,15 @@ body.pj-task-open .pj-modal-body { touch-action:pan-y; }
 .pj-askai-wrap .pj-view-header { flex:0 0 auto; }
 .pj-askai-body {
   flex:1 1 auto; min-height:0;
-  display:flex; flex-direction:column; gap:10px;
-  padding:14px; overflow:hidden;
+  display:flex; flex-direction:column; gap:12px;
+  padding:16px 20px 20px;
+  overflow:hidden;
+  max-width:920px; width:100%;
+  margin:0 auto;
+}
+.pj-askai-wrap .pj-view-header {
+  max-width:920px; width:100%; margin:0 auto;
+  padding-left:20px; padding-right:20px;
 }
 .pj-askai-ctxbadge {
   font-size:11px; color:var(--text3);
@@ -7981,33 +7988,35 @@ body.pj-task-open .pj-modal-body { touch-action:pan-y; }
 
 /* ── Scopebar do "Pergunte a IA" ── */
 .pj-askai-scopebar {
-  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-  padding:6px 0 8px 0;
+  display:flex !important; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:2px 0 0 0;
 }
+.pj-askai-scopebar:empty { display:none !important; }
 .pj-askai-scope-pill {
-  display:inline-flex; align-items:center; gap:8px;
-  padding:6px 12px;
-  background:var(--bg); color:var(--text2);
+  display:inline-flex !important; align-items:center; gap:6px;
+  padding:5px 10px 5px 8px;
+  background:var(--bg2); color:var(--text2);
   border:1px solid var(--border); border-radius:999px;
-  font-size:12.5px; font-weight:500;
+  font-size:12px; font-weight:500;
   cursor:pointer; transition:all .15s ease;
   max-width:100%; overflow:hidden;
+  line-height:1;
 }
-.pj-askai-scope-pill:hover { border-color:var(--accent); color:var(--text); transform:translateY(-1px); }
+.pj-askai-scope-pill:hover { border-color:var(--accent); color:var(--text); }
 .pj-askai-scope-pill.active {
-  background:color-mix(in srgb, var(--scope-color,#6366f1) 12%, var(--bg));
+  background:color-mix(in srgb, var(--scope-color,#6366f1) 14%, var(--bg));
   border-color:var(--scope-color,#6366f1);
   color:var(--text);
 }
-.pj-askai-scope-icon { font-size:13px; line-height:1; }
+.pj-askai-scope-icon { font-size:12px; line-height:1; }
 .pj-askai-scope-label {
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  max-width:280px;
+  max-width:260px;
 }
 .pj-askai-scope-empty {
-  padding:2px 7px;
+  padding:1px 6px;
   background:rgba(234,179,8,.18); color:#a16207;
-  border-radius:999px; font-size:11px; font-weight:600;
+  border-radius:999px; font-size:10.5px; font-weight:600;
   margin-left:2px;
 }
 @media (prefers-color-scheme: dark) {
@@ -8026,68 +8035,83 @@ body.pj-task-open .pj-modal-body { touch-action:pan-y; }
   padding:2px 4px;
 }
 
-/* Popover picker */
+/* Popover picker: renderiza no <body>, position:fixed com left/top calculados no JS. */
 .pj-askai-scope-backdrop {
-  position:fixed; inset:0; z-index:9998;
+  position:fixed !important; inset:0 !important;
+  z-index:9998 !important;
+  background:transparent;
 }
 .pj-askai-scope-pop {
-  position:fixed; z-index:9999;
-  width:min(340px, calc(100vw - 24px));
-  max-height:min(60vh, 420px);
+  position:fixed !important;
+  z-index:9999 !important;
+  width:min(360px, calc(100vw - 24px));
+  max-height:min(60vh, 440px);
   background:var(--bg); color:var(--text);
   border:1px solid var(--border); border-radius:12px;
-  box-shadow:0 12px 40px rgba(0,0,0,.18);
+  box-shadow:0 20px 60px rgba(0,0,0,.28), 0 4px 12px rgba(0,0,0,.12);
   display:flex; flex-direction:column;
   overflow:hidden;
+  animation:pjAskAiPopIn .14s ease;
+}
+@keyframes pjAskAiPopIn {
+  from { opacity:0; transform:translateY(-4px); }
+  to { opacity:1; transform:translateY(0); }
 }
 .pj-askai-scope-pop-head {
   display:flex; align-items:center; gap:8px;
   padding:10px 12px;
   border-bottom:1px solid var(--border);
   color:var(--text3);
+  flex:0 0 auto;
 }
 .pj-askai-scope-pop-head input {
   flex:1;
   background:transparent; border:none; outline:none;
   color:var(--text); font-size:13px;
+  padding:0;
 }
 .pj-askai-scope-pop-head input::placeholder { color:var(--text3); }
-.pj-askai-scope-list {
+/* container das linhas dentro do popover */
+.pj-askai-scope-pop .pj-askai-scope-list {
+  flex:1 1 auto;
   overflow-y:auto; padding:4px 0;
+  min-height:0;
 }
-.pj-askai-scope-row {
-  display:flex; align-items:center; gap:10px;
+.pj-askai-scope-pop .pj-askai-scope-row {
+  display:flex !important; align-items:center; gap:10px;
   padding:8px 12px;
   cursor:pointer;
   font-size:13px; color:var(--text);
   transition:background .12s ease;
+  line-height:1.2;
 }
-.pj-askai-scope-row:hover { background:var(--bg2); }
-.pj-askai-scope-row.active {
-  background:color-mix(in srgb, var(--accent) 12%, var(--bg));
+.pj-askai-scope-pop .pj-askai-scope-row:hover { background:var(--bg2); }
+.pj-askai-scope-pop .pj-askai-scope-row.active {
+  background:color-mix(in srgb, var(--accent) 14%, var(--bg));
   color:var(--text); font-weight:500;
 }
-.pj-askai-scope-dot {
-  width:12px; height:12px; border-radius:50%; flex-shrink:0;
+.pj-askai-scope-pop .pj-askai-scope-dot {
+  width:10px; height:10px; border-radius:50%; flex-shrink:0;
 }
-.pj-askai-scope-glyph {
+.pj-askai-scope-pop .pj-askai-scope-glyph {
   font-size:12px; width:14px; text-align:center; flex-shrink:0;
 }
-.pj-askai-scope-name {
+.pj-askai-scope-pop .pj-askai-scope-name {
   flex:1;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
-.pj-askai-scope-check {
+.pj-askai-scope-pop .pj-askai-scope-check {
   color:var(--accent); flex-shrink:0;
 }
-.pj-askai-scope-space { font-weight:600; }
-.pj-askai-scope-folder { color:var(--text2); }
-.pj-askai-scope-row.pj-askai-scope-list { color:var(--text2); }
-.pj-askai-scope-sep {
+.pj-askai-scope-pop .pj-askai-scope-space { font-weight:600; }
+.pj-askai-scope-pop .pj-askai-scope-folder { color:var(--text2); }
+.pj-askai-scope-pop .pj-askai-scope-row.pj-askai-scope-list { color:var(--text2); font-weight:400; }
+.pj-askai-scope-pop .pj-askai-scope-sep {
   height:1px; background:var(--border); margin:4px 0;
+  flex-shrink:0;
 }
-.pj-askai-scope-empty-state {
-  padding:20px; text-align:center;
+.pj-askai-scope-pop .pj-askai-scope-empty-state {
+  padding:24px; text-align:center;
   color:var(--text3); font-size:12.5px;
 }
 
