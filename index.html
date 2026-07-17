@@ -2331,7 +2331,7 @@ let selectedTheme  = 0;
 let pendingDelId   = null;
 let undoDelPost    = null;
 let undoTimer      = null;
-let activeRestaurante = null; // null = todos
+let activeRestaurante = (function(){ try { const v = localStorage.getItem('fg_active_restaurante'); return v ? v : null; } catch(e) { return null; } })(); // null = todos (persistido em fg_active_restaurante)
 let filterTipo     = '';
 let filterSearch   = '';
 let exportPeriod   = 'all'; // 'all' | 'YYYY-MM'
@@ -4074,10 +4074,15 @@ if (_DEV_BYPASS) {
     }
     const shareCard = document.getElementById('spShareCard');
     if (shareCard) shareCard.style.display = '';
-    // Abre em Projetos por padrão
+    // Restaura a última aba usada (persistida em localStorage); fallback: Projetos
     setTimeout(() => {
       if (typeof switchTab === 'function') {
-        switchTab('projetos', document.getElementById('tabProjetos'));
+        const _VALID_TABS = ['base','entrada','visualizar','acesso','social','gmb','metricas','projetos'];
+        let _saved = null;
+        try { _saved = localStorage.getItem('fg_active_tab'); } catch(_) {}
+        const _target = (_saved && _VALID_TABS.includes(_saved)) ? _saved : 'projetos';
+        const _btnId = 'tab' + _target.charAt(0).toUpperCase() + _target.slice(1);
+        switchTab(_target, document.getElementById(_btnId));
       }
     }, 50);
     // FAB visível em modo dev
@@ -4142,10 +4147,15 @@ _auth.onAuthStateChanged(async user => {
   applyTabVisibility();
   // Load cloud data
   loadFromCloud();
-  // Abre em Gestão Central (Projetos) por padrão
+  // Restaura a última aba usada (persistida em localStorage); fallback: Gestão Central (Projetos)
   setTimeout(() => {
     if (typeof switchTab === 'function') {
-      switchTab('projetos', document.getElementById('tabProjetos'));
+      const _VALID_TABS = ['base','entrada','visualizar','acesso','social','gmb','metricas','projetos'];
+      let _saved = null;
+      try { _saved = localStorage.getItem('fg_active_tab'); } catch(_) {}
+      const _target = (_saved && _VALID_TABS.includes(_saved) && (typeof userCanSeeTab !== 'function' || userCanSeeTab(_saved))) ? _saved : 'projetos';
+      const _btnId = 'tab' + _target.charAt(0).toUpperCase() + _target.slice(1);
+      switchTab(_target, document.getElementById(_btnId));
     }
   }, 50);
   // Mostra FAB e pede permissão de notificações desktop (uma vez)
@@ -4502,7 +4512,7 @@ async function renameClient(oldName, newName) {
     }
   } catch(e) { console.warn('rename failed:', e); showToast('danger','❌','Erro ao renomear cliente'); return false; }
   posts.forEach(p => { if (p.restaurante === oldName) p.restaurante = newName; });
-  if (activeRestaurante === oldName) activeRestaurante = newName;
+  if (activeRestaurante === oldName) { activeRestaurante = newName; try { localStorage.setItem('fg_active_restaurante', newName); } catch(e) {} }
   savePosts();
   try { renderAll(); } catch(_) {}
   showToast('success','✏️',`Cliente renomeado para "${newName}"`);
@@ -4569,6 +4579,7 @@ document.addEventListener('click', function(ev) {
 });
 function setRestaurante(name) {
   activeRestaurante = name;
+  try { if (name) localStorage.setItem('fg_active_restaurante', name); else localStorage.removeItem('fg_active_restaurante'); } catch(e) {}
   _restDropOpen = false;
   document.getElementById('restDropdown')?.classList.remove('open');
   document.getElementById('restSelectorBtn')?.classList.remove('open');
@@ -4879,6 +4890,7 @@ function switchTab(tab, btn) {
     if (tabEl) tabEl.classList.add('active');
   }
   document.body.dataset.activeTab = tab;
+  try { localStorage.setItem('fg_active_tab', tab); } catch(_) {}
 
   // Reveal imediato dos elementos da aba que acabou de ficar ativa
   requestAnimationFrame(() => {
@@ -4892,6 +4904,15 @@ function switchTab(tab, btn) {
     renderAll();
   }
   if (tab === 'metricas') {
+    // Sincroniza UI com mtrDays persistido em fg_mtr_days
+    try {
+      document.querySelectorAll('.mtr-preset').forEach(b => {
+        b.classList.toggle('active', parseInt(b.dataset.days) === mtrDays);
+      });
+      const _r = mtrGetDateRange(mtrDays);
+      const _s = document.getElementById('mtrMainSince'); if (_s && !_s.value) _s.value = _r.since;
+      const _u = document.getElementById('mtrMainUntil'); if (_u && !_u.value) _u.value = _r.until;
+    } catch(_) {}
     const sel = document.getElementById('mtrAccountSelect');
     const t = getSpToken ? getSpToken() : null;
     if (!t) {
@@ -5641,7 +5662,7 @@ function deleteClient(name) {
   if (bd && typeof _db !== 'undefined') {
     _db.collection('clientes_base').doc(bd.id).delete().catch(e => console.warn('delete BD failed:', e));
   }
-  if (activeRestaurante === name) activeRestaurante = null;
+  if (activeRestaurante === name) { activeRestaurante = null; try { localStorage.removeItem('fg_active_restaurante'); } catch(e) {} }
   savePosts(); renderAll();
   // Undo toast
   const tc = document.getElementById('toastContainer');
@@ -7373,7 +7394,7 @@ function renderSpQueue() {
 /* ═══════════════════════════════════════════════════════
    MÉTRICAS
 ═══════════════════════════════════════════════════════ */
-let mtrDays = 7;
+let mtrDays = (function(){ try { const v = parseInt(localStorage.getItem('fg_mtr_days')); return (v === 7 || v === 14 || v === 30 || v === 90) ? v : 7; } catch(_) { return 7; } })();
 let mtrIgChart = null;
 let mtrCurrentAcc = null;
 let mtrCurrentAdAcc = null;
@@ -7384,8 +7405,8 @@ let mtrAiBusy = false;
 
 /* Estado para novas features */
 let mtrPostsCache = null;          // posts recentes com insights
-let mtrPostsTab = 'top_eng';       // top_eng | bot_eng | top_reach | top_saves
-let mtrDemoTab = 'age';            // age | gender | city
+let mtrPostsTab = (function(){ try { return localStorage.getItem('fg_mtr_posts_tab') || 'top_eng'; } catch(_) { return 'top_eng'; } })();       // top_eng | bot_eng | top_reach | top_saves
+let mtrDemoTab = (function(){ try { return localStorage.getItem('fg_mtr_demo_tab') || 'age'; } catch(_) { return 'age'; } })();            // age | gender | city
 let mtrDemoCache = null;           // demografia consolidada
 let mtrDailyAdsCache = null;       // série diária de ads para sparklines
 let mtrCmpSelected = [];           // ids de campanhas marcadas para comparar
@@ -7683,6 +7704,7 @@ function mtrSetPreset(btn) {
   document.querySelectorAll('.mtr-preset').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   mtrDays = parseInt(btn.dataset.days);
+  try { localStorage.setItem('fg_mtr_days', String(mtrDays)); } catch(_) {}
   // Atualiza inputs de data principal
   const r = mtrGetDateRange(mtrDays);
   const s = document.getElementById('mtrMainSince');
@@ -10534,6 +10556,7 @@ function mtrRenderDemographics() {
 }
 function mtrSetDemoTab(t) {
   mtrDemoTab = t;
+  try { localStorage.setItem('fg_mtr_demo_tab', t); } catch(_) {}
   if (mtrLastSnapshot) renderMetrics(mtrLastSnapshot.igCurr, mtrLastSnapshot.igPrev, mtrLastSnapshot.adsData, mtrLastSnapshot.adsPrev, mtrLastSnapshot.curr, mtrLastSnapshot.prev, mtrLastSnapshot.compare, [], mtrLastSnapshot.campaigns, mtrLastSnapshot.health);
 }
 
@@ -10659,6 +10682,7 @@ function mtrRenderPosts() {
 }
 function mtrSetPostsTab(t) {
   mtrPostsTab = t;
+  try { localStorage.setItem('fg_mtr_posts_tab', t); } catch(_) {}
   if (mtrLastSnapshot) renderMetrics(mtrLastSnapshot.igCurr, mtrLastSnapshot.igPrev, mtrLastSnapshot.adsData, mtrLastSnapshot.adsPrev, mtrLastSnapshot.curr, mtrLastSnapshot.prev, mtrLastSnapshot.compare, [], mtrLastSnapshot.campaigns, mtrLastSnapshot.health);
 }
 function mtrRenderStories() {
@@ -12331,6 +12355,17 @@ function gmbPopulateSelector() {
     _gmbLocations.map((l,i) => `<option value="${i}">${l.title || l.name}</option>`).join('');
   document.getElementById('gmbLocBar').style.display = 'flex';
   document.getElementById('gmbConnectSub').textContent = `${_gmbLocations.length} perfil(is) encontrado(s)`;
+  try {
+    const savedId = localStorage.getItem('fg_gmb_loc_id');
+    if (savedId && !_gmbCurrentLoc) {
+      const idx = _gmbLocations.findIndex(l => l && l.name === savedId);
+      if (idx >= 0) {
+        sel.value = String(idx);
+        _gmbCurrentLoc = _gmbLocations[idx];
+        gmbLoadLocation();
+      }
+    }
+  } catch(e) {}
 }
 
 function gmbShowMultiGrid() {
@@ -12369,6 +12404,7 @@ async function gmbOnLocationChange() {
   const idx = document.getElementById('gmbLocSelect').value;
   if (idx === '') return;
   _gmbCurrentLoc = _gmbLocations[parseInt(idx)];
+  try { if (_gmbCurrentLoc && _gmbCurrentLoc.name) localStorage.setItem('fg_gmb_loc_id', _gmbCurrentLoc.name); } catch(e) {}
   gmbLoadLocation();
 }
 
@@ -13148,6 +13184,11 @@ async function pjInit() {
     if (_sel) _pjByClientSelected = _sel;
     const _f = localStorage.getItem('pj_byclient_filter');
     if (_f) _pjByClientFilter = Object.assign({ date:'all', dateValue:'', assignee:'all', status:'open' }, JSON.parse(_f));
+  } catch(_){}
+  // Rehidrata modo de visualização por lista (list/kanban) antes do primeiro pjNavigate
+  try {
+    const _vm = localStorage.getItem('fg_view_modes');
+    if (_vm) pjViewMode = JSON.parse(_vm) || {};
   } catch(_){}
   // Se salvou uma lista específica, checa que ainda existe (senão cai no dashboard)
   if (_savedView && (_savedView.type === 'list' || _savedView.type === 'kanban')) {
@@ -19109,8 +19150,15 @@ function pjAskAiBuildContext() {
   // e cortando texto. Devolve em ordem cronológica (mais antigo → recente).
   const commentsFor = (taskId) => {
     const cached = (window.pjAskAiCommentsCache||{})[taskId];
-    if (!cached || !Array.isArray(cached.list) || !cached.list.length) return { list: [], total: 0 };
-    const sorted = [...cached.list].sort((a,b) => {
+    if (!cached || !Array.isArray(cached.list) || !cached.list.length) return { list: [], total: 0, hasHistorical: false };
+    // Filtra comentários HISTORICOS (copiados de recorrência anterior via
+    // pjSpawnNextRecurrence). Eles têm o mesmo text/date do original numa
+    // task diferente — sem esse filtro a IA lista o mesmo comentário em
+    // 2+ tarefas como se fossem eventos separados.
+    const raw = cached.list;
+    const live = raw.filter(c => !c.historical);
+    const hasHistorical = live.length < raw.length;
+    const sorted = [...live].sort((a,b) => {
       const ta = a.createdAt?.toMillis?.() || a.createdAt?.toDate?.().getTime() || (typeof a.createdAt==='number'?a.createdAt:0);
       const tb = b.createdAt?.toMillis?.() || b.createdAt?.toDate?.().getTime() || (typeof b.createdAt==='number'?b.createdAt:0);
       return tb - ta;
@@ -19121,7 +19169,7 @@ function pjAskAiBuildContext() {
       text: (c.text || '').slice(0, 400),
       isAutomation: (!!c.isAutomation || !!c.system) || undefined
     }));
-    return { list: top, total: cached.list.length };
+    return { list: top, total: live.length, hasHistorical };
   };
 
   // Tarefas: omit heavy fields, keep what AI needs
@@ -19130,11 +19178,16 @@ function pjAskAiBuildContext() {
     const statuses = (list && list.statuses) || (typeof PJ_DEFAULT_STATUSES !== 'undefined' ? PJ_DEFAULT_STATUSES : []);
     const st = statuses.find(s => s.id === t.statusId);
     const cInfo = commentsFor(t.id);
-    // Cliente: tenta clienteId direto; senão usa resolver oficial (customFields).
+    // Cliente: (1) clienteId direto → cliMap; (2) resolver oficial; (3) se
+    // resolver devolveu um id, tenta cliMap de novo; (4) t.client top-level.
     let clienteNome = t.clienteId ? cliMap[t.clienteId] || null : null;
     if (!clienteNome && typeof pjResolveTaskClient === 'function') {
-      try { clienteNome = pjResolveTaskClient(t) || null; } catch(_) {}
+      try {
+        const raw = pjResolveTaskClient(t);
+        if (raw) clienteNome = cliMap[raw] || raw;  // se raw é id, resolve; senão usa como nome
+      } catch(_) {}
     }
+    if (!clienteNome && t.client) clienteNome = t.client;
     return {
       id: t.id,
       title: t.title || '',
@@ -19493,7 +19546,9 @@ Use APENAS os dados fornecidos abaixo. Se não houver dado suficiente, diga isso
 Quando der números, indique o período de referência. Para relatórios, use tabelas markdown.
 
 O snapshot inclui tarefas ABERTAS e CONCLUÍDAS. Filtre por \`cliente\` (nome do restaurante), \`assignees\` (lista de NOMES dos responsáveis, já resolvidos) e \`completedAt\`/\`dueDate\` (ISO YYYY-MM-DD) para relatórios de "o que foi feito" por período/cliente/pessoa. \`done: true\` = concluída.
-Cada tarefa carrega até 3 comentários mais recentes em \`comments: [{author, at, text, isAutomation?}]\`. Cite trechos literais quando o usuário perguntar "o que foi comentado", "o que o cliente disse" ou "o que ficou combinado". Se \`commentCount\` for maior que \`comments.length\`, avise que há mais comentários não mostrados e sugira abrir a tarefa. Comentários com \`isAutomation: true\` são do sistema, não são fala humana.
+Cada tarefa carrega até 3 comentários mais recentes em \`comments: [{author, at, text, isAutomation?}]\`. Comentários históricos (copiados de recorrência anterior) já são filtrados no lado do app, então cada comentário é único da tarefa. Cite trechos literais quando o usuário perguntar "o que foi comentado", "o que o cliente disse" ou "o que ficou combinado". Se \`commentCount\` for maior que \`comments.length\`, avise que há mais comentários não mostrados e sugira abrir a tarefa. Comentários com \`isAutomation: true\` são do sistema, não são fala humana.
+
+Se o usuário pedir "todas as tarefas" ou "resumo/relatório do cliente/pessoa/período", seja EXAUSTIVO: liste TODAS as tarefas do snapshot que satisfazem o critério, não só as principais. Tarefas recorrentes podem aparecer múltiplas vezes com o mesmo título — trate cada ocorrência como distinta (diferenciada por \`completedAt\`/\`dueDate\`), a menos que o usuário peça pra agrupar.
 Sobre "quem fez": não existe campo de executor. \`assignees\` mostra quem estava atribuído. Se perguntarem "quem fez X", combine assignees + done + completedAt e deixe claro que é a atribuição vigente na conclusão.
 
 Hoje é ${ctx.today}. ${me ? `O usuário é "${me}".` : ''}
@@ -23301,6 +23356,7 @@ async function pjToggleAssignee(taskId, uid, add) {
 // ── View toggle ─────────────────────────────────────────
 function pjSetView(listId, mode) {
   pjViewMode[listId] = mode;
+  try { localStorage.setItem('fg_view_modes', JSON.stringify(pjViewMode)); } catch(_){}
   pjRenderMain();
 }
 
