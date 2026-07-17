@@ -9624,3 +9624,48 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
 
 /* Auto-size do wrap quando o select tinha inline style */
 .fx-select-wrap.fx-inline { display: inline-block; width: auto; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Layout compacto pra tablets touch (iPad, Android tablets).
+   Detecta faixa tipica de tablet + input touch — nao afeta desktop
+   nem laptops nessa faixa de largura.
+   ═══════════════════════════════════════════════════════════════ */
+@media (min-width: 641px) and (max-width: 1180px) and (hover: none) and (pointer: coarse) {
+  /* Header do app: menor e mais denso */
+  .app-header { padding: 8px 14px; }
+  .app-logo-icon { width: 28px; height: 28px; }
+  .app-logo-text { font-size: 14px; }
+  .main-tab { padding: 6px 12px; font-size: 12px; }
+  .main-tabs { padding: 2px; }
+
+  /* Painel principal (Projetos) */
+  .pj-sidebar { width: 210px; min-width: 180px; }
+  .pj-sidebar-top { padding: 6px 6px 2px; }
+  .pj-nav-btn { padding: 6px 10px; font-size: 12.5px; }
+  .pj-space-row { padding: 5px 8px 5px 10px; gap: 6px; }
+  .pj-list-row { padding: 4px 6px 4px 38px; }
+  .pj-list-row.indent2 { padding-left: 50px; }
+
+  /* Cabecalho de view (breadcrumb + botoes) */
+  .pj-view-header { padding: 8px 14px 8px; gap: 8px; }
+  .pj-view-title { font-size: 14.5px; }
+  .pj-view-title .breadcrumb-parent { font-size: 11px; }
+  .pj-view-toggle button { padding: 5px 10px; font-size: 11px; }
+
+  /* Corpo da view: espaco util maior */
+  .pj-view-body { padding: 10px 14px; }
+  .pj-view-body-sm { padding: 10px !important; }
+
+  /* Cards de tarefa: mais compactos e proximos */
+  .pj-task-row {
+    padding: 8px 10px 8px 12px;
+    margin-bottom: 4px;
+    gap: 8px;
+  }
+  .pj-status-group-header { padding: 10px 8px 6px; }
+  .pj-status-group-name { font-size: 11.5px; }
+
+  /* Modals: aproveitam mais tela do tablet */
+  .pj-modal-inner { max-width: 720px; }
+}
+
