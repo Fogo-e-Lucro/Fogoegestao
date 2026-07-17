@@ -19993,7 +19993,28 @@ ${JSON.stringify(ctx)}`;
     });
     if (!res.ok) {
       const err = await res.json().catch(()=>({}));
-      throw new Error(err.error?.message || `Erro ${res.status}`);
+      const type = err.error?.type || '';
+      const msg = err.error?.message || `Erro ${res.status}`;
+      // Detecta credito zerado (status 400 com type=invalid_request_error contendo "credit balance")
+      // e o 402 (Payment Required), ambos usados pela Anthropic.
+      const isCredit = res.status === 402
+        || type === 'credit_balance_too_low'
+        || /credit balance|payment required|billing|top.?up|recharge/i.test(msg);
+      const isAuth = res.status === 401 || type === 'authentication_error' || type === 'invalid_api_key';
+      const kind = isCredit ? 'credit' : isAuth ? 'auth' : 'other';
+      const nice = isCredit
+        ? '💳 **Sem crédito na Claude API.**\n\nA conta da Anthropic está sem saldo — recarregue em [console.anthropic.com/settings/billing](https://console.anthropic.com/settings/billing) pra voltar a usar a IA.\n\n_(Detalhe técnico: ' + msg + ')_'
+        : isAuth
+        ? '🔑 **Chave da Claude inválida ou expirada.**\n\nAtualize em Configurações (⚙️ no topo do app) com uma nova chave da [console.anthropic.com](https://console.anthropic.com/settings/keys).\n\n_(Detalhe técnico: ' + msg + ')_'
+        : '❌ ' + msg;
+      if (isCredit && typeof showToast === 'function') {
+        showToast('error','💳','Claude API sem crédito — recarregue a conta pra usar a IA.');
+      } else if (isAuth && typeof showToast === 'function') {
+        showToast('error','🔑','Chave da Claude inválida — atualize em Configurações.');
+      }
+      const e = new Error(nice);
+      e.kind = kind;
+      throw e;
     }
     const dj = await res.json();
     const text = dj.content?.[0]?.text || '(sem resposta)';
@@ -20001,7 +20022,8 @@ ${JSON.stringify(ctx)}`;
     window.pjAskAiHistory.push({ role:'bot', text });
   } catch(e) {
     window.pjAskAiHistory = window.pjAskAiHistory.filter(m => !m.pending);
-    window.pjAskAiHistory.push({ role:'bot', text: '❌ ' + (e.message || 'Erro ao chamar a IA.') });
+    const already = e && e.kind; // ja veio formatado
+    window.pjAskAiHistory.push({ role:'bot', text: already ? e.message : ('❌ ' + (e.message || 'Erro ao chamar a IA.')) });
   } finally {
     window.pjAskAiBusy = false;
     if (sendBtn) sendBtn.disabled = false;
