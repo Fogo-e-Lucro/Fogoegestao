@@ -7978,6 +7978,119 @@ body.pj-task-open .pj-modal-body { touch-action:pan-y; }
   transition:opacity .15s ease;
 }
 .pj-askai-msg-images img:hover { opacity:.85; }
+
+/* ── Scopebar do "Pergunte a IA" ── */
+.pj-askai-scopebar {
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:6px 0 8px 0;
+}
+.pj-askai-scope-pill {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 12px;
+  background:var(--bg); color:var(--text2);
+  border:1px solid var(--border); border-radius:999px;
+  font-size:12.5px; font-weight:500;
+  cursor:pointer; transition:all .15s ease;
+  max-width:100%; overflow:hidden;
+}
+.pj-askai-scope-pill:hover { border-color:var(--accent); color:var(--text); transform:translateY(-1px); }
+.pj-askai-scope-pill.active {
+  background:color-mix(in srgb, var(--scope-color,#6366f1) 12%, var(--bg));
+  border-color:var(--scope-color,#6366f1);
+  color:var(--text);
+}
+.pj-askai-scope-icon { font-size:13px; line-height:1; }
+.pj-askai-scope-label {
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  max-width:280px;
+}
+.pj-askai-scope-empty {
+  padding:2px 7px;
+  background:rgba(234,179,8,.18); color:#a16207;
+  border-radius:999px; font-size:11px; font-weight:600;
+  margin-left:2px;
+}
+@media (prefers-color-scheme: dark) {
+  .pj-askai-scope-empty { color:#fbbf24; }
+}
+.pj-askai-scope-x {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:16px; height:16px; margin-left:2px;
+  border-radius:50%;
+  color:var(--text3); font-size:11px; line-height:1;
+  transition:all .15s ease;
+}
+.pj-askai-scope-x:hover { background:rgba(239,68,68,.15); color:#ef4444; }
+.pj-askai-scope-warn {
+  font-size:11.5px; color:var(--text3);
+  padding:2px 4px;
+}
+
+/* Popover picker */
+.pj-askai-scope-backdrop {
+  position:fixed; inset:0; z-index:9998;
+}
+.pj-askai-scope-pop {
+  position:fixed; z-index:9999;
+  width:min(340px, calc(100vw - 24px));
+  max-height:min(60vh, 420px);
+  background:var(--bg); color:var(--text);
+  border:1px solid var(--border); border-radius:12px;
+  box-shadow:0 12px 40px rgba(0,0,0,.18);
+  display:flex; flex-direction:column;
+  overflow:hidden;
+}
+.pj-askai-scope-pop-head {
+  display:flex; align-items:center; gap:8px;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+  color:var(--text3);
+}
+.pj-askai-scope-pop-head input {
+  flex:1;
+  background:transparent; border:none; outline:none;
+  color:var(--text); font-size:13px;
+}
+.pj-askai-scope-pop-head input::placeholder { color:var(--text3); }
+.pj-askai-scope-list {
+  overflow-y:auto; padding:4px 0;
+}
+.pj-askai-scope-row {
+  display:flex; align-items:center; gap:10px;
+  padding:8px 12px;
+  cursor:pointer;
+  font-size:13px; color:var(--text);
+  transition:background .12s ease;
+}
+.pj-askai-scope-row:hover { background:var(--bg2); }
+.pj-askai-scope-row.active {
+  background:color-mix(in srgb, var(--accent) 12%, var(--bg));
+  color:var(--text); font-weight:500;
+}
+.pj-askai-scope-dot {
+  width:12px; height:12px; border-radius:50%; flex-shrink:0;
+}
+.pj-askai-scope-glyph {
+  font-size:12px; width:14px; text-align:center; flex-shrink:0;
+}
+.pj-askai-scope-name {
+  flex:1;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.pj-askai-scope-check {
+  color:var(--accent); flex-shrink:0;
+}
+.pj-askai-scope-space { font-weight:600; }
+.pj-askai-scope-folder { color:var(--text2); }
+.pj-askai-scope-row.pj-askai-scope-list { color:var(--text2); }
+.pj-askai-scope-sep {
+  height:1px; background:var(--border); margin:4px 0;
+}
+.pj-askai-scope-empty-state {
+  padding:20px; text-align:center;
+  color:var(--text3); font-size:12.5px;
+}
+
 .pj-askai-hint {
   font-size:11px; color:var(--text3); text-align:center;
   padding:0 4px;
