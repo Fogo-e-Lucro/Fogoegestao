@@ -13082,6 +13082,9 @@ let pjTags = [];         // workspace-level tags: [{id, name, color}]
 let pjTasks = {};        // listId → [tasks]
 let pjAllTasks = [];     // flat array for inbox/all views
 let pjComments = [];     // current task comments
+// Cache global de comentários por task usado pelo "Pergunte à IA" (bulk load).
+// Formato: { taskId: { at: timestampMs, list: [{...comment}, ...] } }
+window.pjAskAiCommentsCache = window.pjAskAiCommentsCache || {};
 let pjCurrentView = { type:'dashboard', id:null };
 let pjCurrentTaskId = null;
 let pjViewMode = {};     // listId → 'list'|'kanban'
@@ -19006,6 +19009,55 @@ function pjAskAiClear() {
   pjAskAiRenderMsgs();
 }
 
+// Bulk-carrega comentários das tasks passadas para window.pjAskAiCommentsCache.
+// Firestore 'where in' aceita até 10 ids por query, então batchamos.
+// TTL de 5min pra não refazer request a cada pergunta na mesma sessão.
+async function pjAskAiPreloadComments(taskIds) {
+  window.pjAskAiCommentsCache = window.pjAskAiCommentsCache || {};
+  const now = Date.now();
+  const TTL = 5 * 60 * 1000;
+  const toFetch = (taskIds || []).filter(id => {
+    const c = window.pjAskAiCommentsCache[id];
+    return !c || (now - c.at) > TTL;
+  });
+  if (!toFetch.length) return;
+  const batches = [];
+  for (let i = 0; i < toFetch.length; i += 10) batches.push(toFetch.slice(i, i+10));
+  await Promise.all(batches.map(async batch => {
+    try {
+      const snap = await pjC('pj_comments').where('taskId','in', batch).get();
+      const byTask = {};
+      batch.forEach(id => { byTask[id] = []; });
+      snap.forEach(d => {
+        const c = { id:d.id, ...d.data() };
+        if (!byTask[c.taskId]) byTask[c.taskId] = [];
+        byTask[c.taskId].push(c);
+      });
+      Object.keys(byTask).forEach(id => {
+        window.pjAskAiCommentsCache[id] = { at: now, list: byTask[id] };
+      });
+    } catch (e) {
+      console.warn('[askai] preload comments falhou', batch, e);
+    }
+  }));
+}
+
+// Seleciona quais tasks devem ter comentários pré-carregados p/ a IA.
+// Regra: não-arquivadas + (abertas OU concluídas nos últimos 90 dias).
+function pjAskAiTasksNeedingComments() {
+  const todayMs = Date.now();
+  const NINETY = 90 * 86400000;
+  return (pjAllTasks||[]).filter(t => {
+    if (typeof pjIsArchived === 'function' && pjIsArchived(t)) return false;
+    const done = typeof pjIsDone === 'function' ? pjIsDone(t) : false;
+    if (!done) return true;
+    const ms = t.completedAt
+      ? (typeof t.completedAt === 'number' ? t.completedAt : (t.completedAt.toMillis?.() || 0))
+      : 0;
+    return ms && (todayMs - ms) <= NINETY;
+  }).map(t => t.id);
+}
+
 function pjAskAiBuildContext() {
   const todayStr = pjDateStr(new Date());
   const memberMap = {};
@@ -19017,24 +19069,51 @@ function pjAskAiBuildContext() {
   const cliMap = {};
   (typeof _bdClientes !== 'undefined' ? _bdClientes : []).forEach(c => { cliMap[c.id] = c.nome || c.razaoSocial || c.id; });
 
+  // Helper para converter timestamps do Firestore (Timestamp/number) em ISO YYYY-MM-DD.
+  const toIso = (v) => {
+    if (!v) return null;
+    try {
+      const ms = typeof v === 'number' ? v : (v.toMillis?.() || v.toDate?.().getTime() || 0);
+      return ms ? new Date(ms).toISOString().slice(0,10) : null;
+    } catch(_) { return null; }
+  };
+  // Pega os 3 comentários mais recentes de uma task no cache, resolvendo autor pra nome
+  // e cortando texto. Devolve em ordem cronológica (mais antigo → recente).
+  const commentsFor = (taskId) => {
+    const cached = (window.pjAskAiCommentsCache||{})[taskId];
+    if (!cached || !Array.isArray(cached.list) || !cached.list.length) return { list: [], total: 0 };
+    const sorted = [...cached.list].sort((a,b) => {
+      const ta = a.createdAt?.toMillis?.() || a.createdAt?.toDate?.().getTime() || (typeof a.createdAt==='number'?a.createdAt:0);
+      const tb = b.createdAt?.toMillis?.() || b.createdAt?.toDate?.().getTime() || (typeof b.createdAt==='number'?b.createdAt:0);
+      return tb - ta;
+    });
+    const top = sorted.slice(0, 3).reverse().map(c => ({
+      author: c.senderName || memberMap[c.userId] || memberMap[c.createdBy] || (c.isAutomation||c.system ? 'Sistema' : 'Desconhecido'),
+      at: toIso(c.createdAt),
+      text: (c.text || '').slice(0, 400),
+      isAutomation: (!!c.isAutomation || !!c.system) || undefined
+    }));
+    return { list: top, total: cached.list.length };
+  };
+
   // Tarefas: omit heavy fields, keep what AI needs
   const tasks = (pjAllTasks||[]).map(t => {
     const list = listMap[t.listId];
     const statuses = (list && list.statuses) || (typeof PJ_DEFAULT_STATUSES !== 'undefined' ? PJ_DEFAULT_STATUSES : []);
     const st = statuses.find(s => s.id === t.statusId);
-    const completedAt = (() => {
-      if (!t.completedAt) return null;
-      try {
-        const ms = typeof t.completedAt === 'number' ? t.completedAt : t.completedAt.toMillis?.() || 0;
-        return ms ? new Date(ms).toISOString().slice(0,10) : null;
-      } catch(_) { return null; }
-    })();
+    const cInfo = commentsFor(t.id);
+    // Cliente: tenta clienteId direto; senão usa resolver oficial (customFields).
+    let clienteNome = t.clienteId ? cliMap[t.clienteId] || null : null;
+    if (!clienteNome && typeof pjResolveTaskClient === 'function') {
+      try { clienteNome = pjResolveTaskClient(t) || null; } catch(_) {}
+    }
     return {
       id: t.id,
       title: t.title || '',
+      description: (t.description || '').slice(0, 300) || null,
       list: list?.name || null,
       space: list?.spaceId ? spaceMap[list.spaceId] || null : null,
-      cliente: t.clienteId ? cliMap[t.clienteId] || null : null,
+      cliente: clienteNome,
       assignees: (t.assignees||[]).map(uid => memberMap[uid] || uid),
       status: st?.name || null,
       bucket: st ? (typeof pjStatusBucket === 'function' ? pjStatusBucket(st) : null) : null,
@@ -19042,26 +19121,34 @@ function pjAskAiBuildContext() {
       archived: typeof pjIsArchived === 'function' ? pjIsArchived(t) : false,
       priority: t.priority || null,
       dueDate: t.dueDate || null,
-      completedAt,
+      completedAt: toIso(t.completedAt),
+      updatedAt: toIso(t.updatedAt),
       tags: t.tags || [],
-      hasComments: Array.isArray(t.comments) && t.comments.length > 0,
-      commentCount: Array.isArray(t.comments) ? t.comments.length : 0
+      commentCount: cInfo.total,
+      comments: cInfo.list
     };
   });
 
-  // Truncate if too many
+  // Truncate if too many. Objetivo: manter TODAS as abertas + concluídas
+  // dos últimos 90 dias, cortando só histórico antigo pra caber no contexto.
   const MAX_TASKS = 600;
+  const daysAgo = (iso) => iso ? Math.floor((new Date(todayStr) - new Date(iso)) / 86400000) : 9999;
   let truncated = false;
   let tasksOut = tasks;
   if (tasks.length > MAX_TASKS) {
     truncated = true;
-    // Prioriza recentes/abertas/atrasadas
     const score = (t) => {
       let s = 0;
-      if (!t.done) s += 100;
+      if (!t.archived && !t.done) s += 200;         // abertas: prioridade máxima
       if (t.dueDate && t.dueDate < todayStr) s += 50;
       if (t.dueDate === todayStr) s += 80;
-      if (t.completedAt && t.completedAt >= todayStr.slice(0,7)) s += 20;
+      const d = daysAgo(t.completedAt);
+      if (t.done && d <= 14) s += 150;              // concluídas últimas 2 semanas
+      else if (t.done && d <= 30) s += 100;
+      else if (t.done && d <= 90) s += 60;
+      else if (t.done && d <= 180) s += 20;
+      if ((t.commentCount||0) > 0) s += 40;         // tarefas discutidas valem mais
+      if (t.archived) s -= 50;
       return s;
     };
     tasksOut = [...tasks].sort((a,b) => score(b)-score(a)).slice(0, MAX_TASKS);
@@ -19080,10 +19167,14 @@ function pjAskAiBuildContext() {
     tags: c.tags || []
   }));
 
+  const doneTasks = tasksOut.filter(t => t.done).length;
+  const commentedTasks = tasksOut.filter(t => (t.commentCount||0) > 0).length;
   return {
     today: todayStr,
     counts: {
       tasks: tasks.length,
+      doneTasks,
+      commentedTasks,
       lists: lists.length,
       members: members.length,
       clientes: clientes.length,
@@ -19148,12 +19239,12 @@ function pjBuildAskAi() {
   const ctx = pjAskAiBuildContext();
   const c = ctx.counts;
   const sugestoes = [
-    'Quais tarefas estão atrasadas hoje?',
-    'Quem tem mais tarefas em aberto?',
-    'Qual cliente tem mais tarefas pendentes?',
-    'Faça um relatório do que foi concluído essa semana',
-    'Liste tarefas urgentes sem responsável',
-    'Quais clientes não tiveram atividade nos últimos 14 dias?'
+    'O que foi concluído esta semana? Separe por cliente.',
+    'Resuma os últimos comentários das tarefas em aberto do Altas Horas',
+    'Quais tarefas do Sukatas foram entregues nos últimos 14 dias?',
+    'Quais tarefas a Aryanny concluiu nas últimas 2 semanas?',
+    'O que foi comentado nas tarefas de arte da última semana?',
+    'Quais tarefas estão atrasadas hoje e o que ficou combinado nos comentários?'
   ];
   return `
     <div class="pj-askai-wrap">
@@ -19192,6 +19283,8 @@ function pjBuildAskAi() {
 
 function pjMountAskAi() {
   pjAskAiRenderMsgs();
+  // Kick-off assíncrono do preload de comentários pra primeira pergunta ser rápida.
+  try { pjAskAiPreloadComments(pjAskAiTasksNeedingComments()); } catch(_){}
   const inp = document.getElementById('pjAskAiInput');
   if (inp) {
     // Auto-resize
@@ -19355,14 +19448,28 @@ async function pjAskAiSend() {
   window.pjAskAiHistory.push({ role:'bot', text:'⏳ Pensando…', pending:true });
   pjAskAiRenderMsgs();
 
+  // Garante que o cache de comentários está quente antes de montar o contexto.
+  // Batches de 10 no where-in do Firestore, TTL 5min. Se falhar, segue sem —
+  // a IA ainda responde com metadata (contagem) e diz que texto não carregou.
+  try {
+    await pjAskAiPreloadComments(pjAskAiTasksNeedingComments());
+  } catch (e) {
+    console.warn('[askai] preload comments erro (segue sem)', e);
+  }
+
   const ctx = pjAskAiBuildContext();
   const me = (typeof _currentUser !== 'undefined' && _currentUser) ? (_currentUser.displayName || _currentUser.email || '') : '';
-  const system = `Você é um assistente analítico do app "Fogo & Gestão" — uma ferramenta interna da agência Fogo & Lucro para gerenciar tarefas de clientes (restaurantes).
-Responda em português brasileiro, de forma direta, profissional e amigável. Use markdown (negrito, listas, tabelas) quando ajudar.
-Use APENAS os dados fornecidos abaixo. Se não houver dado suficiente para responder, diga isso explicitamente.
+  const system = `Você é um assistente analítico do app "Fogo & Gestão", ferramenta interna da agência Fogo & Lucro para gerenciar tarefas de clientes (restaurantes).
+Responda em português brasileiro, direto, profissional e amigável. Use markdown (negrito, listas, tabelas) quando ajudar. NÃO use travessão ("—" ou "–") na resposta.
+Use APENAS os dados fornecidos abaixo. Se não houver dado suficiente, diga isso explicitamente.
 Quando der números, indique o período de referência. Para relatórios, use tabelas markdown.
+
+O snapshot inclui tarefas ABERTAS e CONCLUÍDAS. Filtre por \`cliente\` (nome do restaurante), \`assignees\` (lista de NOMES dos responsáveis, já resolvidos) e \`completedAt\`/\`dueDate\` (ISO YYYY-MM-DD) para relatórios de "o que foi feito" por período/cliente/pessoa. \`done: true\` = concluída.
+Cada tarefa carrega até 3 comentários mais recentes em \`comments: [{author, at, text, isAutomation?}]\`. Cite trechos literais quando o usuário perguntar "o que foi comentado", "o que o cliente disse" ou "o que ficou combinado". Se \`commentCount\` for maior que \`comments.length\`, avise que há mais comentários não mostrados e sugira abrir a tarefa. Comentários com \`isAutomation: true\` são do sistema, não são fala humana.
+Sobre "quem fez": não existe campo de executor. \`assignees\` mostra quem estava atribuído. Se perguntarem "quem fez X", combine assignees + done + completedAt e deixe claro que é a atribuição vigente na conclusão.
+
 Hoje é ${ctx.today}. ${me ? `O usuário é "${me}".` : ''}
-Resumo do snapshot: ${ctx.counts.tasks} tarefas, ${ctx.counts.lists} listas, ${ctx.counts.members} membros, ${ctx.counts.clientes} clientes${ctx.counts.truncatedTasks?` (${ctx.counts.truncatedTasks} tarefas mais antigas/concluídas omitidas)`:''}.
+Resumo do snapshot: ${ctx.counts.tasks} tarefas (${ctx.counts.doneTasks||0} concluídas, ${ctx.counts.commentedTasks||0} com comentários), ${ctx.counts.lists} listas, ${ctx.counts.members} membros, ${ctx.counts.clientes} clientes${ctx.counts.truncatedTasks?` (${ctx.counts.truncatedTasks} tarefas mais antigas omitidas)`:''}.
 
 AÇÕES EXECUTÁVEIS (opcional): Quando fizer sentido, ao FINAL da resposta, adicione um bloco <ACTIONS>...</ACTIONS> contendo um JSON array com botões que ajudam o usuário a navegar/agir no app. Exemplos:
 [
