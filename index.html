@@ -13273,8 +13273,10 @@ async function pjLoadAll() {
     }
   } catch(_) {}
   // Ensure current user is a member of pj_members
+  const u = _auth.currentUser;
+  const myPhoto = u?.photoURL || null;
+  const myName = u?.displayName || u?.email || '';
   if (!pjMembers.find(m => m.uid === uid)) {
-    const u = _auth.currentUser;
     // Check role from app_members (admin system)
     let role = 'member';
     if (u.email === _ADMIN) role = 'admin';
@@ -13288,14 +13290,29 @@ async function pjLoadAll() {
     // Check if already in pj_members by email (added as pending by admin)
     const byEmail = pjMembers.find(m => m.email === u.email);
     if (byEmail) {
-      // Update pending entry with real UID
-      try { await pjC('pj_members').doc(byEmail.id).update({ uid, name: u.displayName || byEmail.name || u.email, pending: false }); } catch(_) {}
-      byEmail.uid = uid;
-      byEmail.pending = false;
+      // Update pending entry with real UID + foto/nome do Auth
+      const patch = { uid, name: u.displayName || byEmail.name || u.email, pending: false };
+      if (myPhoto) patch.photoUrl = myPhoto;
+      try { await pjC('pj_members').doc(byEmail.id).update(patch); } catch(_) {}
+      Object.assign(byEmail, patch);
     } else {
-      const newMember = { uid, email: u.email, name: u.displayName || u.email, role, createdAt: Date.now() };
+      const newMember = { uid, email: u.email, name: myName, role, photoUrl: myPhoto, createdAt: Date.now() };
       try { await pjC('pj_members').doc(uid).set(newMember); } catch(_) {}
       pjMembers.push({ id: uid, ...newMember });
+    }
+  } else {
+    // Ja existe — sincroniza foto/nome do Auth se mudou.
+    // Assim toda vez que ALGUEM da equipe logar, sua propria foto atualiza
+    // no pj_members e os demais passam a ver a foto correta nos avatares.
+    const me = pjMembers.find(m => m.uid === uid);
+    if (me) {
+      const patch = {};
+      if (myPhoto && me.photoUrl !== myPhoto) patch.photoUrl = myPhoto;
+      if (myName && !me.name) patch.name = myName;
+      if (Object.keys(patch).length) {
+        Object.assign(me, patch);
+        try { await pjC('pj_members').doc(me.id || uid).update(patch); } catch(_) {}
+      }
     }
   }
   await pjLoadAllTasks();
@@ -16701,14 +16718,21 @@ function pjAvatarHtml(key) {
     try {
       const u = _auth?.currentUser;
       if (u && (u.uid === k || u.email === k)) {
-        // Usa displayName + photoURL do Auth diretamente
         m = { name: u.displayName || u.email, email: u.email, photoUrl: u.photoURL || null };
-        // Salva em pjMembers em memória para próximas chamadas
         const inList = pjMembers.find(x => x.email === u.email);
         if (inList) {
           if (!inList.uid) inList.uid = u.uid;
           if (!inList.photoUrl && u.photoURL) inList.photoUrl = u.photoURL;
         }
+      }
+    } catch(_) {}
+  }
+  // 3) Ainda sem foto, mas o member EH o proprio user logado? Usa photoURL do Auth.
+  if (m && !m.photoUrl) {
+    try {
+      const u = _auth?.currentUser;
+      if (u && u.photoURL && (m.uid === u.uid || m.email === u.email)) {
+        m.photoUrl = u.photoURL;
       }
     } catch(_) {}
   }
