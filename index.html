@@ -13485,11 +13485,36 @@ async function _pjHydratePhotos() {
         if (me && !me.photoUrl) { me.photoUrl = u.photoURL; changed = true; }
       }
     } catch(_) {}
-    if (changed && pjCurrentTaskId && typeof pjRenderTaskModal === 'function') {
-      try { pjRenderTaskModal(); } catch(_) {}
+    if (changed) {
+      // Re-renderiza a view atual (lista/kanban/dashboard) pra pintar as fotos
+      // que acabaram de chegar. Sem isso, avatar continua mostrando inicial ate
+      // o proximo re-render manual.
+      try { if (typeof pjScheduleRender === 'function') pjScheduleRender(); } catch(_) {}
+      try { if (typeof pjRenderSidebar === 'function') pjRenderSidebar(); } catch(_) {}
+      if (pjCurrentTaskId && typeof pjRenderTaskModal === 'function') {
+        try { pjRenderTaskModal(); } catch(_) {}
+      }
     }
   } catch(e) { /* silencia */ }
 }
+
+// Helper de debug: rode `pjDebugAvatares()` no console pra ver quem tem foto e quem nao.
+window.pjDebugAvatares = function() {
+  if (!Array.isArray(pjMembers)) { console.log('pjMembers indisponivel'); return; }
+  const rows = pjMembers.map(m => ({
+    nome: m.name || '', email: m.email || '', uid: m.uid || '',
+    tem_foto: !!m.photoUrl,
+    fonte: m.photoUrl ? (m.photoUrl.includes('googleusercontent') ? 'google-auth' : 'upload/outro') : '—',
+    url_curta: (m.photoUrl || '').slice(0, 60)
+  }));
+  console.table(rows);
+  const semFoto = rows.filter(r => !r.tem_foto);
+  if (semFoto.length) {
+    console.warn(`${semFoto.length} membro(s) sem foto: ${semFoto.map(r=>r.nome||r.email).join(', ')}`);
+    console.log('Pra resolver: cada pessoa da equipe deve abrir o app UMA vez (grava foto do Google no Firestore) OU subir foto manual em Configuracoes -> Equipe.');
+  }
+  return rows;
+};
 
 // Desmonta todos os listeners de pj_* (chamado em signout/beforeunload)
 function pjCleanupListeners() {
