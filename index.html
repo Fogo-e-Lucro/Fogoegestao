@@ -13239,16 +13239,24 @@ async function pjLoadAll() {
   }
   pjMembers = finalMembers;
   // ── Sync from app_members: pull any team members not yet in pj_members ──
+  // E hidrata photoUrl/name em quem ja existe (pj_members nao guarda foto).
   try {
     const amSnap = await _db.collection('app_members').get();
     const appMembers = amSnap.docs.map(d => ({id:d.id, ...d.data()}));
     for (const am of appMembers) {
       if (!am.email) continue;
-      if (pjMembers.find(m => m.email === am.email)) continue;
+      const existing = pjMembers.find(m => m.email === am.email);
+      if (existing) {
+        // Merge photoUrl e nome do app_members (fonte canonica da foto)
+        if (am.photoUrl && !existing.photoUrl) existing.photoUrl = am.photoUrl;
+        if (am.name && !existing.name) existing.name = am.name;
+        continue;
+      }
       // Missing from pj_members — add in-memory immediately
       const localEntry = {
         id: am.id, uid: null, email: am.email,
         name: am.name || am.email,
+        photoUrl: am.photoUrl || null,
         role: am.role || 'member',
         pending: true, createdAt: am.createdAt || Date.now()
       };
