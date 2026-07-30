@@ -4825,6 +4825,19 @@ body.pj-task-open .pj-fab { display:none !important; }
 .pj-field-value { padding:6px 8px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:12.5px; font-family:var(--font); outline:none; border:1px solid transparent; }
 .pj-field-value:hover { border-color:var(--border); }
 .pj-field-value:focus { border-color:var(--accent); background:var(--card); }
+/* Cliente obrigatório */
+.pj-field-required { color:#ef4444; font-weight:800; margin-left:2px; }
+.pj-field-value-missing {
+  border-color:#ef4444 !important;
+  background:color-mix(in srgb, #ef4444 6%, var(--bg)) !important;
+}
+.pj-field-value-missing:focus { border-color:#ef4444 !important; box-shadow:0 0 0 3px rgba(239,68,68,.18); }
+/* Flash quando tenta fechar sem cliente */
+@keyframes pjClientMissingFlash {
+  0%,100% { background:transparent; }
+  50%     { background:color-mix(in srgb, #ef4444 14%, transparent); }
+}
+.pj-client-missing-flash { animation:pjClientMissingFlash .7s ease 2; border-radius:10px; }
 .pj-tpl-row { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:var(--bg); }
 .pj-tpl-row:hover { border-color:var(--accent); }
 .pj-tpl-info { flex:1; }

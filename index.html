@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260717-3">
+<link rel="stylesheet" href="styles.css?v=20260730">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -17424,12 +17424,21 @@ function pjClearDashFilter() {
 function pjResolveTaskClient(t) {
   if (!t) return null;
   if (t.client) return t.client;
+  if (t.clienteId) return t.clienteId;
   try {
     const fields = pjLists.find(l => l.id === t.listId)?.customFields || [];
     const clientField = fields.find(f => f.type === 'client' || /client/i.test(f.name||''));
     if (clientField) return t.customFieldValues?.[clientField.id] || null;
   } catch(e) {}
   return null;
+}
+
+// True se a tarefa tem cliente em qualquer forma. Cobre t.client top-level,
+// t.clienteId (FK) e custom field type='client'. Usado como guard antes de
+// permitir fechar o modal ou concluir a tarefa — cliente eh obrigatorio.
+function pjTaskHasClient(t) {
+  const raw = pjResolveTaskClient(t);
+  return !!(raw && String(raw).trim());
 }
 
 // Aplica filtro de cliente ativo (activeRestaurante) sobre lista de tasks
@@ -18629,6 +18638,14 @@ async function pjTagPickerToggle(taskId, tagId, rowEl) {
 async function pjToggleTaskDone(taskId) {
   const t = pjAllTasks.find(x => x.id === taskId);
   if (!t) return;
+  const isDone = pjIsDone(t);
+  // Bloqueia CONCLUIR se nao tiver cliente. Reabrir passa direto (nao faria
+  // sentido travar uma reabertura).
+  if (!isDone && !pjTaskHasClient(t)) {
+    if (typeof showToast === 'function') showToast('warn','🏢','Selecione um cliente antes de concluir a tarefa.');
+    try { pjOpenTask(taskId); } catch(_){}
+    return;
+  }
   const list = pjLists.find(l => l.id === t.listId);
   const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
   // 1º status do bucket 'closed' (ex: 'Concluído', 'Aprovado'); fallback: último da lista.
@@ -18637,7 +18654,6 @@ async function pjToggleTaskDone(taskId) {
   const firstStatus = statuses.find(s => pjStatusBucket(s) === 'pending')
                    || statuses.find(s => pjStatusBucket(s) !== 'closed')
                    || statuses[0];
-  const isDone = pjIsDone(t);
   const newStatusId = isDone ? firstStatus.id : doneStatus.id;
   // Snapshot p/ undo
   const prevStatusId = t.statusId;
@@ -21964,8 +21980,9 @@ function pjRenderTaskModal(task) {
         const names = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : Object.keys((typeof clients!=='undefined'&&clients)||{}).sort();
         // Garante que valor atual (mesmo se cliente foi removido da BD) ainda apareça
         const allOpts = val && !names.includes(val) ? [val, ...names] : names;
-        input = `<select class="pj-field-value" onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">
-          <option value="">— Selecione —</option>
+        const missingCls = val ? '' : ' pj-field-value-missing';
+        input = `<select class="pj-field-value${missingCls}" onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">
+          <option value="">— Selecione (obrigatório) —</option>
           ${allOpts.map(n => `<option ${n===val?'selected':''}>${escHtml(n)}</option>`).join('')}
         </select>`;
       } else if (f.type === 'select') {
@@ -21999,8 +22016,9 @@ function pjRenderTaskModal(task) {
         input = `<input class="pj-field-value" type="${t}" value="${escHtml(String(val))}"
                  onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">`;
       }
-      fieldsHtml += `<div class="pj-field-item">
-        <div class="pj-field-label">${escHtml(f.name)}<button class="pj-field-quick-del" title="Remover este campo de todas as tarefas" onclick="pjQuickRemoveField('${list.id}','${f.id}')">×</button></div>${input}
+      const requiredMark = f.type === 'client' ? `<span class="pj-field-required" title="Obrigatório">*</span>` : '';
+      fieldsHtml += `<div class="pj-field-item${f.type==='client'?' pj-field-item-required':''}">
+        <div class="pj-field-label">${escHtml(f.name)}${requiredMark}<button class="pj-field-quick-del" title="Remover este campo de todas as tarefas" onclick="pjQuickRemoveField('${list.id}','${f.id}')">×</button></div>${input}
       </div>`;
     });
     fieldsHtml += '</div>';
@@ -23353,6 +23371,25 @@ window.pjDescKeyDown = function(e) {
 };
 
 function pjCloseTaskModal() {
+  // Cliente eh obrigatorio: nao deixa fechar sem selecionar.
+  // Isso garante que toda tarefa fique atribuida a algum restaurante e a IA/
+  // relatorio nao percam contexto. Se realmente eh interna, cria um cliente
+  // "Interna Fogo & Lucro" na base e seleciona.
+  try {
+    const t = pjAllTasks.find(x => x.id === pjCurrentTaskId);
+    if (t && !pjTaskHasClient(t)) {
+      if (typeof showToast === 'function') showToast('warn','🏢','Escolha um cliente antes de fechar a tarefa.');
+      const box = document.getElementById('pjModalCustomFields');
+      if (box) {
+        box.classList.add('pj-client-missing-flash');
+        setTimeout(() => box.classList.remove('pj-client-missing-flash'), 1400);
+        const sel = box.querySelector('select.pj-field-value');
+        if (sel) { try { sel.focus(); } catch(_){} }
+        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+  } catch(_){}
   if (typeof appCoEditStop === 'function') appCoEditStop();
   pjCurrentTaskId = null;
   document.getElementById('pjTaskOverlay').classList.remove('open');
