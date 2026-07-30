@@ -474,10 +474,10 @@
       </div>
 
       <div class="fg-wa-actions">
-        <button class="fg-wa-reconnect-btn" onclick="fgWaReconnect()">
-          <span style="font-size:18px;">🔗</span> Reconectar / Gerar QR
+        <button class="fg-wa-reconnect-btn" onclick="window._fgWaAutoReconnected=true;fgWaReconnect()">
+          <span style="font-size:18px;">🔗</span> Gerar novo QR
         </button>
-        <button class="app-settings-btn-test" onclick="fgWaCheckStatus()" style="font-size:12px;">🔄 Atualizar status</button>
+        <button class="app-settings-btn-test" onclick="fgWaCheckStatus()" style="font-size:12px;">🔄 Atualizar</button>
       </div>
 
       <div id="fgWaLog" class="fg-wa-log"></div>
@@ -5252,9 +5252,12 @@ function appSettingsToggleVisible(inputId, btn) {
 // Gerencia a instancia "fogogestao" na Evolution API direto do painel.
 // Config vive em localStorage: fg_evolution_url/key/instance.
 // Chama a Evolution direto do browser (CORS liberado pelo Caddy).
+// APIKEY da Evolution self-hosted da agencia. Nao afeta cobranca (VPS
+// propria) e o CORS restringe origin pra fogoegestao.com.br. Se vazar,
+// rotaciona no Contabo e atualiza aqui.
 const FG_WA_DEFAULTS = {
   url: 'https://evo.89-116-30-126.nip.io',
-  key: '',
+  key: 'b71dea7c1a2ccac856f85311d69a219a43956dfbb75a060c',
   instance: 'fogogestao',
 };
 let _fgWaStatusTimer = null;
@@ -5299,6 +5302,7 @@ function fgWaOnOpen() {
   // Zera log e QR sempre que reabre a aba (nao acumula mensagens antigas)
   const log = document.getElementById('fgWaLog'); if (log) log.innerHTML = '';
   const qr  = document.getElementById('fgWaQrBox'); if (qr) qr.style.display = 'none';
+  window._fgWaAutoReconnected = false;
   fgWaCheckStatus();
   clearInterval(_fgWaStatusTimer);
   _fgWaStatusTimer = setInterval(() => {
@@ -5345,16 +5349,12 @@ function fgWaLog(msg, kind) {
 }
 async function fgWaCheckStatus(silent) {
   const c = fgWaGetConfig();
-  if (!c.key) {
-    fgWaSetBadge('unknown');
-    fgWaShowEmpty('🔑','Cole a API Key na configuração avançada abaixo','Depois clica em Salvar e o painel fica pronto.');
-    return;
-  }
+  if (!c.key) { fgWaSetBadge('unknown'); return; }
   try {
     const r = await fetch(`${c.url}/instance/fetchInstances?instanceName=${encodeURIComponent(c.instance)}`, {
       headers: { apikey: c.key }
     });
-    if (!r.ok) { fgWaSetBadge('error'); fgWaShowEmpty('⚠️',`Erro HTTP ${r.status}`,'Chave ou URL erradas?'); return; }
+    if (!r.ok) { fgWaSetBadge('error'); fgWaShowEmpty('⚠️',`Erro HTTP ${r.status}`,'Servidor Evolution fora do ar?'); return; }
     const arr = await r.json();
     const inst = Array.isArray(arr) ? arr[0] : null;
     const state = inst?.connectionStatus || 'unknown';
@@ -5363,16 +5363,17 @@ async function fgWaCheckStatus(silent) {
       const num = (inst?.ownerJid || '').replace('@s.whatsapp.net','');
       fgWaShowEmpty('✅','WhatsApp conectado', num ? `Vinculado ao número ${num}` : 'Vinculado e pronto');
       if (!silent) fgWaLog('');
-    } else if (state === 'close') {
-      // So mostra estado inicial se nao tem QR na tela (o reconectar cuida do QR)
+    } else {
+      // Close, connecting ou unknown: auto-gera QR se nao tem um na tela.
+      // Assim quando o David abre a aba e o WA caiu, ja aparece o QR
+      // sem precisar clicar em nada.
       const qr = document.getElementById('fgWaQrBox');
       if (!qr || qr.style.display === 'none') {
-        fgWaShowEmpty('❌','Desconectado','Clique em Reconectar pra gerar um QR novo.');
-      }
-    } else if (state === 'connecting') {
-      const qr = document.getElementById('fgWaQrBox');
-      if (!qr || qr.style.display === 'none') {
-        fgWaShowEmpty('⏳','Aguardando pareamento','Clique em Reconectar pra gerar o QR.');
+        if (!window._fgWaAutoReconnected) {
+          window._fgWaAutoReconnected = true;
+          fgWaShowEmpty('⏳','Gerando QR pra vincular…','Aguarde uns segundos.');
+          fgWaReconnect();
+        }
       }
     }
   } catch(e) {
@@ -5382,7 +5383,7 @@ async function fgWaCheckStatus(silent) {
 }
 async function fgWaReconnect() {
   const c = fgWaGetConfig();
-  if (!c.key) { fgWaLog('Cole a API Key na configuração antes.', 'error'); return; }
+  if (!c.key) { fgWaLog('Sem API Key configurada.', 'error'); return; }
   const btn = event?.currentTarget;
   if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
   fgWaLog('Deletando instância atual…');
