@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260730-2">
+<link rel="stylesheet" href="styles.css?v=20260730-3">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -444,50 +444,62 @@
 
     <!-- WhatsApp da Central: gerencia a instancia fogogestao sem SSH -->
     <div class="app-settings-pane" data-pane="wa" style="display:none;">
-      <div class="acesso-card pj-admin-only" style="margin-bottom:14px;background:linear-gradient(135deg,rgba(34,197,94,.05),rgba(59,130,246,.03));">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-          <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;">📱</div>
-          <div style="flex:1;">
-            <div style="font-size:14px;font-weight:700;color:var(--text1);">WhatsApp da Central</div>
-            <div style="font-size:11.5px;color:var(--text2);line-height:1.5;">Envia relatório diário 6h + alertas "vence em 1h" no grupo da equipe. Se cair, reconecta aqui mesmo.</div>
+      <!-- Header compacto: titulo + badge de status -->
+      <div class="fg-wa-header">
+        <div class="fg-wa-header-icon">📱</div>
+        <div class="fg-wa-header-txt">
+          <div class="fg-wa-header-title">WhatsApp da Central</div>
+          <div class="fg-wa-header-sub">Relatório diário 6h + alertas "vence em 1h"</div>
+        </div>
+        <div id="fgWaStatusBadge" class="fg-wa-badge fg-wa-badge-unknown">…</div>
+      </div>
+
+      <!-- Estado central: mostra tanto o QR (quando reconecta) quanto botao gigante quando close -->
+      <div class="fg-wa-stage" id="fgWaStage">
+        <div id="fgWaQrBox" class="fg-wa-qr-box" style="display:none;">
+          <img id="fgWaQrImg" alt="QR" class="fg-wa-qr-img">
+          <div class="fg-wa-qr-instructions">
+            <b>1.</b> Abre WhatsApp no celular<br>
+            <b>2.</b> Menu ⋮ → <b>Dispositivos conectados</b> → <b>Vincular dispositivo</b><br>
+            <b>3.</b> Aponta a câmera pro QR acima
           </div>
-          <div id="fgWaStatusBadge" class="fg-wa-badge fg-wa-badge-unknown">…</div>
+          <div class="fg-wa-qr-expire">QR expira em ~40s — se expirar, clique em Reconectar de novo.</div>
         </div>
 
-        <details class="fg-wa-cfg-details">
-          <summary style="cursor:pointer;font-size:12px;color:var(--text2);padding:4px 0;">⚙️ Configuração da conexão (Evolution API)</summary>
-          <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">
-            <label style="font-size:11px;font-weight:600;color:var(--text3);">URL do servidor Evolution</label>
-            <input type="text" id="fgWaUrl" class="app-settings-input" placeholder="https://evo.89-116-30-126.nip.io">
-            <label style="font-size:11px;font-weight:600;color:var(--text3);">API Key (fica salva no seu browser)</label>
-            <div style="display:flex;gap:6px;">
-              <input type="password" id="fgWaKey" class="app-settings-input" placeholder="b71dea7c..." style="flex:1;">
-              <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('fgWaKey',this)">👁</button>
-            </div>
-            <label style="font-size:11px;font-weight:600;color:var(--text3);">Nome da instância</label>
-            <input type="text" id="fgWaInstance" class="app-settings-input" placeholder="fogogestao">
-            <div style="display:flex;gap:8px;margin-top:4px;">
-              <button class="app-settings-btn" onclick="fgWaSaveConfig()">Salvar configuração</button>
-              <button class="app-settings-btn-test" onclick="fgWaCheckStatus()">▶ Testar conexão</button>
-            </div>
-          </div>
-        </details>
-
-        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
-          <button class="app-settings-btn-test" onclick="fgWaCheckStatus()" style="font-weight:700;">🔄 Atualizar status</button>
-          <button class="app-settings-btn" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:700;" onclick="fgWaReconnect()">🔗 Reconectar (gera novo QR)</button>
-        </div>
-
-        <div id="fgWaLog" style="margin-top:12px;font-size:12px;color:var(--text2);min-height:0;"></div>
-
-        <div id="fgWaQrBox" style="display:none;margin-top:14px;padding:16px;background:#fff;border-radius:14px;text-align:center;">
-          <img id="fgWaQrImg" alt="QR" style="width:280px;height:280px;display:block;margin:0 auto 10px;">
-          <div style="font-size:12px;color:#222;line-height:1.5;">
-            WhatsApp no <b>celular vinculado</b> → <b>Configurações</b> → <b>Dispositivos conectados</b> → <b>Vincular dispositivo</b> → aponta a câmera.
-          </div>
-          <div style="font-size:11px;color:#666;margin-top:6px;">QR expira em ~40s. Se expirar, clique em Reconectar de novo.</div>
+        <div id="fgWaEmpty" class="fg-wa-empty">
+          <div class="fg-wa-empty-icon" id="fgWaEmptyIcon">💤</div>
+          <div class="fg-wa-empty-title" id="fgWaEmptyTitle">Clique em <b>Reconectar</b> pra gerar o QR</div>
+          <div class="fg-wa-empty-sub" id="fgWaEmptySub">O status atualiza sozinho a cada 5s.</div>
         </div>
       </div>
+
+      <div class="fg-wa-actions">
+        <button class="fg-wa-reconnect-btn" onclick="fgWaReconnect()">
+          <span style="font-size:18px;">🔗</span> Reconectar / Gerar QR
+        </button>
+        <button class="app-settings-btn-test" onclick="fgWaCheckStatus()" style="font-size:12px;">🔄 Atualizar status</button>
+      </div>
+
+      <div id="fgWaLog" class="fg-wa-log"></div>
+
+      <details class="fg-wa-cfg-details">
+        <summary>⚙️ Configuração avançada (URL, API Key, instância)</summary>
+        <div class="fg-wa-cfg-body">
+          <label>URL do servidor Evolution</label>
+          <input type="text" id="fgWaUrl" class="app-settings-input" placeholder="https://evo.89-116-30-126.nip.io">
+          <label>API Key (fica salva só no seu browser)</label>
+          <div style="display:flex;gap:6px;">
+            <input type="password" id="fgWaKey" class="app-settings-input" placeholder="b71dea7c..." style="flex:1;">
+            <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('fgWaKey',this)">👁</button>
+          </div>
+          <label>Nome da instância</label>
+          <input type="text" id="fgWaInstance" class="app-settings-input" placeholder="fogogestao">
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button class="app-settings-btn" onclick="fgWaSaveConfig()">Salvar configuração</button>
+            <button class="app-settings-btn-test" onclick="fgWaCheckStatus()">▶ Testar conexão</button>
+          </div>
+        </div>
+      </details>
     </div>
 
     <div class="modal-footer">
@@ -2200,6 +2212,14 @@ ufw allow 3000/tcp</pre>
       </div>
       <div class="pj-modal-body">
         <div class="pj-modal-left" id="pjModalLeft">
+          <div id="pjTaskClientAlert" class="pj-task-client-alert" style="display:none;">
+            <div class="pj-task-client-alert-icon">🏢</div>
+            <div class="pj-task-client-alert-body">
+              <div class="pj-task-client-alert-title">Cliente obrigatório</div>
+              <div class="pj-task-client-alert-sub">Escolha qual restaurante essa tarefa é. Sem cliente ela não sai do modal nem pode ser concluída.</div>
+            </div>
+            <button type="button" class="pj-task-client-alert-btn" onclick="pjJumpToClientField()">Ir pro campo →</button>
+          </div>
           <textarea class="pj-modal-title-input" id="pjModalTitle" placeholder="Nome da tarefa..." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';pjModalTitleChanged()"></textarea>
           <div class="app-coedit-badge-wrap" id="appCoEditBadgeWrap"></div>
           <div class="pj-modal-meta" id="pjModalMeta"></div>
@@ -5257,11 +5277,14 @@ function fgWaSaveConfig() {
   fgWaCheckStatus();
 }
 function fgWaOnOpen() {
-  // Preenche inputs + inicia polling de status enquanto tab aberta
+  // Preenche inputs + inicia polling de status enquanto tab aberta.
   const c = fgWaGetConfig();
   const u = document.getElementById('fgWaUrl');       if (u) u.value = c.url;
   const k = document.getElementById('fgWaKey');       if (k) k.value = c.key;
   const i = document.getElementById('fgWaInstance');  if (i) i.value = c.instance;
+  // Zera log e QR sempre que reabre a aba (nao acumula mensagens antigas)
+  const log = document.getElementById('fgWaLog'); if (log) log.innerHTML = '';
+  const qr  = document.getElementById('fgWaQrBox'); if (qr) qr.style.display = 'none';
   fgWaCheckStatus();
   clearInterval(_fgWaStatusTimer);
   _fgWaStatusTimer = setInterval(() => {
@@ -5271,6 +5294,19 @@ function fgWaOnOpen() {
     if (!visible) { clearInterval(_fgWaStatusTimer); _fgWaStatusTimer = null; return; }
     fgWaCheckStatus(true);
   }, 5000);
+}
+
+function fgWaShowEmpty(icon, title, sub) {
+  const box = document.getElementById('fgWaQrBox'); if (box) box.style.display = 'none';
+  const emp = document.getElementById('fgWaEmpty'); if (emp) emp.style.display = 'flex';
+  const i = document.getElementById('fgWaEmptyIcon'); if (i) i.textContent = icon || '💤';
+  const t = document.getElementById('fgWaEmptyTitle'); if (t) t.innerHTML = title || '';
+  const s = document.getElementById('fgWaEmptySub'); if (s) s.textContent = sub || '';
+}
+function fgWaShowQr(dataUrl) {
+  const emp = document.getElementById('fgWaEmpty'); if (emp) emp.style.display = 'none';
+  const box = document.getElementById('fgWaQrBox'); if (box) box.style.display = 'flex';
+  const img = document.getElementById('fgWaQrImg'); if (img) img.src = dataUrl;
 }
 function fgWaSetBadge(state) {
   const el = document.getElementById('fgWaStatusBadge');
@@ -5295,28 +5331,39 @@ function fgWaLog(msg, kind) {
 }
 async function fgWaCheckStatus(silent) {
   const c = fgWaGetConfig();
-  if (!c.key) { fgWaSetBadge('unknown'); if (!silent) fgWaLog('Cole a API Key na configuração e salve.', 'error'); return; }
+  if (!c.key) {
+    fgWaSetBadge('unknown');
+    fgWaShowEmpty('🔑','Cole a API Key na configuração avançada abaixo','Depois clica em Salvar e o painel fica pronto.');
+    return;
+  }
   try {
     const r = await fetch(`${c.url}/instance/fetchInstances?instanceName=${encodeURIComponent(c.instance)}`, {
       headers: { apikey: c.key }
     });
-    if (!r.ok) { fgWaSetBadge('error'); if (!silent) fgWaLog(`Erro HTTP ${r.status} — chave/URL erradas?`, 'error'); return; }
+    if (!r.ok) { fgWaSetBadge('error'); fgWaShowEmpty('⚠️',`Erro HTTP ${r.status}`,'Chave ou URL erradas?'); return; }
     const arr = await r.json();
     const inst = Array.isArray(arr) ? arr[0] : null;
     const state = inst?.connectionStatus || 'unknown';
     fgWaSetBadge(state);
-    // Esconde QR se ficou open
     if (state === 'open') {
-      const box = document.getElementById('fgWaQrBox'); if (box) box.style.display = 'none';
-      if (!silent) fgWaLog(`✅ Instância "${c.instance}" conectada (${inst?.ownerJid || 'sem número'}).`, 'ok');
-    } else if (state === 'close' && !silent) {
-      fgWaLog(`Instância "${c.instance}" desconectada. Clique em Reconectar pra gerar um QR novo.`);
-    } else if (state === 'connecting' && !silent) {
-      fgWaLog(`Aguardando pareamento (escaneie o QR).`);
+      const num = (inst?.ownerJid || '').replace('@s.whatsapp.net','');
+      fgWaShowEmpty('✅','WhatsApp conectado', num ? `Vinculado ao número ${num}` : 'Vinculado e pronto');
+      if (!silent) fgWaLog('');
+    } else if (state === 'close') {
+      // So mostra estado inicial se nao tem QR na tela (o reconectar cuida do QR)
+      const qr = document.getElementById('fgWaQrBox');
+      if (!qr || qr.style.display === 'none') {
+        fgWaShowEmpty('❌','Desconectado','Clique em Reconectar pra gerar um QR novo.');
+      }
+    } else if (state === 'connecting') {
+      const qr = document.getElementById('fgWaQrBox');
+      if (!qr || qr.style.display === 'none') {
+        fgWaShowEmpty('⏳','Aguardando pareamento','Clique em Reconectar pra gerar o QR.');
+      }
     }
   } catch(e) {
     fgWaSetBadge('error');
-    if (!silent) fgWaLog(`Falha ao chamar Evolution: ${e.message}`, 'error');
+    fgWaShowEmpty('⚠️','Falha ao consultar', e.message);
   }
 }
 async function fgWaReconnect() {
@@ -5341,10 +5388,7 @@ async function fgWaReconnect() {
     const d = await r.json();
     const b64 = d?.qrcode?.base64;
     if (!b64) { fgWaLog('Instância criada mas QR não veio ainda. Aguarde e recarregue o status.', 'error'); return; }
-    const img = document.getElementById('fgWaQrImg');
-    const box = document.getElementById('fgWaQrBox');
-    if (img) img.src = b64;
-    if (box) box.style.display = 'block';
+    fgWaShowQr(b64);
     fgWaSetBadge('connecting');
     fgWaLog('QR gerado — escaneie no celular. Status atualiza automaticamente.', 'ok');
   } catch(e) {
@@ -22075,6 +22119,12 @@ function pjRenderTaskModal(task) {
   const sp   = pjSpaces.find(s => s.id === task.spaceId);
   const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
   const st = statuses.find(s => s.id === (task.statusId||statuses[0].id)) || statuses[0];
+
+  // Alerta "Cliente obrigatorio" — visivel enquanto a tarefa nao tiver cliente.
+  try {
+    const alertEl = document.getElementById('pjTaskClientAlert');
+    if (alertEl) alertEl.style.display = pjTaskHasClient(task) ? 'none' : 'flex';
+  } catch(_){}
 
   document.getElementById('pjModalSpaceName').textContent = sp?.name || '—';
   const listEl = document.getElementById('pjModalListName');

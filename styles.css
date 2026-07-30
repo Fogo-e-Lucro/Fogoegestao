@@ -9639,8 +9639,24 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
 .fx-select-wrap.fx-inline { display: inline-block; width: auto; }
 
 /* ═════ WhatsApp da Central (config) ═════ */
+.fg-wa-header {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 14px; margin-bottom:14px;
+  background:linear-gradient(135deg,rgba(34,197,94,.06),rgba(59,130,246,.03));
+  border:1px solid var(--border); border-radius:12px;
+}
+.fg-wa-header-icon {
+  width:38px; height:38px; border-radius:10px;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; color:#fff; flex-shrink:0;
+}
+.fg-wa-header-txt { flex:1; min-width:0; }
+.fg-wa-header-title { font-size:14px; font-weight:700; color:var(--text1); }
+.fg-wa-header-sub { font-size:11.5px; color:var(--text2); }
+
 .fg-wa-badge {
-  padding:4px 12px; border-radius:999px;
+  padding:5px 14px; border-radius:999px;
   font-size:11.5px; font-weight:700;
   display:inline-flex; align-items:center; gap:6px;
   white-space:nowrap;
@@ -9656,8 +9672,74 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
   .fg-wa-badge-connecting { color:#fbbf24; }
   .fg-wa-badge-error      { color:#fb923c; }
 }
-.fg-wa-cfg-details summary::marker { color:var(--text3); }
+
+/* Palco central: onde aparece o QR ou o empty state */
+.fg-wa-stage {
+  min-height:360px;
+  display:flex; align-items:center; justify-content:center;
+  padding:20px;
+  border:1px solid var(--border); border-radius:14px;
+  background:var(--bg);
+  margin-bottom:14px;
+}
+.fg-wa-empty {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:8px; text-align:center; padding:30px 20px;
+}
+.fg-wa-empty-icon { font-size:56px; line-height:1; }
+.fg-wa-empty-title { font-size:16px; font-weight:700; color:var(--text1); max-width:420px; }
+.fg-wa-empty-sub { font-size:12.5px; color:var(--text2); max-width:420px; }
+
+.fg-wa-qr-box {
+  display:flex !important; flex-direction:column; align-items:center; gap:14px;
+  background:#fff; padding:22px; border-radius:16px;
+  box-shadow:0 12px 40px rgba(0,0,0,.12);
+}
+.fg-wa-qr-img {
+  width:340px; height:340px; display:block;
+  image-rendering:pixelated;
+}
+.fg-wa-qr-instructions {
+  font-size:13px; color:#111; line-height:1.7; text-align:left;
+  background:#f8fafc; padding:10px 14px; border-radius:10px;
+  border:1px solid #e2e8f0;
+}
+.fg-wa-qr-expire { font-size:11px; color:#666; }
+
+.fg-wa-actions {
+  display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+  margin-bottom:12px;
+}
+.fg-wa-reconnect-btn {
+  flex:1; min-width:200px;
+  display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  padding:14px 20px;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:#fff; border:none; border-radius:12px;
+  font-size:15px; font-weight:700;
+  cursor:pointer; transition:transform .12s, box-shadow .12s;
+  box-shadow:0 4px 12px rgba(34,197,94,.3);
+}
+.fg-wa-reconnect-btn:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(34,197,94,.4); }
+.fg-wa-reconnect-btn:active { transform:translateY(0); }
+.fg-wa-reconnect-btn:disabled { opacity:.5; cursor:not-allowed; }
+
+.fg-wa-log { font-size:12px; color:var(--text2); min-height:0; padding:0 4px; margin-bottom:14px; }
+.fg-wa-log:empty { display:none; }
+
+.fg-wa-cfg-details {
+  border-top:1px solid var(--border); padding-top:12px; margin-top:6px;
+}
+.fg-wa-cfg-details summary {
+  cursor:pointer; font-size:12px; color:var(--text3); padding:4px 0;
+  list-style:none; user-select:none;
+}
+.fg-wa-cfg-details summary::-webkit-details-marker { display:none; }
+.fg-wa-cfg-details summary::before { content:'▸ '; }
+.fg-wa-cfg-details[open] summary::before { content:'▾ '; }
 .fg-wa-cfg-details[open] summary { color:var(--accent); }
+.fg-wa-cfg-body { margin-top:10px; display:flex; flex-direction:column; gap:8px; }
+.fg-wa-cfg-body label { font-size:11px; font-weight:600; color:var(--text3); }
 
 /* ═══════════════════════════════════════════════════════════════
    Layout compacto pra tablets touch (iPad, Android tablets).
