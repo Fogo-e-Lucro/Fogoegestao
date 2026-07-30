@@ -4827,6 +4827,47 @@ body.pj-task-open .pj-fab { display:none !important; }
 .pj-field-value:focus { border-color:var(--accent); background:var(--card); }
 /* Cliente obrigatório */
 .pj-field-required { color:#ef4444; font-weight:800; margin-left:2px; }
+/* Banner grande no topo do modal quando sem cliente */
+.pj-task-client-alert {
+  display:flex; align-items:center; gap:12px;
+  padding:14px 16px; margin:0 0 14px 0;
+  background:linear-gradient(135deg, rgba(239,68,68,.12), rgba(239,68,68,.05));
+  border:1.5px solid rgba(239,68,68,.5);
+  border-radius:12px;
+  animation:pjClientAlertPulse 2s ease-in-out infinite;
+}
+@keyframes pjClientAlertPulse {
+  0%,100% { box-shadow:0 0 0 0 rgba(239,68,68,.4); }
+  50%     { box-shadow:0 0 0 6px rgba(239,68,68,0); }
+}
+.pj-task-client-alert-icon {
+  width:44px; height:44px; border-radius:12px;
+  background:linear-gradient(135deg,#ef4444,#dc2626);
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; flex-shrink:0;
+  box-shadow:0 4px 12px rgba(239,68,68,.35);
+}
+.pj-task-client-alert-body { flex:1; min-width:0; }
+.pj-task-client-alert-title {
+  font-size:14px; font-weight:800; color:#dc2626;
+  margin-bottom:2px;
+}
+.pj-task-client-alert-sub {
+  font-size:12px; color:var(--text1); line-height:1.4;
+}
+.pj-task-client-alert-btn {
+  flex-shrink:0;
+  padding:8px 14px;
+  background:#ef4444; color:#fff; border:none; border-radius:8px;
+  font-size:12px; font-weight:700; cursor:pointer;
+  transition:transform .12s, background .12s;
+  white-space:nowrap;
+}
+.pj-task-client-alert-btn:hover { background:#dc2626; transform:translateY(-1px); }
+@media (prefers-color-scheme: dark) {
+  .pj-task-client-alert-title { color:#fca5a5; }
+  .pj-task-client-alert-sub { color:var(--text1); }
+}
 .pj-field-value-missing {
   border-color:#ef4444 !important;
   background:color-mix(in srgb, #ef4444 6%, var(--bg)) !important;

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260730-3">
+<link rel="stylesheet" href="styles.css?v=20260730-4">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -17659,6 +17659,15 @@ function pjResolveTaskClient(t) {
 function pjTaskHasClient(t) {
   const raw = pjResolveTaskClient(t);
   return !!(raw && String(raw).trim());
+}
+
+// Rolar ate o campo cliente do modal + focar. Usado pelo banner "obrigatorio".
+function pjJumpToClientField() {
+  const box = document.getElementById('pjModalCustomFields');
+  if (!box) return;
+  box.scrollIntoView({ behavior:'smooth', block:'center' });
+  const sel = box.querySelector('select.pj-field-value');
+  if (sel) { try { sel.focus(); } catch(_){} }
 }
 
 // Aplica filtro de cliente ativo (activeRestaurante) sobre lista de tasks
