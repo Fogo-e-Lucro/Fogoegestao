@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260730-4">
+<link rel="stylesheet" href="styles.css?v=20260730-6">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -5266,14 +5266,17 @@ function fgWaGetConfig() {
     instance: (localStorage.getItem('fg_evolution_instance') || FG_WA_DEFAULTS.instance),
   };
 }
-function fgWaSaveConfig() {
+function fgWaSaveConfig() { fgWaAutoSave(false); }
+function fgWaAutoSave(silent) {
   const url = document.getElementById('fgWaUrl')?.value.trim() || FG_WA_DEFAULTS.url;
   const key = document.getElementById('fgWaKey')?.value.trim() || '';
   const instance = document.getElementById('fgWaInstance')?.value.trim() || FG_WA_DEFAULTS.instance;
+  const cur = fgWaGetConfig();
+  if (cur.url === url && cur.key === key && cur.instance === instance) return;
   localStorage.setItem('fg_evolution_url', url);
   localStorage.setItem('fg_evolution_key', key);
   localStorage.setItem('fg_evolution_instance', instance);
-  if (typeof showToast === 'function') showToast('ok','✓','Configuração salva.');
+  if (!silent && typeof showToast === 'function') showToast('ok','✓','Configuração salva.');
   fgWaCheckStatus();
 }
 function fgWaOnOpen() {
@@ -5282,6 +5285,17 @@ function fgWaOnOpen() {
   const u = document.getElementById('fgWaUrl');       if (u) u.value = c.url;
   const k = document.getElementById('fgWaKey');       if (k) k.value = c.key;
   const i = document.getElementById('fgWaInstance');  if (i) i.value = c.instance;
+  // Auto-salvar quando o user editar qualquer campo (blur), pra ninguem
+  // esquecer de clicar em "Salvar" antes de fechar o accordion.
+  [u, k, i].forEach(el => {
+    if (!el || el._fgWaBound) return;
+    el._fgWaBound = true;
+    el.addEventListener('change', () => fgWaAutoSave(true));
+    el.addEventListener('blur',   () => fgWaAutoSave(true));
+  });
+  // Se falta config, abre o accordion sozinho pra o user ver o input
+  const det = document.querySelector('.fg-wa-cfg-details');
+  if (det && !c.key) det.open = true;
   // Zera log e QR sempre que reabre a aba (nao acumula mensagens antigas)
   const log = document.getElementById('fgWaLog'); if (log) log.innerHTML = '';
   const qr  = document.getElementById('fgWaQrBox'); if (qr) qr.style.display = 'none';
@@ -22129,10 +22143,12 @@ function pjRenderTaskModal(task) {
   const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
   const st = statuses.find(s => s.id === (task.statusId||statuses[0].id)) || statuses[0];
 
-  // Alerta "Cliente obrigatorio" — visivel enquanto a tarefa nao tiver cliente.
+  // Alerta "Cliente obrigatorio" fica escondido por padrao — so aparece
+  // quando o user clica em "Salvar e fechar" sem cliente (via pjCloseTaskModal).
+  // Se ele preencheu depois, some.
   try {
     const alertEl = document.getElementById('pjTaskClientAlert');
-    if (alertEl) alertEl.style.display = pjTaskHasClient(task) ? 'none' : 'flex';
+    if (alertEl && pjTaskHasClient(task)) alertEl.style.display = 'none';
   } catch(_){}
 
   document.getElementById('pjModalSpaceName').textContent = sp?.name || '—';
@@ -23613,14 +23629,18 @@ function pjCloseTaskModal() {
   try {
     const t = pjAllTasks.find(x => x.id === pjCurrentTaskId);
     if (t && !pjTaskHasClient(t)) {
+      // Mostra o banner grande vermelho no topo do modal
+      const alertEl = document.getElementById('pjTaskClientAlert');
+      if (alertEl) {
+        alertEl.style.display = 'flex';
+        alertEl.scrollIntoView({ behavior:'smooth', block:'start' });
+      }
       if (typeof showToast === 'function') showToast('warn','🏢','Escolha um cliente antes de fechar a tarefa.');
+      // Foca o campo cliente
       const box = document.getElementById('pjModalCustomFields');
       if (box) {
-        box.classList.add('pj-client-missing-flash');
-        setTimeout(() => box.classList.remove('pj-client-missing-flash'), 1400);
         const sel = box.querySelector('select.pj-field-value');
         if (sel) { try { sel.focus(); } catch(_){} }
-        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
       return;
     }
