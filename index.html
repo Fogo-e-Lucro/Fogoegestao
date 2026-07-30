@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260730">
+<link rel="stylesheet" href="styles.css?v=20260730-2">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -163,6 +163,7 @@
       <button class="app-settings-tab" data-tab="integ" onclick="appSettingsTab('integ')">🔌 Integrações</button>
       <button class="app-settings-tab" data-tab="rec" onclick="appSettingsTab('rec')">🎥 Gravador</button>
       <button class="app-settings-tab pj-admin-only" data-tab="equipe" onclick="appSettingsTab('equipe')">👥 Equipe</button>
+      <button class="app-settings-tab pj-admin-only" data-tab="wa" onclick="appSettingsTab('wa');fgWaOnOpen()">📱 WhatsApp</button>
     </div>
 
     <div class="app-settings-pane" data-pane="apis">
@@ -438,6 +439,54 @@
         <div class="acesso-title">Sua conta</div>
         <div id="acessoCurrentUserInfo" style="font-size:13px;color:var(--text2);margin-top:8px;"></div>
         <button onclick="signOutUser()" class="acesso-signout-btn">Sair da conta</button>
+      </div>
+    </div>
+
+    <!-- WhatsApp da Central: gerencia a instancia fogogestao sem SSH -->
+    <div class="app-settings-pane" data-pane="wa" style="display:none;">
+      <div class="acesso-card pj-admin-only" style="margin-bottom:14px;background:linear-gradient(135deg,rgba(34,197,94,.05),rgba(59,130,246,.03));">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;">📱</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;color:var(--text1);">WhatsApp da Central</div>
+            <div style="font-size:11.5px;color:var(--text2);line-height:1.5;">Envia relatório diário 6h + alertas "vence em 1h" no grupo da equipe. Se cair, reconecta aqui mesmo.</div>
+          </div>
+          <div id="fgWaStatusBadge" class="fg-wa-badge fg-wa-badge-unknown">…</div>
+        </div>
+
+        <details class="fg-wa-cfg-details">
+          <summary style="cursor:pointer;font-size:12px;color:var(--text2);padding:4px 0;">⚙️ Configuração da conexão (Evolution API)</summary>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">
+            <label style="font-size:11px;font-weight:600;color:var(--text3);">URL do servidor Evolution</label>
+            <input type="text" id="fgWaUrl" class="app-settings-input" placeholder="https://evo.89-116-30-126.nip.io">
+            <label style="font-size:11px;font-weight:600;color:var(--text3);">API Key (fica salva no seu browser)</label>
+            <div style="display:flex;gap:6px;">
+              <input type="password" id="fgWaKey" class="app-settings-input" placeholder="b71dea7c..." style="flex:1;">
+              <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('fgWaKey',this)">👁</button>
+            </div>
+            <label style="font-size:11px;font-weight:600;color:var(--text3);">Nome da instância</label>
+            <input type="text" id="fgWaInstance" class="app-settings-input" placeholder="fogogestao">
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <button class="app-settings-btn" onclick="fgWaSaveConfig()">Salvar configuração</button>
+              <button class="app-settings-btn-test" onclick="fgWaCheckStatus()">▶ Testar conexão</button>
+            </div>
+          </div>
+        </details>
+
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+          <button class="app-settings-btn-test" onclick="fgWaCheckStatus()" style="font-weight:700;">🔄 Atualizar status</button>
+          <button class="app-settings-btn" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:700;" onclick="fgWaReconnect()">🔗 Reconectar (gera novo QR)</button>
+        </div>
+
+        <div id="fgWaLog" style="margin-top:12px;font-size:12px;color:var(--text2);min-height:0;"></div>
+
+        <div id="fgWaQrBox" style="display:none;margin-top:14px;padding:16px;background:#fff;border-radius:14px;text-align:center;">
+          <img id="fgWaQrImg" alt="QR" style="width:280px;height:280px;display:block;margin:0 auto 10px;">
+          <div style="font-size:12px;color:#222;line-height:1.5;">
+            WhatsApp no <b>celular vinculado</b> → <b>Configurações</b> → <b>Dispositivos conectados</b> → <b>Vincular dispositivo</b> → aponta a câmera.
+          </div>
+          <div style="font-size:11px;color:#666;margin-top:6px;">QR expira em ~40s. Se expirar, clique em Reconectar de novo.</div>
+        </div>
       </div>
     </div>
 
@@ -5177,6 +5226,133 @@ function appSettingsToggleVisible(inputId, btn) {
   if (!el) return;
   el.type = (el.type === 'password') ? 'text' : 'password';
   if (btn) btn.textContent = (el.type === 'password') ? '👁' : '🙈';
+}
+
+// ═════════════ WhatsApp da Central ═════════════
+// Gerencia a instancia "fogogestao" na Evolution API direto do painel.
+// Config vive em localStorage: fg_evolution_url/key/instance.
+// Chama a Evolution direto do browser (CORS liberado pelo Caddy).
+const FG_WA_DEFAULTS = {
+  url: 'https://evo.89-116-30-126.nip.io',
+  key: '',
+  instance: 'fogogestao',
+};
+let _fgWaStatusTimer = null;
+
+function fgWaGetConfig() {
+  return {
+    url:      (localStorage.getItem('fg_evolution_url')      || FG_WA_DEFAULTS.url).replace(/\/+$/, ''),
+    key:      (localStorage.getItem('fg_evolution_key')      || FG_WA_DEFAULTS.key),
+    instance: (localStorage.getItem('fg_evolution_instance') || FG_WA_DEFAULTS.instance),
+  };
+}
+function fgWaSaveConfig() {
+  const url = document.getElementById('fgWaUrl')?.value.trim() || FG_WA_DEFAULTS.url;
+  const key = document.getElementById('fgWaKey')?.value.trim() || '';
+  const instance = document.getElementById('fgWaInstance')?.value.trim() || FG_WA_DEFAULTS.instance;
+  localStorage.setItem('fg_evolution_url', url);
+  localStorage.setItem('fg_evolution_key', key);
+  localStorage.setItem('fg_evolution_instance', instance);
+  if (typeof showToast === 'function') showToast('ok','✓','Configuração salva.');
+  fgWaCheckStatus();
+}
+function fgWaOnOpen() {
+  // Preenche inputs + inicia polling de status enquanto tab aberta
+  const c = fgWaGetConfig();
+  const u = document.getElementById('fgWaUrl');       if (u) u.value = c.url;
+  const k = document.getElementById('fgWaKey');       if (k) k.value = c.key;
+  const i = document.getElementById('fgWaInstance');  if (i) i.value = c.instance;
+  fgWaCheckStatus();
+  clearInterval(_fgWaStatusTimer);
+  _fgWaStatusTimer = setInterval(() => {
+    const pane = document.querySelector('.app-settings-pane[data-pane="wa"]');
+    const modal = document.getElementById('appSettingsModal');
+    const visible = pane && pane.style.display !== 'none' && modal && modal.style.display !== 'none';
+    if (!visible) { clearInterval(_fgWaStatusTimer); _fgWaStatusTimer = null; return; }
+    fgWaCheckStatus(true);
+  }, 5000);
+}
+function fgWaSetBadge(state) {
+  const el = document.getElementById('fgWaStatusBadge');
+  if (!el) return;
+  el.className = 'fg-wa-badge';
+  const map = {
+    open:       { cls:'fg-wa-badge-open',       label:'✅ Conectado' },
+    close:      { cls:'fg-wa-badge-close',      label:'❌ Desconectado' },
+    connecting: { cls:'fg-wa-badge-connecting', label:'⏳ Conectando' },
+    error:      { cls:'fg-wa-badge-error',      label:'⚠️ Erro' },
+    unknown:    { cls:'fg-wa-badge-unknown',    label:'…' },
+  };
+  const m = map[state] || map.unknown;
+  el.classList.add(m.cls);
+  el.textContent = m.label;
+}
+function fgWaLog(msg, kind) {
+  const el = document.getElementById('fgWaLog');
+  if (!el) return;
+  const color = kind === 'error' ? '#ef4444' : kind === 'ok' ? '#22c55e' : 'var(--text2)';
+  el.innerHTML = `<span style="color:${color};">${escHtml(msg)}</span>`;
+}
+async function fgWaCheckStatus(silent) {
+  const c = fgWaGetConfig();
+  if (!c.key) { fgWaSetBadge('unknown'); if (!silent) fgWaLog('Cole a API Key na configuração e salve.', 'error'); return; }
+  try {
+    const r = await fetch(`${c.url}/instance/fetchInstances?instanceName=${encodeURIComponent(c.instance)}`, {
+      headers: { apikey: c.key }
+    });
+    if (!r.ok) { fgWaSetBadge('error'); if (!silent) fgWaLog(`Erro HTTP ${r.status} — chave/URL erradas?`, 'error'); return; }
+    const arr = await r.json();
+    const inst = Array.isArray(arr) ? arr[0] : null;
+    const state = inst?.connectionStatus || 'unknown';
+    fgWaSetBadge(state);
+    // Esconde QR se ficou open
+    if (state === 'open') {
+      const box = document.getElementById('fgWaQrBox'); if (box) box.style.display = 'none';
+      if (!silent) fgWaLog(`✅ Instância "${c.instance}" conectada (${inst?.ownerJid || 'sem número'}).`, 'ok');
+    } else if (state === 'close' && !silent) {
+      fgWaLog(`Instância "${c.instance}" desconectada. Clique em Reconectar pra gerar um QR novo.`);
+    } else if (state === 'connecting' && !silent) {
+      fgWaLog(`Aguardando pareamento (escaneie o QR).`);
+    }
+  } catch(e) {
+    fgWaSetBadge('error');
+    if (!silent) fgWaLog(`Falha ao chamar Evolution: ${e.message}`, 'error');
+  }
+}
+async function fgWaReconnect() {
+  const c = fgWaGetConfig();
+  if (!c.key) { fgWaLog('Cole a API Key na configuração antes.', 'error'); return; }
+  const btn = event?.currentTarget;
+  if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
+  fgWaLog('Deletando instância atual…');
+  try {
+    await fetch(`${c.url}/instance/delete/${encodeURIComponent(c.instance)}`, { method:'DELETE', headers:{ apikey:c.key } }).catch(()=>{});
+    await new Promise(r => setTimeout(r, 2500));
+    fgWaLog('Criando instância nova + gerando QR…');
+    const r = await fetch(`${c.url}/instance/create`, {
+      method:'POST',
+      headers:{ apikey:c.key, 'Content-Type':'application/json' },
+      body: JSON.stringify({ instanceName:c.instance, integration:'WHATSAPP-BAILEYS', qrcode:true })
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(()=>({}));
+      throw new Error(err.response?.message?.[0] || err.message || `HTTP ${r.status}`);
+    }
+    const d = await r.json();
+    const b64 = d?.qrcode?.base64;
+    if (!b64) { fgWaLog('Instância criada mas QR não veio ainda. Aguarde e recarregue o status.', 'error'); return; }
+    const img = document.getElementById('fgWaQrImg');
+    const box = document.getElementById('fgWaQrBox');
+    if (img) img.src = b64;
+    if (box) box.style.display = 'block';
+    fgWaSetBadge('connecting');
+    fgWaLog('QR gerado — escaneie no celular. Status atualiza automaticamente.', 'ok');
+  } catch(e) {
+    fgWaLog(`Falha: ${e.message}`, 'error');
+    fgWaSetBadge('error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+  }
 }
 async function appSettingsSave(name, inputId) {
   const el = document.getElementById(inputId);
