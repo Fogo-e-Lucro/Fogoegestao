@@ -14170,20 +14170,21 @@ function pjRenderMain() {
   const el = document.getElementById('pjMain');
   if (!el) return;
   const { type, id } = pjCurrentView;
-  if (type === 'dashboard') { el.innerHTML = pjBuildDashboard(); return; }
-  if (type === 'inbox') { el.innerHTML = pjBuildInbox(); return; }
-  if (type === 'all')   { el.innerHTML = pjBuildAll(); return; }
-  if (type === 'list')  { el.innerHTML = pjBuildListPage(id); return; }
-  if (type === 'kanban'){ el.innerHTML = pjBuildKanbanPage(id); return; }
-  if (type === 'workload') { el.innerHTML = pjBuildWorkload(); return; }
-  if (type === 'byclient') { el.innerHTML = pjBuildByClient(); return; }
-  if (type === 'timeline') { el.innerHTML = pjBuildTimeline(); return; }
-  if (type === 'archived') { el.innerHTML = pjBuildArchived(); return; }
-  if (type === 'timemetrics') { el.innerHTML = pjBuildTimeMetrics(); return; }
-  if (type === 'digest')     { el.innerHTML = pjBuildDigest(); return; }
-  if (type === 'integracoes'){ el.innerHTML = pjBuildIntegracoes(); return; }
-  if (type === 'gantt')      { el.innerHTML = pjBuildGantt(); return; }
-  if (type === 'askai')      { el.innerHTML = pjBuildAskAi(); pjMountAskAi(); return; }
+  const done = () => { try { pjEnsureAutoTick(); } catch(_) {} };
+  if (type === 'dashboard') { el.innerHTML = pjBuildDashboard(); done(); return; }
+  if (type === 'inbox') { el.innerHTML = pjBuildInbox(); done(); return; }
+  if (type === 'all')   { el.innerHTML = pjBuildAll(); done(); return; }
+  if (type === 'list')  { el.innerHTML = pjBuildListPage(id); done(); return; }
+  if (type === 'kanban'){ el.innerHTML = pjBuildKanbanPage(id); done(); return; }
+  if (type === 'workload') { el.innerHTML = pjBuildWorkload(); done(); return; }
+  if (type === 'byclient') { el.innerHTML = pjBuildByClient(); done(); return; }
+  if (type === 'timeline') { el.innerHTML = pjBuildTimeline(); done(); return; }
+  if (type === 'archived') { el.innerHTML = pjBuildArchived(); done(); return; }
+  if (type === 'timemetrics') { el.innerHTML = pjBuildTimeMetrics(); done(); return; }
+  if (type === 'digest')     { el.innerHTML = pjBuildDigest(); done(); return; }
+  if (type === 'integracoes'){ el.innerHTML = pjBuildIntegracoes(); done(); return; }
+  if (type === 'gantt')      { el.innerHTML = pjBuildGantt(); done(); return; }
+  if (type === 'askai')      { el.innerHTML = pjBuildAskAi(); pjMountAskAi(); done(); return; }
 }
 
 // ── Dashboard ───────────────────────────────────────────
@@ -16689,6 +16690,11 @@ function pjBuildKanban(listId, statuses, tasks) {
         ? `<span class="pj-card-prio ${t.priority}" title="${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}"></span>`
         : '';
       const recur = t.recurrence?.pattern ? `<span class="pj-card-recur" title="${pjRecurrenceLabel(t.recurrence)}">🔁</span>` : '';
+      const autoBaseline = (t.timeEntries||[]).reduce((a,e)=>a+(e.ms||0),0);
+      const trackingHtml = t.autoTrackStart
+        ? `<span class="pj-card-tracking" title="Contando tempo em Em Andamento"
+                data-pj-autotick data-pj-autostart="${t.autoTrackStart}" data-pj-autobaseline="${autoBaseline}">⏱ ${pjFormatDuration(pjTaskTotalMs(t))}</span>`
+        : '';
       h += `<div class="pj-card ${done?'done':''}" draggable="true" data-priority="${t.priority||'low'}"
                ondragstart="pjKanbanDragStart(event,'${t.id}')"
                ondragend="pjKanbanDragEnd(event)"
@@ -16702,6 +16708,7 @@ function pjBuildKanban(listId, statuses, tasks) {
           ${clientHtml ? `<div class="pj-card-client-wrap">${clientHtml}</div>` : ''}
           <div class="pj-card-footer">
             ${due ? `<span class="pj-task-due ${due.cls}" title="${escHtml(dueLabelFull||'')}"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="margin-right:3px;vertical-align:-1px"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6h12M5 1v3M11 1v3"/></svg>${dueLabelFull}</span>` : ''}
+            ${trackingHtml}
             ${attachCount ? `<span class="pj-card-meta-pill" title="Anexos">📎 ${attachCount}</span>` : ''}
             <span style="flex:1"></span>
             <div class="pj-task-assignees">
@@ -16782,6 +16789,7 @@ async function pjKanbanDrop(e, listId, statusId) {
       upd.completedAt = firebase.firestore.FieldValue.delete();
       upd.archived = firebase.firestore.FieldValue.delete();
     }
+    if (stTrans.extraFields) Object.assign(upd, stTrans.extraFields);
     await pjC('pj_tasks').doc(taskId).update(upd);
   } catch(err){}
 }
@@ -16870,6 +16878,7 @@ async function pjListDrop(e, listId, statusId) {
       upd.completedAt = firebase.firestore.FieldValue.delete();
       upd.archived = firebase.firestore.FieldValue.delete();
     }
+    if (stTrans.extraFields) Object.assign(upd, stTrans.extraFields);
     await pjC('pj_tasks').doc(taskId).update(upd);
   } catch(err){}
 }
@@ -18240,16 +18249,43 @@ function pjMaybeNotifyAssignment(prevTask, newTask) {
 
 // Helper: dispara efeitos quando status muda (completedAt, recorrência, popup, webhook).
 // Use em paths que não passam por pjToggleTaskDone/pjChangeTaskStatus (kanban drop,
-// list drop, pjUpdateTask). Devolve { willClose, wasClosed } pra quem precise persistir.
+// list drop, pjUpdateTask). Devolve { willClose, wasClosed, extraFields } pra quem
+// precise persistir — extraFields carrega autoTrackStart/timeEntries pra mergear no
+// update do Firestore (contagem automática de tempo por bucket 'active').
 function pjAfterStatusChange(task, prevStatusId, newStatusId) {
   console.log('🔥 [pjAfterStatusChange] chamado:', { taskTitle:task?.title, prevStatusId, newStatusId });
-  if (!task) return { willClose:false, wasClosed:false };
+  if (!task) return { willClose:false, wasClosed:false, extraFields:null };
   const list = pjLists.find(l => l.id === task.listId);
   const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
   const newSt = statuses.find(s => s.id === newStatusId);
   const prevSt = statuses.find(s => s.id === prevStatusId);
   const willClose = !!(newSt && pjStatusBucket(newSt) === 'closed');
   const wasClosed = !!(prevSt && pjStatusBucket(prevSt) === 'closed');
+  const willActive = !!(newSt && pjStatusBucket(newSt) === 'active');
+  const wasActive  = !!(prevSt && pjStatusBucket(prevSt) === 'active');
+  // Auto-tracking: entra em 'active' → marca autoTrackStart. Sai de 'active' →
+  // fecha o intervalo em timeEntries. Se prevStatusId era null/undefined
+  // (task recém criada direto em Em Andamento), wasActive=false → também inicia.
+  let extraFields = null;
+  if (willActive && !wasActive) {
+    const start = Date.now();
+    task.autoTrackStart = start;
+    extraFields = { autoTrackStart: start };
+  } else if (!willActive && wasActive && task.autoTrackStart) {
+    const started = task.autoTrackStart;
+    const ended = Date.now();
+    const ms = ended - started;
+    task.timeEntries = task.timeEntries || [];
+    if (ms > 0) {
+      const uid = (Array.isArray(task.assignees) && task.assignees[0]) || 'auto';
+      task.timeEntries.push({ uid, startedAt: started, endedAt: ended, ms, auto: true });
+    }
+    delete task.autoTrackStart;
+    extraFields = {
+      autoTrackStart: firebase.firestore.FieldValue.delete(),
+      timeEntries: task.timeEntries,
+    };
+  }
   if (willClose && !wasClosed) {
     if (!task.completedAt) task.completedAt = Date.now();
     if (task.recurrence?.pattern && task.dueDate) {
@@ -18281,7 +18317,7 @@ function pjAfterStatusChange(task, prevStatusId, newStatusId) {
     // ⚡ AUTOMAÇÕES da lista — dispara regras quando status muda
     try { pjRunAutomations({ event:'status_changed', task, prevStatusId, newStatusId, list }); } catch(e) { console.warn('[automation]', e); }
   }
-  return { willClose, wasClosed };
+  return { willClose, wasClosed, extraFields };
 }
 
 // ⚡ ── Automações por lista ──────────────────────────────────
@@ -18932,8 +18968,9 @@ async function pjToggleTaskDone(taskId) {
   if (pjTasks[t.listId]) pjTasks[t.listId] = pjTasks[t.listId].map(x => x.id===t.id ? t : x);
   pjAllTasks = pjAllTasks.map(x => x.id===t.id ? t : x);
   // Log da mudança + DISPARA AUTOMAÇÕES (mesma rota que kanban drop)
+  let stTrans = { willClose:false, wasClosed:false, extraFields:null };
   try {
-    pjAfterStatusChange(t, prevStatusId, newStatusId);
+    stTrans = pjAfterStatusChange(t, prevStatusId, newStatusId) || stTrans;
   } catch(e) { console.warn('[pjToggleTaskDone] erro pjAfterStatusChange', e); }
   // Celebração: confete na origem do clique pra tarefas urgent/high (extra)
   if (!isDone && (t.priority === 'urgent' || t.priority === 'high')) {
@@ -18954,6 +18991,7 @@ async function pjToggleTaskDone(taskId) {
   try {
     const upd = { statusId: newStatusId, updatedAt:pjNow() };
     if (!isDone) upd.completedAt = pjNow();
+    if (stTrans.extraFields) Object.assign(upd, stTrans.extraFields);
     await pjC('pj_tasks').doc(taskId).update(upd);
   } catch(e){}
 }
@@ -19008,8 +19046,9 @@ async function pjChangeTaskStatus(taskId, newStatusId) {
   if (pjTasks[t.listId]) pjTasks[t.listId] = pjTasks[t.listId].map(x => x.id === t.id ? t : x);
   pjAllTasks = pjAllTasks.map(x => x.id === t.id ? t : x);
   // Log da mudança + DISPARA AUTOMAÇÕES (mesma rota que kanban drop)
+  let stTrans = { willClose:false, wasClosed:false, extraFields:null };
   try {
-    pjAfterStatusChange(t, prevStatusId, newStatusId);
+    stTrans = pjAfterStatusChange(t, prevStatusId, newStatusId) || stTrans;
   } catch(e) { console.warn('[pjChangeTaskStatus] erro pjAfterStatusChange', e); }
   // Recorrência: ao concluir, gera próxima ocorrência (async — não bloqueia)
   if (willClose && !wasClosed && t.recurrence?.pattern && t.dueDate) {
@@ -19030,6 +19069,7 @@ async function pjChangeTaskStatus(taskId, newStatusId) {
       upd.completedAt = firebase.firestore.FieldValue.delete();
       upd.archived = false;
     }
+    if (stTrans.extraFields) Object.assign(upd, stTrans.extraFields);
     await pjC('pj_tasks').doc(taskId).update(upd);
   } catch(e){}
 }
@@ -20885,6 +20925,17 @@ function pjSetRunningEntry(entry) {
 function pjTaskTotalMs(task) {
   let total = 0;
   (task.timeEntries||[]).forEach(e => { total += (e.ms || 0); });
+  // Se auto-tracking está rodando (task em bucket 'active'), soma o delta corrente.
+  // Guarda: se autoTrackStart persistiu mas o bucket já não é 'active' (task legada
+  // ou falha de sync), ignora — o próximo status change fecha a entrada.
+  if (task && task.autoTrackStart) {
+    const list = pjLists.find(l => l.id === task.listId);
+    const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
+    const st = statuses.find(s => s.id === task.statusId);
+    if (st && pjStatusBucket(st) === 'active') {
+      total += Date.now() - task.autoTrackStart;
+    }
+  }
   return total;
 }
 function pjFormatDuration(ms) {
@@ -20914,7 +20965,19 @@ function pjStartTimerTick() {
       if (!r) { el.textContent = ''; return; }
       el.textContent = pjFormatDuration(Date.now() - r.startedAt);
     });
+    document.querySelectorAll('[data-pj-autotick]').forEach(el => {
+      const start = parseInt(el.getAttribute('data-pj-autostart'), 10);
+      const base  = parseInt(el.getAttribute('data-pj-autobaseline') || '0', 10);
+      if (!start) return;
+      el.textContent = '⏱ ' + pjFormatDuration(base + (Date.now() - start));
+    });
   }, 1000);
+}
+// Garante que o interval está rodando enquanto houver algum badge de auto-tracking
+// visível (mesmo sem timer manual ativo). Chamado após re-renders principais.
+function pjEnsureAutoTick() {
+  if (_pjTimerInterval) return;
+  if (document.querySelector('[data-pj-autotick]')) pjStartTimerTick();
 }
 async function pjStopTimer() {
   const r = pjGetRunningEntry();
@@ -23942,6 +24005,7 @@ async function pjUpdateTask(taskId, data) {
     persist.completedAt = firebase.firestore.FieldValue.delete();
     persist.archived = firebase.firestore.FieldValue.delete();
   }
+  if (_stTrans.extraFields) Object.assign(persist, _stTrans.extraFields);
   try { await pjC('pj_tasks').doc(taskId).update(persist); } catch(e){}
 }
 // ── Address Autocomplete (Google Places → fallback Nominatim) ──────────────────
