@@ -629,294 +629,330 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
 
   <!-- ═══ ABA ENTRADA ═══════════════════════════════════ -->
   <div class="tab-panel" id="tab-entrada">
+    <div class="estudio-shell" id="estudioShell">
 
-    <div class="entrada-page-header" data-reveal>
-      <div class="entrada-page-title-wrap">
-        <div class="entrada-page-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        </div>
-        <div>
-          <div class="entrada-page-title">Criar post</div>
-          <div class="entrada-page-sub">Adicione um post ao calendário de conteúdo</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="restaurant-sticky" data-reveal style="flex-direction:column;align-items:stretch;">
-      <label style="margin-bottom:8px;">Cliente</label>
-      <select id="restauranteSelect" onchange="onRestauranteSelectChange()" style="width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text);font-size:14px;outline:none;cursor:pointer;font-family:var(--font);">
-        <option value="">Selecione um restaurante...</option>
-      </select>
-      <div id="novoRestauranteWrap" style="display:none;margin-top:10px;">
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input type="text" id="restaurante" placeholder="Nome do novo restaurante..." style="flex:1;box-sizing:border-box;" onkeydown="if(event.key==='Enter')confirmarNovoRestaurante()">
-          <button type="button" onclick="confirmarNovoRestaurante()" style="padding:10px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;">✓ Adicionar</button>
-        </div>
-      </div>
-      <input type="hidden" id="restauranteHidden">
-      <span class="error-msg" id="err-restaurante">Campo obrigatório</span>
-    </div>
-
-    <!-- Tipo -->
-    <div class="form-section" id="sec-tipo" data-reveal>
-      <div class="form-section-header" onclick="toggleSection('sec-tipo')">
-        <div class="form-section-title">Tipo de conteúdo</div>
-        <svg class="section-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 8 10 13 15 8"/></svg>
-      </div>
-      <div class="form-section-body" id="sec-tipo-body">
-        <div class="form-section-body-inner">
-          <div class="form-group">
-            <label>Selecione o formato <span class="req">*</span></label>
-            <div class="type-grid">
-              <button class="type-btn" data-type="REELS" onclick="selectTipo('REELS')">
-                <span class="type-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/><path d="m8 3 4 6"/><path d="m16 3 4 6"/><path d="m10 14 5 2.5L10 19v-5z" fill="currentColor"/></svg></span>
-                <span class="type-label">Reels</span>
-              </button>
-              <button class="type-btn" data-type="FOTO" onclick="selectTipo('FOTO')">
-                <span class="type-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span>
-                <span class="type-label">Foto</span>
-              </button>
-              <button class="type-btn" data-type="CARROSSEL" onclick="selectTipo('CARROSSEL')">
-                <span class="type-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="5" width="14" height="14" rx="2.5"/><path d="M3 17V8a3 3 0 0 1 1-2"/></svg></span>
-                <span class="type-label">Carrossel</span>
-              </button>
-              <button class="type-btn" data-type="STORY" onclick="selectTipo('STORY')">
-                <span class="type-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-dasharray="3 2.5"/><circle cx="12" cy="12" r="4"/></svg></span>
-                <span class="type-label">Story</span>
-              </button>
-            </div>
-            <span class="error-msg" id="err-tipo">Selecione um tipo</span>
+      <!-- TOP BAR -->
+      <header class="estudio-bar">
+        <div class="estudio-bar-left">
+          <button class="estudio-bar-back" onclick="switchTab('visualizar')" aria-label="Voltar ao calendário">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <div class="estudio-bar-crumbs">
+            <span class="estudio-bar-crumb muted">Calendário</span>
+            <span class="estudio-bar-sep">/</span>
+            <span class="estudio-bar-crumb">Novo post</span>
+            <span class="estudio-bar-sep muted" id="crumbSep" hidden>·</span>
+            <span class="estudio-bar-crumb accent" id="crumbCliente" hidden></span>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Objetivo + Data -->
-    <div class="form-section" id="sec-obj" data-reveal>
-      <div class="form-section-header" onclick="toggleSection('sec-obj')">
-        <div class="form-section-title">Objetivo e data</div>
-        <svg class="section-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 8 10 13 15 8"/></svg>
-      </div>
-      <div class="form-section-body" id="sec-obj-body">
-        <div class="form-section-body-inner">
-          <div class="form-group">
-            <label>Objetivo <span class="req">*</span></label>
-            <div class="objetivo-grid">
-              <button class="objetivo-btn" data-obj="Desejo"       onclick="selectObjetivo('Desejo')">🔥 Desejo</button>
-              <button class="objetivo-btn" data-obj="Conexão"      onclick="selectObjetivo('Conexão')">💬 Conexão</button>
-              <button class="objetivo-btn" data-obj="Meme"         onclick="selectObjetivo('Meme')">😂 Meme</button>
-              <button class="objetivo-btn" data-obj="Experiência"  onclick="selectObjetivo('Experiência')">✨ Experiência</button>
-              <button class="objetivo-btn" data-obj="UGC"          onclick="selectObjetivo('UGC')">📸 UGC</button>
-              <button class="objetivo-btn" data-obj="Prova Social" onclick="selectObjetivo('Prova Social')">⭐ Prova Social</button>
-              <button class="objetivo-btn" data-obj="Conversão"    onclick="selectObjetivo('Conversão')">💰 Conversão</button>
-            </div>
-            <span class="error-msg" id="err-objetivo">Selecione um objetivo</span>
-          </div>
-          <div class="form-group">
-            <label>Data e horário de publicação <span class="req">*</span></label>
-            <div class="date-time-row">
-              <input type="date" id="dataPublicacao">
-              <input type="time" id="horarioPublicacao" placeholder="Horário">
-            </div>
-            <span class="error-msg" id="err-data">Informe a data</span>
-          </div>
-          <div class="form-group">
-            <label>🔄 Repetição (opcional)</label>
-            <div class="recorrencia-row">
-              <button type="button" class="recorrencia-btn" data-rec="" onclick="selectRecorrencia('')">Nenhuma</button>
-              <button type="button" class="recorrencia-btn" data-rec="semanal" onclick="selectRecorrencia('semanal')">Toda semana</button>
-              <button type="button" class="recorrencia-btn" data-rec="quinzenal" onclick="selectRecorrencia('quinzenal')">Quinzenal</button>
-              <button type="button" class="recorrencia-btn" data-rec="mensal" onclick="selectRecorrencia('mensal')">Mensal</button>
-            </div>
-            <div class="recorrencia-semanas" id="recorrenciaSemanas">
-              <span>Repetir por</span>
-              <input type="number" id="recorrenciaSemQtd" min="1" max="52" value="4" style="width:60px;">
-              <span id="recorrenciaUnidadeLabel">semanas</span>
-            </div>
-          </div>
+        <div class="estudio-bar-right">
+          <span class="estudio-bar-hint" id="estudioAutoSave">Rascunho salvo agora</span>
+          <button class="estudio-bar-btn ghost" onclick="salvarRascunho()">Guardar rascunho</button>
+          <button class="estudio-bar-btn primary" id="submitBtn" onclick="savePost()">
+            <span>Agendar post</span>
+            <kbd class="estudio-bar-kbd">⌘↵</kbd>
+          </button>
         </div>
-      </div>
-    </div>
+      </header>
 
-    <!-- Conteúdo -->
-    <div class="form-section" id="sec-cont" data-reveal>
-      <div class="form-section-header" onclick="toggleSection('sec-cont')">
-        <div class="form-section-title">Conteúdo</div>
-        <svg class="section-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 8 10 13 15 8"/></svg>
-      </div>
-      <div class="form-section-body" id="sec-cont-body">
-        <div class="form-section-body-inner">
-          <div class="form-group">
-            <label>Prato em destaque (opcional)</label>
-            <input type="text" id="pratoDestaque" placeholder="Ex: Picanha na brasa, Risoto de funghi...">
-          </div>
-          <div class="form-group">
-            <div class="ai-label-row">
-              <label>Título / Gancho <span class="req">*</span></label>
-              <button type="button" class="ai-btn" id="aiGanchoBtn" onclick="aiSugerirGancho()">✨ Sugerir gancho</button>
-            </div>
-            <input type="text" id="gancho" placeholder="A frase que vai parar o scroll...">
-            <div class="ai-result-box" id="aiGanchoResult"></div>
-            <span class="error-msg" id="err-gancho">Campo obrigatório</span>
-          </div>
-          <div class="script-wrapper" id="scriptWrapper">
-            <div class="form-group">
-              <div class="ai-label-row">
-                <label>🎤 Roteiro / Fala (script do vídeo)</label>
-                <button type="button" class="ai-btn" id="aiScriptBtn" onclick="aiGerarRoteiro()">✨ Gerar roteiro</button>
+      <div class="estudio-split">
+
+        <!-- PALCO (preview) -->
+        <section class="estudio-stage" aria-label="Prévia do post">
+          <div class="estudio-stage-scroll">
+            <div class="estudio-mock" id="estudioMock" data-tipo="REELS">
+              <div class="estudio-phone">
+                <div class="estudio-phone-notch"></div>
+                <div class="estudio-phone-screen">
+
+                  <header class="estudio-ig-top">
+                    <div class="estudio-ig-avatar" id="mockAvatar" data-initial="?"></div>
+                    <div class="estudio-ig-handle-wrap">
+                      <span class="estudio-ig-handle" id="mockHandle">@seurestaurante</span>
+                      <span class="estudio-ig-loc" id="mockLoc">Patrocinado</span>
+                    </div>
+                    <button class="estudio-ig-dots" tabindex="-1">•••</button>
+                  </header>
+
+                  <div class="estudio-ig-media" id="mockMedia">
+                    <div class="estudio-ig-media-empty">
+                      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15l6-6 12 12"/></svg>
+                      <span>Arraste a arte aqui, ou cole uma URL nos Extras</span>
+                    </div>
+                    <div class="estudio-ig-gancho-overlay" id="mockGancho" hidden></div>
+                    <div class="estudio-ig-play" id="mockPlay" hidden>▶</div>
+                    <div class="estudio-ig-carr-dots" id="mockCarrDots" hidden></div>
+                  </div>
+
+                  <div class="estudio-ig-actions">
+                    <span class="estudio-ig-icon" aria-hidden="true">♡</span>
+                    <span class="estudio-ig-icon" aria-hidden="true">💬</span>
+                    <span class="estudio-ig-icon" aria-hidden="true">↗</span>
+                    <span class="estudio-ig-icon right" aria-hidden="true">🔖</span>
+                  </div>
+
+                  <div class="estudio-ig-caption">
+                    <span class="estudio-ig-caption-handle" id="mockHandle2">@seurestaurante</span>
+                    <span class="estudio-ig-caption-text" id="mockCaption">A legenda aparece aqui enquanto você escreve.</span>
+                  </div>
+                  <div class="estudio-ig-time" id="mockTime">agora</div>
+                </div>
               </div>
-              <div class="field-with-copy">
-                <textarea id="script" placeholder="Escreva aqui o que será falado no vídeo..." style="min-height:110px;"></textarea>
-                <button class="copy-btn" onclick="copyField('script')" title="Copiar script">📋</button>
+
+              <nav class="estudio-mock-tabs" role="tablist" aria-label="Formato do post">
+                <button class="estudio-mock-tab active" data-format="REELS" onclick="escolherFormato('REELS')">Reels</button>
+                <button class="estudio-mock-tab" data-format="FOTO" onclick="escolherFormato('FOTO')">Foto</button>
+                <button class="estudio-mock-tab" data-format="CARROSSEL" onclick="escolherFormato('CARROSSEL')">Carrossel</button>
+                <button class="estudio-mock-tab" data-format="STORY" onclick="escolherFormato('STORY')">Story</button>
+              </nav>
+            </div>
+          </div>
+        </section>
+
+        <!-- PAINEL (config) -->
+        <aside class="estudio-panel" aria-label="Configuração do post">
+
+          <!-- CLIENTE -->
+          <section class="estudio-block open" data-block="cliente">
+            <button class="estudio-block-head" onclick="toggleEstudioBlock(this)">
+              <span class="estudio-block-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+              <span class="estudio-block-title">Cliente</span>
+              <span class="estudio-block-value" id="clientePreview">Escolha um</span>
+              <span class="estudio-block-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            </button>
+            <div class="estudio-block-body">
+              <div class="estudio-combo">
+                <input type="text" class="estudio-combo-input" id="clienteBusca" placeholder="Busque pelo nome do cliente" autocomplete="off" oninput="filtrarClientes(this.value)" onfocus="abrirComboClientes()" onblur="setTimeout(fecharComboClientes,120)">
+                <div class="estudio-combo-dropdown" id="clienteDropdown" hidden>
+                  <div class="estudio-combo-list" id="clienteLista" role="listbox"></div>
+                  <button class="estudio-combo-new" onmousedown="criarNovoCliente()"><span class="estudio-combo-plus">+</span> Novo cliente</button>
+                </div>
+                <input type="hidden" id="restaurante">
+                <input type="hidden" id="restauranteSelect">
+                <input type="hidden" id="restauranteHidden">
               </div>
-              <div class="ai-result-box" id="aiScriptResult"></div>
             </div>
-          </div>
-          <div class="form-group">
-            <div class="ai-label-row">
-              <label id="legendaLabel">Legenda do post <span class="req">*</span></label>
-              <button type="button" class="ai-btn" id="aiLegendaBtn" onclick="aiMelhorarLegenda()">✨ Melhorar legenda</button>
+          </section>
+
+          <!-- FORMATO -->
+          <section class="estudio-block open" data-block="formato">
+            <button class="estudio-block-head" onclick="toggleEstudioBlock(this)">
+              <span class="estudio-block-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+              <span class="estudio-block-title">Formato</span>
+              <span class="estudio-block-value" id="formatoPreview">Reels</span>
+              <span class="estudio-block-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            </button>
+            <div class="estudio-block-body">
+              <div class="estudio-format-grid" id="formatoGrid">
+                <button class="estudio-format-card active" data-tipo="REELS" onclick="escolherFormato('REELS')"><span class="estudio-format-dot" style="background:var(--reels)"></span><span class="estudio-format-name">Reels</span><span class="estudio-format-sub">Vídeo vertical</span></button>
+                <button class="estudio-format-card" data-tipo="FOTO" onclick="escolherFormato('FOTO')"><span class="estudio-format-dot" style="background:var(--foto)"></span><span class="estudio-format-name">Foto</span><span class="estudio-format-sub">Imagem única</span></button>
+                <button class="estudio-format-card" data-tipo="CARROSSEL" onclick="escolherFormato('CARROSSEL')"><span class="estudio-format-dot" style="background:var(--carrossel)"></span><span class="estudio-format-name">Carrossel</span><span class="estudio-format-sub">Várias artes</span></button>
+                <button class="estudio-format-card" data-tipo="STORY" onclick="escolherFormato('STORY')"><span class="estudio-format-dot" style="background:var(--story)"></span><span class="estudio-format-name">Story</span><span class="estudio-format-sub">24 horas</span></button>
+              </div>
             </div>
-            <div class="field-with-copy">
-              <textarea id="legenda" placeholder="Escreva a legenda do post..." oninput="updateCharCounter()"></textarea>
-              <button class="copy-btn" onclick="copyField('legenda')" title="Copiar legenda">📋</button>
+          </section>
+
+          <!-- CONTEÚDO -->
+          <section class="estudio-block open" data-block="conteudo">
+            <button class="estudio-block-head" onclick="toggleEstudioBlock(this)">
+              <span class="estudio-block-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h16"/></svg></span>
+              <span class="estudio-block-title">Conteúdo</span>
+              <span class="estudio-block-value" id="conteudoPreview">Em branco</span>
+              <span class="estudio-block-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            </button>
+            <div class="estudio-block-body">
+              <label class="estudio-field">
+                <span class="estudio-field-head"><span class="estudio-field-label">Prato ou tema</span><span class="estudio-field-hint">opcional</span></span>
+                <input type="text" id="pratoDestaque" placeholder="Ex: burrata da casa, rodízio de terça">
+              </label>
+              <label class="estudio-field">
+                <span class="estudio-field-head"><span class="estudio-field-label">Gancho</span><button type="button" class="estudio-ai" onclick="aiSugerirGancho()"><span class="estudio-ai-spark">✧</span> Sugerir</button></span>
+                <input type="text" id="gancho" placeholder="A frase que trava o polegar em 2 segundos" oninput="atualizarPreview()">
+              </label>
+              <label class="estudio-field" id="scriptWrapper" hidden>
+                <span class="estudio-field-head"><span class="estudio-field-label">Roteiro do vídeo</span><button type="button" class="estudio-ai" onclick="aiGerarRoteiro()"><span class="estudio-ai-spark">✧</span> Gerar</button></span>
+                <textarea id="script" placeholder="Cenas, falas, cortes"></textarea>
+              </label>
+              <label class="estudio-field">
+                <span class="estudio-field-head"><span class="estudio-field-label" id="legendaLabel">Legenda</span><span class="estudio-field-counter"><span id="charCounter">0</span>/2200</span></span>
+                <div class="estudio-legenda-wrap">
+                  <textarea id="legenda" placeholder="Escreva a legenda como você fala com o cliente" oninput="atualizarPreview(); atualizarContador()"></textarea>
+                  <div class="estudio-legenda-toolbar">
+                    <button type="button" class="estudio-ai" onclick="aiMelhorarLegenda()"><span class="estudio-ai-spark">✧</span> 3 versões da IA</button>
+                    <button type="button" class="estudio-mini" onclick="copiarLegenda()">Copiar</button>
+                  </div>
+                </div>
+              </label>
             </div>
-            <div class="ai-result-box" id="aiLegendaResult"></div>
-            <div class="char-counter" id="charCounter">0 / 2200</div>
-            <span class="error-msg" id="err-legenda">Campo obrigatório</span>
-          </div>
-        </div>
+          </section>
+
+          <!-- OBJETIVO -->
+          <section class="estudio-block open" data-block="objetivo">
+            <button class="estudio-block-head" onclick="toggleEstudioBlock(this)">
+              <span class="estudio-block-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg></span>
+              <span class="estudio-block-title">Objetivo</span>
+              <span class="estudio-block-value" id="objetivoPreview">Escolha um</span>
+              <span class="estudio-block-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            </button>
+            <div class="estudio-block-body">
+              <div class="estudio-obj-grid" id="objetivoGrid"></div>
+            </div>
+          </section>
+
+          <!-- QUANDO -->
+          <section class="estudio-block open" data-block="agenda">
+            <button class="estudio-block-head" onclick="toggleEstudioBlock(this)">
+              <span class="estudio-block-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg></span>
+              <span class="estudio-block-title">Quando</span>
+              <span class="estudio-block-value" id="agendaPreview">Hoje, 18:00</span>
+              <span class="estudio-block-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            </button>
+            <div class="estudio-block-body">
+              <div class="estudio-mini-cal">
+                <div class="estudio-mini-cal-head">
+                  <button type="button" class="estudio-mini-cal-nav" onclick="miniCalNav(-1)" aria-label="Mês anterior">‹</button>
+                  <span class="estudio-mini-cal-title" id="miniCalTitle">Agosto 2026</span>
+                  <button type="button" class="estudio-mini-cal-nav" onclick="miniCalNav(1)" aria-label="Próximo mês">›</button>
+                </div>
+                <div class="estudio-mini-cal-dow"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
+                <div class="estudio-mini-cal-grid" id="miniCalGrid"></div>
+              </div>
+              <input type="hidden" id="dataPublicacao">
+              <div class="estudio-time-row" role="group" aria-label="Horário sugerido">
+                <button type="button" class="estudio-time-chip" data-time="09:00" onclick="escolherHora('09:00')">09:00</button>
+                <button type="button" class="estudio-time-chip" data-time="12:00" onclick="escolherHora('12:00')">12:00</button>
+                <button type="button" class="estudio-time-chip active" data-time="18:00" onclick="escolherHora('18:00')">18:00</button>
+                <button type="button" class="estudio-time-chip" data-time="21:00" onclick="escolherHora('21:00')">21:00</button>
+                <input type="time" class="estudio-time-custom" id="horarioPublicacao" value="18:00" onchange="escolherHora(this.value)">
+              </div>
+              <div class="estudio-recorrencia">
+                <span class="estudio-recorrencia-label">Repetir</span>
+                <div class="estudio-recorrencia-pills" id="recorrenciaPills">
+                  <button type="button" class="active" data-rec="" onclick="selectRecorrencia('')">Só uma vez</button>
+                  <button type="button" data-rec="semanal" onclick="selectRecorrencia('semanal')">Toda semana</button>
+                  <button type="button" data-rec="quinzenal" onclick="selectRecorrencia('quinzenal')">Quinzenal</button>
+                  <button type="button" data-rec="mensal" onclick="selectRecorrencia('mensal')">Todo mês</button>
+                </div>
+                <label class="estudio-recorrencia-qtd" id="recorrenciaSemQtdWrap" hidden>
+                  Quantas vezes
+                  <input type="number" id="recorrenciaSemQtd" min="1" max="52" value="4">
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <!-- EXTRAS -->
+          <section class="estudio-block" data-block="extras">
+            <button class="estudio-block-head" onclick="toggleEstudioBlock(this)">
+              <span class="estudio-block-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span>
+              <span class="estudio-block-title">Extras</span>
+              <span class="estudio-block-value" id="extrasPreview">Mídia, link, notas</span>
+              <span class="estudio-block-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            </button>
+            <div class="estudio-block-body">
+              <div class="estudio-field">
+                <span class="estudio-field-head"><span class="estudio-field-label">Mídia</span></span>
+                <label class="estudio-media-drop" id="mediaDrop" tabindex="0">
+                  <input type="file" id="imgUpload" accept="image/*" hidden onchange="handleImageUpload(event)">
+                  <span class="estudio-media-drop-icon">↑</span>
+                  <span class="estudio-media-drop-title">Solte a arte aqui</span>
+                  <span class="estudio-media-drop-sub">ou clique pra escolher do computador</span>
+                </label>
+                <div class="estudio-media-url">
+                  <input type="url" id="imgUrl" placeholder="Ou cole a URL da imagem">
+                  <button type="button" class="estudio-mini" onclick="addImageUrl()">Adicionar</button>
+                </div>
+                <div class="estudio-media-thumbs" id="mediaThumbs"></div>
+              </div>
+              <label class="estudio-field">
+                <span class="estudio-field-head"><span class="estudio-field-label">Link de referência</span><span class="estudio-field-hint">opcional</span></span>
+                <input type="url" id="linkRef" placeholder="Cole o Reels de referência, artigo, TikTok">
+              </label>
+              <label class="estudio-field">
+                <span class="estudio-field-head"><span class="estudio-field-label">Notas internas</span><span class="estudio-field-hint">só a equipe vê</span></span>
+                <textarea id="notasInternas" placeholder="Anotações que não vão pro post"></textarea>
+              </label>
+            </div>
+          </section>
+
+        </aside>
       </div>
     </div>
-
-    <!-- Extras -->
-    <div class="form-section" id="sec-extra" data-reveal>
-      <div class="form-section-header" onclick="toggleSection('sec-extra')">
-        <div class="form-section-title">Extras</div>
-        <svg class="section-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 8 10 13 15 8"/></svg>
-      </div>
-      <div class="form-section-body" id="sec-extra-body">
-        <div class="form-section-body-inner">
-          <div class="form-group">
-            <label>Notas internas (opcional) <span class="notas-label-badge">Não aparece no export</span></label>
-            <textarea id="notasInternas" class="notas-field" placeholder="Observações internas: aguardando foto, revisar copy..." style="min-height:72px;"></textarea>
-          </div>
-          <div class="form-group">
-            <label>Link de referência (opcional)</label>
-            <input type="url" id="linkRef" placeholder="https://...">
-          </div>
-          <div class="form-group">
-            <label id="imagemLabel">Imagem ou arte do post (opcional)</label>
-            <div class="image-input-group">
-              <div class="image-input-tabs">
-                <button class="img-tab-btn active" onclick="switchImgTab('upload',event)">📁 Upload</button>
-                <button class="img-tab-btn" onclick="switchImgTab('url',event)">🔗 URL</button>
-              </div>
-              <div class="img-panel active" id="imgPanelUpload">
-                <input type="file" id="imgUpload" accept="image/*" onchange="handleImageUpload(event)">
-              </div>
-              <div class="img-panel" id="imgPanelUrl">
-                <input type="url" id="imgUrl" placeholder="https://exemplo.com/imagem.jpg" style="margin-bottom:8px;">
-                <button class="btn-secondary" onclick="addImageUrl()">Adicionar URL</button>
-              </div>
-              <div class="image-preview-list" id="imagePreviewList"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <button class="btn-primary entrada-submit-btn" id="submitBtn" onclick="savePost()" data-reveal>
-      <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
-      Adicionar ao Calendário
-    </button>
   </div>
 
-  <!-- ═══ ABA VISUALIZAR ════════════════════════════════ -->
+    <!-- ═══ ABA VISUALIZAR ════════════════════════════════ -->
   <div class="tab-panel" id="tab-visualizar">
 
-    <div class="visualizar-header" data-reveal>
-      <div class="visualizar-title-wrap">
-        <div class="visualizar-title-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        </div>
-        <div>
-          <div class="visualizar-title">Calendário de conteúdo</div>
-          <div class="visualizar-sub">Posts agendados, produção e métricas por dia</div>
-        </div>
+    <!-- 1. HERO EDITORIAL -->
+    <header class="ed-hero" data-reveal>
+      <div class="ed-hero-left">
+        <h1 class="ed-hero-title">Pauta</h1>
+        <p class="ed-hero-sub" id="edHeroSub">Carregando…</p>
       </div>
-      <div class="visualizar-actions">
-        <button class="btn-export" onclick="openExportModal()">
+      <div class="ed-hero-actions">
+        <button class="ed-hero-search-btn" onclick="openCmdk()" title="Buscar cliente ou post">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <span>Buscar</span>
+          <kbd>⌘K</kbd>
+        </button>
+        <button class="btn-export" onclick="openExportModal()" title="Exportar HTML pra cliente">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Exportar
         </button>
+        <button class="ed-new-post-btn" onclick="createPostFor(null)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+          Novo post
+        </button>
+      </div>
+    </header>
+
+    <!-- 2. STRIP DE CLIENTES (filtro primeira classe) -->
+    <nav class="ed-client-strip" id="edClientStrip" role="tablist" aria-label="Filtrar por cliente"></nav>
+
+    <!-- 3. CONTROLES: stats + segmented -->
+    <div class="ed-controls" data-reveal>
+      <div class="ed-stats" id="edStats" aria-label="Distribuição por tipo"></div>
+      <div class="cal-view-btns ed-view-switch" id="calViewBtns">
+        <button class="cal-view-btn active" data-view="month" onclick="switchCalView('month',event)">Mês</button>
+        <button class="cal-view-btn" data-view="week" onclick="switchCalView('week',event)">Semana</button>
+        <button class="cal-view-btn" data-view="day"  onclick="switchCalView('day',event)">Dia</button>
       </div>
     </div>
 
-    <!-- STATS (collapsible) -->
-    <div class="collapsible-block" id="statsBlock" data-reveal>
-      <div class="collapsible-head" onclick="toggleCollapsible('statsBlock')">
-        <div class="collapsible-head-left">
-          <span class="collapsible-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg></span>
-          <div>
-            <div class="collapsible-head-title">Estatísticas</div>
-            <div class="collapsible-head-sub" id="statsBlockSub">Visão geral do calendário</div>
-          </div>
-        </div>
-        <svg class="collapsible-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 8 10 13 15 8"/></svg>
+    <!-- 4. NAV + BUSCA + CHIPS DE TIPO -->
+    <div class="ed-nav-row">
+      <div class="calendar-nav">
+        <button class="cal-nav-btn" onclick="navigateCalendar(-1,event)" aria-label="Mês anterior">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="cal-month-label" id="calMonthLabel"></div>
+        <button class="cal-nav-btn" onclick="navigateCalendar(1,event)" aria-label="Próximo mês">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="cal-nav-btn cal-nav-today" onclick="goToToday(event)">Hoje</button>
       </div>
-      <div class="collapsible-body" id="statsBlock-body">
-        <div id="statsContent"></div>
-      </div>
-    </div>
-
-    <!-- CALENDÁRIO (collapsible) -->
-    <div class="collapsible-block" id="calBlock" data-reveal>
-      <div class="collapsible-head" onclick="toggleCollapsible('calBlock')">
-        <div class="collapsible-head-left">
-          <span class="collapsible-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
-          <div>
-            <div class="collapsible-head-title">Calendário</div>
-            <div class="collapsible-head-sub">Distribuição mensal/semanal dos posts</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div style="display:flex;gap:3px;" id="calViewBtns">
-            <button class="cal-view-btn active" onclick="switchCalView('month',event)">Mês</button>
-            <button class="cal-view-btn" onclick="switchCalView('week',event)">Semana</button>
-            <button class="cal-view-btn" onclick="switchCalView('day',event)">Dia</button>
-          </div>
-          <div class="calendar-nav">
-            <button class="cal-nav-btn" onclick="navigateCalendar(-1,event)">←</button>
-            <div class="cal-month-label" id="calMonthLabel" style="font-size:13px;min-width:120px;"></div>
-            <button class="cal-nav-btn" onclick="navigateCalendar(1,event)">→</button>
-            <button class="cal-nav-btn" onclick="goToToday(event)" title="Hoje" style="font-size:11px;font-weight:700;width:auto;padding:0 8px;">Hoje</button>
-          </div>
-          <svg class="collapsible-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 8 10 13 15 8"/></svg>
-        </div>
-      </div>
-      <div class="collapsible-body" id="calBlock-body">
-        <div class="calendar-body-wrap">
-          <div class="calendar-body-inner" id="calendarBody"></div>
-        </div>
+      <div class="ed-filter-mini">
+        <svg class="ed-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="filterSearch" class="ed-search" placeholder="Buscar por gancho, prato ou legenda" oninput="applyFilters()">
+        <button id="filterClear" class="ed-clear-btn" onclick="clearFilters()" aria-label="Limpar busca">×</button>
       </div>
     </div>
 
-    <!-- FILTER BAR -->
-    <div class="filter-bar" data-reveal>
-      <input class="filter-search" id="filterSearch" placeholder="Buscar gancho, legenda..." oninput="applyFilters()">
-      <div class="filter-chips">
-        <span style="font-size:10px;font-weight:700;color:var(--text3);align-self:center;text-transform:uppercase;letter-spacing:.5px;">Tipo</span>
-        <button class="filter-chip" data-ftype="REELS"     onclick="toggleFilterTipo('REELS')">Reels</button>
-        <button class="filter-chip" data-ftype="FOTO"      onclick="toggleFilterTipo('FOTO')">Foto</button>
-        <button class="filter-chip" data-ftype="CARROSSEL" onclick="toggleFilterTipo('CARROSSEL')">Carrossel</button>
-        <button class="filter-chip" data-ftype="STORY"     onclick="toggleFilterTipo('STORY')">Story</button>
-      </div>
-      <button class="filter-clear" id="filterClear" onclick="clearFilters()">Limpar</button>
+    <!-- 5. CHIPS DE TIPO -->
+    <div class="ed-type-chips">
+      <button class="ed-type-chip" data-ftype="REELS"     onclick="toggleFilterTipo('REELS')"><span class="ed-type-chip-dot" style="background:var(--reels)"></span>Reels</button>
+      <button class="ed-type-chip" data-ftype="FOTO"      onclick="toggleFilterTipo('FOTO')"><span class="ed-type-chip-dot" style="background:var(--foto)"></span>Foto</button>
+      <button class="ed-type-chip" data-ftype="CARROSSEL" onclick="toggleFilterTipo('CARROSSEL')"><span class="ed-type-chip-dot" style="background:var(--carrossel)"></span>Carrossel</button>
+      <button class="ed-type-chip" data-ftype="STORY"     onclick="toggleFilterTipo('STORY')"><span class="ed-type-chip-dot" style="background:var(--story)"></span>Story</button>
     </div>
 
-    <!-- POSTS (collapsible) -->
-    <div class="collapsible-block" id="postsBlock" data-reveal>
+    <!-- 6. CORPO DO CALENDÁRIO -->
+    <div class="ed-calendar">
+      <div class="calendar-body-inner" id="calendarBody"></div>
+    </div>
+
+    <!-- 7. LISTÃO PRESERVADO (colapsável do design system) -->
+    <div class="collapsible-block" id="postsBlock" data-reveal style="margin-top:20px">
       <div class="collapsible-head" onclick="toggleCollapsible('postsBlock')">
         <div class="collapsible-head-left">
           <span class="collapsible-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
@@ -941,6 +977,22 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
         </div>
         <div class="posts-panel" id="posts-story">
           <div class="posts-grid" id="storyGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Element legado (mantido pra evitar TypeError em código externo que le #statsContent) -->
+    <div id="statsContent" hidden></div>
+
+    <!-- COMMAND MENU (⌘K) -->
+    <div class="pauta-cmdk" id="pautaCmdk" aria-hidden="true" onclick="if(event.target===this)closeCmdk()">
+      <div class="pauta-cmdk-panel" role="dialog">
+        <input class="pauta-cmdk-input" id="pautaCmdkInput" placeholder="Digite pra pular pra um cliente ou post" oninput="renderCmdkResults()">
+        <div class="pauta-cmdk-results" id="pautaCmdkResults"></div>
+        <div class="pauta-cmdk-hint">
+          <span><kbd>↑↓</kbd> navegar</span>
+          <span><kbd>⏎</kbd> abrir</span>
+          <span><kbd>esc</kbd> fechar</span>
         </div>
       </div>
     </div>
@@ -4674,20 +4726,25 @@ function getFilteredPosts() {
 }
 function toggleFilterTipo(tipo) {
   filterTipo = filterTipo === tipo ? '' : tipo;
-  document.querySelectorAll('.filter-chip[data-ftype]').forEach(b => b.classList.toggle('active', b.dataset.ftype === filterTipo));
+  document.querySelectorAll('.ed-type-chip[data-ftype], .filter-chip[data-ftype]').forEach(b => b.classList.toggle('active', b.dataset.ftype === filterTipo));
   updateFilterClear(); applyFilters();
 }
 function applyFilters() {
   filterSearch = document.getElementById('filterSearch')?.value || '';
   updateFilterClear();
-  renderPosts(); renderCalendar();
+  if (typeof renderClientStrip === 'function') renderClientStrip();
+  if (typeof renderHero === 'function') renderHero();
+  renderStats(); renderCalendar(); renderPosts();
 }
 function clearFilters() {
   filterTipo = ''; filterSearch = '';
   const el = document.getElementById('filterSearch');
   if (el) el.value = '';
-  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
-  updateFilterClear(); renderPosts(); renderCalendar();
+  document.querySelectorAll('.ed-type-chip, .filter-chip').forEach(b => b.classList.remove('active'));
+  updateFilterClear();
+  if (typeof renderClientStrip === 'function') renderClientStrip();
+  if (typeof renderHero === 'function') renderHero();
+  renderStats(); renderCalendar(); renderPosts();
 }
 function updateFilterClear() {
   const active = filterTipo || filterSearch;
@@ -4764,75 +4821,232 @@ function goToToday(e) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   RENDER ALL
+   RENDER ALL — Pauta (2026-08-02)
 ═══════════════════════════════════════════════════════ */
 function renderAll() {
-  renderRestaurantChips();
-  populateRestauranteSelect();
+  if (typeof renderRestaurantChips === 'function') renderRestaurantChips();
+  if (typeof populateRestauranteSelect === 'function') populateRestauranteSelect();
+  if (typeof renderClientStrip === 'function') renderClientStrip();
+  if (typeof renderHero === 'function') renderHero();
+  renderStats();
   renderCalendar();
   renderPosts();
-  renderStats();
 }
 
 /* ═══════════════════════════════════════════════════════
-   STATS
+   HELPERS DA PAUTA
+═══════════════════════════════════════════════════════ */
+function _initials(name){
+  return (name||'').trim().split(/\s+/).slice(0,2).map(w => w[0]||'').join('').toUpperCase() || '·';
+}
+function escJs(s){ return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function _labelTipo(t){ return {REELS:'Reels', FOTO:'Foto', CARROSSEL:'Carrossel', STORY:'Story'}[t] || t; }
+
+/* Contagem por cliente que IGNORA activeRestaurante mas respeita tipo+search.
+   Serve pra contagens dos chips do strip. */
+function _postsForStripCounts(){
+  const term = (filterSearch||'').toLowerCase().trim();
+  return posts.filter(p => {
+    if (filterTipo && p.tipo !== filterTipo) return false;
+    if (!term) return true;
+    return (p.gancho||'').toLowerCase().includes(term)
+        || (p.legenda||'').toLowerCase().includes(term)
+        || (p.pratoDestaque||'').toLowerCase().includes(term);
+  });
+}
+
+/* STRIP DE CLIENTES */
+function renderClientStrip(){
+  const strip = document.getElementById('edClientStrip');
+  if (!strip) return;
+
+  const base = _postsForStripCounts();
+  const counts = {};
+  base.forEach(p => { if (p.restaurante) counts[p.restaurante] = (counts[p.restaurante]||0) + 1; });
+
+  const clients = (typeof getRestaurants === 'function' ? getRestaurants() : Object.keys(counts))
+    .filter(Boolean)
+    .sort((a,b) => (counts[b]||0) - (counts[a]||0) || a.localeCompare(b,'pt-BR'));
+
+  const total = base.length;
+  const parts = [];
+
+  parts.push(`
+    <button class="ed-client-chip ${!activeRestaurante?'active':''}"
+            role="tab" aria-selected="${!activeRestaurante}"
+            onclick="selectClient(null)">
+      <span class="ed-client-avatar ed-client-avatar-all">✱</span>
+      <span class="ed-client-name">Todos</span>
+      <span class="ed-client-count">${total}</span>
+    </button>`);
+
+  clients.forEach(name => {
+    const color = getClientColor(name) || 'var(--accent)';
+    const logo  = getClientLogo(name);
+    const n     = counts[name] || 0;
+    const active = activeRestaurante === name;
+    const avatar = logo
+      ? `<span class="ed-client-avatar"><img src="${escHtml(logo)}" alt=""></span>`
+      : `<span class="ed-client-avatar" style="background:${color}">${_initials(name)}</span>`;
+    parts.push(`
+      <button class="ed-client-chip ${active?'active':''}"
+              role="tab" aria-selected="${active}"
+              style="--client-color:${color}"
+              title="${escHtml(name)}"
+              onclick="selectClient('${escJs(name)}')">
+        ${avatar}
+        <span class="ed-client-name">${escHtml(name)}</span>
+        <span class="ed-client-count">${n}</span>
+      </button>`);
+  });
+
+  const sl = strip.scrollLeft;
+  strip.innerHTML = parts.join('');
+  strip.scrollLeft = sl;
+}
+
+function selectClient(name){
+  if (activeRestaurante === name) return;
+  activeRestaurante = name;
+  try { localStorage.setItem('fg_active_restaurante', name || ''); } catch(_){}
+  renderAll();
+  requestAnimationFrame(() => {
+    const el = document.querySelector('.ed-client-chip.active');
+    if (el && el.scrollIntoView) el.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'nearest' });
+  });
+}
+
+/* HERO — subtítulo dinâmico */
+function renderHero(){
+  const sub = document.getElementById('edHeroSub');
+  if (!sub) return;
+  const n = getFilteredPosts().length;
+  const mes = MONTHS_PT[calDate.getMonth()] + ' de ' + calDate.getFullYear();
+  const label = n === 0 ? 'nada programado ainda'
+             : (n === 1 ? '1 post programado' : `${n} posts programados`);
+  const cli = activeRestaurante ? ` · ${activeRestaurante}` : '';
+  sub.textContent = `${mes} · ${label}${cli}`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   STATS — pílulas por tipo (novo layout Pauta)
 ═══════════════════════════════════════════════════════ */
 function renderStats() {
   const fp = getFilteredPosts();
-  const total = fp.length;
-  document.getElementById('statsBlockSub').textContent = `${total} post${total!==1?'s':''} no período`;
-
   const byTipo = { REELS:0, FOTO:0, CARROSSEL:0, STORY:0 };
-  const byObj  = {};
-  const byWeek = {};
-  fp.forEach(p => {
-    byTipo[p.tipo] = (byTipo[p.tipo]||0) + 1;
-    byObj[p.objetivo] = (byObj[p.objetivo]||0) + 1;
-    if (p.dataPublicacao) {
-      const [y,mo,d] = p.dataPublicacao.split('-').map(Number);
-      const dt = new Date(y,mo-1,d);
-      const day = dt.getDay();
-      const diff = day===0?-6:1-day;
-      const mon = new Date(dt.getTime()+diff*86400000);
-      const wk = `${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
-      byWeek[wk] = (byWeek[wk]||0) + 1;
-    }
-  });
+  fp.forEach(p => { if (byTipo[p.tipo] != null) byTipo[p.tipo]++; });
 
-  const maxTipo = Math.max(...Object.values(byTipo), 1);
-  const maxObj  = Math.max(...Object.values(byObj), 1);
-  const tipoColors = { REELS:'var(--reels)', FOTO:'var(--foto)', CARROSSEL:'var(--carrossel)', STORY:'var(--story)' };
-
-  const weeksCount = Object.keys(byWeek).length;
-  const avgPerWeek = weeksCount ? (total / weeksCount).toFixed(1) : '0';
-
-  document.getElementById('statsContent').innerHTML = `
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-card-title">Total de Posts</div>
-      <div class="stat-big">${total}</div>
-      <div class="stat-big-label">${weeksCount} semana${weeksCount!==1?'s':''} · ${avgPerWeek}/semana em média</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-title">Por Tipo</div>
-      ${Object.entries(byTipo).map(([k,v])=>`
-        <div class="stat-row">
-          <span class="stat-label">${k}</span>
-          <div class="stat-bar-wrap"><div class="stat-bar" style="width:${v/maxTipo*100}%;background:${tipoColors[k]};"></div></div>
-          <span class="stat-num">${v}</span>
-        </div>`).join('')}
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-title">Por Objetivo</div>
-      ${Object.entries(byObj).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
-        <div class="stat-row">
-          <span class="stat-label">${k}</span>
-          <div class="stat-bar-wrap"><div class="stat-bar" style="width:${v/maxObj*100}%;background:var(--accent);"></div></div>
-          <span class="stat-num">${v}</span>
-        </div>`).join('')}
-    </div>
-  </div>`;
+  const box = document.getElementById('edStats');
+  if (box){
+    box.innerHTML = ['REELS','FOTO','CARROSSEL','STORY'].map(t =>
+      `<span class="ed-stat ${t}${byTipo[t]===0?' zero':''}">
+         <span class="ed-stat-dot"></span><b>${byTipo[t]}</b> ${_labelTipo(t)}
+       </span>`
+    ).join('');
+  }
+  // Compat: mantém legado #statsBlockSub se algum outro código ainda lê
+  const legacySub = document.getElementById('statsBlockSub');
+  if (legacySub) legacySub.textContent = `${fp.length} post${fp.length!==1?'s':''} no período`;
 }
+
+/* CTA "Novo post" (com ou sem data) */
+function createPostFor(ds){
+  if (typeof switchTab === 'function') switchTab('entrada');
+  requestAnimationFrame(() => {
+    const el = document.getElementById('dataPublicacao');
+    if (el && ds) el.value = ds;
+    const restSel = document.getElementById('restaurante');
+    if (restSel && activeRestaurante && !restSel.value) restSel.value = activeRestaurante;
+    const first = document.getElementById('gancho');
+    if (first) first.focus();
+  });
+}
+
+/* Teclado por célula do calendário */
+function edDayKey(e, ds){
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDayPanel(ds); return; }
+  if (e.key === '+' || e.key === '=')     { e.preventDefault(); createPostFor(ds); return; }
+  const map = { ArrowLeft:-1, ArrowRight:+1, ArrowUp:-7, ArrowDown:+7 };
+  if (map[e.key] != null) {
+    e.preventDefault();
+    const cells = [...document.querySelectorAll('.ed-day[tabindex="0"]')];
+    const i = cells.findIndex(c => c.dataset.date === ds);
+    const j = i + map[e.key];
+    if (cells[j]) cells[j].focus();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   COMMAND MENU ⌘K
+═══════════════════════════════════════════════════════ */
+let cmdkFocusIdx = 0;
+let cmdkItems = [];
+function openCmdk(){
+  const modal = document.getElementById('pautaCmdk');
+  if (!modal) return;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+  const input = document.getElementById('pautaCmdkInput');
+  if (input) input.value = '';
+  cmdkFocusIdx = 0;
+  renderCmdkResults();
+  setTimeout(() => input && input.focus(), 30);
+}
+function closeCmdk(){
+  const modal = document.getElementById('pautaCmdk');
+  if (!modal) return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+}
+function renderCmdkResults(){
+  const inp = document.getElementById('pautaCmdkInput');
+  const box = document.getElementById('pautaCmdkResults');
+  if (!box) return;
+  const q = (inp?.value || '').toLowerCase().trim();
+  const clientes = (typeof getRestaurants === 'function' ? getRestaurants() : []);
+  const cliMatches = clientes.filter(n => !q || n.toLowerCase().includes(q)).slice(0, 8);
+  const postMatches = q ? posts.filter(p =>
+    (p.gancho||'').toLowerCase().includes(q) ||
+    (p.legenda||'').toLowerCase().includes(q) ||
+    (p.pratoDestaque||'').toLowerCase().includes(q)
+  ).slice(0, 6) : [];
+
+  cmdkItems = [
+    {kind:'Cliente', label:'Todos os clientes', run: () => { selectClient(null); closeCmdk(); }},
+    ...cliMatches.map(n => ({kind:'Cliente', label:n, run: () => { selectClient(n); closeCmdk(); }})),
+    ...postMatches.map(p => ({
+      kind:'Post', label: p.gancho || p.pratoDestaque || 'sem título', sub: p.restaurante,
+      run: () => { closeCmdk(); if (typeof editPost === 'function') editPost(p.id); }
+    })),
+  ];
+  if (cmdkFocusIdx >= cmdkItems.length) cmdkFocusIdx = 0;
+  box.innerHTML = cmdkItems.length
+    ? cmdkItems.map((it,i) => `
+        <div class="pauta-cmdk-item ${i===cmdkFocusIdx?'focused':''}" data-i="${i}" onclick="cmdkItems[${i}].run()">
+          <span class="cmdk-kind">${it.kind}</span>
+          <span>${escHtml(it.label)}</span>
+          ${it.sub ? `<span class="cmdk-sub">${escHtml(it.sub)}</span>` : ''}
+        </div>`).join('')
+    : `<div class="pauta-cmdk-empty">Nada por aqui.</div>`;
+}
+document.addEventListener('keydown', function(e){
+  const inVisualizar = document.getElementById('tab-visualizar')?.classList.contains('active');
+  const modal = document.getElementById('pautaCmdk');
+  const cmdkOpen = modal?.classList.contains('open');
+
+  if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K') && inVisualizar){
+    // guard: se algum outro modal está aberto, não abre o cmdk
+    if (document.querySelector('.modal-overlay.active, #panelOverlay.active')) return;
+    e.preventDefault();
+    if (cmdkOpen) closeCmdk(); else openCmdk();
+    return;
+  }
+  if (!cmdkOpen) return;
+  if (e.key === 'Escape'){ e.preventDefault(); closeCmdk(); }
+  if (e.key === 'ArrowDown'){ e.preventDefault(); cmdkFocusIdx = Math.min(cmdkItems.length-1, cmdkFocusIdx+1); renderCmdkResults(); }
+  if (e.key === 'ArrowUp'){   e.preventDefault(); cmdkFocusIdx = Math.max(0, cmdkFocusIdx-1); renderCmdkResults(); }
+  if (e.key === 'Enter' && cmdkItems[cmdkFocusIdx]){ e.preventDefault(); cmdkItems[cmdkFocusIdx].run(); }
+});
 
 /* ═══════════════════════════════════════════════════════
    EXPORT PERIOD
@@ -4971,6 +5185,15 @@ function switchTab(tab, btn) {
   if (tab === 'visualizar') {
     showPostSkeletons(4);
     renderAll();
+  }
+  // ═══ ESTÚDIO (Criar post) — entra/sai
+  if (tab === 'entrada') {
+    if (typeof initEstudio === 'function') {
+      if (!window.__estudioReady) { initEstudio(); window.__estudioReady = true; }
+      else document.body.classList.add('estudio-open');
+    }
+  } else if (typeof tearDownEstudio === 'function') {
+    tearDownEstudio();
   }
   if (tab === 'metricas') {
     // Sincroniza UI com mtrDays persistido em fg_mtr_days
@@ -5126,7 +5349,11 @@ function switchImgTab(tab, e) {
 function handleImageUpload(e) {
   Array.from(e.target.files).forEach(file => {
     const r = new FileReader();
-    r.onload = ev => { currentImages.push(ev.target.result); renderImagePreviews(); };
+    r.onload = ev => {
+      currentImages.push(ev.target.result);
+      if (typeof renderImagePreviews === 'function') renderImagePreviews();
+      if (typeof renderMediaThumbs === 'function') renderMediaThumbs();
+    };
     r.readAsDataURL(file);
   });
 }
@@ -5136,10 +5363,15 @@ function addImageUrl() {
   if (!url) return;
   currentImages.push(url);
   document.getElementById('imgUrl').value = '';
-  renderImagePreviews();
+  if (typeof renderImagePreviews === 'function') renderImagePreviews();
+  if (typeof renderMediaThumbs === 'function') renderMediaThumbs();
 }
 
-function removeImage(i) { currentImages.splice(i,1); renderImagePreviews(); }
+function removeImage(i) {
+  currentImages.splice(i,1);
+  if (typeof renderImagePreviews === 'function') renderImagePreviews();
+  if (typeof renderMediaThumbs === 'function') renderMediaThumbs();
+}
 
 function renderImagePreviews() {
   document.getElementById('imagePreviewList').innerHTML = currentImages.map((src,i) => `
@@ -5786,7 +6018,13 @@ function savePost() {
   if (editingId) {
     posts[posts.findIndex(p=>p.id===editingId)] = post;
     editingId = null;
-    document.getElementById('submitBtn').innerHTML = '➕ Adicionar ao Calendário';
+    window.editingId = null;
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+      const span = submitBtn.querySelector('span:first-child');
+      if (span) span.textContent = 'Agendar post';
+      else submitBtn.innerHTML = '➕ Adicionar ao Calendário';
+    }
     showToast('success','✅','Post atualizado!');
   } else {
     // Recorrência: create copies with shifted dates
@@ -5809,49 +6047,98 @@ function savePost() {
       showToast('success','🎉','Post adicionado ao calendário!');
     }
   }
+  try { localStorage.removeItem('estudio_rascunho'); } catch(_){}
   savePosts(); resetForm(); renderAll();
 }
 
 function resetForm() {
-  ['pratoDestaque','gancho','script','legenda','linkRef','imgUrl','dataPublicacao','horarioPublicacao','notasInternas'].forEach(id=>{
+  ['pratoDestaque','gancho','script','legenda','linkRef','imgUrl','dataPublicacao','horarioPublicacao','notasInternas','clienteBusca','restaurante','restauranteSelect','restauranteHidden'].forEach(id=>{
     const el = document.getElementById(id); if (el) el.value='';
   });
-  document.getElementById('imgUpload').value='';
-  selectedTipo=''; selectedObj=''; currentImages=[]; editingId=null;
+  const up = document.getElementById('imgUpload'); if (up) up.value='';
+  selectedTipo='REELS'; selectedObj=''; currentImages=[]; editingId=null;
+  window.editingId = null;
   document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.objetivo-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('scriptWrapper').classList.remove('visible');
-  document.getElementById('imagePreviewList').innerHTML='';
-  document.getElementById('submitBtn').innerHTML='➕ Adicionar ao Calendário';
-  populateRestauranteSelect('');
-  selectRecorrencia('');
+  document.getElementById('scriptWrapper')?.classList.remove('visible');
+  const ipl = document.getElementById('imagePreviewList'); if (ipl) ipl.innerHTML='';
+  // Reset do Estúdio (novo layout)
+  document.querySelectorAll('.estudio-block').forEach(b => b.classList.remove('filled'));
+  const mock = document.getElementById('estudioMock');
+  if (mock) { mock.classList.remove('has-media'); }
+  const mockMedia = document.getElementById('mockMedia');
+  if (mockMedia) mockMedia.style.backgroundImage = '';
+  const crumbSep = document.getElementById('crumbSep'); if (crumbSep) crumbSep.hidden = true;
+  const crumbCli = document.getElementById('crumbCliente'); if (crumbCli) { crumbCli.hidden = true; crumbCli.textContent = ''; }
+  if (typeof estudioState === 'object') {
+    estudioState.tipo = 'REELS';
+    estudioState.objetivo = null;
+    estudioState.data = new Date();
+    estudioState.hora = '18:00';
+    estudioState.cliente = null;
+    estudioState.recorrencia = '';
+    estudioState.images = [];
+  }
+  try { localStorage.removeItem('estudio_rascunho'); } catch(_){}
+  if (typeof escolherFormato === 'function') escolherFormato('REELS');
+  if (typeof escolherHora === 'function')    escolherHora('18:00');
+  if (typeof renderMiniCal === 'function')   renderMiniCal(new Date());
+  if (typeof renderMediaThumbs === 'function') renderMediaThumbs();
+  if (typeof atualizarPreview === 'function') atualizarPreview();
+  if (typeof atualizarContador === 'function') atualizarContador();
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) {
+    const span = submitBtn.querySelector('span:first-child');
+    if (span) span.textContent = 'Agendar post';
+    else submitBtn.innerHTML = 'Agendar post';
+  }
+  if (typeof populateRestauranteSelect === 'function') populateRestauranteSelect('');
+  if (typeof selectRecorrencia === 'function') selectRecorrencia('');
   const qtdEl = document.getElementById('recorrenciaSemQtd');
   if (qtdEl) qtdEl.value = 4;
-  updateCharCounter();
+  if (typeof updateCharCounter === 'function') updateCharCounter();
 }
 
 function editPost(id) {
   const post = posts.find(p=>p.id===id);
   if (!post) return;
   editingId = id;
-  switchTab('projetos', document.getElementById('tabProjetos'));
+  window.editingId = id;
+  switchTab('entrada');
   setTimeout(()=>{
-    document.getElementById('restaurante').value      = post.restaurante;
-    populateRestauranteSelect(post.restaurante);
-    document.getElementById('dataPublicacao').value   = post.dataPublicacao;
-    document.getElementById('horarioPublicacao').value = post.horario||'';
-    document.getElementById('pratoDestaque').value    = post.pratoDestaque||'';
-    document.getElementById('gancho').value           = post.gancho;
-    document.getElementById('script').value           = post.script||'';
-    document.getElementById('legenda').value          = post.legenda;
-    document.getElementById('notasInternas').value    = post.notasInternas||'';
-    document.getElementById('linkRef').value          = post.link||'';
+    document.getElementById('restaurante').value      = post.restaurante || '';
+    if (typeof populateRestauranteSelect === 'function') populateRestauranteSelect(post.restaurante);
+    document.getElementById('dataPublicacao').value   = post.dataPublicacao || '';
+    document.getElementById('horarioPublicacao').value = post.horario || '';
+    document.getElementById('pratoDestaque').value    = post.pratoDestaque || '';
+    document.getElementById('gancho').value           = post.gancho || '';
+    document.getElementById('script').value           = post.script || '';
+    document.getElementById('legenda').value          = post.legenda || '';
+    document.getElementById('notasInternas').value    = post.notasInternas || '';
+    document.getElementById('linkRef').value          = post.link || '';
     currentImages = post.imagens ? [...post.imagens] : [];
-    renderImagePreviews(); updateCharCounter();
-    selectTipo(post.tipo);
-    selectObjetivo(post.objetivo);
-    document.getElementById('submitBtn').innerHTML = '💾 Atualizar Post';
-    window.scrollTo({top:0,behavior:'smooth'});
+    if (typeof renderImagePreviews === 'function') renderImagePreviews();
+    if (typeof updateCharCounter === 'function') updateCharCounter();
+    // Hidrata estado do Estúdio se os handlers estiverem prontos
+    if (typeof escolherCliente === 'function' && post.restaurante) escolherCliente(post.restaurante);
+    if (typeof escolherFormato === 'function' && post.tipo)        escolherFormato(post.tipo);
+    if (typeof selectObjetivoEstudio === 'function' && post.objetivo) selectObjetivoEstudio(post.objetivo);
+    if (typeof escolherDia === 'function' && post.dataPublicacao)  escolherDia(post.dataPublicacao);
+    if (typeof escolherHora === 'function' && post.horario)        escolherHora(post.horario);
+    if (typeof selectRecorrencia === 'function')                    selectRecorrencia(post.recorrencia || '');
+    if (typeof renderMediaThumbs === 'function')                    renderMediaThumbs();
+    if (typeof atualizarPreview === 'function')                     atualizarPreview();
+    if (typeof atualizarContador === 'function')                    atualizarContador();
+    // Fallback pro caso do form legado ainda existir
+    if (typeof selectTipo === 'function')       try { selectTipo(post.tipo); } catch(_){}
+    if (typeof selectObjetivo === 'function')   try { selectObjetivo(post.objetivo); } catch(_){}
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+      // Novo layout do Estúdio tem <span> dentro
+      const span = submitBtn.querySelector('span:first-child');
+      if (span) span.textContent = 'Atualizar post';
+      else submitBtn.innerHTML = 'Atualizar post';
+    }
   }, 180);
 }
 
@@ -6049,43 +6336,111 @@ function getWeekStart(d) {
 }
 
 function renderMonthView() {
-  const y=calDate.getFullYear(), m=calDate.getMonth();
-  const firstDay=new Date(y,m,1).getDay();
-  const daysInMonth=new Date(y,m+1,0).getDate();
-  const daysInPrev=new Date(y,m,0).getDate();
-  let html=`<div class="calendar-grid"><div class="cal-weekdays">
-    ${WD_SHORT.map(d=>`<div class="cal-weekday">${d}</div>`).join('')}
-  </div><div class="cal-days">`;
-  for(let i=0;i<firstDay;i++){
-    const dd=daysInPrev-firstDay+1+i;
-    const ds=dateToStr(new Date(y,m-1,dd));
-    html+=dayCell(dd,ds,true);
+  const y = calDate.getFullYear(), m = calDate.getMonth();
+  const firstDay = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const daysInPrev = new Date(y, m, 0).getDate();
+
+  // Pré-computa posts por dia (O(N) uma vez) — evita O(42*N) do getPostsForDate
+  const fp = getFilteredPosts();
+  const postsByDay = new Map();
+  fp.forEach(p => {
+    if (!p.dataPublicacao) return;
+    const arr = postsByDay.get(p.dataPublicacao) || [];
+    arr.push(p);
+    postsByDay.set(p.dataPublicacao, arr);
+  });
+  // Heatmap: densidade relativa
+  const counts = {};
+  fp.forEach(p => { if (p.dataPublicacao) counts[p.dataPublicacao] = (counts[p.dataPublicacao]||0) + 1; });
+  const maxCount = Math.max(1, ...Object.values(counts));
+
+  let html = `<div class="ed-cal-week-head">${WD_SHORT.map(d=>`<div class="ed-cal-wd">${d}</div>`).join('')}</div>`;
+  html += `<div class="ed-cal-grid" role="grid" aria-label="Grade do mês">`;
+
+  for (let i = 0; i < firstDay; i++) {
+    const dd = daysInPrev - firstDay + 1 + i;
+    const dt = new Date(y, m-1, dd);
+    html += dayCell(dt.getDate(), dateToStr(dt), true, false, postsByDay, counts, maxCount);
   }
-  for(let d=1;d<=daysInMonth;d++){
-    const ds=dateToStr(new Date(y,m,d));
-    html+=dayCell(d,ds,false,isToday(new Date(y,m,d)));
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dt = new Date(y, m, d);
+    html += dayCell(d, dateToStr(dt), false, isToday(dt), postsByDay, counts, maxCount);
   }
-  const rem=42-firstDay-daysInMonth;
-  for(let d=1;d<=rem;d++){
-    const ds=dateToStr(new Date(y,m+1,d));
-    html+=dayCell(d,ds,true);
+  const rem = 42 - firstDay - daysInMonth;
+  for (let d = 1; d <= rem; d++) {
+    const dt = new Date(y, m+1, d);
+    html += dayCell(d, dateToStr(dt), true, false, postsByDay, counts, maxCount);
   }
-  html+='</div></div>';
+
+  html += `</div>`;
   animateCalBody(html);
 }
 
-function dayCell(day, ds, other, today=false) {
-  const dp=getPostsForDate(ds);
-  const cls=['cal-day', other?'other-month':'', today?'today':'', dp.length?'has-posts':''].filter(Boolean).join(' ');
-  const dots=dp.slice(0,5).map(p=>{
-    const col=getClientColor(p.restaurante)||`var(--${p.tipo.toLowerCase()})`;
-    const safeG=escHtml(p.gancho||'');
-    return `<div class="cal-dot" style="background:${col}" draggable="true" data-post-id="${p.id}" title="${safeG}" ondragstart="calDragStart(event)" onclick="event.stopPropagation()"></div>`;
+function _heatLevel(count, max){
+  if (!count) return 0;
+  const r = count / max;
+  if (r < .25) return 1;
+  if (r < .50) return 2;
+  if (r < .75) return 3;
+  return 4;
+}
+
+const ED_DAY_MAX = 2;
+function dayCell(day, ds, other, today = false, postsByDay = null, counts = null, maxCount = 1) {
+  const dayPosts = postsByDay ? (postsByDay.get(ds) || []) : getPostsForDate(ds);
+  const heat = other ? 0 : _heatLevel(counts ? (counts[ds]||0) : dayPosts.length, maxCount);
+  const classes = ['ed-day'];
+  if (other) classes.push('other-month');
+  if (today) classes.push('today');
+  if (dayPosts.length) classes.push('has-posts');
+
+  const visible = dayPosts.slice(0, ED_DAY_MAX);
+  const extra = dayPosts.length - visible.length;
+
+  const cards = visible.map(p => {
+    const color = getClientColor(p.restaurante) || `var(--${(p.tipo||'').toLowerCase()})`;
+    const logo  = getClientLogo(p.restaurante);
+    const title = p.gancho || p.pratoDestaque || 'Sem título';
+    const meta  = [_labelTipo(p.tipo), p.horario].filter(Boolean).join(' · ');
+    const avatar = logo
+      ? `<img class="ed-mini-avatar" src="${escHtml(logo)}" alt="">`
+      : `<span class="ed-mini-avatar no-logo">${_initials(p.restaurante||'?')}</span>`;
+    return `<article class="ed-mini" style="--client-color:${color}"
+              draggable="true"
+              data-post-id="${p.id}"
+              ondragstart="calDragStart(event)"
+              onclick="event.stopPropagation(); if(typeof editPost==='function') editPost('${p.id}')"
+              title="${escHtml(title)}">
+              ${avatar}
+              <span class="ed-mini-body">
+                <span class="ed-mini-title">${escHtml(title)}</span>
+                <span class="ed-mini-meta">${escHtml(meta)}</span>
+              </span>
+            </article>`;
   }).join('');
-  const more=dp.length>5?`<span style="font-size:7px;color:var(--text3)">+${dp.length-5}</span>`:'';
-  return `<div class="${cls}" data-date="${ds}" ondragover="event.preventDefault()" ondragenter="calDragEnter(event)" ondragleave="calDragLeave(event)" ondrop="calDrop(event,'${ds}')" onclick="openDayPanel('${ds}')">
-    <div class="cal-day-num">${day}</div>
-    <div class="cal-day-dots">${dots}${more}</div>
+
+  const moreBtn = extra > 0
+    ? `<button class="ed-mini-more" onclick="event.stopPropagation(); openDayPanel('${ds}')">+${extra} ${extra===1?'post':'posts'}</button>`
+    : '';
+
+  const addBtn = !other
+    ? `<button class="ed-day-add" onclick="event.stopPropagation(); createPostFor('${ds}')" aria-label="Criar post neste dia" tabindex="-1">+</button>`
+    : '';
+
+  return `<div class="${classes.join(' ')}" data-date="${ds}" data-heat="${heat}" role="gridcell"
+           tabindex="${other ? -1 : 0}"
+           onclick="openDayPanel('${ds}')"
+           onkeydown="edDayKey(event,'${ds}')"
+           ondragover="event.preventDefault()"
+           ondragenter="calDragEnter(event)"
+           ondragleave="calDragLeave(event)"
+           ondrop="calDrop(event,'${ds}')">
+    <div class="ed-day-head">
+      <span class="ed-day-num">${day}</span>
+      ${addBtn}
+    </div>
+    <div class="ed-day-cards">${cards}${moreBtn}</div>
   </div>`;
 }
 
@@ -28124,6 +28479,389 @@ document.addEventListener('input', (e) => {
   }
   window.fxEnhanceSelects = enhanceAll;
 })();
+
+/* ================================================================
+   ESTÚDIO — estado, preview live, comboboxes, mini-cal
+   (redesign 2026-08-02 — substitui form burocrático da aba entrada)
+   ================================================================ */
+
+const OBJETIVOS_ESTUDIO = [
+  { id: 'Desejo',       icon: '🔥', hint: 'Provocar fome' },
+  { id: 'Conexão',      icon: '💬', hint: 'Falar de gente' },
+  { id: 'Meme',         icon: '😂', hint: 'Rir junto' },
+  { id: 'Experiência',  icon: '✨', hint: 'Mostrar a casa' },
+  { id: 'UGC',          icon: '📱', hint: 'Cliente que postou' },
+  { id: 'Prova Social', icon: '⭐', hint: 'Fila, review, prêmio' },
+  { id: 'Conversão',    icon: '💰', hint: 'Ir buscar agora' },
+];
+
+let estudioState = {
+  tipo: 'REELS',
+  objetivo: null,
+  data: new Date(),
+  hora: '18:00',
+  cliente: null,
+  clienteCor: null,
+  clienteAvatar: null,
+  recorrencia: '',
+  images: [],
+};
+let miniCalRef = new Date();
+
+/* LIFECYCLE */
+function initEstudio() {
+  document.body.classList.add('estudio-open');
+  renderObjetivosEstudio();
+  renderMiniCal(estudioState.data);
+  bindEstudioShortcuts();
+  bindEstudioDragDrop();
+  atualizarPreview();
+  atualizarContador();
+  restaurarRascunho();
+  const clienteBusca = document.getElementById('clienteBusca');
+  if (clienteBusca && activeRestaurante && !estudioState.cliente) {
+    escolherCliente(activeRestaurante);
+  }
+}
+function tearDownEstudio() { document.body.classList.remove('estudio-open'); }
+
+/* BLOCOS COLAPSÁVEIS */
+function toggleEstudioBlock(headEl) { headEl.parentElement.classList.toggle('open'); }
+
+/* CLIENTE COMBOBOX */
+function abrirComboClientes() {
+  const dd = document.getElementById('clienteDropdown');
+  if (dd) dd.hidden = false;
+  const busca = document.getElementById('clienteBusca');
+  filtrarClientes(busca ? busca.value : '');
+}
+function fecharComboClientes() {
+  const dd = document.getElementById('clienteDropdown');
+  if (dd) dd.hidden = true;
+}
+function filtrarClientes(q) {
+  const rests = (typeof getRestaurants === 'function' ? getRestaurants() : []);
+  const bd = window._bdClientes || [];
+  const query = (q || '').toLowerCase().trim();
+  const filtrados = rests.filter(r => r.toLowerCase().includes(query));
+  const lista = document.getElementById('clienteLista');
+  if (!lista) return;
+  if (!filtrados.length) {
+    lista.innerHTML = `<div class="estudio-combo-empty">Nenhum cliente encontrado. Cria um logo abaixo.</div>`;
+    return;
+  }
+  lista.innerHTML = filtrados.map(nome => {
+    const c = bd.find(x => (x.nome||x.razaoSocial) === nome);
+    const cor = (typeof getClientColor === 'function' ? getClientColor(nome) : null) || 'var(--accent)';
+    const inicial = (nome||'').charAt(0).toUpperCase();
+    const meta = c?.instagram ? '@' + String(c.instagram).replace(/^@/,'') : '';
+    return `<div class="estudio-combo-item" role="option" onmousedown="escolherCliente('${escJs(nome)}')">
+      <span class="dot" style="background:${cor}">${inicial}</span>
+      <span class="name">${escHtml(nome)}</span>
+      <span class="meta">${escHtml(meta)}</span>
+    </div>`;
+  }).join('');
+}
+function escolherCliente(nome) {
+  estudioState.cliente = nome;
+  const rInput = document.getElementById('restaurante'); if (rInput) rInput.value = nome;
+  const rSel = document.getElementById('restauranteSelect'); if (rSel) rSel.value = nome;
+  const busca = document.getElementById('clienteBusca'); if (busca) busca.value = nome;
+  const cp = document.getElementById('clientePreview'); if (cp) cp.textContent = nome;
+  const cs = document.getElementById('crumbSep'); if (cs) cs.hidden = false;
+  const cc = document.getElementById('crumbCliente'); if (cc) { cc.hidden = false; cc.textContent = nome; }
+  document.querySelector('[data-block="cliente"]')?.classList.add('filled');
+  fecharComboClientes();
+  if (typeof onBdClienteSelected === 'function') {
+    const c = (window._bdClientes || []).find(x => (x.nome||x.razaoSocial) === nome);
+    if (c) try { onBdClienteSelected(c); } catch(_){}
+  }
+  atualizarPreview();
+  scheduleAutoSave();
+}
+function criarNovoCliente() {
+  const busca = document.getElementById('clienteBusca');
+  const nome = (busca?.value || '').trim() || (typeof prompt === 'function' ? prompt('Nome do novo cliente:') : '');
+  if (!nome) return;
+  // Grava direto em clientes_base (mesma shape do confirmarNovoRestaurante legado)
+  const exists = (typeof _bdClientes !== 'undefined' && _bdClientes.find(c => (c.nome||c.razaoSocial) === nome));
+  if (!exists && typeof _db !== 'undefined') {
+    _db.collection('clientes_base').add({
+      nome: nome,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      createdBy: (typeof getCurrentEmail === 'function' ? getCurrentEmail() : null) || null,
+    }).catch(e => console.warn('Falha ao criar cliente:', e));
+  }
+  if (typeof showToast === 'function') showToast('success', '✅', 'Cliente cadastrado');
+  escolherCliente(nome);
+}
+
+/* FORMATO */
+function escolherFormato(tipo) {
+  estudioState.tipo = tipo;
+  window.selectedTipo = tipo;
+  document.querySelectorAll('.estudio-format-card').forEach(b => b.classList.toggle('active', b.dataset.tipo === tipo));
+  document.querySelectorAll('.estudio-mock-tab').forEach(b => b.classList.toggle('active', b.dataset.format === tipo));
+  const mock = document.getElementById('estudioMock'); if (mock) mock.dataset.tipo = tipo;
+  const fp = document.getElementById('formatoPreview');
+  if (fp) fp.textContent = ({ REELS:'Reels', FOTO:'Foto', CARROSSEL:'Carrossel', STORY:'Story'})[tipo] || tipo;
+  document.querySelector('[data-block="formato"]')?.classList.add('filled');
+  const scriptWrap = document.getElementById('scriptWrapper');
+  if (scriptWrap) scriptWrap.hidden = tipo !== 'REELS';
+  const legendaLabel = document.getElementById('legendaLabel');
+  if (legendaLabel) legendaLabel.textContent = ({
+    REELS: 'Legenda (separada do roteiro)',
+    FOTO: 'Legenda',
+    CARROSSEL: 'Legenda do carrossel',
+    STORY: 'Chamada do story'
+  })[tipo] || 'Legenda';
+  const mockPlay = document.getElementById('mockPlay'); if (mockPlay) mockPlay.hidden = tipo !== 'REELS';
+  const mockCarrDots = document.getElementById('mockCarrDots');
+  if (mockCarrDots) {
+    mockCarrDots.hidden = tipo !== 'CARROSSEL';
+    if (tipo === 'CARROSSEL') mockCarrDots.innerHTML = '<i class="on"></i><i></i><i></i>';
+  }
+  const imgUp = document.getElementById('imgUpload'); if (imgUp) imgUp.multiple = (tipo === 'CARROSSEL');
+  flashPreview();
+  atualizarPreview();
+  scheduleAutoSave();
+}
+
+/* OBJETIVO */
+function renderObjetivosEstudio() {
+  const grid = document.getElementById('objetivoGrid');
+  if (!grid) return;
+  grid.innerHTML = OBJETIVOS_ESTUDIO.map(o =>
+    `<button type="button" class="estudio-obj-chip" data-obj="${o.id}" onclick="selectObjetivoEstudio('${escJs(o.id)}')" title="${o.hint}">${o.icon} ${o.id}</button>`
+  ).join('');
+}
+function selectObjetivoEstudio(obj) {
+  estudioState.objetivo = obj;
+  window.selectedObj = obj;
+  document.querySelectorAll('.estudio-obj-chip').forEach(b => b.classList.toggle('active', b.dataset.obj === obj));
+  const op = document.getElementById('objetivoPreview'); if (op) op.textContent = obj;
+  document.querySelector('[data-block="objetivo"]')?.classList.add('filled');
+  scheduleAutoSave();
+}
+
+/* MINI-CAL */
+function miniCalNav(delta) {
+  miniCalRef.setMonth(miniCalRef.getMonth() + delta);
+  renderMiniCal(miniCalRef);
+}
+function renderMiniCal(baseDate) {
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  miniCalRef = new Date(baseDate);
+  const y = baseDate.getFullYear(), m = baseDate.getMonth();
+  const first = new Date(y, m, 1);
+  const startDay = first.getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const today = new Date();
+  const selISO = estudioState.data.toISOString().slice(0,10);
+  const activeCli = estudioState.cliente;
+  const postDates = new Set((posts||[])
+    .filter(p => !activeCli || p.restaurante === activeCli)
+    .map(p => p.dataPublicacao));
+  const title = document.getElementById('miniCalTitle');
+  if (title) title.textContent = `${meses[m]} ${y}`;
+  const grid = document.getElementById('miniCalGrid');
+  if (!grid) return;
+  let html = '';
+  for (let i = 0; i < startDay; i++) html += `<button class="other-month" disabled></button>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dtISO = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cls = [
+      dtISO === selISO ? 'selected' : '',
+      (d === today.getDate() && m === today.getMonth() && y === today.getFullYear()) ? 'today' : '',
+      postDates.has(dtISO) ? 'has-post' : ''
+    ].filter(Boolean).join(' ');
+    html += `<button class="${cls}" onclick="escolherDia('${dtISO}')">${d}</button>`;
+  }
+  grid.innerHTML = html;
+}
+function escolherDia(iso) {
+  estudioState.data = new Date(iso + 'T12:00:00');
+  const dp = document.getElementById('dataPublicacao'); if (dp) dp.value = iso;
+  renderMiniCal(estudioState.data);
+  atualizarAgendaPreview();
+  scheduleAutoSave();
+}
+function escolherHora(hora) {
+  estudioState.hora = hora;
+  const hp = document.getElementById('horarioPublicacao'); if (hp) hp.value = hora;
+  document.querySelectorAll('.estudio-time-chip').forEach(b => b.classList.toggle('active', b.dataset.time === hora));
+  atualizarAgendaPreview();
+  scheduleAutoSave();
+}
+function atualizarAgendaPreview() {
+  const dias = ['dom','seg','ter','qua','qui','sex','sáb'];
+  const d = estudioState.data;
+  const label = `${dias[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}, ${estudioState.hora}`;
+  const ap = document.getElementById('agendaPreview'); if (ap) ap.textContent = label;
+  document.querySelector('[data-block="agenda"]')?.classList.add('filled');
+}
+
+/* RECORRÊNCIA (Estúdio — o selectRecorrencia legado é sobrescrito só quando ele existir) */
+window.selectRecorrencia = function(rec) {
+  estudioState.recorrencia = rec;
+  window.selectedRecorrencia = rec;
+  document.querySelectorAll('#recorrenciaPills button').forEach(b => b.classList.toggle('active', b.dataset.rec === rec));
+  const qwrap = document.getElementById('recorrenciaSemQtdWrap'); if (qwrap) qwrap.hidden = !rec;
+  scheduleAutoSave();
+};
+
+/* PREVIEW LIVE */
+function atualizarPreview() {
+  const ganchoEl = document.getElementById('gancho');
+  const legendaEl = document.getElementById('legenda');
+  if (!ganchoEl || !legendaEl) return;
+  const gancho = ganchoEl.value.trim();
+  const legenda = legendaEl.value.trim();
+  const cliente = estudioState.cliente || 'seurestaurante';
+  const handle = '@' + cliente.toLowerCase().replace(/[^a-z0-9]/g,'');
+  const mh1 = document.getElementById('mockHandle'); if (mh1) mh1.textContent = handle;
+  const mh2 = document.getElementById('mockHandle2'); if (mh2) mh2.textContent = handle;
+  const av = document.getElementById('mockAvatar');
+  if (av) av.setAttribute('data-initial', cliente.charAt(0).toUpperCase());
+  const cap = document.getElementById('mockCaption');
+  if (cap) cap.textContent = legenda || 'A legenda aparece aqui enquanto você escreve.';
+  const go = document.getElementById('mockGancho');
+  if (go) {
+    if (gancho && estudioState.tipo === 'REELS') { go.hidden = false; go.textContent = gancho; }
+    else { go.hidden = true; }
+  }
+  const cp = document.getElementById('conteudoPreview');
+  if (cp) cp.textContent = gancho ? gancho.slice(0, 32) + (gancho.length > 32 ? '…' : '') : 'Em branco';
+  if (gancho || legenda) document.querySelector('[data-block="conteudo"]')?.classList.add('filled');
+}
+function atualizarContador() {
+  const l = document.getElementById('legenda');
+  const c = document.getElementById('charCounter');
+  if (!l || !c) return;
+  const n = l.value.length;
+  c.textContent = n;
+  const wrap = c.parentElement;
+  if (wrap) {
+    wrap.classList.toggle('near', n > 2000 && n <= 2200);
+    wrap.classList.toggle('over', n > 2200);
+  }
+}
+function flashPreview() {
+  const phone = document.querySelector('.estudio-phone');
+  if (!phone) return;
+  phone.classList.remove('estudio-flash');
+  void phone.offsetWidth;
+  phone.classList.add('estudio-flash');
+}
+
+/* MÍDIA DROP */
+function bindEstudioDragDrop() {
+  const dz = document.getElementById('mediaDrop');
+  if (!dz) return;
+  ['dragenter','dragover'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.remove('drag'); }));
+  dz.addEventListener('drop', ev => {
+    const files = ev.dataTransfer.files;
+    if (files?.length) handleImageUpload({ target: { files } });
+  });
+  dz.addEventListener('click', () => document.getElementById('imgUpload')?.click());
+}
+
+function renderMediaThumbs() {
+  const cont = document.getElementById('mediaThumbs');
+  if (!cont) return;
+  cont.innerHTML = (currentImages || []).map((src, i) =>
+    `<div class="thumb" style="background-image:url('${String(src).replace(/'/g,"%27")}')"><button onclick="removeImage(${i})" title="Remover">×</button></div>`
+  ).join('');
+  const media = document.getElementById('mockMedia');
+  const mock = document.getElementById('estudioMock');
+  const first = (currentImages || [])[0];
+  if (media && mock) {
+    if (first) {
+      media.style.backgroundImage = `url('${String(first).replace(/'/g,"%27")}')`;
+      mock.classList.add('has-media');
+    } else {
+      media.style.backgroundImage = '';
+      mock.classList.remove('has-media');
+    }
+  }
+  flashPreview();
+}
+
+/* AUTOSAVE */
+let autoSaveTimer = null;
+function scheduleAutoSave() {
+  const hint = document.getElementById('estudioAutoSave');
+  if (hint) { hint.textContent = 'Salvando…'; hint.classList.add('saving'); }
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    salvarRascunho(true);
+    if (hint) { hint.classList.remove('saving'); hint.textContent = 'Rascunho salvo agora'; }
+  }, 600);
+}
+function salvarRascunho(silent) {
+  const g = id => document.getElementById(id)?.value || '';
+  const rascunho = {
+    tipo: estudioState.tipo, objetivo: estudioState.objetivo,
+    data: estudioState.data.toISOString(), hora: estudioState.hora,
+    cliente: estudioState.cliente, recorrencia: estudioState.recorrencia,
+    gancho: g('gancho'), script: g('script'), legenda: g('legenda'),
+    pratoDestaque: g('pratoDestaque'), notasInternas: g('notasInternas'), linkRef: g('linkRef'),
+  };
+  try { localStorage.setItem('estudio_rascunho', JSON.stringify(rascunho)); } catch(_){}
+  if (!silent && typeof showToast === 'function') showToast('success','💾','Rascunho guardado.');
+}
+function restaurarRascunho() {
+  try {
+    const r = JSON.parse(localStorage.getItem('estudio_rascunho') || 'null');
+    if (!r) return;
+    // Só restaura se não está editando um post existente
+    if (window.editingId) return;
+    if (r.cliente) escolherCliente(r.cliente);
+    if (r.tipo) escolherFormato(r.tipo);
+    if (r.objetivo) selectObjetivoEstudio(r.objetivo);
+    if (r.hora) escolherHora(r.hora);
+    if (r.recorrencia) selectRecorrencia(r.recorrencia);
+    ['gancho','script','legenda','pratoDestaque','notasInternas','linkRef'].forEach(id => {
+      if (r[id]) { const el = document.getElementById(id); if (el) el.value = r[id]; }
+    });
+    atualizarPreview(); atualizarContador();
+  } catch(_) {}
+}
+
+/* ATALHOS */
+let _estudioShortcutsBound = false;
+function bindEstudioShortcuts() {
+  if (_estudioShortcutsBound) return;
+  _estudioShortcutsBound = true;
+  document.addEventListener('keydown', ev => {
+    if (!document.body.classList.contains('estudio-open')) return;
+    const cmd = ev.metaKey || ev.ctrlKey;
+    if (cmd && ev.key === 'Enter') { ev.preventDefault(); if (typeof savePost === 'function') savePost(); return; }
+    if (cmd && ev.key === 's') { ev.preventDefault(); salvarRascunho(); return; }
+  });
+}
+
+// Expõe globalmente pra onclick inline
+window.initEstudio = initEstudio;
+window.tearDownEstudio = tearDownEstudio;
+window.toggleEstudioBlock = toggleEstudioBlock;
+window.abrirComboClientes = abrirComboClientes;
+window.fecharComboClientes = fecharComboClientes;
+window.filtrarClientes = filtrarClientes;
+window.escolherCliente = escolherCliente;
+window.criarNovoCliente = criarNovoCliente;
+window.escolherFormato = escolherFormato;
+window.selectObjetivoEstudio = selectObjetivoEstudio;
+window.miniCalNav = miniCalNav;
+window.renderMiniCal = renderMiniCal;
+window.escolherDia = escolherDia;
+window.escolherHora = escolherHora;
+window.renderMediaThumbs = renderMediaThumbs;
+window.salvarRascunho = salvarRascunho;
+window.atualizarPreview = atualizarPreview;
+window.atualizarContador = atualizarContador;
 </script>
 </body>
 </html>
