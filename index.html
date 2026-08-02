@@ -26421,9 +26421,35 @@ window.bdUploadCustomImage = async function(cid, fid, input) {
       && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('[SW] registered:', reg.scope))
+        .then(reg => {
+          console.log('[SW] registered:', reg.scope);
+          // Quando uma nova versao do SW instalar, avisa e recarrega
+          // automaticamente. Sem isso, PWA no iPad fica servindo cache velho
+          // ate o usuario apagar+reinstalar o icone.
+          if (reg.waiting) applyUpdate(reg.waiting);
+          reg.addEventListener('updatefound', () => {
+            const nw = reg.installing;
+            if (!nw) return;
+            nw.addEventListener('statechange', () => {
+              if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+                applyUpdate(nw);
+              }
+            });
+          });
+          // Se o SW ativo mudar (novo assumiu controle), reload a pagina
+          let _reloading = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (_reloading) return;
+            _reloading = true;
+            location.reload();
+          });
+        })
         .catch(err => console.warn('[SW] registration failed:', err));
     });
+    function applyUpdate(sw) {
+      // Manda o SW novo tomar controle imediatamente. controllerchange dispara reload.
+      try { sw.postMessage('SKIP_WAITING'); } catch(_){}
+    }
   }
 
   // Captura o evento beforeinstallprompt (Chrome/Edge/Android)
