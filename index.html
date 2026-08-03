@@ -116,6 +116,14 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
             <span>Publipost</span>
           </button>
+          <button class="main-tab-more-item" id="tabLives" onclick="switchTab('lives',this);closeTabMoreMenu()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 16.1 2 19"/><path d="m2 5 2.9 2.9"/><path d="M7.8 13.2 5 16"/><path d="M8 8 5.2 5.2"/><circle cx="12" cy="12" r="3"/><path d="M16.2 7.8 19 5"/><path d="m19 19-2.8-2.8"/></svg>
+            <span>Ao Vivo</span>
+          </button>
+          <button class="main-tab-more-item" id="tabPop" onclick="switchTab('pop',this);closeTabMoreMenu()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+            <span>POPs</span>
+          </button>
           <button class="main-tab-more-item" id="tabGmb" onclick="switchTab('gmb',this);closeTabMoreMenu()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             <span>Google</span>
@@ -1236,190 +1244,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
       </div><!-- /sp-grid -->
 
       <!-- ═══ LIVES (clean redesign — backend hardcoded, inline styles) ═══ -->
-      <div id="spLiveCard" data-reveal style="margin-top:20px;background:#fff;border:1px solid #e2e8f0;border-radius:18px;overflow:hidden;box-shadow:0 4px 20px rgba(15,23,42,.04);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-
-        <!-- Header -->
-        <div style="display:flex;align-items:center;gap:14px;padding:20px 24px;border-bottom:1px solid #f1f5f9;background:linear-gradient(135deg,rgba(239,68,68,.03),rgba(168,85,247,.03));">
-          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#ef4444,#b91c1c);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;box-shadow:0 6px 16px rgba(239,68,68,.3);">🔴</div>
-          <div style="flex:1;">
-            <div style="font-size:16px;font-weight:800;color:#0f172a;letter-spacing:-.01em;">Lives — Streaming RTMP</div>
-            <div style="font-size:12px;color:#64748b;margin-top:1px;">Transmita imagem ou vídeo como live no Instagram</div>
-          </div>
-          <span id="liveBackendStatus" style="font-size:11px;font-weight:600;padding:5px 11px;border-radius:999px;background:#f1f5f9;color:#64748b;">verificando…</span>
-          <button onclick="liveOpenSettings()" title="Configurar backend"
-                  style="background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:7px 12px;font-size:12px;font-weight:600;color:#0f172a;cursor:pointer;transition:border-color .15s;"
-                  onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='#e2e8f0'">⚙️</button>
-        </div>
-
-        <!-- Backend offline (só aparece se /health falhar) -->
-        <div id="liveNoBackend" style="display:none;margin:16px 24px;background:#fee2e2;border:1px solid #fca5a5;border-radius:12px;padding:16px;text-align:center;">
-          <div style="font-size:13px;color:#b91c1c;font-weight:600;margin-bottom:4px;">⚠️ Servidor de streaming offline</div>
-          <div style="font-size:11.5px;color:#dc2626;line-height:1.5;">Tente novamente em instantes ou verifique a configuração em ⚙️</div>
-        </div>
-
-        <!-- Form principal -->
-        <div id="liveMainForm" style="padding:20px 24px 24px;display:none;">
-
-          <!-- Tipo de mídia (chip selector) -->
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
-            <button data-livetype="image" onclick="liveSetType('image',this)" class="live-type-chip"
-                    style="background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(168,85,247,.08));border:1.5px solid #6366f1;border-radius:11px;padding:11px 8px;font-size:12.5px;font-weight:700;color:#4f46e5;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .15s;">
-              <span style="font-size:20px;">🖼️</span>
-              <span>Imagem</span>
-            </button>
-            <button data-livetype="image_audio" onclick="liveSetType('image_audio',this)" class="live-type-chip"
-                    style="background:#fff;border:1.5px solid #e2e8f0;border-radius:11px;padding:11px 8px;font-size:12.5px;font-weight:700;color:#475569;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .15s;">
-              <span style="font-size:20px;">🎵</span>
-              <span>Imagem + Áudio</span>
-            </button>
-            <button data-livetype="video" onclick="liveSetType('video',this)" class="live-type-chip"
-                    style="background:#fff;border:1.5px solid #e2e8f0;border-radius:11px;padding:11px 8px;font-size:12.5px;font-weight:700;color:#475569;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .15s;">
-              <span style="font-size:20px;">🎬</span>
-              <span>Vídeo</span>
-            </button>
-          </div>
-
-          <!-- Upload de mídia -->
-          <div style="margin-bottom:14px;">
-            <label style="display:block;font-size:11px;font-weight:700;color:#0f172a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">
-              Mídia <span id="liveMediaHint" style="font-weight:500;color:#94a3b8;text-transform:none;letter-spacing:0;">(JPG ou PNG)</span>
-            </label>
-            <div onclick="document.getElementById('liveFileInput').click()"
-                 style="background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:11px;cursor:pointer;transition:all .15s;overflow:hidden;"
-                 onmouseover="this.style.borderColor='#6366f1';this.style.background='#fafbff'"
-                 onmouseout="this.style.borderColor='#cbd5e1';this.style.background='#f8fafc'">
-              <input type="file" id="liveFileInput" style="display:none" accept="image/*,video/*" onchange="liveHandleFile(this.files[0])">
-              <div id="liveUploadPlaceholder" style="text-align:center;padding:24px 14px;">
-                <div style="font-size:28px;margin-bottom:6px;">⬆️</div>
-                <div style="font-size:13px;color:#0f172a;font-weight:600;">Clique pra fazer upload</div>
-                <div id="liveUploadSub" style="font-size:11.5px;color:#94a3b8;margin-top:3px;">JPG, PNG até 5 MB</div>
-              </div>
-              <div id="liveUploadPreview" style="display:none;position:relative;padding:8px;">
-                <img id="liveImgPreview" style="width:100%;max-height:220px;object-fit:contain;border-radius:8px;background:#0f172a;display:none;">
-                <video id="liveVidPreview" style="width:100%;max-height:220px;object-fit:contain;border-radius:8px;background:#0f172a;display:none;" muted playsinline></video>
-                <button onclick="event.stopPropagation();liveRemoveMedia()" title="Remover"
-                        style="position:absolute;top:14px;right:14px;background:rgba(15,23,42,.85);color:#fff;border:0;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;">✕</button>
-                <div id="liveMediaInfo" style="position:absolute;bottom:14px;left:14px;background:rgba(15,23,42,.85);color:#fff;font-size:10.5px;font-weight:600;padding:4px 10px;border-radius:6px;"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Áudio (modo image_audio) -->
-          <div id="liveAudioRow" style="display:none;margin-bottom:14px;">
-            <label style="display:block;font-size:11px;font-weight:700;color:#0f172a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">
-              Áudio de fundo <span style="font-weight:500;color:#94a3b8;text-transform:none;letter-spacing:0;">(MP3 em loop)</span>
-            </label>
-            <div onclick="document.getElementById('liveAudioInput').click()"
-                 style="background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:10px;padding:12px 14px;cursor:pointer;font-size:12.5px;color:#475569;transition:all .15s;"
-                 onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='#cbd5e1'">
-              <input type="file" id="liveAudioInput" style="display:none" accept="audio/*" onchange="liveHandleAudio(this.files[0])">
-              <span id="liveAudioName">🎵 Clique pra escolher MP3</span>
-            </div>
-          </div>
-
-          <!-- Loop checkbox -->
-          <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#0f172a;cursor:pointer;margin-bottom:18px;background:#f8fafc;padding:10px 14px;border-radius:9px;border:1px solid #e2e8f0;">
-            <input type="checkbox" id="liveLoop" checked style="margin:0;cursor:pointer;width:14px;height:14px;accent-color:#6366f1;">
-            <span style="font-weight:500;">Loop infinito (recomendado pra imagem)</span>
-          </label>
-
-          <!-- URL + Stream Key (RTMP) -->
-          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:14px;">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-              <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;">🔑</div>
-              <div style="flex:1;">
-                <div style="font-size:13px;font-weight:700;color:#0f172a;">Credenciais do Live Producer</div>
-                <div style="font-size:11px;color:#64748b;">Cole URL e Chave geradas no Instagram</div>
-              </div>
-              <button onclick="window.open('https://www.instagram.com/live/','_blank')" type="button" title="Abrir Live Producer numa aba"
-                      style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:7px 12px;font-size:11.5px;font-weight:700;color:#6366f1;cursor:pointer;white-space:nowrap;transition:all .15s;"
-                      onmouseover="this.style.background='#6366f1';this.style.color='#fff'" onmouseout="this.style.background='#fff';this.style.color='#6366f1'">
-                ↗ Abrir IG Live
-              </button>
-            </div>
-
-            <div style="margin-bottom:10px;">
-              <label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px;">URL do stream</label>
-              <input type="text" id="liveRtmpUrl" placeholder="rtmps://edgetee-upload-xxx.fbcdn.net:443/rtmp/"
-                     style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:10px 12px;font-size:12.5px;color:#0f172a;font-family:ui-monospace,SFMono-Regular,monospace;box-sizing:border-box;outline:none;transition:border-color .15s;"
-                     onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-            </div>
-
-            <div>
-              <label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px;">Stream Key <span style="color:#94a3b8;font-weight:500;text-transform:none;letter-spacing:0;">— secreta, regenera a cada live</span></label>
-              <div style="position:relative;">
-                <input type="password" id="liveStreamKey" placeholder="Cole aqui a chave"
-                       style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:10px 44px 10px 12px;font-size:12.5px;color:#0f172a;font-family:ui-monospace,SFMono-Regular,monospace;box-sizing:border-box;outline:none;transition:border-color .15s;"
-                       onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-                <button onclick="liveToggleKey()" type="button" title="Mostrar/ocultar"
-                        style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:5px 9px;font-size:13px;cursor:pointer;color:#64748b;">👁</button>
-              </div>
-            </div>
-
-            <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #e2e8f0;font-size:11.5px;color:#64748b;line-height:1.5;">
-              <strong style="color:#0f172a;">Como pegar:</strong> abra IG Live na conta do cliente → título → <em>Próximo</em> → copie URL e Chave.
-            </div>
-          </div>
-
-          <!-- Comentário pronto pra colar manualmente no Live Producer -->
-          <details style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:18px;" id="liveCommentDetails">
-            <summary style="padding:12px 14px;cursor:pointer;font-size:13px;font-weight:700;color:#0f172a;display:flex;align-items:center;gap:10px;list-style:none;">
-              <span style="width:28px;height:28px;border-radius:8px;background:rgba(34,197,94,.12);display:flex;align-items:center;justify-content:center;font-size:14px;">💬</span>
-              <span style="flex:1;">Comentário com link <span style="font-weight:400;color:#94a3b8;font-size:11px;">(opcional)</span></span>
-              <span style="font-size:11px;color:#64748b;">▾</span>
-            </summary>
-            <div style="padding:0 14px 14px;">
-              <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:8px 12px;font-size:11.5px;color:#92400e;margin-bottom:12px;line-height:1.5;">
-                ℹ️ A Meta <strong>não permite</strong> postar comentários em lives via API. O app monta o texto pronto e você cola manualmente no Live Producer (1 clique).
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-                <div>
-                  <label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px;">Texto</label>
-                  <input type="text" id="liveCtaText" value="🔥 Aproveite essa promoção:" maxlength="200"
-                         oninput="liveUpdateCommentPreview()"
-                         style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 12px;font-size:12px;color:#0f172a;box-sizing:border-box;outline:none;"
-                         onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-                <div>
-                  <label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px;">Link de destino</label>
-                  <input type="url" id="liveCtaUrl" placeholder="https://seusite.com.br/promo"
-                         oninput="liveUpdateCommentPreview()"
-                         style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 12px;font-size:12px;color:#0f172a;box-sizing:border-box;outline:none;"
-                         onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-              </div>
-
-              <!-- Preview do comentário pronto -->
-              <div id="liveCommentPreviewWrap" style="display:none;background:#0f172a;border-radius:10px;padding:12px 14px;margin-top:6px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">
-                  <div style="font-size:10.5px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">📋 Pronto pra colar</div>
-                  <button onclick="liveCopyComment()" id="liveCopyCommentBtn"
-                          style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:0;border-radius:7px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;">
-                    📋 Copiar
-                  </button>
-                </div>
-                <div id="liveCommentPreview" style="color:#e2e8f0;font-size:13px;font-family:ui-monospace,SFMono-Regular,monospace;word-break:break-all;line-height:1.55;"></div>
-                <div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,.1);font-size:10.5px;color:#64748b;line-height:1.5;">
-                  <strong style="color:#94a3b8;">Como usar:</strong> ① Copia ② Vai pro Live Producer ③ Posta no chat da live ④ Toca no comentário e <em>Fixar</em>
-                </div>
-              </div>
-            </div>
-          </details>
-
-          <!-- Botões + status -->
-          <div style="display:flex;gap:12px;align-items:center;padding-top:6px;">
-            <button id="liveStartBtn" onclick="liveStart()"
-                    style="background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;border:0;border-radius:11px;padding:13px 24px;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 6px 18px rgba(239,68,68,.35);transition:all .15s;letter-spacing:-.01em;"
-                    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 8px 22px rgba(239,68,68,.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 6px 18px rgba(239,68,68,.35)'">
-              <span style="font-size:10px;">●</span> Iniciar live
-            </button>
-            <button id="liveStopBtn" onclick="liveStop()" style="display:none;background:#0f172a;color:#fff;border:0;border-radius:11px;padding:13px 24px;font-size:14px;font-weight:800;cursor:pointer;align-items:center;gap:8px;">
-              ⏹ Parar live
-            </button>
-            <div id="liveStatus" style="font-size:12.5px;color:#64748b;margin-left:auto;font-weight:600;"></div>
-          </div>
-        </div>
-      </div><!-- /spLiveCard -->
+      <!-- Live antigo (#spLiveCard) removido em 2026-08-02: virou aba dedicada #tab-lives (Ao Vivo) -->
 
       <style>
         .live-type-chip[data-livetype]:not(.active):hover {
@@ -1647,6 +1472,260 @@ ufw allow 3000/tcp</pre>
       </div>
     </div><!-- /sp-wrap -->
   </div><!-- /tab-social -->
+
+  <!-- ═══ ABA AO VIVO (Estúdio de transmissões multi-live) ═══ -->
+  <div class="tab-panel liv" id="tab-lives">
+
+    <!-- HEADER MISSION CONTROL -->
+    <header class="liv-header">
+      <div class="liv-header__brand">
+        <span class="liv-header__badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4.9 16.1 2 19"/><path d="m2 5 2.9 2.9"/><path d="M7.8 13.2 5 16"/><path d="M8 8 5.2 5.2"/>
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M16.2 7.8 19 5"/><path d="m19 19-2.8-2.8"/>
+          </svg>
+        </span>
+        <div>
+          <h1 class="liv-header__title">Ao Vivo</h1>
+          <p class="liv-header__subtitle">Estúdio de transmissões</p>
+        </div>
+        <span class="liv-count" id="livCount" hidden>
+          <span class="liv-count__dot"></span>
+          <span id="livCountLabel">0 no ar</span>
+        </span>
+      </div>
+
+      <div class="liv-header__actions">
+        <span class="liv-health" id="livHealth" data-state="unknown" title="Estado do servidor de transmissão">
+          <span class="liv-health__dot"></span>
+          <span class="liv-health__label">Checando servidor</span>
+        </span>
+
+        <button class="liv-iconbtn" id="livOpenSettings" type="button" aria-label="Configurações do servidor" onclick="liveOpenSettings()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+
+        <button class="liv-cta" id="livNewBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          Nova transmissão
+        </button>
+      </div>
+    </header>
+
+    <div class="liv-grid" id="livGrid" role="list"></div>
+
+    <div class="liv-empty" id="livEmpty">
+      <div class="liv-empty__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="20" height="15" x="2" y="7" rx="2"/>
+          <polyline points="17 2 12 7 7 2"/>
+        </svg>
+      </div>
+      <h2 class="liv-empty__title">Nada no ar agora</h2>
+      <p class="liv-empty__text">Quando uma transmissão começar, ela aparece aqui com cronômetro e status do encoder.</p>
+      <button class="liv-cta liv-cta--ghost" id="livEmptyCTA" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        Começar primeira transmissão
+      </button>
+    </div>
+
+    <template id="livCardTpl">
+      <article class="liv-card" role="listitem">
+        <header class="liv-card__head">
+          <span class="liv-card__typeIcon" data-type-icon></span>
+          <input class="liv-card__label" type="text" maxlength="60" placeholder="Sem nome" data-label>
+          <span class="liv-card__live" data-live>
+            <span class="liv-card__live-dot"></span>
+            <span data-timer>00:00:00</span>
+          </span>
+        </header>
+        <div class="liv-card__thumb" data-thumb>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+        </div>
+        <dl class="liv-card__meta">
+          <div><dt>Tipo</dt><dd data-type-label>Vídeo</dd></div>
+          <div><dt>Encoder</dt><dd data-status>Rodando</dd></div>
+        </dl>
+        <details class="liv-card__log">
+          <summary>
+            <svg class="liv-card__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            Ver log do encoder
+          </summary>
+          <pre class="liv-card__logbox" data-log></pre>
+        </details>
+        <footer class="liv-card__foot">
+          <button class="liv-danger" type="button" data-stop>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="12" height="12" x="6" y="6" rx="1"/></svg>
+            Parar transmissão
+          </button>
+        </footer>
+      </article>
+    </template>
+
+    <aside class="liv-drawer" id="livDrawer" aria-hidden="true">
+      <div class="liv-drawer__scrim" data-close></div>
+      <form class="liv-drawer__panel" id="livForm" novalidate>
+        <header class="liv-drawer__head">
+          <h2>Nova transmissão</h2>
+          <button class="liv-iconbtn" type="button" data-close aria-label="Fechar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </header>
+
+        <div class="liv-drawer__body">
+          <label class="liv-field">
+            <span>Nome ou cliente</span>
+            <input type="text" name="label" maxlength="60" placeholder="Ex: Pizza Hot Guará" required>
+            <small>Aparece só pra você. Ajuda a saber qual card é de quem.</small>
+          </label>
+
+          <fieldset class="liv-field liv-field--types">
+            <legend>Tipo de mídia</legend>
+            <div class="liv-types" role="radiogroup">
+              <label class="liv-type"><input type="radio" name="type" value="video" checked>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
+                Vídeo
+              </label>
+              <label class="liv-type"><input type="radio" name="type" value="image_audio">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg>
+                Imagem + áudio
+              </label>
+              <label class="liv-type"><input type="radio" name="type" value="image">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                Imagem
+              </label>
+            </div>
+          </fieldset>
+
+          <label class="liv-drop" for="livFile">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+            <strong id="livDropTitle">Arraste o arquivo</strong>
+            <span id="livDropSub">ou clique pra escolher</span>
+            <input type="file" id="livFile" name="file" hidden>
+          </label>
+
+          <div class="liv-field" id="livAudioField" hidden>
+            <label class="liv-drop liv-drop--audio" for="livAudioFile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              <strong id="livAudioTitle">Arraste a trilha</strong>
+              <span id="livAudioSub">MP3, WAV, M4A</span>
+              <input type="file" id="livAudioFile" name="audio" accept="audio/*" hidden>
+            </label>
+          </div>
+
+          <label class="liv-check">
+            <input type="checkbox" name="loop" checked>
+            <span>Reproduzir em loop enquanto a transmissão estiver no ar</span>
+          </label>
+
+          <label class="liv-field">
+            <span>URL RTMP</span>
+            <input type="text" name="rtmp" placeholder="rtmps://live-api-s.facebook.com:443/rtmp/" required>
+          </label>
+
+          <label class="liv-field">
+            <span>Chave da transmissão</span>
+            <div class="liv-inputwrap">
+              <input type="password" name="key" placeholder="FB-XXXXXXXXXX" required>
+              <button type="button" class="liv-iconbtn" data-toggle-key aria-label="Mostrar chave">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </label>
+
+          <label class="liv-field">
+            <span>Comentário fixado (opcional)</span>
+            <textarea name="comment" rows="2" placeholder="Aparece na hora de copiar depois que iniciar"></textarea>
+            <small class="liv-note">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+              O Meta bloqueou envio por API. Depois de iniciar, o texto fica pronto pra copiar e colar no Live Producer.
+            </small>
+          </label>
+        </div>
+
+        <footer class="liv-drawer__foot">
+          <button type="button" class="liv-btn liv-btn--ghost" data-close>Cancelar</button>
+          <button type="submit" class="liv-btn liv-btn--primary" id="livSubmit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 16.1 2 19"/><path d="m2 5 2.9 2.9"/><circle cx="12" cy="12" r="3"/><path d="M16.2 7.8 19 5"/><path d="m19 19-2.8-2.8"/></svg>
+            Entrar no ar
+          </button>
+        </footer>
+      </form>
+    </aside>
+  </div><!-- /tab-lives -->
+
+  <!-- ═══ ABA POPs (Playbook + POPs por cadeira/cargo) ═══ -->
+  <div class="tab-panel pop" id="tab-pop">
+    <div class="pop-shell">
+
+      <!-- SIDEBAR -->
+      <aside class="pop-sidebar">
+        <header class="pop-sidebar__head">
+          <div>
+            <div class="pop-sidebar__eyebrow">Fogo &amp; Lucro</div>
+            <h1 class="pop-sidebar__title">Manual</h1>
+          </div>
+          <button class="pop-add-btn" id="popAddCadeiraBtn" type="button" aria-label="Nova cadeira" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          </button>
+        </header>
+        <div class="pop-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" id="popSearch" placeholder="Buscar cadeira ou POP" autocomplete="off">
+        </div>
+        <nav class="pop-nav" id="popNav" role="tree">
+          <div class="pop-nav__loading">Carregando…</div>
+        </nav>
+      </aside>
+
+      <!-- CONTEÚDO -->
+      <section class="pop-content" id="popContent">
+        <!-- home vazia (default) -->
+        <div class="pop-home" id="popHome">
+          <div class="pop-home__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+          </div>
+          <h2 class="pop-home__title">Manual da agência</h2>
+          <p class="pop-home__text">Cada cadeira reúne o playbook do cargo e os POPs que a pessoa precisa saber pra executar. Selecione uma cadeira à esquerda pra ver o conteúdo.</p>
+          <div class="pop-home__stats" id="popHomeStats"></div>
+          <div class="pop-home__recent" id="popHomeRecent"></div>
+        </div>
+      </section>
+
+      <!-- Overlay de edição (apenas admin) -->
+      <div class="pop-editor" id="popEditor" hidden>
+        <div class="pop-editor__scrim" data-pop-editor-close></div>
+        <div class="pop-editor__panel">
+          <header class="pop-editor__head">
+            <div>
+              <div class="pop-editor__eyebrow" id="popEditorEyebrow"></div>
+              <h2 class="pop-editor__title" id="popEditorTitle">Editar</h2>
+            </div>
+            <div class="pop-editor__actions">
+              <button type="button" class="pop-btn pop-btn--ghost" data-pop-editor-close>Cancelar</button>
+              <button type="button" class="pop-btn pop-btn--danger" id="popEditorDelete" hidden>Apagar</button>
+              <button type="button" class="pop-btn pop-btn--primary" id="popEditorSave">Salvar</button>
+            </div>
+          </header>
+          <div class="pop-editor__meta" id="popEditorMeta"></div>
+          <div class="pop-editor__body">
+            <div class="pop-editor__pane">
+              <div class="pop-editor__label">HTML</div>
+              <textarea id="popEditorHtml" spellcheck="false" placeholder="Cole ou escreva o HTML..."></textarea>
+            </div>
+            <div class="pop-editor__pane">
+              <div class="pop-editor__label">Preview</div>
+              <div class="pop-editor__preview pop-prose" id="popEditorPreview"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /tab-pop -->
 
   <!-- ═══ ABA GOOGLE MEU NEGÓCIO ══════════════════════════ -->
   <div class="tab-panel" id="tab-gmb">
@@ -2493,7 +2572,7 @@ let _syncTimer = null;
    marcar nos checkboxes (abas principais + espaços de projetos).
    Persistência: localStorage 'pj_permissions' = { [email]: {tabs:[], spaces:[]} }
    Em produção, sincronizar via Firestore coleção 'pj_permissions'. */
-const ALL_TABS = ['base','entrada','visualizar','acesso','social','gmb','metricas','projetos'];
+const ALL_TABS = ['base','entrada','visualizar','acesso','social','lives','gmb','metricas','projetos','pop'];
 const TAB_LABELS = {
   base:'📚 Base de Dados',
   entrada:'✏️ Criar Post', visualizar:'📅 Calendário Social Media', acesso:'🔑 Acesso',
@@ -5162,7 +5241,7 @@ function switchTab(tab, btn) {
   const panel = document.getElementById('tab-' + tab);
   panel.classList.add('active');
   // Abas no dropdown: marca o item E destaca o botão "Ferramentas"
-  const inMore = ['entrada','gmb','metricas','visualizar','social'].includes(tab);
+  const inMore = ['entrada','gmb','metricas','visualizar','social','lives','pop'].includes(tab);
   if (inMore) {
     document.getElementById('tabMoreBtn')?.classList.add('active');
     if (btn) btn.classList.add('active');
@@ -13665,7 +13744,7 @@ function deleteShareLink(id) {
 })();
 
 function _applyShareTabs(allowedTabs) {
-  const TAB_MAP = { entrada:'tabEntrada', visualizar:'tabVisualizar', social:'tabSocial', metricas:'tabMetricas' };
+  const TAB_MAP = { entrada:'tabEntrada', visualizar:'tabVisualizar', social:'tabSocial', lives:'tabLives', metricas:'tabMetricas', pop:'tabPop' };
   // Hide disallowed tabs
   Object.entries(TAB_MAP).forEach(([key, elId]) => {
     const btn = document.getElementById(elId);
@@ -27066,378 +27145,422 @@ window.addEventListener('load', () => {
    5. App polla GET /stream/:id pra mostrar status
    6. (Opcional) Posta comentário fixado com link na live via Graph API
    ───────────────────────────────────────────────────────────── */
-window.fgLive = (() => {
-  const STORAGE_KEY = 'fg_live_backend';
-  // 🔧 Backend padrão pré-configurado (VPS Hostinger da agência).
-  // HTTPS via Caddy + sslip.io + Let's Encrypt — necessário pra o app
-  // (rodando em https://fogoegestao.com.br) conseguir fazer fetch
-  // sem ser bloqueado por Mixed Content.
-  const DEFAULT_BACKEND_URL = 'https://89-116-30-126.sslip.io';
-  const DEFAULT_BACKEND_TOKEN = '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
-  let backendUrl = DEFAULT_BACKEND_URL;
-  let backendToken = DEFAULT_BACKEND_TOKEN;
-  let currentType = 'image';
-  let mediaFile = null;          // File local (pré upload)
-  let audioFile = null;
-  let uploadedMediaPath = '';    // path no backend após upload
-  let uploadedAudioPath = '';
-  let activeStreams = new Map(); // id → { intervalId, info }
-
-  function loadConfig() {
+/* ============================================================
+   LIV — Ao Vivo (estúdio de transmissões multi-live)
+   Reusa endpoints do backend em /opt/fg-live/server.js:
+   GET /health, GET /streams, POST /stream, DELETE /stream/:id, POST /upload
+   ============================================================ */
+const LIV = (() => {
+  const DEFAULT_API = 'https://89-116-30-126.sslip.io';
+  const DEFAULT_TOKEN = '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
+  const state = {
+    lives: new Map(),
+    health: 'unknown',
+    healthBackoff: 5000,
+    pollTimer: null,
+    healthTimer: null,
+    tickTimer: null,
+    inited: false,
+    labels: (() => { try { return JSON.parse(localStorage.getItem('livLabels') || '{}'); } catch(_) { return {}; } })(),
+  };
+  function api() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const c = JSON.parse(raw);
-        // 🔧 Migração: se o user tem URL antiga (HTTP, IP direto), descarta
-        // e usa o default HTTPS (necessário pra evitar Mixed Content em
-        // https://fogoegestao.com.br). Acontece 1x; depois usa o que ele salvar.
-        const isOldHttpUrl = c.url && /^http:\/\/89\.116\.30\.126/i.test(c.url);
-        if (isOldHttpUrl) {
-          // Limpa o localStorage antigo e mantém os defaults novos
-          localStorage.removeItem(STORAGE_KEY);
-          return;
-        }
-        if (c.url) backendUrl = c.url;
-        if (c.token) backendToken = c.token;
-      }
-    } catch(_){}
+      const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
+      return (cfg.url || DEFAULT_API).replace(/\/+$/, '');
+    } catch(_) { return DEFAULT_API; }
   }
-
-  function saveConfig() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ url: backendUrl, token: backendToken })); } catch(_){}
-  }
-
-  async function api(method, path, body, isFormData) {
-    if (!backendUrl) throw new Error('Backend não configurado');
-    const opts = { method, headers: { Authorization: `Bearer ${backendToken}` } };
-    if (body) {
-      if (isFormData) opts.body = body;
-      else { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
-    }
-    const r = await fetch(backendUrl.replace(/\/$/, '') + path, opts);
-    if (!r.ok) {
-      const e = await r.text().catch(()=>r.statusText);
-      throw new Error(`HTTP ${r.status}: ${e}`);
-    }
-    return r.json();
-  }
-
-  async function checkHealth() {
-    const badge = document.getElementById('liveBackendStatus');
-    const noBackend = document.getElementById('liveNoBackend');
-    const mainForm = document.getElementById('liveMainForm');
-    if (!backendUrl) {
-      if (badge) { badge.className = 'live-backend-status err'; badge.innerHTML = 'Backend: <span>não configurado</span>'; }
-      if (noBackend) noBackend.style.display = 'block';
-      if (mainForm) mainForm.style.display = 'none';
-      return false;
-    }
+  function token() {
     try {
-      const r = await fetch(backendUrl.replace(/\/$/, '') + '/health');
-      if (!r.ok) throw new Error('http ' + r.status);
-      const d = await r.json();
-      if (badge) { badge.className = 'live-backend-status ok'; badge.innerHTML = `Backend: <span>online (${d.active||0} live${(d.active||0)!==1?'s':''})</span>`; }
-      if (noBackend) noBackend.style.display = 'none';
-      if (mainForm) mainForm.style.display = 'block';
-      return true;
+      const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
+      return cfg.token || DEFAULT_TOKEN;
+    } catch(_) { return DEFAULT_TOKEN; }
+  }
+  function authHeaders(extra = {}) {
+    const h = { ...extra };
+    const t = token();
+    if (t) h['Authorization'] = 'Bearer ' + t;
+    return h;
+  }
+
+  /* HEALTH */
+  async function healthCheck() {
+    try {
+      const r = await fetch(api() + '/health', { cache: 'no-store' });
+      if (!r.ok) throw new Error('http_' + r.status);
+      const j = await r.json();
+      setHealth(j.active >= 3 ? 'warn' : 'ok', (j.active || 0) + ' ativa(s)');
+      state.healthBackoff = 5000;
     } catch(e) {
-      if (badge) { badge.className = 'live-backend-status err'; badge.innerHTML = `Backend: <span>offline</span>`; }
-      if (noBackend) noBackend.style.display = 'block';
-      if (mainForm) mainForm.style.display = 'none';
-      return false;
+      setHealth('down', 'Sem conexão com o servidor');
+      state.healthBackoff = Math.min(state.healthBackoff * 1.7, 30000);
     }
+    clearTimeout(state.healthTimer);
+    state.healthTimer = setTimeout(healthCheck, state.healthBackoff);
+  }
+  function setHealth(s, label) {
+    state.health = s;
+    const el = document.getElementById('livHealth');
+    if (!el) return;
+    el.dataset.state = s;
+    const lb = el.querySelector('.liv-health__label');
+    if (!lb) return;
+    lb.textContent =
+      s === 'ok'   ? 'Servidor online'
+    : s === 'warn' ? label
+    : s === 'down' ? 'Servidor offline'
+                   : 'Checando servidor';
   }
 
-  function setType(type, btn) {
-    currentType = type;
-    document.querySelectorAll('.live-type-tab').forEach(b => b.classList.toggle('active', b === btn));
-    const audioRow = document.getElementById('liveAudioRow');
-    const loopRow = document.getElementById('liveLoopRow');
-    const hint = document.getElementById('liveMediaHint');
-    const sub = document.getElementById('liveUploadSub');
-    const inp = document.getElementById('liveFileInput');
-    if (type === 'image') {
-      audioRow.style.display = 'none';
-      hint.textContent = '(JPG/PNG)';
-      sub.textContent = 'Imagem JPG/PNG até 5MB';
-      inp.accept = 'image/*';
-    } else if (type === 'image_audio') {
-      audioRow.style.display = 'block';
-      hint.textContent = '(JPG/PNG + áudio MP3)';
-      sub.textContent = 'Imagem JPG/PNG até 5MB';
-      inp.accept = 'image/*';
-    } else { // video
-      audioRow.style.display = 'none';
-      hint.textContent = '(MP4 H.264)';
-      sub.textContent = 'Vídeo MP4 até 500MB';
-      inp.accept = 'video/*';
-    }
-    removeMedia();
-  }
-
-  function handleFile(f) {
-    if (!f) return;
-    mediaFile = f;
-    uploadedMediaPath = '';
-    const url = URL.createObjectURL(f);
-    const img = document.getElementById('liveImgPreview');
-    const vid = document.getElementById('liveVidPreview');
-    const ph = document.getElementById('liveUploadPlaceholder');
-    const pv = document.getElementById('liveUploadPreview');
-    const info = document.getElementById('liveMediaInfo');
-    ph.style.display = 'none';
-    pv.style.display = 'block';
-    if (f.type.startsWith('video')) {
-      img.style.display = 'none'; vid.style.display = 'block'; vid.src = url;
-    } else {
-      vid.style.display = 'none'; img.style.display = 'block'; img.src = url;
-    }
-    info.textContent = `${f.name} · ${(f.size/1024/1024).toFixed(2)}MB`;
-  }
-
-  function handleAudio(f) {
-    if (!f) return;
-    audioFile = f;
-    uploadedAudioPath = '';
-    document.getElementById('liveAudioName').textContent = `🎵 ${f.name} · ${(f.size/1024/1024).toFixed(2)}MB`;
-  }
-
-  function removeMedia() {
-    mediaFile = null;
-    uploadedMediaPath = '';
-    document.getElementById('liveFileInput').value = '';
-    document.getElementById('liveUploadPlaceholder').style.display = 'block';
-    document.getElementById('liveUploadPreview').style.display = 'none';
-    document.getElementById('liveImgPreview').src = '';
-    document.getElementById('liveVidPreview').src = '';
-  }
-
-  async function uploadFile(file) {
-    const fd = new FormData();
-    fd.append('file', file);
-    const r = await api('POST', '/upload', fd, true);
-    return r.path;
-  }
-
-  async function startStream() {
-    const btn = document.getElementById('liveStartBtn');
-    const stopBtn = document.getElementById('liveStopBtn');
-    const status = document.getElementById('liveStatus');
-    const rtmpUrl = document.getElementById('liveRtmpUrl').value.trim();
-    const streamKey = document.getElementById('liveStreamKey').value.trim();
-    const loop = document.getElementById('liveLoop').checked;
-
-    if (!mediaFile && !uploadedMediaPath) { showToast('error','⚠️','Faça upload da mídia primeiro.'); return; }
-    if (!rtmpUrl || !streamKey) { showToast('error','⚠️','Preencha URL e Stream Key.'); return; }
-
-    btn.disabled = true;
-    btn.innerHTML = '⏳ Enviando…';
-    status.textContent = '';
-
-    try {
-      // 1. Upload da mídia (se ainda não fez)
-      if (mediaFile && !uploadedMediaPath) {
-        status.textContent = 'Fazendo upload da mídia…';
-        uploadedMediaPath = await uploadFile(mediaFile);
-      }
-      if (currentType === 'image_audio' && audioFile && !uploadedAudioPath) {
-        status.textContent = 'Fazendo upload do áudio…';
-        uploadedAudioPath = await uploadFile(audioFile);
-      }
-
-      // 2. Inicia o stream
-      status.textContent = 'Iniciando ffmpeg…';
-      const r = await api('POST', '/stream', {
-        type: currentType,
-        mediaPath: uploadedMediaPath,
-        audioPath: uploadedAudioPath || null,
-        rtmpUrl, streamKey, loop,
-      });
-
-      btn.style.display = 'none';
-      stopBtn.style.display = 'flex';
-      stopBtn.dataset.streamId = r.id;
-      status.innerHTML = `<span style="color:#16a34a;font-weight:700;">🔴 No ar</span> · id ${r.id.slice(-6)}`;
-
-      // 3. Polling de status
-      const intId = setInterval(async () => {
-        try {
-          const s = await api('GET', '/stream/' + r.id);
-          if (s.exitedAt) {
-            clearInterval(intId);
-            activeStreams.delete(r.id);
-            status.innerHTML = `<span style="color:#dc2626;">⚠️ Encerrado (code ${s.exitCode})</span>`;
-            btn.style.display = 'flex'; btn.disabled = false; btn.innerHTML = '🔴 Iniciar live';
-            stopBtn.style.display = 'none';
-          } else {
-            const sec = Math.floor(s.uptime / 1000);
-            const m = Math.floor(sec/60), ss = sec%60;
-            status.innerHTML = `<span style="color:#16a34a;font-weight:700;">🔴 No ar</span> · ${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-          }
-        } catch(_){}
-      }, 5000);
-      activeStreams.set(r.id, { intervalId: intId });
-
-      showToast('success','🔴','Live iniciada!');
-    } catch(e) {
-      btn.disabled = false; btn.innerHTML = '🔴 Iniciar live';
-      status.textContent = '';
-      showToast('error','❌','Erro: ' + e.message);
-    }
-  }
-
-  async function stopStream() {
-    const stopBtn = document.getElementById('liveStopBtn');
-    const startBtn = document.getElementById('liveStartBtn');
-    const id = stopBtn.dataset.streamId;
-    if (!id) return;
-    if (!confirm('Encerrar a live?')) return;
-    try {
-      await api('DELETE', '/stream/' + id);
-      const s = activeStreams.get(id);
-      if (s?.intervalId) clearInterval(s.intervalId);
-      activeStreams.delete(id);
-      stopBtn.style.display = 'none';
-      startBtn.style.display = 'flex'; startBtn.disabled = false; startBtn.innerHTML = '🔴 Iniciar live';
-      document.getElementById('liveStatus').textContent = '';
-      showToast('success','✅','Live encerrada.');
-    } catch(e) {
-      showToast('error','❌','Erro: ' + e.message);
-    }
-  }
-
-  function openSettings() {
-    document.getElementById('liveBackendUrl').value = backendUrl;
-    document.getElementById('liveBackendToken').value = backendToken;
-    document.getElementById('liveSettingsModal').style.display = 'flex';
-  }
-  function closeSettings() {
-    document.getElementById('liveSettingsModal').style.display = 'none';
-    document.getElementById('liveTestResult').innerHTML = '';
-  }
-  async function testBackend() {
-    const url = document.getElementById('liveBackendUrl').value.trim().replace(/\/$/, '');
-    const tok = document.getElementById('liveBackendToken').value.trim();
-    const res = document.getElementById('liveTestResult');
-    if (!url || !tok) {
-      res.innerHTML = '<div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:9px 12px;color:#92400e;margin-top:6px;">⚠️ Preencha URL e Token antes de testar.</div>';
+  /* LISTAGEM / RECONCILIAÇÃO */
+  async function pollStreams() {
+    if (document.hidden) {
+      clearTimeout(state.pollTimer);
+      state.pollTimer = setTimeout(pollStreams, 5000);
       return;
     }
-    res.innerHTML = '<div style="background:#f1f5f9;border-radius:8px;padding:9px 12px;color:#475569;margin-top:6px;">⏳ Testando…</div>';
     try {
-      const r = await fetch(url + '/health');
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      const d = await r.json();
-      const r2 = await fetch(url + '/streams', { headers:{ Authorization:'Bearer '+tok }});
-      if (!r2.ok) {
-        if (r2.status === 401) throw new Error('Token inválido');
-        throw new Error('HTTP ' + r2.status);
-      }
-      res.innerHTML = `<div style="background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:10px 12px;color:#15803d;font-weight:600;margin-top:6px;">✅ Conectado · ${d.active||0} live${(d.active||0)!==1?'s':''} ativa${(d.active||0)!==1?'s':''}</div>`;
-    } catch(e) {
-      res.innerHTML = `<div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:10px 12px;color:#b91c1c;margin-top:6px;"><strong>❌ Falha</strong><br><span style="font-size:11.5px;font-family:ui-monospace,monospace;">${e.message}</span></div>`;
+      const r = await fetch(api() + '/streams', { cache: 'no-store', headers: authHeaders() });
+      if (!r.ok) throw 0;
+      const list = await r.json();
+      reconcile(Array.isArray(list) ? list : []);
+    } catch(e) { /* silencioso; health cobre */ }
+    finally {
+      clearTimeout(state.pollTimer);
+      state.pollTimer = setTimeout(pollStreams, 5000);
     }
   }
-  function saveBackend() {
-    backendUrl = document.getElementById('liveBackendUrl').value.trim().replace(/\/$/, '');
-    backendToken = document.getElementById('liveBackendToken').value.trim();
-    saveConfig();
-    closeSettings();
-    checkHealth();
-    showToast('success','✅','Backend configurado.');
+  function reconcile(list) {
+    const incoming = new Map(list.map(x => [x.id, hydrateLive(x)]));
+    for (const id of state.lives.keys()) if (!incoming.has(id)) removeCard(id);
+    for (const [id, live] of incoming) {
+      if (!state.lives.has(id)) renderCard(live);
+      else updateCard(live);
+      state.lives.set(id, live);
+    }
+    updateHeaderCount();
   }
-  function showSetupGuide() {
-    document.getElementById('liveSetupGuideModal').classList.add('open');
-    document.getElementById('liveSetupGuideModal').style.display = 'flex';
-  }
-  function closeSetupGuide() {
-    document.getElementById('liveSetupGuideModal').classList.remove('open');
-    document.getElementById('liveSetupGuideModal').style.display = 'none';
-  }
-  function copyServerCode() {
-    const code = document.getElementById('liveServerCode')?.textContent || '';
-    navigator.clipboard.writeText(code).then(() => showToast('success','✅','Código copiado!'));
-  }
-  function toggleKey() {
-    const i = document.getElementById('liveStreamKey');
-    i.type = i.type === 'password' ? 'text' : 'password';
-  }
-  function toggleSettingsToken() {
-    const i = document.getElementById('liveBackendToken');
-    i.type = i.type === 'password' ? 'text' : 'password';
+  function hydrateLive(x) {
+    const label = x.label || state.labels[x.id] || 'Sem nome';
+    return {
+      id: x.id, type: x.type || 'video',
+      label,
+      startedAt: x.startedAt || Date.now(),
+      status: x.exitedAt ? (x.exitCode ? 'error' : 'stopped') : (x.pid ? 'running' : 'unknown'),
+      stderr: Array.isArray(x.stderr) ? x.stderr.join('\n') : (x.stderr || ''),
+      thumbUrl: state.labels['thumb:' + x.id] || null,
+    };
   }
 
-  // Comentário manual: monta texto+link e mostra preview com botão copiar.
-  // (API da Meta não permite postar comments em live_media — tem que ser manual.)
-  function updateCommentPreview() {
-    const txt = (document.getElementById('liveCtaText')?.value || '').trim();
-    const url = (document.getElementById('liveCtaUrl')?.value || '').trim();
-    const wrap = document.getElementById('liveCommentPreviewWrap');
-    const out = document.getElementById('liveCommentPreview');
-    if (!wrap || !out) return;
-    if (!txt && !url) { wrap.style.display = 'none'; return; }
-    const sep = (txt && url) ? ' ' : '';
-    out.textContent = `${txt}${sep}${url}`;
-    wrap.style.display = 'block';
-  }
-  function copyComment() {
-    const out = document.getElementById('liveCommentPreview');
-    const btn = document.getElementById('liveCopyCommentBtn');
-    if (!out || !out.textContent) return;
-    navigator.clipboard.writeText(out.textContent).then(() => {
-      if (btn) {
-        const orig = btn.innerHTML;
-        btn.innerHTML = '✓ Copiado!';
-        btn.style.background = 'linear-gradient(135deg,#16a34a,#15803d)';
-        setTimeout(() => { btn.innerHTML = orig; btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)'; }, 1800);
+  /* START */
+  async function startLive(form) {
+    const label   = form.label.value.trim();
+    const type    = form.type.value;
+    const rtmp    = form.rtmp.value.trim();
+    const key     = form.key.value.trim();
+    const loop    = form.loop.checked;
+    const comment = form.comment.value.trim();
+    const file    = form.file.files[0];
+    const audioEl = document.getElementById('livAudioFile');
+    const audioFile = audioEl && audioEl.files[0];
+    if (!file) return safeToast('warn', '⚠️', 'Escolhe um arquivo antes de entrar no ar');
+    if (!rtmp || !key) return safeToast('warn', '⚠️', 'Preencha URL RTMP e Chave');
+
+    const submitBtn = document.getElementById('livSubmit');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = 0.6; }
+
+    try {
+      // 1) upload mídia principal
+      const fd = new FormData(); fd.append('file', file);
+      const upRes = await fetch(api() + '/upload', { method: 'POST', body: fd, headers: authHeaders() });
+      if (!upRes.ok) throw new Error('upload_' + upRes.status);
+      const up = await upRes.json();
+
+      // 2) upload audio (se image_audio)
+      let audioPath = null;
+      if (type === 'image_audio' && audioFile) {
+        const fd2 = new FormData(); fd2.append('file', audioFile);
+        const upA = await fetch(api() + '/upload', { method: 'POST', body: fd2, headers: authHeaders() });
+        if (upA.ok) { const j = await upA.json(); audioPath = j.path; }
       }
+
+      // 3) start ffmpeg
+      const body = { type, rtmpUrl: rtmp, streamKey: key, loop, mediaPath: up.path, audioPath, label };
+      const res = await fetch(api() + '/stream', {
+        method: 'POST',
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error('stream_' + res.status);
+      const j = await res.json();
+      if (!j.id) throw new Error('no_id');
+
+      // 4) fallback local pro label + thumb
+      state.labels[j.id] = label;
+      state.labels['thumb:' + j.id] = URL.createObjectURL(file);
+      try { localStorage.setItem('livLabels', JSON.stringify(state.labels)); } catch(_){}
+
+      closeDrawer();
+      safeToast('success', '🎥', 'No ar: ' + (label || 'transmissão'));
+      if (comment) copyToClipboard(comment);
+      pollStreams();
+      setTimeout(() => flashCard(j.id), 400);
+    } catch(e) {
+      console.error('[LIV] start fail:', e);
+      safeToast('danger', '❌', 'Não deu pra iniciar. Confere URL, chave e servidor.');
+    } finally {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = 1; }
+    }
+  }
+
+  async function stopLive(id) {
+    if (!confirm('Tirar essa transmissão do ar agora?')) return;
+    const card = document.querySelector('.liv-card[data-id="' + id + '"]');
+    if (card) card.style.opacity = 0.5;
+    try {
+      await fetch(api() + '/stream/' + id, { method: 'DELETE', headers: authHeaders() });
+      safeToast('success', '⏹', 'Transmissão encerrada');
+    } catch(e) {
+      safeToast('danger', '❌', 'Falhou ao parar. Tenta de novo.');
+      if (card) card.style.opacity = 1;
+    } finally { pollStreams(); }
+  }
+
+  /* RENDER */
+  function tplCard() {
+    const tpl = document.getElementById('livCardTpl');
+    return tpl.content.firstElementChild.cloneNode(true);
+  }
+  function iconFor(type) {
+    const svgs = {
+      video:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>',
+      image:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>',
+      image_audio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg>',
+    };
+    return svgs[type] || svgs.video;
+  }
+  function renderCard(live) {
+    const grid = document.getElementById('livGrid');
+    if (!grid) return;
+    const node = tplCard();
+    node.dataset.id = live.id;
+    hydrateCardNode(node, live);
+    grid.prepend(node);
+    const emp = document.getElementById('livEmpty'); if (emp) emp.hidden = true;
+
+    node.querySelector('[data-stop]').addEventListener('click', () => stopLive(live.id));
+    node.querySelector('[data-label]').addEventListener('change', e => {
+      state.labels[live.id] = e.target.value;
+      try { localStorage.setItem('livLabels', JSON.stringify(state.labels)); } catch(_){}
     });
   }
+  function updateCard(live) {
+    const node = document.querySelector('.liv-card[data-id="' + live.id + '"]');
+    if (!node) return;
+    hydrateCardNode(node, live);
+  }
+  function hydrateCardNode(node, live) {
+    const typeLabel = { video: 'Vídeo', image: 'Imagem estática', image_audio: 'Imagem + trilha' }[live.type] || live.type;
+    const statusLabel = { running: 'Rodando', error: 'Falhou', stopped: 'Encerrada', unknown: 'Reconectando' }[live.status] || live.status;
+    const iconEl = node.querySelector('[data-type-icon]');
+    if (iconEl) iconEl.innerHTML = iconFor(live.type);
+    const labelEl = node.querySelector('[data-label]');
+    if (labelEl && document.activeElement !== labelEl) labelEl.value = live.label;
+    node.querySelector('[data-type-label]').textContent = typeLabel;
+    node.querySelector('[data-status]').textContent = statusLabel;
+    node.querySelector('[data-log]').textContent = live.stderr || '(sem saída)';
+    node.querySelector('[data-timer]').dataset.startedAt = live.startedAt;
+    const thumb = node.querySelector('[data-thumb]');
+    if (thumb && live.thumbUrl) { thumb.style.backgroundImage = 'url("' + live.thumbUrl + '")'; thumb.innerHTML = ''; }
+  }
+  function removeCard(id) {
+    const node = document.querySelector('.liv-card[data-id="' + id + '"]');
+    if (node) { node.style.opacity = 0; setTimeout(() => node.remove(), 240); }
+    if (state.labels['thumb:' + id]) { try { URL.revokeObjectURL(state.labels['thumb:' + id]); } catch(_){} }
+    state.lives.delete(id);
+    if (!state.lives.size) { const emp = document.getElementById('livEmpty'); if (emp) emp.hidden = false; }
+  }
+  function flashCard(id) {
+    const n = document.querySelector('.liv-card[data-id="' + id + '"]');
+    if (!n) return;
+    n.classList.add('liv-card--flash');
+    setTimeout(() => n.classList.remove('liv-card--flash'), 1800);
+  }
+  function updateHeaderCount() {
+    const n = state.lives.size;
+    const chip = document.getElementById('livCount');
+    if (chip) chip.hidden = n === 0;
+    const label = document.getElementById('livCountLabel');
+    if (label) label.textContent = n === 1 ? '1 no ar' : n + ' no ar';
+    const emp = document.getElementById('livEmpty'); if (emp) emp.hidden = n > 0;
+  }
 
-  loadConfig();
+  /* TICK */
+  function fmt(ms) {
+    const t = Math.max(0, Math.floor(ms / 1000));
+    return [Math.floor(t / 3600), Math.floor(t / 60) % 60, t % 60].map(n => String(n).padStart(2, '0')).join(':');
+  }
+  function startTick() {
+    if (state.tickTimer) return;
+    state.tickTimer = setInterval(() => {
+      document.querySelectorAll('#tab-lives [data-timer]').forEach(el => {
+        const s = Number(el.dataset.startedAt || 0);
+        if (!s) return;
+        el.textContent = fmt(Date.now() - s);
+      });
+    }, 1000);
+  }
 
-  return {
-    init: () => { loadConfig(); checkHealth(); },
-    setType, handleFile, handleAudio, removeMedia,
-    start: startStream, stop: stopStream,
-    openSettings, closeSettings, testBackend, saveBackend,
-    showSetupGuide, closeSetupGuide, copyServerCode, toggleKey, toggleSettingsToken,
-    updateCommentPreview, copyComment,
-  };
+  /* DRAWER */
+  function openDrawer() {
+    const d = document.getElementById('livDrawer');
+    if (!d) return;
+    d.dataset.open = '1'; d.setAttribute('aria-hidden', 'false');
+    setTimeout(() => { const el = d.querySelector('input[name="label"]'); if (el) el.focus(); }, 200);
+  }
+  function closeDrawer() {
+    const d = document.getElementById('livDrawer');
+    if (!d) return;
+    d.dataset.open = '0'; d.setAttribute('aria-hidden', 'true');
+    const form = document.getElementById('livForm');
+    if (form) form.reset();
+    renderDropSummary();
+    document.getElementById('livAudioField').hidden = true;
+  }
+
+  function renderDropSummary() {
+    const f = document.getElementById('livFile').files[0];
+    document.getElementById('livDropTitle').textContent = f ? f.name : 'Arraste o arquivo';
+    document.getElementById('livDropSub').textContent = f ? ((f.size / 1024 / 1024).toFixed(1) + ' MB') : 'ou clique pra escolher';
+  }
+  function onTypeChange() {
+    const type = document.querySelector('#livForm input[name="type"]:checked')?.value;
+    document.getElementById('livAudioField').hidden = (type !== 'image_audio');
+    const fileInput = document.getElementById('livFile');
+    if (type === 'video') fileInput.accept = 'video/*';
+    else fileInput.accept = 'image/*';
+  }
+  function toggleKey() {
+    const input = document.querySelector('#livForm input[name="key"]');
+    if (input) input.type = input.type === 'password' ? 'text' : 'password';
+  }
+
+  function safeToast(kind, icon, msg) {
+    if (typeof showToast === 'function') { try { showToast(kind, icon, msg); return; } catch(_){} }
+    console.log('[LIV toast]', kind, msg);
+  }
+  function copyToClipboard(txt) {
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(txt).then(
+      () => safeToast('success', '📋', 'Comentário copiado. Cola no Live Producer.'),
+      () => safeToast('warn', '⚠️', 'Não deu pra copiar. Copia manual.')
+    );
+  }
+
+  /* BOOTSTRAP */
+  function init() {
+    if (state.inited) return;
+    state.inited = true;
+    document.getElementById('livNewBtn')?.addEventListener('click', openDrawer);
+    document.getElementById('livEmptyCTA')?.addEventListener('click', openDrawer);
+    document.querySelectorAll('#livDrawer [data-close]').forEach(el => el.addEventListener('click', closeDrawer));
+    document.getElementById('livForm')?.addEventListener('submit', e => { e.preventDefault(); startLive(e.target); });
+    document.querySelectorAll('#livForm input[name="type"]').forEach(r => r.addEventListener('change', onTypeChange));
+    document.querySelector('#livForm [data-toggle-key]')?.addEventListener('click', toggleKey);
+    document.getElementById('livFile')?.addEventListener('change', renderDropSummary);
+    document.getElementById('livAudioFile')?.addEventListener('change', () => {
+      const f = document.getElementById('livAudioFile').files[0];
+      document.getElementById('livAudioTitle').textContent = f ? f.name : 'Arraste a trilha';
+      document.getElementById('livAudioSub').textContent = f ? ((f.size / 1024 / 1024).toFixed(1) + ' MB') : 'MP3, WAV, M4A';
+    });
+    const drop = document.querySelector('#livForm .liv-drop:not(.liv-drop--audio)');
+    if (drop) {
+      drop.addEventListener('dragover', e => { e.preventDefault(); drop.dataset.drag = '1'; });
+      drop.addEventListener('dragleave', () => { delete drop.dataset.drag; });
+      drop.addEventListener('drop', e => { e.preventDefault(); delete drop.dataset.drag;
+        document.getElementById('livFile').files = e.dataTransfer.files;
+        renderDropSummary();
+      });
+    }
+    startTick();
+    healthCheck();
+    pollStreams();
+  }
+  function ensureInit() { init(); }
+
+  return { init, ensureInit, openDrawer, closeDrawer, stopLive, pollStreams };
 })();
 
-// Exports globais (chamados via onclick)
-window.liveSetType = (t, b) => window.fgLive.setType(t, b);
-window.liveHandleFile = (f) => window.fgLive.handleFile(f);
-window.liveHandleAudio = (f) => window.fgLive.handleAudio(f);
-window.liveRemoveMedia = () => window.fgLive.removeMedia();
-window.liveStart = () => window.fgLive.start();
-window.liveStop = () => window.fgLive.stop();
-window.liveOpenSettings = () => window.fgLive.openSettings();
-window.liveCloseSettings = () => window.fgLive.closeSettings();
-window.liveTestBackend = () => window.fgLive.testBackend();
-window.liveSaveBackend = () => window.fgLive.saveBackend();
-window.liveShowSetupGuide = () => window.fgLive.showSetupGuide();
-window.liveCloseSetupGuide = () => window.fgLive.closeSetupGuide();
-window.liveCopyServerCode = () => window.fgLive.copyServerCode();
-window.liveToggleKey = () => window.fgLive.toggleKey();
-window.liveToggleSettingsToken = () => window.fgLive.toggleSettingsToken();
-window.liveUpdateCommentPreview = () => window.fgLive.updateCommentPreview();
-window.liveCopyComment = () => window.fgLive.copyComment();
-
-// Init quando a aba Social abrir
-(function _wireLiveTab() {
+// Init quando a aba abrir
+(function _wireLivesTab() {
   const orig = window.switchTab;
-  if (typeof orig !== 'function') {
-    setTimeout(_wireLiveTab, 500);
-    return;
-  }
-  window.switchTab = function(tab, btn) {
+  if (typeof orig !== 'function') { setTimeout(_wireLivesTab, 500); return; }
+  const already = orig._livesWrapped;
+  if (already) return;
+  const wrapped = function(tab, btn) {
     const r = orig.apply(this, arguments);
-    if (tab === 'social') { setTimeout(() => window.fgLive?.init(), 200); }
+    if (tab === 'lives') setTimeout(() => LIV.ensureInit(), 100);
     return r;
   };
+  wrapped._livesWrapped = true;
+  window.switchTab = wrapped;
 })();
+
+/* Modais legados #liveSettingsModal e #liveSetupGuideModal — glue global */
+window.liveOpenSettings = function() {
+  const m = document.getElementById('liveSettingsModal');
+  if (!m) return;
+  try {
+    const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
+    const url = document.getElementById('liveBackendUrl'); if (url) url.value = cfg.url || '';
+    const tok = document.getElementById('liveBackendToken'); if (tok) tok.value = cfg.token || '';
+  } catch(_){}
+  const res = document.getElementById('liveTestResult'); if (res) res.innerHTML = '';
+  m.style.display = 'flex';
+};
+window.liveCloseSettings = function() {
+  const m = document.getElementById('liveSettingsModal'); if (m) m.style.display = 'none';
+};
+window.liveToggleSettingsToken = function() {
+  const el = document.getElementById('liveBackendToken');
+  if (el) el.type = el.type === 'password' ? 'text' : 'password';
+};
+window.liveTestBackend = async function() {
+  const url = (document.getElementById('liveBackendUrl')?.value || '').trim().replace(/\/+$/,'');
+  const res = document.getElementById('liveTestResult');
+  if (!url) { if (res) res.innerHTML = '<span style="color:#dc2626">Informe a URL.</span>'; return; }
+  if (res) res.innerHTML = '<span style="color:#64748b">Testando...</span>';
+  try {
+    const r = await fetch(url + '/health', { cache: 'no-store' });
+    if (!r.ok) throw new Error('http_' + r.status);
+    const j = await r.json();
+    if (res) res.innerHTML = '<span style="color:#059669">✓ Servidor online · v' + (j.version || '?') + ' · ' + (j.active || 0) + ' ativa(s)</span>';
+  } catch(e) {
+    if (res) res.innerHTML = '<span style="color:#dc2626">✗ Não conseguiu conectar. ' + (e.message || 'erro') + '</span>';
+  }
+};
+window.liveSaveBackend = function() {
+  const url = (document.getElementById('liveBackendUrl')?.value || '').trim().replace(/\/+$/,'');
+  const token = (document.getElementById('liveBackendToken')?.value || '').trim();
+  try { localStorage.setItem('fg_live_backend', JSON.stringify({ url, token })); } catch(_){}
+  window.liveCloseSettings();
+  if (typeof showToast === 'function') showToast('success', '💾', 'Configuração salva');
+  if (typeof LIV !== 'undefined') { LIV.pollStreams(); }
+};
+window.liveShowSetupGuide = function() {
+  const m = document.getElementById('liveSetupGuideModal'); if (m) m.style.display = 'flex';
+};
+window.liveCloseSetupGuide = function() {
+  const m = document.getElementById('liveSetupGuideModal'); if (m) m.style.display = 'none';
+};
+window.liveCopyServerCode = function() {
+  const pre = document.getElementById('liveServerCode');
+  if (!pre || !navigator.clipboard) return;
+  navigator.clipboard.writeText(pre.textContent || '').then(
+    () => { if (typeof showToast === 'function') showToast('success', '📋', 'Código copiado'); },
+    () => { if (typeof showToast === 'function') showToast('danger', '⚠️', 'Falha ao copiar'); }
+  );
+};
+
 
 /* ─────────────────────────────────────────────────────────────
    🎥 Gravador de tela + webcam (compositor em canvas)
@@ -28862,6 +28985,496 @@ window.renderMediaThumbs = renderMediaThumbs;
 window.salvarRascunho = salvarRascunho;
 window.atualizarPreview = atualizarPreview;
 window.atualizarContador = atualizarContador;
+
+/* ============================================================
+   POP — Manual da agência (aba dedicada, 2026-08-02)
+   Firestore: coleção 'pop_cadeiras' + 'pop_docs' (playbook + POPs).
+   ============================================================ */
+const POP = (() => {
+  const state = {
+    cadeiras: [],   // [{id, nome, icone, cor, ordem, playbookHtml, updatedAt}]
+    docs: [],       // [{id, cadeiraId, titulo, subtitulo, html, ordem, updatedAt, updatedBy}]
+    unsubCadeiras: null,
+    unsubDocs: null,
+    selection: null, // {kind:'cadeira'|'playbook'|'pop', cadeiraId, popId?}
+    inited: false,
+    filter: '',
+    editing: null,  // {kind, cadeiraId, popId?, doc}
+  };
+  const ICON_MAP = {
+    'social':    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>',
+    'trafego':   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="20" x2="21" y2="20"/><path d="M6 20V10"/><path d="M12 20V4"/><path d="M18 20v-6"/></svg>',
+    'atendimento':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    'design':    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125 0-.938.75-1.688 1.688-1.688h1.984c3.125 0 5.656-2.53 5.656-5.656C22.1 6.375 17.6 2 12 2Z"/></svg>',
+    'diretor':   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    'default':   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4"/><path d="M16 2v4"/></svg>',
+  };
+  const CHEV = '<svg class="pop-cadeira__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
+  const ICON_BOOK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
+  const ICON_DOC  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+  const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+  const ICON_TRASH= '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>';
+  const ICON_PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>';
+
+  function iconFor(name) { return ICON_MAP[(name||'default').toLowerCase()] || ICON_MAP.default; }
+  function isAdmin() { try { return typeof userIsAdmin === 'function' ? userIsAdmin() : false; } catch(_){ return false; } }
+  function safeToast(kind, icon, msg) { if (typeof showToast === 'function') try { showToast(kind, icon, msg); } catch(_){} }
+  function esc(s) { const d = document.createElement('div'); d.textContent = String(s||''); return d.innerHTML; }
+  function fmtRelative(ts) {
+    if (!ts) return '';
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return 'agora';
+    if (s < 3600) return Math.floor(s/60) + ' min atrás';
+    if (s < 86400) return Math.floor(s/3600) + ' h atrás';
+    return Math.floor(s/86400) + ' d atrás';
+  }
+
+  /* Sanitiza HTML mantendo tags úteis; strip de <script>/on* handlers */
+  function sanitize(html) {
+    const tmp = document.createElement('template');
+    tmp.innerHTML = String(html || '');
+    const walk = (node) => {
+      const kids = [...node.childNodes];
+      for (const el of kids) {
+        if (el.nodeType === 1) {
+          const tag = el.tagName.toLowerCase();
+          if (tag === 'script' || tag === 'iframe' || tag === 'object' || tag === 'embed') { el.remove(); continue; }
+          for (const attr of [...el.attributes]) {
+            const n = attr.name.toLowerCase();
+            if (n.startsWith('on')) el.removeAttribute(attr.name);
+            if ((n === 'href' || n === 'src') && /^\s*javascript:/i.test(attr.value)) el.removeAttribute(attr.name);
+          }
+          walk(el);
+        }
+      }
+    };
+    walk(tmp.content);
+    return tmp.innerHTML;
+  }
+
+  /* FIRESTORE */
+  function db() {
+    try { return firebase.firestore(); } catch(_) { return null; }
+  }
+  function subscribeAll() {
+    const d = db(); if (!d) { setTimeout(subscribeAll, 800); return; }
+    if (state.unsubCadeiras) state.unsubCadeiras();
+    if (state.unsubDocs) state.unsubDocs();
+    state.unsubCadeiras = d.collection('pop_cadeiras').orderBy('ordem').onSnapshot(
+      s => { state.cadeiras = s.docs.map(x => ({ id: x.id, ...x.data() })); renderNav(); renderHome(); refreshCurrentView(); },
+      e => console.warn('[POP] cadeiras err:', e)
+    );
+    state.unsubDocs = d.collection('pop_docs').orderBy('ordem').onSnapshot(
+      s => { state.docs = s.docs.map(x => ({ id: x.id, ...x.data() })); renderNav(); renderHome(); refreshCurrentView(); },
+      e => console.warn('[POP] docs err:', e)
+    );
+  }
+
+  /* NAV */
+  function renderNav() {
+    const nav = document.getElementById('popNav');
+    if (!nav) return;
+    const filtro = state.filter.toLowerCase().trim();
+    const cad = state.cadeiras.filter(c => !filtro || (c.nome||'').toLowerCase().includes(filtro) ||
+                                            state.docs.some(d => d.cadeiraId === c.id && ((d.titulo||'').toLowerCase().includes(filtro))));
+    if (!cad.length) {
+      nav.innerHTML = filtro
+        ? '<div class="pop-nav__empty">Nada encontrado com "' + esc(filtro) + '".</div>'
+        : (isAdmin()
+          ? '<div class="pop-nav__empty">Nenhuma cadeira ainda. Crie a primeira.</div>'
+          : '<div class="pop-nav__empty">Nenhuma cadeira cadastrada.</div>');
+      return;
+    }
+    nav.innerHTML = cad.map(c => renderCadeiraNode(c, filtro)).join('');
+    // eventos
+    nav.querySelectorAll('.pop-cadeira__head').forEach(el => {
+      el.addEventListener('click', ev => {
+        const id = el.closest('.pop-cadeira').dataset.id;
+        toggleCadeira(id);
+        selectPlaybook(id);
+      });
+    });
+    nav.querySelectorAll('[data-select-pop]').forEach(el => {
+      el.addEventListener('click', ev => {
+        ev.stopPropagation();
+        selectPop(el.dataset.cadeira, el.dataset.pop);
+      });
+    });
+    nav.querySelectorAll('[data-add-pop]').forEach(el => {
+      el.addEventListener('click', ev => { ev.stopPropagation(); createPop(el.dataset.cadeira); });
+    });
+    nav.querySelectorAll('[data-rename-cadeira]').forEach(el => {
+      el.addEventListener('click', ev => { ev.stopPropagation(); editCadeira(el.dataset.id); });
+    });
+    nav.querySelectorAll('[data-delete-cadeira]').forEach(el => {
+      el.addEventListener('click', ev => { ev.stopPropagation(); deleteCadeira(el.dataset.id); });
+    });
+    nav.querySelectorAll('[data-rename-pop]').forEach(el => {
+      el.addEventListener('click', ev => { ev.stopPropagation(); editPopMeta(el.dataset.pop); });
+    });
+  }
+  function renderCadeiraNode(c, filtro) {
+    const pops = state.docs.filter(d => d.cadeiraId === c.id)
+      .filter(d => !filtro || (d.titulo||'').toLowerCase().includes(filtro) || (c.nome||'').toLowerCase().includes(filtro));
+    const sel = state.selection && state.selection.cadeiraId === c.id;
+    const selPop = state.selection && state.selection.kind === 'pop' && state.selection.popId;
+    const selPlay = sel && state.selection.kind === 'playbook';
+    const isOpen = sel || filtro;
+    const admin = isAdmin();
+    const cadeiraActions = admin ? `
+      <span class="pop-item__actions">
+        <button data-rename-cadeira data-id="${c.id}" title="Renomear">${ICON_EDIT}</button>
+        <button data-delete-cadeira data-id="${c.id}" title="Apagar">${ICON_TRASH}</button>
+      </span>` : '';
+    return `
+      <div class="pop-cadeira ${isOpen?'open':''} ${sel?'selected':''}" data-id="${c.id}">
+        <div class="pop-cadeira__head">
+          ${CHEV}
+          <span class="pop-cadeira__ico">${iconFor(c.icone||c.nome)}</span>
+          <span class="pop-cadeira__nome">${esc(c.nome||'Sem nome')}</span>
+          <span class="pop-cadeira__count">${pops.length}</span>
+        </div>
+        <div class="pop-cadeira__children">
+          <div class="pop-item pop-item--playbook ${selPlay?'selected':''}" data-select-pop data-cadeira="${c.id}" data-pop="__playbook__">
+            ${ICON_BOOK}<span class="pop-item__label">Playbook</span>
+          </div>
+          ${pops.map(p => `
+            <div class="pop-item ${(selPop === p.id)?'selected':''}" data-select-pop data-cadeira="${c.id}" data-pop="${p.id}">
+              ${ICON_DOC}<span class="pop-item__label">${esc(p.titulo||'Sem título')}</span>
+              ${admin ? `<span class="pop-item__actions"><button data-rename-pop data-pop="${p.id}" title="Renomear">${ICON_EDIT}</button></span>` : ''}
+            </div>`).join('')}
+          ${admin ? `<button class="pop-nav__add-pop" data-add-pop data-cadeira="${c.id}">${ICON_PLUS} POP</button>` : ''}
+        </div>
+        ${cadeiraActions ? cadeiraActions.replace('pop-item__actions', 'pop-item__actions pop-cadeira__actions').replace('<span class="pop-item__actions pop-cadeira__actions">', '<span style="position:absolute;right:12px;top:12px;display:none">') : ''}
+      </div>
+    `;
+  }
+  function toggleCadeira(id) {
+    const el = document.querySelector(`.pop-cadeira[data-id="${id}"]`);
+    if (el) el.classList.toggle('open');
+  }
+
+  /* SELECTION */
+  function selectPlaybook(cadeiraId) {
+    state.selection = { kind: 'playbook', cadeiraId };
+    saveHash();
+    renderPlaybook(cadeiraId);
+    renderNav();
+  }
+  function selectPop(cadeiraId, popId) {
+    if (popId === '__playbook__') return selectPlaybook(cadeiraId);
+    state.selection = { kind: 'pop', cadeiraId, popId };
+    saveHash();
+    renderPop(popId);
+    renderNav();
+  }
+  function refreshCurrentView() {
+    if (!state.selection) return;
+    if (state.selection.kind === 'playbook') renderPlaybook(state.selection.cadeiraId);
+    else if (state.selection.kind === 'pop') renderPop(state.selection.popId);
+  }
+
+  /* VIEWS */
+  function renderHome() {
+    if (state.selection) return;
+    const home = document.getElementById('popHome');
+    if (!home) return;
+    const stats = document.getElementById('popHomeStats');
+    if (stats) {
+      const now = Date.now(), lastMonth = state.docs.filter(d => (d.updatedAt||0) > now - 30*86400000).length;
+      stats.innerHTML = `
+        <div class="pop-home__stat"><b>${state.cadeiras.length}</b><span>Cadeiras</span></div>
+        <div class="pop-home__stat"><b>${state.docs.length}</b><span>POPs</span></div>
+        <div class="pop-home__stat"><b>${lastMonth}</b><span>Atualizados no mês</span></div>
+      `;
+    }
+    const rec = document.getElementById('popHomeRecent');
+    if (rec) {
+      const recent = [...state.docs].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).slice(0,5);
+      if (recent.length) {
+        rec.innerHTML = `<div class="pop-home__recent-title">Últimas atualizações</div>` +
+          recent.map(d => {
+            const cad = state.cadeiras.find(c=>c.id===d.cadeiraId);
+            return `<div class="pop-home__recent-item" data-recent-open data-cadeira="${d.cadeiraId}" data-pop="${d.id}">
+              <div><strong>${esc(d.titulo)}</strong><br><small>${esc(cad?.nome||'—')}</small></div>
+              <small>${fmtRelative(d.updatedAt)}</small>
+            </div>`;
+          }).join('');
+        rec.querySelectorAll('[data-recent-open]').forEach(el => {
+          el.addEventListener('click', () => selectPop(el.dataset.cadeira, el.dataset.pop));
+        });
+      } else {
+        rec.innerHTML = '';
+      }
+    }
+  }
+  function renderPlaybook(cadeiraId) {
+    const cad = state.cadeiras.find(c => c.id === cadeiraId);
+    if (!cad) return renderNotFound();
+    const cont = document.getElementById('popContent');
+    const admin = isAdmin();
+    const html = cad.playbookHtml
+      ? `<div class="pop-doc__body pop-prose">${sanitize(cad.playbookHtml)}</div>`
+      : `<div class="pop-empty-doc">${ICON_BOOK}<h3>Sem playbook</h3><p>Ainda não escreveram o manual desta cadeira.</p></div>`;
+    cont.innerHTML = `
+      <article class="pop-doc">
+        <div class="pop-doc__crumb"><b>${esc(cad.nome)}</b> · Playbook</div>
+        <div class="pop-doc__head">
+          <div>
+            <h1 class="pop-doc__title">Playbook do cargo</h1>
+            <p class="pop-doc__sub">${esc(cad.nome)}</p>
+            <div class="pop-doc__meta">${cad.updatedAt ? 'Atualizado ' + fmtRelative(cad.updatedAt) : 'Novo'}</div>
+          </div>
+          <div class="pop-doc__actions">
+            ${admin ? `<button class="pop-btn pop-btn--primary" id="popEditPlaybook">${ICON_EDIT} Editar</button>` : ''}
+          </div>
+        </div>
+        ${html}
+      </article>
+    `;
+    if (admin) document.getElementById('popEditPlaybook')?.addEventListener('click', () => openEditor({ kind: 'playbook', cadeiraId }));
+  }
+  function renderPop(popId) {
+    const doc = state.docs.find(d => d.id === popId);
+    if (!doc) return renderNotFound();
+    const cad = state.cadeiras.find(c => c.id === doc.cadeiraId);
+    const cont = document.getElementById('popContent');
+    const admin = isAdmin();
+    cont.innerHTML = `
+      <article class="pop-doc">
+        <div class="pop-doc__crumb"><b>${esc(cad?.nome||'—')}</b> · POP</div>
+        <div class="pop-doc__head">
+          <div>
+            <h1 class="pop-doc__title">${esc(doc.titulo||'Sem título')}</h1>
+            ${doc.subtitulo ? `<p class="pop-doc__sub">${esc(doc.subtitulo)}</p>` : ''}
+            <div class="pop-doc__meta">${doc.updatedAt ? 'Atualizado ' + fmtRelative(doc.updatedAt) : 'Novo'}${doc.updatedBy ? ' por ' + esc(doc.updatedBy) : ''}</div>
+          </div>
+          <div class="pop-doc__actions">
+            ${admin ? `<button class="pop-btn" id="popDeleteDoc">${ICON_TRASH} Apagar</button>` : ''}
+            ${admin ? `<button class="pop-btn pop-btn--primary" id="popEditDoc">${ICON_EDIT} Editar</button>` : ''}
+          </div>
+        </div>
+        <div class="pop-doc__body pop-prose">${doc.html ? sanitize(doc.html) : '<div class="pop-empty-doc"><h3>Documento em branco</h3><p>Clique em editar pra escrever.</p></div>'}</div>
+      </article>
+    `;
+    if (admin) {
+      document.getElementById('popEditDoc')?.addEventListener('click', () => openEditor({ kind: 'pop', popId, cadeiraId: doc.cadeiraId }));
+      document.getElementById('popDeleteDoc')?.addEventListener('click', () => deletePop(popId));
+    }
+  }
+  function renderNotFound() {
+    const cont = document.getElementById('popContent');
+    cont.innerHTML = '<div class="pop-empty-doc"><h3>Não encontrado</h3><p>Esse conteúdo pode ter sido apagado.</p></div>';
+    state.selection = null; saveHash(); renderHome();
+  }
+
+  /* CRUD */
+  async function createCadeira() {
+    if (!isAdmin()) return;
+    const nome = prompt('Nome da cadeira (ex: Social Media, Tráfego, Atendimento):');
+    if (!nome || !nome.trim()) return;
+    const icone = (prompt('Ícone (deixe vazio pra padrão): social, trafego, atendimento, design, diretor', '') || '').trim() || 'default';
+    try {
+      const ordem = state.cadeiras.length ? Math.max(...state.cadeiras.map(c=>c.ordem||0)) + 10 : 10;
+      await db().collection('pop_cadeiras').add({
+        nome: nome.trim(), icone, ordem, playbookHtml: '',
+        createdAt: Date.now(), updatedAt: Date.now(),
+      });
+      safeToast('success', '✅', 'Cadeira criada');
+    } catch(e) { console.error(e); safeToast('danger', '❌', 'Falha ao criar cadeira'); }
+  }
+  async function editCadeira(id) {
+    if (!isAdmin()) return;
+    const cad = state.cadeiras.find(c=>c.id===id); if (!cad) return;
+    const nome = prompt('Renomear cadeira:', cad.nome||'');
+    if (nome === null) return;
+    if (!nome.trim()) return safeToast('warn', '⚠️', 'Nome não pode ficar vazio');
+    try {
+      await db().collection('pop_cadeiras').doc(id).update({ nome: nome.trim(), updatedAt: Date.now() });
+    } catch(e) { safeToast('danger', '❌', 'Falha ao renomear'); }
+  }
+  async function deleteCadeira(id) {
+    if (!isAdmin()) return;
+    const cad = state.cadeiras.find(c=>c.id===id); if (!cad) return;
+    const nPops = state.docs.filter(d=>d.cadeiraId===id).length;
+    if (!confirm(`Apagar a cadeira "${cad.nome}"? Vai apagar também ${nPops} POP(s).`)) return;
+    try {
+      const batch = db().batch();
+      state.docs.filter(d=>d.cadeiraId===id).forEach(d => batch.delete(db().collection('pop_docs').doc(d.id)));
+      batch.delete(db().collection('pop_cadeiras').doc(id));
+      await batch.commit();
+      if (state.selection?.cadeiraId === id) { state.selection = null; saveHash(); renderHome(); }
+      safeToast('success', '🗑', 'Cadeira apagada');
+    } catch(e) { console.error(e); safeToast('danger', '❌', 'Falha ao apagar'); }
+  }
+  async function createPop(cadeiraId) {
+    if (!isAdmin()) return;
+    const titulo = prompt('Título do POP (ex: Como criar campanha de tráfego):');
+    if (!titulo || !titulo.trim()) return;
+    try {
+      const cadDocs = state.docs.filter(d=>d.cadeiraId===cadeiraId);
+      const ordem = cadDocs.length ? Math.max(...cadDocs.map(d=>d.ordem||0)) + 10 : 10;
+      const ref = await db().collection('pop_docs').add({
+        cadeiraId, titulo: titulo.trim(), subtitulo: '', html: '', ordem,
+        createdAt: Date.now(), updatedAt: Date.now(),
+      });
+      safeToast('success', '✅', 'POP criado');
+      setTimeout(() => selectPop(cadeiraId, ref.id), 400);
+    } catch(e) { console.error(e); safeToast('danger', '❌', 'Falha ao criar POP'); }
+  }
+  async function editPopMeta(popId) {
+    if (!isAdmin()) return;
+    const doc = state.docs.find(d=>d.id===popId); if (!doc) return;
+    const t = prompt('Título:', doc.titulo||'');
+    if (t === null) return;
+    if (!t.trim()) return safeToast('warn', '⚠️', 'Título não pode ficar vazio');
+    const s = prompt('Subtítulo (opcional):', doc.subtitulo||'');
+    if (s === null) return;
+    try {
+      await db().collection('pop_docs').doc(popId).update({ titulo: t.trim(), subtitulo: (s||'').trim(), updatedAt: Date.now() });
+    } catch(e) { safeToast('danger', '❌', 'Falha ao renomear'); }
+  }
+  async function deletePop(popId) {
+    if (!isAdmin()) return;
+    const doc = state.docs.find(d=>d.id===popId); if (!doc) return;
+    if (!confirm(`Apagar o POP "${doc.titulo}"?`)) return;
+    try {
+      await db().collection('pop_docs').doc(popId).delete();
+      if (state.selection?.popId === popId) selectPlaybook(doc.cadeiraId);
+      safeToast('success', '🗑', 'POP apagado');
+    } catch(e) { safeToast('danger', '❌', 'Falha ao apagar'); }
+  }
+
+  /* EDITOR */
+  function openEditor(ctx) {
+    if (!isAdmin()) return;
+    const overlay = document.getElementById('popEditor');
+    const titleEl = document.getElementById('popEditorTitle');
+    const eyebrow = document.getElementById('popEditorEyebrow');
+    const meta = document.getElementById('popEditorMeta');
+    const html = document.getElementById('popEditorHtml');
+    const preview = document.getElementById('popEditorPreview');
+    const delBtn = document.getElementById('popEditorDelete');
+
+    let doc;
+    if (ctx.kind === 'playbook') {
+      const cad = state.cadeiras.find(c=>c.id===ctx.cadeiraId);
+      doc = cad; if (!cad) return;
+      eyebrow.textContent = cad.nome;
+      titleEl.textContent = 'Editar playbook';
+      meta.innerHTML = '';
+      html.value = cad.playbookHtml || '';
+      delBtn.hidden = true;
+    } else {
+      const d = state.docs.find(x=>x.id===ctx.popId); if (!d) return;
+      doc = d;
+      const cad = state.cadeiras.find(c=>c.id===d.cadeiraId);
+      eyebrow.textContent = (cad?.nome||'') + ' · POP';
+      titleEl.textContent = 'Editar POP';
+      meta.innerHTML = `
+        <div class="fld"><label>Título</label><input type="text" id="popEditorMetaTitle" value="${esc(d.titulo||'')}"></div>
+        <div class="fld"><label>Subtítulo</label><input type="text" id="popEditorMetaSub" value="${esc(d.subtitulo||'')}"></div>
+      `;
+      html.value = d.html || '';
+      delBtn.hidden = false;
+    }
+    state.editing = { ...ctx, doc };
+    overlay.hidden = false;
+    updatePreview();
+    html.oninput = updatePreview;
+    setTimeout(() => html.focus(), 100);
+  }
+  function updatePreview() {
+    const html = document.getElementById('popEditorHtml').value;
+    const preview = document.getElementById('popEditorPreview');
+    preview.innerHTML = sanitize(html);
+  }
+  function closeEditor() {
+    document.getElementById('popEditor').hidden = true;
+    state.editing = null;
+  }
+  async function saveEditor() {
+    if (!state.editing || !isAdmin()) return;
+    const html = document.getElementById('popEditorHtml').value;
+    const clean = sanitize(html);
+    const email = (typeof getCurrentEmail === 'function' ? getCurrentEmail() : null) || null;
+    try {
+      if (state.editing.kind === 'playbook') {
+        await db().collection('pop_cadeiras').doc(state.editing.cadeiraId).update({
+          playbookHtml: clean, updatedAt: Date.now(), updatedBy: email,
+        });
+      } else {
+        const patch = { html: clean, updatedAt: Date.now(), updatedBy: email };
+        const t = document.getElementById('popEditorMetaTitle')?.value?.trim();
+        const s = document.getElementById('popEditorMetaSub')?.value?.trim();
+        if (t) patch.titulo = t;
+        if (s !== undefined) patch.subtitulo = s;
+        await db().collection('pop_docs').doc(state.editing.popId).update(patch);
+      }
+      closeEditor();
+      safeToast('success', '✅', 'Salvo');
+    } catch(e) { console.error(e); safeToast('danger', '❌', 'Falha ao salvar'); }
+  }
+
+  /* HASH ROUTING */
+  function saveHash() {
+    if (document.body.dataset.activeTab !== 'pop') return;
+    const s = state.selection;
+    if (!s) { history.replaceState(null, '', '#pop'); return; }
+    const h = s.kind === 'playbook' ? `#pop/${s.cadeiraId}` : `#pop/${s.cadeiraId}/${s.popId}`;
+    history.replaceState(null, '', h);
+  }
+  function loadFromHash() {
+    const m = location.hash.match(/^#pop\/([^\/]+)(?:\/([^\/]+))?/);
+    if (!m) return;
+    const cadeiraId = m[1], popId = m[2];
+    if (popId) selectPop(cadeiraId, popId);
+    else selectPlaybook(cadeiraId);
+  }
+
+  /* BOOTSTRAP */
+  function init() {
+    if (state.inited) return;
+    state.inited = true;
+    document.getElementById('popAddCadeiraBtn')?.addEventListener('click', createCadeira);
+    document.getElementById('popSearch')?.addEventListener('input', (e) => {
+      state.filter = e.target.value || '';
+      renderNav();
+    });
+    document.querySelectorAll('[data-pop-editor-close]').forEach(el => el.addEventListener('click', closeEditor));
+    document.getElementById('popEditorSave')?.addEventListener('click', saveEditor);
+    document.getElementById('popEditorDelete')?.addEventListener('click', () => {
+      if (state.editing?.kind === 'pop') { deletePop(state.editing.popId); closeEditor(); }
+    });
+    document.addEventListener('keydown', (e) => {
+      const overlay = document.getElementById('popEditor');
+      if (overlay && !overlay.hidden && e.key === 'Escape') closeEditor();
+    });
+    if (isAdmin()) {
+      const btn = document.getElementById('popAddCadeiraBtn'); if (btn) btn.hidden = false;
+    }
+    subscribeAll();
+    setTimeout(loadFromHash, 300);
+  }
+  function ensureInit() { init(); }
+
+  return { init, ensureInit, selectPlaybook, selectPop };
+})();
+
+// Wire tab switching pro POP
+(function _wirePopTab() {
+  const orig = window.switchTab;
+  if (typeof orig !== 'function') { setTimeout(_wirePopTab, 500); return; }
+  if (orig._popWrapped) return;
+  const wrapped = function(tab, btn) {
+    const r = orig.apply(this, arguments);
+    if (tab === 'pop') setTimeout(() => POP.ensureInit(), 100);
+    return r;
+  };
+  wrapped._popWrapped = true;
+  Object.assign(wrapped, orig);
+  window.switchTab = wrapped;
+})();
 </script>
 </body>
 </html>
