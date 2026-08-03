@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260802-2">
+<link rel="stylesheet" href="styles.css?v=20260803-1">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -2608,7 +2608,8 @@ const ALL_TABS = ['base','entrada','visualizar','acesso','social','lives','gmb',
 const TAB_LABELS = {
   base:'📚 Base de Dados',
   entrada:'✏️ Criar Post', visualizar:'📅 Calendário Social Media', acesso:'🔑 Acesso',
-  social:'🚀 Publipost', gmb:'📍 Google', metricas:'📊 Métricas', projetos:'🎯 Gestão Central'
+  social:'🚀 Publipost', lives:'🎥 Ao Vivo', pop:'📖 POPs',
+  gmb:'📍 Google', metricas:'📊 Métricas', projetos:'🎯 Gestão Central'
 };
 let _permissions = {};
 try { _permissions = JSON.parse(localStorage.getItem('pj_permissions')||'{}') || {}; } catch(e){ _permissions = {}; }
@@ -3447,7 +3448,7 @@ async function openPermsModal(email) {
     const checked = perms.tabs.includes(t) ? 'checked' : '';
     return `<label class="perms-item">
       <input type="checkbox" data-perm-tab="${t}" ${checked}>
-      <span>${TAB_LABELS[t]}</span>
+      <span>${TAB_LABELS[t] || t}</span>
     </label>`;
   }).join('');
   let spaces = (typeof pjSpaces!=='undefined' && pjSpaces.length) ? pjSpaces : [];
@@ -4309,7 +4310,7 @@ if (_DEV_BYPASS) {
     // Restaura a última aba usada (persistida em localStorage); fallback: Projetos
     setTimeout(() => {
       if (typeof switchTab === 'function') {
-        const _VALID_TABS = ['base','entrada','visualizar','acesso','social','gmb','metricas','projetos'];
+        const _VALID_TABS = (typeof ALL_TABS !== 'undefined') ? ALL_TABS : ['base','entrada','visualizar','acesso','social','lives','gmb','metricas','projetos','pop'];
         let _saved = null;
         try { _saved = localStorage.getItem('fg_active_tab'); } catch(_) {}
         const _target = (_saved && _VALID_TABS.includes(_saved)) ? _saved : 'projetos';
@@ -4382,7 +4383,7 @@ _auth.onAuthStateChanged(async user => {
   // Restaura a última aba usada (persistida em localStorage); fallback: Gestão Central (Projetos)
   setTimeout(() => {
     if (typeof switchTab === 'function') {
-      const _VALID_TABS = ['base','entrada','visualizar','acesso','social','gmb','metricas','projetos'];
+      const _VALID_TABS = (typeof ALL_TABS !== 'undefined') ? ALL_TABS : ['base','entrada','visualizar','acesso','social','lives','gmb','metricas','projetos','pop'];
       let _saved = null;
       try { _saved = localStorage.getItem('fg_active_tab'); } catch(_) {}
       const _target = (_saved && _VALID_TABS.includes(_saved) && (typeof userCanSeeTab !== 'function' || userCanSeeTab(_saved))) ? _saved : 'projetos';
@@ -27215,7 +27216,16 @@ const LIV = (() => {
   }
 
   /* HEALTH */
+  function _livesTabActive() {
+    return document.body.dataset.activeTab === 'lives';
+  }
   async function healthCheck() {
+    // Se saiu da aba, agenda check longo (60s) sem gastar rede fazendo fetch
+    if (!_livesTabActive()) {
+      clearTimeout(state.healthTimer);
+      state.healthTimer = setTimeout(healthCheck, 60000);
+      return;
+    }
     try {
       const r = await fetch(api() + '/health', { cache: 'no-store' });
       if (!r.ok) throw new Error('http_' + r.status);
@@ -27245,9 +27255,10 @@ const LIV = (() => {
 
   /* LISTAGEM / RECONCILIAÇÃO */
   async function pollStreams() {
-    if (document.hidden) {
+    // Se saiu da aba Lives ou browser em background, poll longo (30s) sem fetch
+    if (!_livesTabActive() || document.hidden) {
       clearTimeout(state.pollTimer);
-      state.pollTimer = setTimeout(pollStreams, 5000);
+      state.pollTimer = setTimeout(pollStreams, 30000);
       return;
     }
     try {
