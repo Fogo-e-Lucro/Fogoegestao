@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260803-7">
+<link rel="stylesheet" href="styles.css?v=20260803-8">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -698,44 +698,51 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
       <div class="estudio-split">
 
         <!-- PALCO (preview) -->
-        <section class="estudio-stage" aria-label="Prévia do post" style="max-height:calc(100vh - 60px);overflow-y:auto;padding:32px 24px;display:grid;place-items:start center;position:sticky;top:60px;align-self:start;">
+        <section class="estudio-stage vitrine15" aria-label="Prévia do post">
           <div class="estudio-stage-scroll">
             <div class="estudio-mock" id="estudioMock" data-tipo="REELS">
-              <div class="estudio-phone" style="width:300px;max-width:300px;aspect-ratio:9/19;background:linear-gradient(180deg,#1a1a2e,#0b0b14);border-radius:42px;padding:12px;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.55);">
-                <div class="estudio-phone-notch"></div>
-                <div class="estudio-phone-screen" style="width:100%;height:100%;background:#000;border-radius:32px;overflow:hidden;display:flex;flex-direction:column;">
-
-                  <header class="estudio-ig-top">
-                    <div class="estudio-ig-avatar" id="mockAvatar" data-initial="?"></div>
-                    <div class="estudio-ig-handle-wrap">
-                      <span class="estudio-ig-handle" id="mockHandle">@seurestaurante</span>
-                      <span class="estudio-ig-loc" id="mockLoc">Patrocinado</span>
+              <div class="estudio-phone">
+                <div class="estudio-phone-bezel">
+                  <div class="estudio-phone-island" aria-hidden="true"></div>
+                  <div class="estudio-phone-screen" data-screen>
+                    <header class="estudio-ig-top" data-row="top">
+                      <div class="estudio-ig-avatar" id="mockAvatar" data-initial=""></div>
+                      <div class="estudio-ig-handle-wrap">
+                        <span class="estudio-ig-handle" id="mockHandle">@seurestaurante</span>
+                        <span class="estudio-ig-loc" id="mockLoc">Áudio original</span>
+                      </div>
+                      <button class="estudio-ig-dots" tabindex="-1" aria-label="Mais opções">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+                      </button>
+                    </header>
+                    <div class="estudio-ig-media" id="mockMedia" data-row="media">
+                      <img class="estudio-ig-media-img" id="mockMediaImg" alt="" hidden>
+                      <div class="estudio-ig-media-empty" id="mockMediaEmpty">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="M21 15l-5-5-11 11"/></svg>
+                        <span data-empty-text>Solte a arte aqui, ou cole uma URL nos Extras</span>
+                      </div>
+                      <div class="estudio-ig-gancho" id="mockGancho" hidden></div>
+                      <button class="estudio-ig-play" id="mockPlay" hidden aria-label="Reproduzir">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                      </button>
+                      <div class="estudio-ig-audio" id="mockAudio" hidden>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 3v10.55A4 4 0 1 0 11 17V7h4V3z"/></svg>
+                        <span id="mockAudioText">Áudio original</span>
+                      </div>
+                      <div class="estudio-ig-dots-carr" id="mockCarrDots" hidden></div>
                     </div>
-                    <button class="estudio-ig-dots" tabindex="-1">•••</button>
-                  </header>
-
-                  <div class="estudio-ig-media" id="mockMedia">
-                    <div class="estudio-ig-media-empty">
-                      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15l6-6 12 12"/></svg>
-                      <span>Arraste a arte aqui, ou cole uma URL nos Extras</span>
+                    <div class="estudio-ig-actions" data-row="actions">
+                      <button class="estudio-ig-act" tabindex="-1" aria-label="Curtir"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21.2l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+                      <button class="estudio-ig-act" tabindex="-1" aria-label="Comentar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
+                      <button class="estudio-ig-act" tabindex="-1" aria-label="Compartilhar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+                      <button class="estudio-ig-act estudio-ig-act--right" tabindex="-1" aria-label="Salvar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
                     </div>
-                    <div class="estudio-ig-gancho-overlay" id="mockGancho" hidden></div>
-                    <div class="estudio-ig-play" id="mockPlay" hidden>▶</div>
-                    <div class="estudio-ig-carr-dots" id="mockCarrDots" hidden></div>
+                    <div class="estudio-ig-caption" data-row="caption">
+                      <span class="estudio-ig-caption-handle" id="mockHandle2">@seurestaurante</span>
+                      <span class="estudio-ig-caption-text" id="mockCaption">A legenda aparece aqui enquanto você escreve.</span>
+                    </div>
+                    <div class="estudio-ig-time" id="mockTime" data-row="time">agora</div>
                   </div>
-
-                  <div class="estudio-ig-actions">
-                    <span class="estudio-ig-icon" aria-hidden="true">♡</span>
-                    <span class="estudio-ig-icon" aria-hidden="true">💬</span>
-                    <span class="estudio-ig-icon" aria-hidden="true">↗</span>
-                    <span class="estudio-ig-icon right" aria-hidden="true">🔖</span>
-                  </div>
-
-                  <div class="estudio-ig-caption">
-                    <span class="estudio-ig-caption-handle" id="mockHandle2">@seurestaurante</span>
-                    <span class="estudio-ig-caption-text" id="mockCaption">A legenda aparece aqui enquanto você escreve.</span>
-                  </div>
-                  <div class="estudio-ig-time" id="mockTime">agora</div>
                 </div>
               </div>
 
@@ -29056,6 +29063,14 @@ function escolherFormato(tipo) {
     if (tipo === 'CARROSSEL') mockCarrDots.innerHTML = '<i class="on"></i><i></i><i></i>';
   }
   const imgUp = document.getElementById('imgUpload'); if (imgUp) imgUp.multiple = (tipo === 'CARROSSEL');
+  // Vitrine 15: texto placeholder do empty state muda com formato
+  const emptyTxt = document.querySelector('#mockMediaEmpty [data-empty-text]');
+  if (emptyTxt) emptyTxt.textContent = ({
+    REELS: 'Solte o thumb do Reels aqui',
+    FOTO: 'Solte a foto ou cole a URL nos Extras',
+    CARROSSEL: 'Solte a 1ª arte do carrossel',
+    STORY: 'Solte a arte 9:16 do story'
+  })[tipo] || 'Solte a arte aqui';
   flashPreview();
   atualizarPreview();
   scheduleAutoSave();
@@ -29144,7 +29159,11 @@ window.selectRecorrencia = function(rec) {
   scheduleAutoSave();
 };
 
-/* PREVIEW LIVE */
+/* PREVIEW LIVE — Vitrine 15 (2026-08-03) */
+function _pickTrack() {
+  const t = ['Trending · Sertanejo', 'Trending · Funk BH', 'Chill Lofi', 'Instrumental Bossa', 'Áudio original'];
+  return t[Math.floor(Math.random() * t.length)];
+}
 function atualizarPreview() {
   const ganchoEl = document.getElementById('gancho');
   const legendaEl = document.getElementById('legenda');
@@ -29153,17 +29172,50 @@ function atualizarPreview() {
   const legenda = legendaEl.value.trim();
   const cliente = estudioState.cliente || 'seurestaurante';
   const handle = '@' + cliente.toLowerCase().replace(/[^a-z0-9]/g,'');
-  const mh1 = document.getElementById('mockHandle'); if (mh1) mh1.textContent = handle;
+  const tipo = estudioState.tipo || 'REELS';
+  const mock = document.getElementById('estudioMock');
+
+  const mh1 = document.getElementById('mockHandle');  if (mh1) mh1.textContent = handle;
   const mh2 = document.getElementById('mockHandle2'); if (mh2) mh2.textContent = handle;
   const av = document.getElementById('mockAvatar');
-  if (av) av.setAttribute('data-initial', cliente.charAt(0).toUpperCase());
+  if (av) av.setAttribute('data-initial', (estudioState.cliente ? cliente.charAt(0) : '').toUpperCase());
+
   const cap = document.getElementById('mockCaption');
   if (cap) cap.textContent = legenda || 'A legenda aparece aqui enquanto você escreve.';
+
   const go = document.getElementById('mockGancho');
   if (go) {
-    if (gancho && estudioState.tipo === 'REELS') { go.hidden = false; go.textContent = gancho; }
-    else { go.hidden = true; }
+    const show = gancho && (tipo === 'REELS' || tipo === 'STORY');
+    go.hidden = !show;
+    if (show) go.textContent = gancho;
   }
+
+  // Imagem: preview via <img> real (fallback em 3 fontes)
+  const artUrl = (
+    document.getElementById('imgUrl')?.value ||
+    estudioState.artUrl ||
+    (Array.isArray(currentImages) && currentImages[0]) ||
+    mock?.dataset.artUrl || ''
+  ).toString().trim();
+  const img = document.getElementById('mockMediaImg');
+  if (img && mock) {
+    if (artUrl) { img.src = artUrl; img.hidden = false; mock.classList.add('has-media'); }
+    else { img.hidden = true; img.removeAttribute('src'); mock.classList.remove('has-media'); }
+  }
+
+  // Audio pill (Reels/Carrossel), trilha aleatória persistida na sessao
+  const audio = document.getElementById('mockAudio');
+  const audioTxt = document.getElementById('mockAudioText');
+  if (audio && audioTxt) {
+    const showAudio = (tipo === 'REELS' || tipo === 'CARROSSEL');
+    audio.hidden = !showAudio;
+    if (showAudio) audioTxt.textContent = window._mockTrack || (window._mockTrack = _pickTrack());
+  }
+
+  // Loc line (subtitle sob o handle)
+  const loc = document.getElementById('mockLoc');
+  if (loc) loc.textContent = (tipo === 'REELS') ? 'Áudio original' : 'Publicação';
+
   const cp = document.getElementById('conteudoPreview');
   if (cp) cp.textContent = gancho ? gancho.slice(0, 32) + (gancho.length > 32 ? '…' : '') : 'Em branco';
   if (gancho || legenda) document.querySelector('[data-block="conteudo"]')?.classList.add('filled');
