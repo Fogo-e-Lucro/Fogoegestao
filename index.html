@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260803-14">
+<link rel="stylesheet" href="styles.css?v=20260803-15">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -28982,6 +28982,7 @@ function fecharComboClientes() {
   const dd = document.getElementById('clienteDropdown');
   if (dd) dd.hidden = true;
 }
+let _clienteRetryTimer = null;
 function filtrarClientes(q) {
   const rests = (typeof getRestaurants === 'function' ? getRestaurants() : []);
   const bd = window._bdClientes || [];
@@ -28989,8 +28990,20 @@ function filtrarClientes(q) {
   const filtrados = rests.filter(r => r.toLowerCase().includes(query));
   const lista = document.getElementById('clienteLista');
   if (!lista) return;
+  // Firestore ainda carregando? mostra loading + retry
+  const bdReady = Array.isArray(window._bdClientes);
+  if (!bdReady && rests.length === 0) {
+    lista.innerHTML = `<div class="estudio-combo-empty">Carregando clientes…</div>`;
+    clearTimeout(_clienteRetryTimer);
+    _clienteRetryTimer = setTimeout(() => {
+      const dd = document.getElementById('clienteDropdown');
+      if (dd && !dd.hidden) filtrarClientes(document.getElementById('clienteBusca')?.value || '');
+    }, 500);
+    return;
+  }
   if (!filtrados.length) {
-    lista.innerHTML = `<div class="estudio-combo-empty">Nenhum cliente encontrado. Cria um logo abaixo.</div>`;
+    if (query) lista.innerHTML = `<div class="estudio-combo-empty">Nenhum cliente com "${escHtml(query)}". Cria abaixo.</div>`;
+    else       lista.innerHTML = `<div class="estudio-combo-empty">Nenhum cliente cadastrado. Cria o primeiro abaixo.</div>`;
     return;
   }
   lista.innerHTML = filtrados.map(nome => {
