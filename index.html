@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260802-1">
+<link rel="stylesheet" href="styles.css?v=20260802-2">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -649,16 +649,15 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             <span class="estudio-bar-crumb muted">Calendário</span>
             <span class="estudio-bar-sep">/</span>
             <span class="estudio-bar-crumb">Novo post</span>
-          <span class="estudio-bar-hint" style="margin-left:8px;opacity:.7;">agenda no calendário editorial</span>
             <span class="estudio-bar-sep muted" id="crumbSep" hidden>·</span>
             <span class="estudio-bar-crumb accent" id="crumbCliente" hidden></span>
           </div>
         </div>
         <div class="estudio-bar-right">
-          <span class="estudio-bar-hint" id="estudioAutoSave">Rascunho salvo agora</span>
-          <button class="estudio-bar-btn ghost" onclick="salvarRascunho()">Guardar rascunho</button>
-          <button class="estudio-bar-btn primary" id="submitBtn" onclick="savePost()">
-            <span>Salvar no calendário</span>
+          <span class="estudio-bar-hint" id="estudioAutoSave">Rascunho salvo</span>
+          <button class="estudio-bar-btn ghost" onclick="salvarRascunho()" title="Ctrl+S">Rascunho</button>
+          <button class="estudio-bar-btn primary" id="submitBtn" onclick="savePost()" title="Salvar no calendário editorial (Ctrl+Enter)">
+            <span>Salvar</span>
             <kbd class="estudio-bar-kbd">⌘↵</kbd>
           </button>
         </div>
