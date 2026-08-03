@@ -17242,11 +17242,8 @@ function pjBuildKanban(listId, statuses, tasks) {
         ? `<span class="pj-card-prio ${t.priority}" title="${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}"></span>`
         : '';
       const recur = t.recurrence?.pattern ? `<span class="pj-card-recur" title="${pjRecurrenceLabel(t.recurrence)}">🔁</span>` : '';
-      const autoBaseline = (t.timeEntries||[]).reduce((a,e)=>a+(e.ms||0),0);
-      const trackingHtml = t.autoTrackStart
-        ? `<span class="pj-card-tracking" title="Contando tempo em Em Andamento"
-                data-pj-autotick data-pj-autostart="${t.autoTrackStart}" data-pj-autobaseline="${autoBaseline}">⏱ ${pjFormatDuration(pjTaskTotalMs(t))}</span>`
-        : '';
+      // Removido em 2026-08-03: pill de cronometro (piscava a tela).
+      const trackingHtml = '';
       h += `<div class="pj-card ${done?'done':''}" draggable="true" data-priority="${t.priority||'low'}"
                ondragstart="pjKanbanDragStart(event,'${t.id}')"
                ondragend="pjKanbanDragEnd(event)"
@@ -21510,27 +21507,11 @@ async function pjStartTimer(taskId) {
   pjRenderMain();
 }
 function pjStartTimerTick() {
-  if (_pjTimerInterval) clearInterval(_pjTimerInterval);
-  _pjTimerInterval = setInterval(() => {
-    document.querySelectorAll('[data-pj-timer-display]').forEach(el => {
-      const r = pjGetRunningEntry();
-      if (!r) { el.textContent = ''; return; }
-      el.textContent = pjFormatDuration(Date.now() - r.startedAt);
-    });
-    document.querySelectorAll('[data-pj-autotick]').forEach(el => {
-      const start = parseInt(el.getAttribute('data-pj-autostart'), 10);
-      const base  = parseInt(el.getAttribute('data-pj-autobaseline') || '0', 10);
-      if (!start) return;
-      el.textContent = '⏱ ' + pjFormatDuration(base + (Date.now() - start));
-    });
-  }, 1000);
+  // Desativado em 2026-08-03: cronometro ao vivo estava piscando a tela.
+  // Interval nunca inicia. Dados de tempo (startedAt/timeEntries) continuam sendo
+  // salvos no Firestore; visualizacao vira estatica (renderiza no re-render normal).
 }
-// Garante que o interval está rodando enquanto houver algum badge de auto-tracking
-// visível (mesmo sem timer manual ativo). Chamado após re-renders principais.
-function pjEnsureAutoTick() {
-  if (_pjTimerInterval) return;
-  if (document.querySelector('[data-pj-autotick]')) pjStartTimerTick();
-}
+function pjEnsureAutoTick() { /* no-op */ }
 async function pjStopTimer() {
   const r = pjGetRunningEntry();
   if (!r) return;
@@ -21548,18 +21529,9 @@ async function pjStopTimer() {
   pjRenderMain();
 }
 function pjTimerBtnHtml(t) {
-  const r = pjGetRunningEntry();
-  const running = r && r.taskId === t.id;
-  const total = pjTaskTotalMs(t);
-  const totalLabel = total ? pjFormatDuration(total) : '';
-  if (running) {
-    return `<button class="pj-timer-btn running" onclick="event.stopPropagation();pjStopTimer()" title="Parar timer">
-      ■ <span data-pj-timer-display>${pjFormatDuration(Date.now()-r.startedAt)}</span>
-    </button>`;
-  }
-  return `<button class="pj-timer-btn" onclick="event.stopPropagation();pjStartTimer('${t.id}')" title="Iniciar timer${totalLabel?` (total: ${totalLabel})`:''}">
-    ▶ ${totalLabel || ''}
-  </button>`;
+  // Removido em 2026-08-03: cronometro ao vivo causava re-render/piscar da tela.
+  // Se o timer manual for retomado no futuro, restaurar via git blame deste bloco.
+  return '';
 }
 
 // ── Métricas de tempo (admin-only) ──────────────────────
