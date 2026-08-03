@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260803-11">
+<link rel="stylesheet" href="styles.css?v=20260803-12">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -38,26 +38,29 @@
   };</script>
   <script async defer src="https://connect.facebook.net/pt_BR/sdk.js"></script>
 <script>
-  /* Auto-heal do Service Worker: se o CSS baixado nao tem regras novas
-     (.liv-header do estudio de lives), o SW velho serviu cache stale.
-     Desregistra + limpa caches + recarrega uma unica vez. Idempotente. */
+  /* Auto-heal SW v2: checa por marcador ÚNICO do CSS mais recente.
+     Ex-marcador L1: '.liv-header' padding — insuficiente pra pegar
+     versões intermediarias que ja tinham .liv-header mas nao Vitrine 15.
+     Novo marcador: '.vitrine15 .estudio-phone-island' (existe SO na v3+). */
   (function autoHealSW() {
     if (!('serviceWorker' in navigator)) return;
-    if (sessionStorage.getItem('fg_sw_healed_20260802')) return;
-    // Da 800ms pro CSS baixar antes de checar
+    if (sessionStorage.getItem('fg_sw_healed_20260803v3')) return;
     setTimeout(async () => {
       try {
-        const test = document.createElement('div');
-        test.className = 'liv-header'; test.style.position = 'fixed';
-        test.style.left = '-9999px'; test.style.top = '-9999px';
-        document.body.appendChild(test);
-        const cs = getComputedStyle(test);
-        // .liv-header tem padding 20px 22px no CSS novo — sem CSS novo, padding fica 0
-        const padded = parseInt(cs.paddingTop || '0', 10) >= 8;
-        test.remove();
-        if (padded) return; // CSS novo aplicando, tudo OK
-        console.warn('[auto-heal] CSS stale detectado, desregistrando SW e limpando caches...');
-        sessionStorage.setItem('fg_sw_healed_20260802', '1');
+        // Sonda: cria .vitrine15 > .estudio-phone-island e mede width
+        // (regra nova: width 86px). Sem CSS v3 → width 0 (elemento vazio).
+        const outer = document.createElement('div');
+        outer.className = 'vitrine15';
+        outer.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:400px;';
+        const island = document.createElement('div');
+        island.className = 'estudio-phone-island';
+        outer.appendChild(island);
+        document.body.appendChild(outer);
+        const w = parseFloat(getComputedStyle(island).width) || 0;
+        outer.remove();
+        if (w >= 50) return; // CSS v3 aplicando
+        console.warn('[auto-heal v2] CSS stale detectado (island w=' + w + '), desregistrando SW + limpando caches + reload');
+        sessionStorage.setItem('fg_sw_healed_20260803v3', '1');
         const regs = await navigator.serviceWorker.getRegistrations();
         await Promise.all(regs.map(r => r.unregister()));
         if (window.caches) {
@@ -65,7 +68,7 @@
           await Promise.all(keys.map(k => caches.delete(k)));
         }
         location.reload();
-      } catch (e) { console.warn('[auto-heal] falhou:', e); }
+      } catch (e) { console.warn('[auto-heal v2] falhou:', e); }
     }, 800);
   })();
 </script>
