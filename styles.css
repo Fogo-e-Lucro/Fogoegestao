@@ -12292,3 +12292,159 @@ html, body {
   pre, code, table { max-width: 100%; overflow-x: auto; }
   .tab-panel.active > * { max-width: 100vw; }
 }
+
+/* ============================================================
+   FIX MOBILE v2 (2026-08-03) — auditoria Playwright de 3 fluxos
+   Ordem: mais crítico primeiro.
+   ============================================================ */
+
+/* [P0] iOS auto-zoom em inputs — o FIX #9 antigo perde por especificidade */
+@media (max-width: 640px) {
+  #loginEmail,
+  #loginPassword,
+  .acesso-input,
+  #aNewName,
+  #aNewEmail,
+  #aNewPwd,
+  #aNewWhatsApp {
+    font-size: 16px !important;
+    min-height: 44px;
+    padding: 11px 14px;
+    line-height: 1.25;
+  }
+  #loginScreen button[type="submit"],
+  #loginScreen .btn-primary {
+    min-height: 48px;
+    font-size: 15px;
+  }
+}
+
+/* [P0] Estúdio: barra Salvar some ao rolar — overflow:hidden anula sticky.
+   Trocar por overflow-x: clip mantém o clipping mas devolve o sticky. */
+@media (max-width: 720px) {
+  #estudioShell,
+  .estudio-shell,
+  .estudio-stage,
+  .estudio-panel {
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+  }
+  header.estudio-bar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: var(--bg);
+  }
+}
+
+/* [P0] Toasts — no mobile move pro topo e limita a coluna estreita
+   (auto-dismiss em 3s já existe no JS showToast) */
+@media (max-width: 640px) {
+  .toast-container {
+    top: max(12px, env(safe-area-inset-top, 12px));
+    bottom: auto;
+    right: 12px;
+    left: 12px;
+    max-height: 45vh;
+    overflow: hidden;
+  }
+  .toast {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 13px;
+  }
+}
+
+/* [P1] .app-settings-tabs — WhatsApp/Equipe cortam fora da viewport */
+@media (max-width: 640px) {
+  .app-settings-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-inline: -8px;
+    padding-inline: 8px;
+    scroll-snap-type: x mandatory;
+  }
+  .app-settings-tabs::-webkit-scrollbar { display: none; }
+  .app-settings-tab,
+  .app-settings-tab.pj-admin-only {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    min-height: 44px;
+    max-width: none;
+    right: auto;   /* neutraliza right:8px do FIX #7 antigo (era no-op em flex) */
+  }
+}
+
+/* [P1] Cadastro de membro — grid 2 col vira 1 col, CTA 48px, actions maiores */
+@media (max-width: 640px) {
+  .acesso-form-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .acesso-add-btn {
+    min-height: 48px;
+    padding: 14px 20px;
+    font-size: 15px;
+    width: 100%;
+  }
+  .acesso-add-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .acesso-member-row {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .acesso-action-btn {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 10px 12px;
+    font-size: 16px;
+  }
+}
+
+/* [P1] Checkboxes/radios de permissões viram chips tocáveis */
+@media (max-width: 640px) {
+  .share-tab-label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 13px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    gap: 8px;
+    margin: 2px 0;
+  }
+  .share-tab-label input[type="checkbox"],
+  .share-tab-label input[type="radio"],
+  .anew-tab-check,
+  .anew-space-check {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    accent-color: var(--accent);
+  }
+}
+
+/* [P2] Alvos tocáveis dispersos abaixo de 44px */
+@media (max-width: 720px) {
+  #pjDrawerToggle {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+  }
+  button.estudio-ai,
+  button.estudio-mini {
+    min-height: 40px;
+    padding-block: 10px;
+  }
+  button.estudio-mini + button.estudio-mini,
+  button.estudio-ai + button.estudio-mini {
+    margin-left: 6px;
+  }
+}

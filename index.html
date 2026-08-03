@@ -6506,6 +6506,7 @@ function showToast(type, icon, msg) {
   }
   const c = document.getElementById('toastContainer');
   if (!c) { console.warn('[showToast]', type, icon, msg); return; }
+  while (c.children.length >= 3) c.firstElementChild?.remove();
   const t = document.createElement('div');
   t.className = `toast ${type || 'info'}`;
   t.innerHTML = `<span class="toast-icon">${icon}</span><span>${msg}</span>`;
