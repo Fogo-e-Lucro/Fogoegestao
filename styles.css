@@ -11896,3 +11896,80 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
   #tab-lives .lv-type-grid { grid-template-columns: 1fr 1fr; }
   #tab-lives .lv-type-card__sub { display: none; }
 }
+
+/* ============================================================
+   ESTÚDIO — refinamentos do phone mockup (2026-08-03 late)
+   Phone mais realista + placeholder de mídia bem apresentado.
+   ============================================================ */
+/* Stage: centraliza vertical + horizontal, mais respiro */
+.estudio-stage {
+  padding: 48px 24px !important;
+  place-items: center !important;
+  align-content: center !important;
+}
+.estudio-mock { gap: 22px !important; }
+
+/* Phone: proporção mais próxima do iPhone real (~9/19), sombra dramática */
+.estudio-phone {
+  width: 300px !important;
+  max-width: 300px !important;
+  aspect-ratio: 9 / 19 !important;
+  padding: 12px !important;
+  border-radius: 48px !important;
+  background: linear-gradient(180deg, #1a1a2e 0%, #0b0b14 100%) !important;
+  box-shadow:
+    0 40px 100px -20px rgba(0,0,0,.65),
+    0 20px 40px -10px rgba(0,0,0,.5),
+    0 0 0 1px rgba(255,255,255,.08),
+    inset 0 0 0 1px rgba(255,255,255,.04) !important;
+}
+.estudio-phone-notch { width: 100px !important; height: 24px !important; top: 12px !important; }
+.estudio-phone-screen {
+  border-radius: 36px !important;
+  background: #000 !important;
+}
+
+/* Empty state da mídia — bonito e realista */
+.estudio-ig-media {
+  aspect-ratio: 9/16;
+  min-height: 340px;
+}
+.estudio-mock[data-tipo="FOTO"] .estudio-ig-media { aspect-ratio: 4/5; min-height: 260px; }
+.estudio-ig-media-empty {
+  padding: 16px !important;
+  gap: 8px !important;
+}
+.estudio-ig-media-empty svg {
+  width: 36px !important;
+  height: 36px !important;
+  color: rgba(255,255,255,.25);
+  opacity: 1 !important;
+}
+.estudio-ig-media-empty span {
+  font-size: 11px !important;
+  color: rgba(255,255,255,.55) !important;
+  line-height: 1.5;
+  max-width: 200px;
+}
+
+/* Tab bar formato (Reels/Foto/etc abaixo do phone) — respeita tema */
+.estudio-mock-tabs {
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+}
+.estudio-mock-tab { color: var(--text2) !important; }
+.estudio-mock-tab:hover { color: var(--text) !important; }
+.estudio-mock-tab.active {
+  background: var(--text) !important;
+  color: var(--card) !important;
+}
+
+/* Handle/avatar do IG */
+.estudio-ig-handle { color: #fff !important; font-weight: 700 !important; }
+.estudio-ig-loc { color: rgba(255,255,255,.55) !important; }
+
+@media (max-width: 900px) {
+  .estudio-stage { padding: 24px 16px !important; }
+  .estudio-phone { width: 260px !important; }
+  .estudio-ig-media { min-height: 260px; }
+}
