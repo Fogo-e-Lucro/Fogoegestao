@@ -1050,240 +1050,248 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
   </div><!-- /tab-visualizar -->
 
   <div class="tab-panel" id="tab-social">
-    <div class="sp-wrap">
+    <div class="sp2-app" id="sp2App">
 
-      <!-- Page header -->
-      <div class="sp-page-header" data-reveal>
-        <div class="sp-page-title-wrap">
-          <div class="sp-page-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+      <!-- Top bar: brand + micro-KPI -->
+      <div class="sp2-top">
+        <div class="sp2-brand">
+          <div class="sp2-dot">F</div>
+          <div class="sp2-brand-text">
+            <span class="sp2-brand-name">Publipost</span>
+            <span class="sp2-brand-sub">Fogo &amp; Lucro</span>
           </div>
-          <div>
-            <div class="sp-page-title">Publipost</div>
-            <div class="sp-page-sub">Publique diretamente nas redes sociais</div>
+        </div>
+        <div class="sp2-header-actions">
+          <div class="sp2-kpi" id="sp2HeaderKpi" title="Fila de hoje">
+            <span class="sp2-kpi-dot"></span>
+            <span id="sp2KpiText">Sem posts hoje</span>
+          </div>
+          <button class="sp2-header-icon-btn" id="sp2HeaderConfig" onclick="sp2OpenAuthPanel()" title="Contas conectadas">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Auth panel (colapsado por padrão; abre se sem token OU se clicar no ícone) -->
+      <div class="sp2-auth" id="spConfigBar" hidden>
+        <div class="sp2-auth-row">
+          <button class="sp2-fb-btn" id="spFbLoginBtn" onclick="spFbLogin()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073c0 6.019 4.388 11.003 10.125 11.927v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.931-1.956 1.886v2.267h3.328l-.532 3.49h-2.796v8.437C19.612 23.076 24 18.092 24 12.073z"/></svg>
+            Conectar com Facebook
+          </button>
+          <span id="spTokenStatus" class="sp2-token-status"></span>
+        </div>
+        <div class="sp2-auth-hint">Token Meta e ImgBB em <strong>⚙️ Configurações</strong></div>
+      </div>
+
+      <!-- Contas conectadas — strip horizontal com avatares -->
+      <div class="sp2-accounts" id="sp2AccountStrip" role="tablist" aria-label="Contas conectadas">
+        <!-- populado por JS via sp2RenderAccountStrip() -->
+      </div>
+
+      <!-- Segmento Post/Story (Reels/Carrossel detectados automaticamente) -->
+      <div class="sp2-segment" id="sp2Segment">
+        <button type="button" class="sp2-seg-btn on" data-mode="POST" onclick="sp2SetMode('POST')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          Post
+        </button>
+        <button type="button" class="sp2-seg-btn" data-mode="STORY" onclick="sp2SetMode('STORY')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-dasharray="3 2.5"/><circle cx="12" cy="12" r="4"/></svg>
+          Story
+        </button>
+      </div>
+
+      <!-- MODO POST — detecção automática (foto=Feed, várias=Carrossel, vídeo=Reels) -->
+      <div id="sp2PostMode">
+        <!-- Estado 1: dropzone gigante (feed/reels) -->
+        <div id="spUploadZone" class="sp2-drop" onclick="document.getElementById('spFileInput').click()" ondragover="spDragOver(event)" ondragleave="spDragLeave(event)" ondrop="spDrop(event)">
+          <input type="file" id="spFileInput" style="display:none" accept="image/*,video/*" onchange="spHandleFile(this.files[0])">
+          <div id="spUploadPlaceholder" class="sp2-drop-empty">
+            <div class="sp2-drop-glyph">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
+            </div>
+            <h2 class="sp2-drop-title">Arrasta a foto pra cá</h2>
+            <p class="sp2-drop-sub" id="spUploadSub">Uma vira Feed, várias viram Carrossel, vídeo vira Reels — a gente detecta.</p>
+            <div class="sp2-drop-cta">
+              <button type="button" class="sp2-btn-pick" onclick="event.stopPropagation();document.getElementById('spFileInput').click()">Escolher arquivo</button>
+              <button type="button" class="sp2-btn-carousel" onclick="event.stopPropagation();document.getElementById('spCarouselInput').click()" title="Carrossel de várias fotos">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="5" width="14" height="14" rx="2.5"/><path d="M3 17V8a3 3 0 0 1 1-2"/></svg>
+                Várias
+              </button>
+            </div>
+          </div>
+          <div id="spUploadPreview" class="sp2-drop-preview" style="display:none">
+            <img id="spPreviewImg" src="" alt="">
+            <video id="spPreviewVid" muted playsinline></video>
+            <button class="sp2-remove-media" onclick="spRemoveMedia(event)" title="Remover">✕</button>
+          </div>
+        </div>
+
+        <!-- Carousel strip (mostrado quando >1 imagem) -->
+        <div id="spCarouselZone" style="display:none" class="sp2-carousel-wrap">
+          <input type="file" id="spCarouselInput" style="display:none" accept="image/*" multiple onchange="spHandleCarousel(this.files)">
+          <div class="sp2-carousel-strip" id="spCarouselStrip">
+            <div class="sp2-carousel-add" onclick="document.getElementById('spCarouselInput').click()">
+              <span>+</span><span class="sp2-carousel-add-label">Adicionar</span>
+            </div>
+          </div>
+          <div class="sp2-carousel-hint">Toque numa imagem pra remover · Máx. 10</div>
+        </div>
+
+        <!-- Tipo detectado + trocar -->
+        <div class="sp2-type-badge" id="sp2TypeBadge" style="display:none">
+          <span class="sp2-type-badge-icon" id="sp2TypeBadgeIcon"></span>
+          <span class="sp2-type-badge-label" id="sp2TypeBadgeLabel">Feed</span>
+          <span class="sp2-type-badge-sub" id="spTypeHint">Formato 1:1 ou 4:5 · Imagem JPG/PNG</span>
+          <button type="button" class="sp2-type-swap" onclick="sp2ToggleTypeSwap()" title="Trocar tipo">Trocar</button>
+        </div>
+        <div class="sp2-type-swap-menu" id="sp2TypeSwapMenu" hidden>
+          <button type="button" data-type="FEED" onclick="sp2ForceType('FEED')">Feed</button>
+          <button type="button" data-type="CAROUSEL" onclick="sp2ForceType('CAROUSEL')">Carrossel</button>
+          <button type="button" data-type="REELS" onclick="sp2ForceType('REELS')">Reels</button>
+        </div>
+
+        <!-- Editor: caption + collab -->
+        <div class="sp2-editor" id="spCaptionField">
+          <textarea id="spCaption" class="sp2-caption" rows="3" placeholder="Escreva a legenda..." oninput="sp2OnCaptionInput(this)"></textarea>
+          <div class="sp2-editor-bar">
+            <div class="sp2-chips">
+              <button type="button" class="sp2-chip sp2-chip-primary" onclick="sp2SuggestCaption()" id="sp2AiChip">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                Sugerir com IA
+              </button>
+              <button type="button" class="sp2-chip" id="spCollabToggle" onclick="spToggleCollab()" aria-expanded="false">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Collab
+              </button>
+            </div>
+            <div class="sp2-counter"><span id="spCaptionCount">0</span>/2200</div>
+          </div>
+          <!-- Collab body (progressive disclosure) -->
+          <div class="sp2-collab-body" id="spCollabField" hidden>
+            <div class="sp2-collab-inputs" id="spCollabBody">
+              <input id="spCollabUser1" type="text" class="sp2-input-mini" placeholder="@usuario1" oninput="this.value=this.value.replace('@','')">
+              <input id="spCollabUser2" type="text" class="sp2-input-mini" placeholder="@usuario2 (opcional)" oninput="this.value=this.value.replace('@','')">
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Config bar -->
-      <div class="sp-config" id="spConfigBar" data-reveal>
-        <div class="sp-config-header">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text3)"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-          <span class="sp-config-header-label">Conexão de contas</span>
+      <!-- MODO STORY — phone mockup + settings compactos -->
+      <div id="spStoryZone" style="display:none" class="sp2-story-wrap">
+        <div class="sp2-phone-wrap">
+          <div class="sp2-phone">
+            <div class="sp2-phone-screen" id="spPhoneScreen">
+              <div class="sp2-phone-empty" id="spPhoneEmpty">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span class="sp2-phone-empty-txt">Envie a foto do story</span>
+              </div>
+              <div class="sp2-link-sticker" id="spLinkSticker" style="display:none" onmousedown="spStickerDragStart(event)" ontouchstart="spStickerTouchStart(event)">
+                <div class="sp-link-sticker-icon">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                </div>
+                <span class="sp-link-sticker-text" id="spStickerText">Peça aqui ▸</span>
+                <div class="sp-sticker-handle" onmousedown="spStickerResizeStart(event)" ontouchstart="spStickerResizeTouchStart(event)"></div>
+              </div>
+              <div class="sp2-story-topbar">
+                <div class="sp2-story-progress"><div class="sp2-story-bar"></div></div>
+                <div class="sp2-story-user">
+                  <div class="sp2-story-avatar"></div>
+                  <span class="sp2-story-username" id="spStoryUsername">@conta</span>
+                  <span class="sp2-story-time">Agora</span>
+                </div>
+              </div>
+            </div>
+            <div class="sp2-phone-notch"></div>
+          </div>
         </div>
-        <div class="sp-config-inner">
-          <div class="sp-config-group">
-            <button class="sp-fb-btn" id="spFbLoginBtn" onclick="spFbLogin()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073c0 6.019 4.388 11.003 10.125 11.927v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.931-1.956 1.886v2.267h3.328l-.532 3.49h-2.796v8.437C19.612 23.076 24 18.092 24 12.073z"/></svg>
-              Conectar com Facebook
-            </button>
-            <span id="spTokenStatus" class="sp-token-status"></span>
-            <span class="sp-config-hint">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              Token Meta e ImgBB em <strong>Configurações</strong>
-            </span>
+        <div class="sp2-story-form">
+          <input type="file" id="spStoryFileInput" style="display:none" accept="image/*,video/*" onchange="spHandleStoryFile(this.files[0])">
+          <button type="button" class="sp2-btn-pick sp2-btn-fullw" onclick="document.getElementById('spStoryFileInput').click()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Escolher foto/vídeo
+          </button>
+          <label class="sp2-field-label">Link do sticker</label>
+          <input id="spStoryLink" type="url" placeholder="https://link-de-pedidos.com" class="sp2-input" oninput="spUpdateSticker()">
+          <label class="sp2-field-label">Texto do sticker</label>
+          <input id="spStickerLabel" type="text" placeholder="Peça aqui ▸" class="sp2-input" value="Peça aqui ▸" maxlength="30" oninput="spUpdateSticker()">
+          <label class="sp2-field-label">Cor do sticker</label>
+          <div class="sp2-color-row">
+            <button type="button" class="sp-color-dot active" style="background:#fff;color:#000;" onclick="spSetStickerColor('#fff','#000',this)">A</button>
+            <button type="button" class="sp-color-dot" style="background:#000;color:#fff;" onclick="spSetStickerColor('#000','#fff',this)">A</button>
+            <button type="button" class="sp-color-dot" style="background:#f97316;color:#fff;" onclick="spSetStickerColor('#f97316','#fff',this)">A</button>
+            <button type="button" class="sp-color-dot" style="background:#22c55e;color:#fff;" onclick="spSetStickerColor('#22c55e','#fff',this)">A</button>
+            <button type="button" class="sp-color-dot" style="background:#3b82f6;color:#fff;" onclick="spSetStickerColor('#3b82f6','#fff',this)">A</button>
+            <button type="button" class="sp-color-dot" style="background:#a855f7;color:#fff;" onclick="spSetStickerColor('#a855f7','#fff',this)">A</button>
           </div>
         </div>
       </div>
 
-      <!-- Main grid -->
-      <div class="sp-grid">
+      <!-- Select escondido — JS lê o value pra saber conta selecionada -->
+      <select id="spAccountSelect" hidden onchange="spOnAccountChange()">
+        <option value="">Para qual conta?</option>
+      </select>
 
-        <!-- LEFT: Post Creator -->
-        <div class="sp-creator sp-card" data-reveal>
-          <div class="sp-card-hdr">
-            <div class="sp-card-title">Nova publicação</div>
-            <div class="sp-account-select-wrap">
-              <select id="spAccountSelect" class="sp-account-select" onchange="spOnAccountChange()">
-                <option value="">Para qual conta?</option>
-              </select>
-            </div>
+      <!-- Schedule (radios + datetime) -->
+      <div class="sp2-schedule">
+        <label class="sp2-radio-label">
+          <input type="radio" name="spWhen" value="now" checked onchange="spOnWhenChange()"> Agora
+        </label>
+        <label class="sp2-radio-label">
+          <input type="radio" name="spWhen" value="schedule" onchange="spOnWhenChange()"> Agendar
+        </label>
+        <div id="spScheduleRow" style="display:none;flex:1;">
+          <input type="datetime-local" id="spScheduleDate" class="sp2-input sp2-input-sm" onchange="spUpdatePublishBtn()">
+        </div>
+      </div>
+
+      <!-- CTA gigante gradient IG -->
+      <div class="sp2-cta-wrap">
+        <button class="sp2-cta" id="spPublishBtn" onclick="spSubmitPost()" disabled>
+          <span id="spPublishBtnText">Adicione uma mídia</span>
+          <span class="sp2-cta-acc" id="sp2CtaAcc" style="display:none">
+            <span class="sp2-cta-acc-av" id="sp2CtaAccAv"></span>
+            <span id="sp2CtaAccHandle">@conta</span>
+          </span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+        <div id="spPostStatus" class="sp2-status"></div>
+      </div>
+
+      <!-- Tira "Hoje" colapsável (roubado do D2, versão light) -->
+      <div class="sp2-today" id="sp2TodayBar">
+        <button type="button" class="sp2-today-head" onclick="sp2ToggleToday()" id="sp2TodayHead" aria-expanded="false">
+          <span class="sp2-today-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Hoje &amp; próximos
+          </span>
+          <span class="sp2-today-count" id="sp2TodayCount">0</span>
+          <svg class="sp2-today-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="sp2-today-pills" id="sp2TodayPills">
+          <!-- populado por JS via sp2RenderTodayBar() -->
+        </div>
+        <div class="sp2-today-drawer" id="sp2TodayDrawer" hidden>
+          <div class="sp2-today-drawer-head">
+            <span>Semana</span>
+            <button type="button" onclick="spClearQueue()" class="sp2-today-clear">Limpar fila</button>
           </div>
-
-          <!-- Post type tabs -->
-          <div class="sp-type-row">
-            <button class="sp-type-tab active" data-type="FEED" onclick="spSetType('FEED',this)">
-              <span class="sp-type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span><span>Feed</span>
-            </button>
-            <button class="sp-type-tab" data-type="CAROUSEL" onclick="spSetType('CAROUSEL',this)">
-              <span class="sp-type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="5" width="14" height="14" rx="2.5"/><path d="M3 17V8a3 3 0 0 1 1-2"/></svg></span><span>Carrossel</span>
-            </button>
-            <button class="sp-type-tab" data-type="REELS" onclick="spSetType('REELS',this)">
-              <span class="sp-type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/><path d="m8 3 4 6"/><path d="m16 3 4 6"/><path d="m10 14 5 2.5L10 19v-5z" fill="currentColor"/></svg></span><span>Reels</span>
-            </button>
-            <button class="sp-type-tab" data-type="STORIES" onclick="spSetType('STORIES',this)">
-              <span class="sp-type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-dasharray="3 2.5"/><circle cx="12" cy="12" r="4"/></svg></span><span>Story</span>
-            </button>
-          </div>
-          <div class="sp-type-hint" id="spTypeHint">Formato 1:1 ou 4:5 · Imagem JPG/PNG</div>
-
-          <!-- Upload area: Feed / Reels -->
-          <div id="spUploadZone" class="sp-upload-zone" onclick="document.getElementById('spFileInput').click()" ondragover="spDragOver(event)" ondragleave="spDragLeave(event)" ondrop="spDrop(event)">
-            <input type="file" id="spFileInput" style="display:none" accept="image/*,video/*" onchange="spHandleFile(this.files[0])">
-            <div id="spUploadPlaceholder" class="sp-upload-placeholder">
-              <div class="sp-upload-icon">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              </div>
-              <div class="sp-upload-text">Arraste ou clique para enviar</div>
-              <div class="sp-upload-sub" id="spUploadSub">Imagem JPG, PNG ou vídeo MP4</div>
-            </div>
-            <div id="spUploadPreview" class="sp-upload-preview" style="display:none">
-              <img id="spPreviewImg" src="" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">
-              <video id="spPreviewVid" style="width:100%;height:100%;object-fit:cover;border-radius:12px;display:none" muted playsinline></video>
-              <button class="sp-remove-media" onclick="spRemoveMedia(event)" title="Remover">✕</button>
-            </div>
-          </div>
-
-          <!-- Carousel upload zone -->
-          <div id="spCarouselZone" style="display:none">
-            <div class="sp-carousel-strip" id="spCarouselStrip">
-              <div class="sp-carousel-add" onclick="document.getElementById('spCarouselInput').click()">
-                <input type="file" id="spCarouselInput" style="display:none" accept="image/*" multiple onchange="spHandleCarousel(this.files)">
-                <span>+</span><span style="font-size:10px;margin-top:2px;">Adicionar</span>
-              </div>
-            </div>
-            <div style="font-size:11px;color:var(--text2);margin-top:6px;">Arraste para reordenar · Máx. 10 imagens</div>
-          </div>
-
-          <!-- Story phone mockup zone -->
-          <div id="spStoryZone" style="display:none">
-            <div class="sp-story-layout">
-              <div class="sp-phone-wrap">
-                <div class="sp-phone">
-                  <div class="sp-phone-screen" id="spPhoneScreen">
-                    <div class="sp-phone-empty" id="spPhoneEmpty">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                      <span style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px;">Envie uma imagem acima</span>
-                    </div>
-                    <!-- Link sticker -->
-                    <div class="sp-link-sticker" id="spLinkSticker" style="display:none" onmousedown="spStickerDragStart(event)" ontouchstart="spStickerTouchStart(event)">
-                      <div class="sp-link-sticker-icon">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                      </div>
-                      <span class="sp-link-sticker-text" id="spStickerText">Peça aqui ▸</span>
-                      <div class="sp-sticker-handle" onmousedown="spStickerResizeStart(event)" ontouchstart="spStickerResizeTouchStart(event)"></div>
-                    </div>
-                    <!-- Story top bar -->
-                    <div class="sp-story-topbar">
-                      <div class="sp-story-progress"><div class="sp-story-bar"></div></div>
-                      <div class="sp-story-user">
-                        <div class="sp-story-avatar"></div>
-                        <span style="font-size:10px;font-weight:600;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);" id="spStoryUsername">@conta</span>
-                        <span style="font-size:9px;color:rgba(255,255,255,.7);margin-left:4px;text-shadow:0 1px 3px rgba(0,0,0,.5);">Agora</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="sp-phone-notch"></div>
-                  <div class="sp-phone-home"></div>
-                </div>
-                <div style="font-size:11px;color:var(--text2);text-align:center;margin-top:10px;">Arraste o sticker para posicionar</div>
-              </div>
-              <div class="sp-story-settings">
-                <div class="sp-field">
-                  <label class="sp-label">Foto/Vídeo do Story</label>
-                  <div class="sp-story-upload-btn" onclick="document.getElementById('spStoryFileInput').click()">
-                    <input type="file" id="spStoryFileInput" style="display:none" accept="image/*,video/*" onchange="spHandleStoryFile(this.files[0])">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Escolher arquivo
-                  </div>
-                </div>
-                <div class="sp-field">
-                  <label class="sp-label">Link do Sticker</label>
-                  <input id="spStoryLink" type="url" placeholder="https://link-de-pedidos.com" class="sp-input" oninput="spUpdateSticker()">
-                </div>
-                <div class="sp-field">
-                  <label class="sp-label">Texto do Sticker</label>
-                  <input id="spStickerLabel" type="text" placeholder="Peça aqui ▸" class="sp-input" value="Peça aqui ▸" maxlength="30" oninput="spUpdateSticker()">
-                </div>
-                <div class="sp-sticker-colors">
-                  <label class="sp-label">Cor do Sticker</label>
-                  <div class="sp-color-row">
-                    <button class="sp-color-dot active" style="background:#fff;color:#000;" onclick="spSetStickerColor('#fff','#000',this)">A</button>
-                    <button class="sp-color-dot" style="background:#000;color:#fff;" onclick="spSetStickerColor('#000','#fff',this)">A</button>
-                    <button class="sp-color-dot" style="background:#f97316;color:#fff;" onclick="spSetStickerColor('#f97316','#fff',this)">A</button>
-                    <button class="sp-color-dot" style="background:#22c55e;color:#fff;" onclick="spSetStickerColor('#22c55e','#fff',this)">A</button>
-                    <button class="sp-color-dot" style="background:#3b82f6;color:#fff;" onclick="spSetStickerColor('#3b82f6','#fff',this)">A</button>
-                    <button class="sp-color-dot" style="background:#a855f7;color:#fff;" onclick="spSetStickerColor('#a855f7','#fff',this)">A</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Caption -->
-          <div class="sp-field" id="spCaptionField">
-            <label class="sp-label">Legenda</label>
-            <div class="sp-caption-wrap">
-              <textarea id="spCaption" class="sp-textarea" rows="4" placeholder="Escreva a legenda..." oninput="document.getElementById('spCaptionCount').textContent=this.value.length"></textarea>
-              <div class="sp-caption-footer"><span id="spCaptionCount">0</span>/2200</div>
-            </div>
-          </div>
-
-          <!-- Collab (progressive disclosure) -->
-          <div class="sp-field" id="spCollabField">
-            <button type="button" class="sp-collab-toggle" id="spCollabToggle" onclick="spToggleCollab()" aria-expanded="false">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span>Marcar parceiro de Collab</span>
-              <span class="sp-collab-toggle-hint">opcional</span>
-            </button>
-            <div class="sp-collab-body" id="spCollabBody" hidden>
-              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                <input id="spCollabUser1" type="text" class="sp-input" placeholder="@usuario1" style="max-width:180px;" oninput="this.value=this.value.replace('@','')">
-                <input id="spCollabUser2" type="text" class="sp-input" placeholder="@usuario2 (opcional)" style="max-width:180px;" oninput="this.value=this.value.replace('@','')">
-              </div>
-              <div style="font-size:11px;color:var(--text3);margin-top:6px;">Os colaboradores recebem convite pra aceitar o post.</div>
-            </div>
-          </div>
-
-          <!-- Schedule -->
-          <div class="sp-field">
-            <label class="sp-label">Quando publicar</label>
-            <div class="sp-when-row">
-              <label class="sp-radio-label">
-                <input type="radio" name="spWhen" value="now" checked onchange="spOnWhenChange()" class="sp-radio"> Agora
-              </label>
-              <label class="sp-radio-label">
-                <input type="radio" name="spWhen" value="schedule" onchange="spOnWhenChange()" class="sp-radio"> Agendar
-              </label>
-            </div>
-            <div id="spScheduleRow" style="display:none;margin-top:12px;">
-              <input type="datetime-local" id="spScheduleDate" class="sp-input" style="width:auto;" onchange="spUpdatePublishBtn()">
-            </div>
-          </div>
-
-          <!-- Submit -->
-          <div class="sp-submit-row">
-            <button class="sp-publish-btn" id="spPublishBtn" onclick="spSubmitPost()" disabled>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
-              <span id="spPublishBtnText">Adicione uma mídia</span>
-            </button>
-            <span class="sp-publish-kbd" title="Atalho">⌘ ⏎</span>
-            <div id="spPostStatus" class="sp-post-status"></div>
+          <div id="spQueue" class="sp2-queue-list">
+            <!-- populado por JS (spAddToQueue) -->
           </div>
         </div>
+      </div>
 
-        <!-- RIGHT: Queue -->
-        <div class="sp-sidebar">
-          <div class="sp-card sp-queue-card" data-reveal>
-            <div class="sp-card-hdr">
-              <div class="sp-card-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;color:var(--text2);"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg>Fila
-              </div>
-              <button onclick="spClearQueue()" style="font-size:11px;color:var(--text2);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">Limpar</button>
-            </div>
-            <div id="spQueue" class="sp-queue-list">
-              <div class="sp-queue-empty">
-                <div class="sp-queue-empty-icon">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </div>
-                <div class="sp-queue-empty-title">Tudo limpo por aqui</div>
-                <div class="sp-queue-empty-sub">Quando você publicar ou agendar um post, ele aparece nesta lista.</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- Bloco antigo colapsado — mantido pra JS não quebrar -->
+      <div class="sp2-legacy-hidden" hidden>
+        <!-- Marcador visual (mantido caso spSetType tente clicar) -->
+        <button class="sp-type-tab" data-type="FEED"></button>
+        <button class="sp-type-tab" data-type="CAROUSEL"></button>
+        <button class="sp-type-tab" data-type="REELS"></button>
+        <button class="sp-type-tab" data-type="STORIES"></button>
+      </div>
 
-      </div><!-- /sp-grid -->
+    </div><!-- /sp2-app -->
 
       <!-- ═══ LIVES (clean redesign — backend hardcoded, inline styles) ═══ -->
       <!-- Live antigo (#spLiveCard) removido em 2026-08-02: virou aba dedicada #tab-lives (Ao Vivo) -->
@@ -5468,6 +5476,10 @@ function switchTab(tab, btn) {
     const ki = document.getElementById('spImgbbKey');
     if (imgbbKey && ki) ki.value = imgbbKey.substring(0,6) + '••••••';
     if (typeof renderSpQueue === 'function') renderSpQueue();
+    if (typeof sp2InitAuthPanel === 'function') sp2InitAuthPanel();
+    if (typeof sp2RenderAccountStrip === 'function') sp2RenderAccountStrip();
+    if (typeof sp2SetMode === 'function') sp2SetMode('POST');
+    if (typeof sp2AutoDetectType === 'function') sp2AutoDetectType();
     if (typeof spUpdatePublishBtn === 'function') spUpdatePublishBtn();
   }
   if (tab === 'projetos') {
@@ -7678,6 +7690,8 @@ async function loadSpAccounts() {
         } catch(_) {}
       }
     }
+    if (typeof sp2RenderAccountStrip === 'function') sp2RenderAccountStrip();
+    if (typeof sp2InitAuthPanel === 'function') sp2InitAuthPanel();
     spUpdatePublishBtn();
   } catch(e) {
     if (sel) sel.innerHTML = '<option value="">Erro ao carregar contas</option>';
@@ -7694,6 +7708,7 @@ function spOnAccountChange() {
     const usernameEl = document.getElementById('spStoryUsername');
     if (usernameEl) usernameEl.textContent = '@' + acc.igUsername;
   }
+  if (typeof sp2RenderAccountStrip === 'function') sp2RenderAccountStrip();
   spUpdatePublishBtn();
 }
 
@@ -7706,20 +7721,23 @@ const SP_TYPE_HINT = {
 };
 function spSetType(type, btn) {
   spCurrentType = type;
+  // Legacy: era usado com botões visíveis; agora chamado internamente por sp2ForceType e detecção auto
   document.querySelectorAll('.sp-type-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  if (btn && btn.classList) btn.classList.add('active');
   const isStory = type === 'STORIES';
   const isCarousel = type === 'CAROUSEL';
   const isReel = type === 'REELS';
-  document.getElementById('spUploadZone').style.display = (isStory || isCarousel) ? 'none' : 'flex';
-  document.getElementById('spCarouselZone').style.display = isCarousel ? 'block' : 'none';
-  document.getElementById('spStoryZone').style.display = isStory ? 'block' : 'none';
-  document.getElementById('spCaptionField').style.display = isStory ? 'none' : 'flex';
-  document.getElementById('spCollabField').style.display = isStory ? 'none' : 'flex';
-  document.getElementById('spUploadSub').textContent = isReel ? 'Vídeo MP4 (até 1GB)' : 'Imagem JPG ou PNG';
+  const uploadZone = document.getElementById('spUploadZone');
+  const carouselZone = document.getElementById('spCarouselZone');
+  if (uploadZone) uploadZone.style.display = (isStory || isCarousel) ? 'none' : 'flex';
+  if (carouselZone) carouselZone.style.display = isCarousel ? 'block' : 'none';
+  // Story mode agora é controlado pelo segment (sp2SetMode) — não escondemos aqui pra não conflitar
+  const uploadSub = document.getElementById('spUploadSub');
+  if (uploadSub) uploadSub.textContent = isReel ? 'Vídeo MP4 (até 1GB) — sai como Reels' : 'Uma vira Feed, várias viram Carrossel, vídeo vira Reels';
   const hint = document.getElementById('spTypeHint');
   if (hint) hint.textContent = SP_TYPE_HINT[type] || '';
   if (isStory && spCurrentFile) spHandleStoryFile(spCurrentFile);
+  if (typeof sp2UpdateTypeBadge === 'function') sp2UpdateTypeBadge();
   spUpdatePublishBtn();
 }
 
@@ -7751,12 +7769,27 @@ function spUpdatePublishBtn() {
     ? (typeof spCarouselFiles !== 'undefined' && spCarouselFiles.length >= 2)
     : (spCurrentType === 'STORIES' ? !!spStoryFile : !!spCurrentFile);
 
+  // CTA acc pill (novo layout)
+  const ctaAcc = document.getElementById('sp2CtaAcc');
+  const ctaAccAv = document.getElementById('sp2CtaAccAv');
+  const ctaAccHandle = document.getElementById('sp2CtaAccHandle');
+  const acc = (accIdx !== '' && accIdx != null && spAccounts[parseInt(accIdx)]) ? spAccounts[parseInt(accIdx)] : null;
+  if (ctaAcc && ctaAccAv && ctaAccHandle) {
+    if (acc && typeof sp2AvatarStyle === 'function') {
+      ctaAccAv.setAttribute('style', sp2AvatarStyle(acc));
+      ctaAccHandle.textContent = '@' + (acc.igUsername || acc.pageName || '');
+      ctaAcc.style.display = 'inline-flex';
+    } else {
+      ctaAcc.style.display = 'none';
+    }
+  }
+
   if (accIdx === '' || accIdx == null) {
     btn.disabled = true; text.textContent = 'Escolha a conta'; return;
   }
   if (!hasMedia) {
     btn.disabled = true;
-    text.textContent = spCurrentType === 'CAROUSEL' ? 'Adicione 2+ imagens' : 'Adicione uma mídia';
+    text.textContent = spCurrentType === 'CAROUSEL' ? 'Adicione 2+ imagens' : (sp2CurrentMode === 'STORY' ? 'Envie a foto do story' : 'Adicione uma mídia');
     return;
   }
   if (when === 'schedule') {
@@ -7765,7 +7798,7 @@ function spUpdatePublishBtn() {
     const lbl = d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
     btn.disabled = false; text.textContent = `Agendar para ${lbl}`; return;
   }
-  btn.disabled = false; text.textContent = 'Publicar agora';
+  btn.disabled = false; text.textContent = 'Publicar em';
 }
 
 document.addEventListener('keydown', (e) => {
@@ -7790,11 +7823,13 @@ function spHandleFile(file) {
   const reader = new FileReader();
   reader.onload = (ev) => {
     document.getElementById('spUploadPlaceholder').style.display = 'none';
-    document.getElementById('spUploadPreview').style.display = 'flex';
+    document.getElementById('spUploadPreview').style.display = 'block';
     const img = document.getElementById('spPreviewImg');
     const vid = document.getElementById('spPreviewVid');
     if (isVideo) { img.style.display='none'; vid.style.display='block'; vid.src=ev.target.result; }
     else { vid.style.display='none'; img.style.display='block'; img.src=ev.target.result; }
+    // Detecção automática de tipo (Speed-Post): 1 foto=FEED, video=REELS
+    if (typeof sp2AutoDetectType === 'function' && sp2CurrentMode === 'POST') sp2AutoDetectType();
     spUpdatePublishBtn();
   };
   reader.readAsDataURL(file);
@@ -7807,6 +7842,8 @@ function spRemoveMedia(e) {
   document.getElementById('spUploadPreview').style.display = 'none';
   document.getElementById('spPreviewImg').src = '';
   document.getElementById('spPreviewVid').src = '';
+  if (typeof sp2AutoDetectType === 'function') sp2AutoDetectType();
+  if (typeof sp2UpdateTypeBadge === 'function') sp2UpdateTypeBadge();
   spUpdatePublishBtn();
 }
 
@@ -7817,6 +7854,13 @@ function spHandleCarousel(files) {
     spCarouselFiles.push(file);
   });
   renderCarouselStrip();
+  // Ativa modo Carrossel visualmente + tipo interno
+  spCurrentType = 'CAROUSEL';
+  const uploadZone = document.getElementById('spUploadZone');
+  const carouselZone = document.getElementById('spCarouselZone');
+  if (uploadZone) uploadZone.style.display = 'none';
+  if (carouselZone) carouselZone.style.display = 'block';
+  if (typeof sp2UpdateTypeBadge === 'function') sp2UpdateTypeBadge();
   spUpdatePublishBtn();
 }
 
@@ -8184,13 +8228,9 @@ function renderSpQueue() {
   const el = document.getElementById('spQueue');
   if (!el) return;
   if (spQueue.length === 0) {
-    el.innerHTML = `<div class="sp-queue-empty">
-      <div class="sp-queue-empty-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      </div>
-      <div class="sp-queue-empty-title">Tudo limpo por aqui</div>
-      <div class="sp-queue-empty-sub">Quando você publicar ou agendar um post, ele aparece nesta lista.</div>
-    </div>`;
+    el.innerHTML = `<div class="sp2-today-empty">Nada agendado ou publicado ainda. Solte uma foto acima pra começar.</div>`;
+    sp2RenderTodayBar();
+    sp2UpdateKpi();
     return;
   }
   const typeLabel  = { FEED:'Feed', CAROUSEL:'Carrossel', REELS:'Reels', STORIES:'Story' };
@@ -8210,7 +8250,259 @@ function renderSpQueue() {
       <span class="sp-queue-badge ${item.status}">${statusLabel[item.status]||item.status}</span>
     </div>`;
   }).join('');
+  sp2RenderTodayBar();
+  sp2UpdateKpi();
 }
+
+/* ═══════════════════════════════════════════════════════
+   PUBLIPOST v2 — helpers do novo layout (Speed-Post + híbrido)
+═══════════════════════════════════════════════════════ */
+let sp2CurrentMode = 'POST'; // 'POST' | 'STORY'
+
+function sp2GetAccountColor(username) {
+  const seed = String(username || 'x').split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+  const hues = [
+    ['#f97316','#dc2626'], ['#22c55e','#065f46'], ['#3b82f6','#1e3a8a'],
+    ['#f472b6','#7c1d6f'], ['#fbbf24','#713f12'], ['#a855f7','#4c1d95'],
+    ['#06b6d4','#0e7490'], ['#ec4899','#831843'], ['#84cc16','#365314']
+  ];
+  return hues[seed % hues.length];
+}
+function sp2AvatarStyle(acc) {
+  if (acc && acc.pic) return `background-image: url('${acc.pic}');`;
+  const [c1, c2] = sp2GetAccountColor(acc?.igUsername);
+  return `background-image: radial-gradient(circle at 30% 30%, ${c1}, ${c2} 65%, #1f1f1f); color:#fff;`;
+}
+function sp2AvatarInitial(acc) {
+  return String(acc?.igUsername || acc?.pageName || 'A').charAt(0).toUpperCase();
+}
+
+function sp2RenderAccountStrip() {
+  const strip = document.getElementById('sp2AccountStrip');
+  if (!strip) return;
+  if (!Array.isArray(spAccounts) || spAccounts.length === 0) {
+    strip.innerHTML = `<div class="sp2-acc empty">Conecte uma conta pra começar &nbsp;<button type="button" class="sp2-fb-btn" onclick="sp2OpenAuthPanel()" style="padding:6px 12px;font-size:12px;">Conectar</button></div>`;
+    return;
+  }
+  const sel = document.getElementById('spAccountSelect');
+  const currentIdx = sel ? sel.value : '';
+  strip.innerHTML = spAccounts.map((a, i) => {
+    const active = String(currentIdx) === String(i) ? 'active' : '';
+    const uname = escHtml(a.igUsername || a.pageName || '');
+    const avStyle = sp2AvatarStyle(a);
+    const hasPic = !!a.pic;
+    return `<button type="button" class="sp2-acc ${active}" role="tab" aria-selected="${active ? 'true' : 'false'}" onclick="sp2SelectAccount(${i})" title="@${uname}">
+      <div class="sp2-acc-ring"><div class="sp2-acc-av" style="${avStyle}">${hasPic ? '' : sp2AvatarInitial(a)}</div></div>
+      <div class="sp2-acc-name">${uname}</div>
+    </button>`;
+  }).join('');
+}
+
+function sp2SelectAccount(idx) {
+  const sel = document.getElementById('spAccountSelect');
+  if (!sel) return;
+  sel.value = String(idx);
+  spOnAccountChange();
+  sp2RenderAccountStrip();
+}
+
+function sp2SetMode(mode) {
+  sp2CurrentMode = mode;
+  document.querySelectorAll('#sp2Segment .sp2-seg-btn').forEach(b => {
+    b.classList.toggle('on', b.dataset.mode === mode);
+  });
+  document.getElementById('sp2PostMode').style.display = mode === 'POST' ? 'block' : 'none';
+  document.getElementById('spStoryZone').style.display = mode === 'STORY' ? 'flex' : 'none';
+  document.getElementById('spCaptionField').style.display = mode === 'STORY' ? 'none' : 'block';
+  document.getElementById('spCollabField').style.display = mode === 'STORY' ? 'none' : 'block';
+  if (mode === 'STORY') {
+    spCurrentType = 'STORIES';
+    if (spStoryFile) spHandleStoryFile(spStoryFile);
+  } else {
+    // Volta pro tipo detectado no arquivo atual
+    sp2AutoDetectType();
+  }
+  spUpdatePublishBtn();
+}
+
+function sp2AutoDetectType() {
+  if (spCurrentFile) {
+    const isVid = spCurrentFile.type && spCurrentFile.type.startsWith('video/');
+    spCurrentType = isVid ? 'REELS' : 'FEED';
+  } else if (spCarouselFiles.length > 0) {
+    spCurrentType = 'CAROUSEL';
+  } else {
+    spCurrentType = 'FEED';
+  }
+  sp2UpdateTypeBadge();
+}
+
+const SP2_TYPE_META = {
+  FEED:     { label:'Feed',     hint:'Formato 1:1 ou 4:5 · Imagem JPG/PNG',                icon:'🖼️' },
+  CAROUSEL: { label:'Carrossel',hint:'2–10 imagens · Mesmo aspecto (1:1 recomendado)',      icon:'🎞️' },
+  REELS:    { label:'Reels',    hint:'Vertical 9:16 · MP4 até 1GB · 60s ideal',             icon:'🎬' },
+  STORIES:  { label:'Story',    hint:'Vertical 9:16 · Sai em 24h · Sticker de link opcional', icon:'⭕' },
+};
+function sp2UpdateTypeBadge() {
+  const badge = document.getElementById('sp2TypeBadge');
+  if (!badge) return;
+  const hasMedia = spCurrentFile || spCarouselFiles.length > 0;
+  if (!hasMedia || sp2CurrentMode === 'STORY') {
+    badge.style.display = 'none';
+    return;
+  }
+  const meta = SP2_TYPE_META[spCurrentType] || SP2_TYPE_META.FEED;
+  badge.style.display = 'flex';
+  document.getElementById('sp2TypeBadgeIcon').textContent = meta.icon;
+  document.getElementById('sp2TypeBadgeLabel').textContent = meta.label;
+  const hint = document.getElementById('spTypeHint');
+  if (hint) hint.textContent = meta.hint;
+}
+function sp2ToggleTypeSwap() {
+  const menu = document.getElementById('sp2TypeSwapMenu');
+  if (!menu) return;
+  menu.hidden = !menu.hidden;
+  if (!menu.hidden) {
+    menu.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.type === spCurrentType));
+  }
+}
+function sp2ForceType(type) {
+  spCurrentType = type;
+  sp2UpdateTypeBadge();
+  const menu = document.getElementById('sp2TypeSwapMenu');
+  if (menu) menu.hidden = true;
+  // Se forçou Carrossel e só tem 1 foto, mostra strip pra adicionar
+  if (type === 'CAROUSEL' && spCarouselFiles.length === 0 && spCurrentFile) {
+    spCarouselFiles = [spCurrentFile];
+    renderCarouselStrip();
+    document.getElementById('spCarouselZone').style.display = 'block';
+    document.getElementById('spUploadZone').style.display = 'none';
+  }
+  spUpdatePublishBtn();
+}
+
+function sp2ToggleToday() {
+  const drawer = document.getElementById('sp2TodayDrawer');
+  const head = document.getElementById('sp2TodayHead');
+  if (!drawer || !head) return;
+  const open = !drawer.hidden;
+  drawer.hidden = open;
+  head.setAttribute('aria-expanded', open ? 'false' : 'true');
+}
+
+function sp2OpenAuthPanel() {
+  const auth = document.getElementById('spConfigBar');
+  if (auth) auth.hidden = !auth.hidden;
+}
+function sp2InitAuthPanel() {
+  const auth = document.getElementById('spConfigBar');
+  if (!auth) return;
+  const hasToken = !!(typeof getSpToken === 'function' && getSpToken());
+  auth.hidden = hasToken;
+}
+
+function sp2OnCaptionInput(el) {
+  document.getElementById('spCaptionCount').textContent = String(el.value.length);
+}
+
+function sp2SuggestCaption() {
+  const cap = document.getElementById('spCaption');
+  const chip = document.getElementById('sp2AiChip');
+  if (!cap || !chip) return;
+  const sel = document.getElementById('spAccountSelect');
+  const acc = sel && sel.value !== '' ? spAccounts[parseInt(sel.value)] : null;
+  const hasMedia = spCurrentFile || spCarouselFiles.length > 0 || spStoryFile;
+  if (!hasMedia) { showToast('warn','⚠️','Solte uma foto primeiro pra IA sugerir a legenda'); return; }
+  if (!acc) { showToast('warn','⚠️','Escolha a conta antes'); return; }
+  // Placeholder simples — IA real conectar depois. Copy realista.
+  chip.disabled = true;
+  const original = chip.innerHTML;
+  chip.innerHTML = '<span style="opacity:.7">Pensando...</span>';
+  const sugestoes = [
+    `Novidade fresquinha no ${acc.igUsername.split(/[._-]/)[0] || 'menu'} 🔥 Vem provar!`,
+    `A gente sempre fala: o segredo tá no fogo. Vem sentir.`,
+    `Fim de semana pede algo especial. Vem escolher o seu.`,
+    `Feito com carinho, servido no ponto. Peça pelo link da bio.`,
+  ];
+  setTimeout(() => {
+    cap.value = sugestoes[Math.floor(Math.random() * sugestoes.length)];
+    sp2OnCaptionInput(cap);
+    chip.innerHTML = original;
+    chip.disabled = false;
+  }, 600);
+}
+
+function sp2FmtTime(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+  } catch(_) { return '—'; }
+}
+function sp2RenderTodayBar() {
+  const pills = document.getElementById('sp2TodayPills');
+  const count = document.getElementById('sp2TodayCount');
+  if (!pills || !count) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tomorrowMs = today.getTime() + 86400000;
+  // Próximos agendados (hoje ou depois) — max 5
+  const next = spQueue
+    .filter(q => {
+      const t = q.when === 'now' ? new Date(q.date).getTime() : new Date(q.when).getTime();
+      return q.status === 'pending' && t >= today.getTime();
+    })
+    .sort((a,b) => {
+      const ta = a.when === 'now' ? new Date(a.date).getTime() : new Date(a.when).getTime();
+      const tb = b.when === 'now' ? new Date(b.date).getTime() : new Date(b.when).getTime();
+      return ta - tb;
+    })
+    .slice(0, 5);
+  // Publicados hoje — max 3
+  const publishedToday = spQueue
+    .filter(q => q.status === 'published' && new Date(q.date).getTime() >= today.getTime() && new Date(q.date).getTime() < tomorrowMs)
+    .slice(0, 3);
+  const items = [...next.map(q => ({...q, _hint:'agendado'})), ...publishedToday.map(q => ({...q, _hint:'published'}))];
+  count.textContent = String(items.length);
+  if (items.length === 0) {
+    pills.innerHTML = '<div class="sp2-today-empty" style="padding:0 0 6px;">Sem posts na fila — solte uma foto acima</div>';
+    return;
+  }
+  pills.innerHTML = items.map(q => {
+    const t = q.when === 'now' ? new Date(q.date) : new Date(q.when);
+    const time = t.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+    const uname = escHtml(q.acc?.igUsername || '');
+    const avStyle = sp2AvatarStyle(q.acc);
+    return `<div class="sp2-today-pill ${q._hint === 'published' ? 'published' : ''}" title="@${uname} · ${q.type||''}">
+      <span class="sp2-today-pill-time">${time}</span>
+      <span class="sp2-today-pill-av" style="${avStyle}"></span>
+      <span>@${uname}</span>
+    </div>`;
+  }).join('');
+}
+
+function sp2UpdateKpi() {
+  const kpiText = document.getElementById('sp2KpiText');
+  const kpi = document.getElementById('sp2HeaderKpi');
+  if (!kpiText || !kpi) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tomorrow = today.getTime() + 86400000;
+  const publishedToday = spQueue.filter(q => q.status === 'published' && new Date(q.date).getTime() >= today.getTime() && new Date(q.date).getTime() < tomorrow).length;
+  const next = spQueue
+    .filter(q => q.status === 'pending')
+    .map(q => q.when === 'now' ? new Date(q.date).getTime() : new Date(q.when).getTime())
+    .filter(t => t >= Date.now())
+    .sort((a,b) => a-b)[0];
+  const parts = [];
+  if (publishedToday > 0) parts.push(`${publishedToday} post${publishedToday>1?'s':''} hoje`);
+  else parts.push('Sem posts hoje');
+  if (next) {
+    const d = new Date(next);
+    const same = d.toDateString() === new Date().toDateString();
+    parts.push('próximo ' + (same ? d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})));
+  }
+  kpiText.textContent = parts.join(' · ');
+  kpi.classList.toggle('empty', publishedToday === 0 && !next);
+}
+
 
 
 /* ═══════════════════════════════════════════════════════
