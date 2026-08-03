@@ -11973,3 +11973,32 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
   .estudio-phone { width: 260px !important; }
   .estudio-ig-media { min-height: 260px; }
 }
+
+/* ============================================================
+   ESTÚDIO — FIX urgente overflow do phone (2026-08-03 10:02)
+   Caption/time estavam vazando; forcar overflow + altura contida.
+   ============================================================ */
+#tab-entrada .estudio-phone-screen {
+  overflow: hidden !important;
+  min-height: 0 !important;
+}
+/* Media area cede espaco (nao min-height rigido) pra caption/time caberem */
+#tab-entrada .estudio-ig-media {
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+  min-height: 240px;
+}
+#tab-entrada .estudio-mock[data-tipo="FOTO"] .estudio-ig-media {
+  min-height: 200px !important;
+  aspect-ratio: auto !important;
+}
+#tab-entrada .estudio-mock[data-tipo="REELS"] .estudio-ig-media,
+#tab-entrada .estudio-mock[data-tipo="STORY"] .estudio-ig-media {
+  aspect-ratio: auto !important;
+  min-height: 300px !important;
+}
+/* Caption + time: garantir dentro do bg preto */
+#tab-entrada .estudio-ig-caption,
+#tab-entrada .estudio-ig-time { background: #000 !important; flex-shrink: 0; }
+#tab-entrada .estudio-ig-actions { flex-shrink: 0; }
+#tab-entrada .estudio-ig-top { flex-shrink: 0; }
