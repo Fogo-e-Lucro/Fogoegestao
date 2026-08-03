@@ -13077,10 +13077,133 @@ html, body {
 .sp2-legacy-hidden,
 .sp2-legacy-hidden[hidden] { display: none !important; }
 
+/* ── Workspace split: editor + preview IG (desktop) ── */
+.sp2-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.sp2-editor-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.sp2-preview-col { min-width: 0; }
+.sp2-preview-sticky { position: relative; }
+.sp2-preview-tag {
+  display: none;
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .12em;
+  background: var(--card); border: 1px solid var(--border);
+  padding: 4px 10px; border-radius: 999px;
+  margin-bottom: 10px;
+  width: fit-content;
+}
+
+/* Phone IG preview */
+.sp2-feed-phone {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 9 / 17;
+  margin: 0 auto;
+  background: #000;
+  border-radius: 34px;
+  padding: 10px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.22), inset 0 0 0 1.5px rgba(255,255,255,.06);
+}
+.sp2-feed-phone .sp2-phone-notch {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 78px; height: 22px;
+  background: #000; border-radius: 0 0 14px 14px;
+  z-index: 5;
+}
+.sp2-feed-screen {
+  width: 100%; height: 100%;
+  background: var(--card);
+  border-radius: 26px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  color: var(--text);
+  font-family: var(--font);
+}
+.sp2-feed-hdr {
+  display: flex; align-items: center; gap: 10px;
+  padding: 32px 12px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.sp2-feed-hdr-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #f59e0b, #ef4444, #a855f7);
+  flex-shrink: 0;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid var(--card);
+  box-sizing: border-box;
+}
+.sp2-feed-hdr-meta { display: flex; flex-direction: column; line-height: 1.15; flex: 1; min-width: 0; }
+.sp2-feed-hdr-handle {
+  font-size: 12px; font-weight: 700; color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sp2-feed-hdr-loc { font-size: 10px; color: var(--text3); }
+.sp2-feed-hdr-dots { color: var(--text2); font-size: 16px; letter-spacing: 1px; line-height: 0; }
+
+.sp2-feed-img {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: #14141c;
+  display: grid; place-items: center;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.sp2-feed-img-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 20px;
+  color: rgba(255,255,255,.55);
+  text-align: center;
+}
+.sp2-feed-img-empty-txt { font-size: 11px; }
+.sp2-feed-img.has-media .sp2-feed-img-empty { display: none; }
+.sp2-feed-img-badge {
+  position: absolute; top: 10px; right: 10px;
+  background: rgba(0,0,0,.55); color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 4px 8px; border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+.sp2-feed-actions {
+  display: flex; align-items: center;
+  gap: 12px;
+  padding: 10px 12px 4px;
+  color: var(--text);
+}
+.sp2-feed-actions-spacer { flex: 1; }
+.sp2-feed-actions svg { display: block; }
+
+.sp2-feed-caption {
+  padding: 2px 12px 4px;
+  font-size: 12px; line-height: 1.4;
+  color: var(--text);
+}
+.sp2-feed-caption strong { font-weight: 700; margin-right: 5px; }
+.sp2-feed-caption-text { white-space: pre-wrap; word-break: break-word; }
+.sp2-feed-caption-empty { color: var(--text3); font-style: italic; }
+.sp2-feed-time {
+  padding: 6px 12px 12px;
+  font-size: 9.5px;
+  color: var(--text3);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+
 /* FAB global fica awkward centralizado no Publipost — esconde ali */
 body:has(#tab-social.active) #pjFab { display: none !important; }
 
-/* Mobile */
+/* Mobile: empilha (preview vai embaixo) */
+@media (max-width: 899px) {
+  .sp2-preview-col { display: none; } /* em mobile o dropzone já mostra a foto uploaded */
+}
 @media (max-width: 640px) {
   .sp2-app { padding: 16px 14px 130px; }
   .sp2-drop { aspect-ratio: 1 / 1.15; max-height: 55vh; }
@@ -13090,13 +13213,22 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
   .sp2-kpi { font-size: 11px; padding: 6px 10px 6px 9px; }
 }
 
-/* Desktop: expande layout, dropzone quadrado, CTA não sticky */
+/* Desktop: split editor + preview IG */
 @media (min-width: 900px) {
   .sp2-app {
-    max-width: 760px;
+    max-width: 1080px;
     padding: 32px 32px 60px;
     gap: 18px;
   }
+  .sp2-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 32px;
+    align-items: start;
+  }
+  .sp2-editor-col { gap: 16px; }
+  .sp2-preview-sticky { position: sticky; top: 20px; }
+  .sp2-preview-tag { display: inline-flex; }
   .sp2-drop {
     aspect-ratio: 1 / 1;
     max-height: none;
@@ -13108,7 +13240,9 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
   .sp2-phone { width: 300px; height: 560px; }
 }
 @media (min-width: 1200px) {
-  .sp2-app { max-width: 840px; }
+  .sp2-app { max-width: 1200px; }
+  .sp2-workspace { grid-template-columns: minmax(0, 1fr) 380px; gap: 40px; }
+  .sp2-feed-phone { max-width: 360px; }
 }
 
 /* Dark mode ajustes específicos do Publipost v2 */

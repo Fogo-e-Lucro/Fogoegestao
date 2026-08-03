@@ -1101,6 +1101,10 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
         </button>
       </div>
 
+      <!-- Workspace: split editor + preview em desktop, empilhado em mobile -->
+      <div class="sp2-workspace">
+      <div class="sp2-editor-col">
+
       <!-- MODO POST — detecção automática (foto=Feed, várias=Carrossel, vídeo=Reels) -->
       <div id="sp2PostMode">
         <!-- Estado 1: dropzone gigante (feed/reels) -->
@@ -1226,6 +1230,53 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           </div>
         </div>
       </div>
+
+      </div><!-- /sp2-editor-col -->
+
+      <!-- PREVIEW COL: phone IG realista sempre visível no desktop -->
+      <aside class="sp2-preview-col" aria-label="Preview do post no Instagram">
+        <div class="sp2-preview-sticky">
+          <div class="sp2-preview-tag">Preview</div>
+          <div class="sp2-feed-phone" id="sp2FeedPhone">
+            <div class="sp2-phone-notch"></div>
+            <div class="sp2-feed-screen">
+              <!-- Header IG -->
+              <div class="sp2-feed-hdr">
+                <div class="sp2-feed-hdr-av" id="sp2FeedHdrAv"></div>
+                <div class="sp2-feed-hdr-meta">
+                  <span class="sp2-feed-hdr-handle" id="sp2FeedHdrHandle">@sua_conta</span>
+                  <span class="sp2-feed-hdr-loc" id="sp2FeedHdrLoc">Publipost</span>
+                </div>
+                <span class="sp2-feed-hdr-dots">•••</span>
+              </div>
+              <!-- Imagem -->
+              <div class="sp2-feed-img" id="sp2FeedImg">
+                <div class="sp2-feed-img-empty" id="sp2FeedImgEmpty">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                  <span class="sp2-feed-img-empty-txt">A foto aparece aqui</span>
+                </div>
+                <span class="sp2-feed-img-badge" id="sp2FeedImgBadge" style="display:none">1/3</span>
+              </div>
+              <!-- Actions -->
+              <div class="sp2-feed-actions">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                <span class="sp2-feed-actions-spacer"></span>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <!-- Legenda -->
+              <div class="sp2-feed-caption">
+                <strong id="sp2FeedCapHandle">@sua_conta</strong>
+                <span id="sp2FeedCapText" class="sp2-feed-caption-text sp2-feed-caption-empty">Escreva a legenda ao lado…</span>
+              </div>
+              <div class="sp2-feed-time">Agora mesmo</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      </div><!-- /sp2-workspace -->
 
       <!-- Select escondido — JS lê o value pra saber conta selecionada -->
       <select id="spAccountSelect" hidden onchange="spOnAccountChange()">
@@ -5480,6 +5531,7 @@ function switchTab(tab, btn) {
     if (typeof sp2RenderAccountStrip === 'function') sp2RenderAccountStrip();
     if (typeof sp2SetMode === 'function') sp2SetMode('POST');
     if (typeof sp2AutoDetectType === 'function') sp2AutoDetectType();
+    if (typeof sp2UpdateFeedPreview === 'function') sp2UpdateFeedPreview();
     if (typeof spUpdatePublishBtn === 'function') spUpdatePublishBtn();
   }
   if (tab === 'projetos') {
@@ -7709,6 +7761,7 @@ function spOnAccountChange() {
     if (usernameEl) usernameEl.textContent = '@' + acc.igUsername;
   }
   if (typeof sp2RenderAccountStrip === 'function') sp2RenderAccountStrip();
+  if (typeof sp2UpdateFeedPreview === 'function') sp2UpdateFeedPreview();
   spUpdatePublishBtn();
 }
 
@@ -7830,6 +7883,7 @@ function spHandleFile(file) {
     else { vid.style.display='none'; img.style.display='block'; img.src=ev.target.result; }
     // Detecção automática de tipo (Speed-Post): 1 foto=FEED, video=REELS
     if (typeof sp2AutoDetectType === 'function' && sp2CurrentMode === 'POST') sp2AutoDetectType();
+    if (typeof sp2UpdateFeedPreview === 'function') sp2UpdateFeedPreview();
     spUpdatePublishBtn();
   };
   reader.readAsDataURL(file);
@@ -7844,6 +7898,7 @@ function spRemoveMedia(e) {
   document.getElementById('spPreviewVid').src = '';
   if (typeof sp2AutoDetectType === 'function') sp2AutoDetectType();
   if (typeof sp2UpdateTypeBadge === 'function') sp2UpdateTypeBadge();
+  if (typeof sp2UpdateFeedPreview === 'function') sp2UpdateFeedPreview();
   spUpdatePublishBtn();
 }
 
@@ -8403,6 +8458,7 @@ function sp2InitAuthPanel() {
 
 function sp2OnCaptionInput(el) {
   document.getElementById('spCaptionCount').textContent = String(el.value.length);
+  if (typeof sp2UpdateFeedPreview === 'function') sp2UpdateFeedPreview();
 }
 
 function sp2SuggestCaption() {
@@ -8477,6 +8533,82 @@ function sp2RenderTodayBar() {
       <span>@${uname}</span>
     </div>`;
   }).join('');
+}
+
+function sp2UpdateFeedPreview() {
+  // Preview IG do Feed/Reels/Carrossel — reflete conta + foto + legenda em tempo real
+  const sel = document.getElementById('spAccountSelect');
+  const acc = sel && sel.value !== '' ? spAccounts[parseInt(sel.value)] : null;
+
+  const hdrHandle = document.getElementById('sp2FeedHdrHandle');
+  const capHandle = document.getElementById('sp2FeedCapHandle');
+  const hdrAv = document.getElementById('sp2FeedHdrAv');
+  if (hdrHandle) hdrHandle.textContent = '@' + (acc?.igUsername || 'sua_conta');
+  if (capHandle) capHandle.textContent = '@' + (acc?.igUsername || 'sua_conta');
+  if (hdrAv) {
+    if (acc?.pic) hdrAv.style.backgroundImage = `url('${acc.pic}')`;
+    else if (acc) hdrAv.style.background = `linear-gradient(135deg, ${sp2GetAccountColor(acc.igUsername).join(', ')})`;
+    else hdrAv.style.background = 'linear-gradient(135deg, #f59e0b, #ef4444, #a855f7)';
+  }
+
+  // Imagem
+  const img = document.getElementById('sp2FeedImg');
+  const badge = document.getElementById('sp2FeedImgBadge');
+  if (img) {
+    let src = null, count = 0;
+    if (spCurrentType === 'CAROUSEL' && spCarouselFiles.length > 0) {
+      // Usa primeira do carrossel — precisa converter File pra dataURL
+      count = spCarouselFiles.length;
+      const f = spCarouselFiles[0];
+      const r = new FileReader();
+      r.onload = ev => { img.style.backgroundImage = `url('${ev.target.result}')`; img.classList.add('has-media'); };
+      r.readAsDataURL(f);
+    } else if (spCurrentFile) {
+      count = 1;
+      if (spCurrentFile.type?.startsWith('video/')) {
+        // Pra vídeo, extrai primeiro frame via canvas (rápido, best-effort)
+        const url = URL.createObjectURL(spCurrentFile);
+        const vid = document.createElement('video');
+        vid.src = url; vid.muted = true; vid.playsInline = true; vid.preload = 'metadata';
+        vid.onloadeddata = () => {
+          vid.currentTime = 0.1;
+          vid.onseeked = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
+            canvas.getContext('2d').drawImage(vid, 0, 0);
+            img.style.backgroundImage = `url('${canvas.toDataURL('image/jpeg', .8)}')`;
+            img.classList.add('has-media');
+            URL.revokeObjectURL(url);
+          };
+        };
+      } else {
+        const r = new FileReader();
+        r.onload = ev => { img.style.backgroundImage = `url('${ev.target.result}')`; img.classList.add('has-media'); };
+        r.readAsDataURL(spCurrentFile);
+      }
+    } else {
+      img.style.backgroundImage = '';
+      img.classList.remove('has-media');
+    }
+    if (badge) {
+      if (count > 1) { badge.style.display = 'inline-block'; badge.textContent = '1/' + count; }
+      else { badge.style.display = 'none'; }
+    }
+  }
+
+  // Legenda
+  const capEl = document.getElementById('sp2FeedCapText');
+  const capInput = document.getElementById('spCaption');
+  if (capEl && capInput) {
+    const txt = capInput.value.trim();
+    if (txt) {
+      capEl.textContent = txt.length > 220 ? txt.slice(0, 220) + '…' : txt;
+      capEl.classList.remove('sp2-feed-caption-empty');
+    } else {
+      capEl.textContent = 'Escreva a legenda ao lado…';
+      capEl.classList.add('sp2-feed-caption-empty');
+    }
+  }
 }
 
 function sp2UpdateKpi() {
