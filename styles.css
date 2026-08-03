@@ -12340,3 +12340,55 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
   gap: 20px !important;
   width: 100% !important;
 }
+
+/* ============================================================
+   VITRINE 15 — HOTFIX #2 proporções (2026-08-03 10:42)
+   Remove sticky/overflow do stage que colapsavam o grid split.
+   Split volta a 60/40 rigido em desktop. Phone com sombra
+   flutuando sem cortar por scroll.
+   ============================================================ */
+
+/* Force split 2 colunas em desktop, painel direita mínimo 460px */
+@media (min-width: 901px) {
+  #tab-entrada .estudio-split {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 480px) !important;
+    min-height: 0 !important;
+    gap: 0 !important;
+  }
+}
+
+/* Stage: SEM sticky, SEM overflow, deixa fluxo natural */
+.estudio-stage.vitrine15 {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  place-items: unset !important;
+  padding: 40px 24px !important;
+  gap: 20px !important;
+  position: static !important;
+  top: auto !important;
+  align-self: stretch !important;
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  background: transparent !important;
+}
+.vitrine15 .estudio-stage-scroll {
+  width: 100% !important;
+  max-width: 340px !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 20px !important;
+}
+
+/* Painel: garante min-width 0 pra nao empurrar o split */
+#tab-entrada .estudio-panel {
+  min-width: 0 !important;
+}
