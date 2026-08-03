@@ -174,11 +174,11 @@ body {
 /* ── CONTENT & PANELS ────────────────────────────────── */
 .app-content { width:100%; margin:0; padding:24px 32px; }
 
-/* ── TAB ENTRADA — Layout centrado e espaçado ─────────── */
+/* ── TAB ENTRADA — Layout full width pro Estudio (Vitrine 15) ── */
 #tab-entrada {
-  max-width: 740px;
-  margin: 0 auto;
-  padding-bottom: 40px;
+  max-width: none;
+  margin: 0;
+  padding-bottom: 0;
 }
 
 /* Contador automático de passos */
