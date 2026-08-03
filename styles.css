@@ -11587,13 +11587,13 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
    ============================================================ */
 #tab-lives.tab-panel.liv { padding: 24px 28px 80px; }
 
-/* Fallback Safari sem color-mix */
+/* Cores derivadas do design system — respeitam claro/noturno */
 #tab-lives {
   --studio-scrim: rgba(0,0,0,.55);
   --studio-scrim-strong: rgba(0,0,0,.72);
-  --studio-hover: #1f1f30;
-  --studio-menu-bg: #12121d;
-  --thumb-empty: #0f0f18;
+  --studio-hover: var(--card2);
+  --studio-menu-bg: var(--card);
+  --thumb-empty: var(--bg2);
   --ok: #22c55e;
   --warn: #f59e0b;
 }
