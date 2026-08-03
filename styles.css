@@ -12668,7 +12668,10 @@ html, body {
 .sp2-drop-preview {
   position: absolute; inset: 0;
   border-radius: 20px; overflow: hidden;
-  display: block !important;
+}
+.sp2-drop-preview img,
+.sp2-drop-preview video {
+  display: none;
 }
 .sp2-drop-preview img,
 .sp2-drop-preview video {
@@ -13070,7 +13073,14 @@ html, body {
   max-height: 280px; overflow-y: auto;
 }
 
-/* Mobile ajustes */
+/* Legacy hidden: garante que buttons .sp-type-tab órfãos não aparecem */
+.sp2-legacy-hidden,
+.sp2-legacy-hidden[hidden] { display: none !important; }
+
+/* FAB global fica awkward centralizado no Publipost — esconde ali */
+body:has(#tab-social.active) #pjFab { display: none !important; }
+
+/* Mobile */
 @media (max-width: 640px) {
   .sp2-app { padding: 16px 14px 130px; }
   .sp2-drop { aspect-ratio: 1 / 1.15; max-height: 55vh; }
@@ -13078,6 +13088,27 @@ html, body {
   .sp2-cta { padding: 16px 18px; font-size: 15px; }
   .sp2-brand-sub { display: none; }
   .sp2-kpi { font-size: 11px; padding: 6px 10px 6px 9px; }
+}
+
+/* Desktop: expande layout, dropzone quadrado, CTA não sticky */
+@media (min-width: 900px) {
+  .sp2-app {
+    max-width: 760px;
+    padding: 32px 32px 60px;
+    gap: 18px;
+  }
+  .sp2-drop {
+    aspect-ratio: 1 / 1;
+    max-height: none;
+  }
+  .sp2-cta-wrap {
+    position: static;
+    padding-top: 8px;
+  }
+  .sp2-phone { width: 300px; height: 560px; }
+}
+@media (min-width: 1200px) {
+  .sp2-app { max-width: 840px; }
 }
 
 /* Dark mode ajustes específicos do Publipost v2 */
