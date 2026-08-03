@@ -12083,3 +12083,208 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
   .vitrine15 .estudio-ig-top { padding-top: 30px; }
   #tab-entrada .estudio-panel { padding: 20px 16px 100px; }
 }
+
+/* ============================================================
+   MOBILE AUDIT — fixes consolidados (2026-08-03 late)
+   Fonte: workflow adversarial em 3 viewports (iPhone 13/SE, Pixel).
+   Resolve 3 bugs-raiz + 7 issues secundários que quebravam o app no
+   celular. Ver commit e workflow report pra detalhes.
+   ============================================================ */
+
+/* FIX #1 (bug raiz) — safe-area só em PWA standalone; nao inflar .main-tabs */
+@media (max-width: 900px) {
+  .topbar, .app-header {
+    padding-top: max(8px, env(safe-area-inset-top)) !important;
+  }
+}
+@media (max-width: 900px) and (display-mode: standalone) {
+  .topbar, .app-header {
+    padding-top: calc(8px + env(safe-area-inset-top)) !important;
+  }
+}
+
+/* FIX #2 (bug raiz) — tabs invisíveis: mantém SVG, garante 44x44 */
+@media (max-width: 640px) {
+  .main-tab svg,
+  .main-tab .main-tab-svg {
+    display: inline-block !important;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+  .main-tab {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+}
+@media (max-width: 480px) {
+  .main-tab .main-tab-label { display: none; }
+  .main-tab { padding: 10px 12px !important; min-width: 44px; min-height: 44px; }
+}
+
+/* FIX #3 — .main-tabs vira strip horizontal scrollável no mobile */
+@media (max-width: 640px) {
+  .main-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    width: 100%;
+    padding: 8px 4px;
+    gap: 4px;
+    scroll-snap-type: x mandatory;
+  }
+  .main-tabs::-webkit-scrollbar { display: none; }
+  .main-tab {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+}
+
+/* FIX #4 (bug raiz) — Estúdio grid não expande pro min-content */
+.estudio-shell > * { min-width: 0; }
+
+@media (max-width: 900px) {
+  .estudio-split {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+  }
+  .estudio-stage,
+  .estudio-stage.vitrine15,
+  .estudio-panel,
+  #tab-entrada .estudio-panel,
+  #tab-entrada .estudio-shell {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+  .estudio-stage.vitrine15 {
+    position: static;
+    max-height: none;
+    padding: 16px 12px;
+    border-right: 0;
+  }
+  #tab-entrada .estudio-panel { padding: 16px 12px 100px; }
+  .estudio-block-head, .estudio-block-body,
+  .estudio-combo, .estudio-combo-input,
+  .estudio-format-grid, .estudio-obj-grid,
+  .estudio-mini-cal, .estudio-mini-cal-head,
+  .estudio-field textarea, .estudio-field input,
+  #recorrenciaPills, #horarioPublicacao {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* FIX #5 — sticky bar do Estúdio: esconde extras no mobile */
+@media (max-width: 640px) {
+  .estudio-bar {
+    padding: 8px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .estudio-bar-crumbs,
+  .estudio-bar-hint,
+  .estudio-bar-kbd { display: none; }
+  .estudio-bar-back,
+  .estudio-bar-btn {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+  .estudio-bar-btn.primary { padding: 11px 16px; }
+}
+
+/* FIX #6 — painel do dia vira bottom-sheet mobile */
+@media (max-width: 640px) {
+  .day-panel {
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    border-radius: 16px 16px 0 0;
+    transform: none !important;
+  }
+  .day-panel-header {
+    width: auto;
+    max-width: 100%;
+    padding: 12px 14px;
+  }
+  .btn-close-panel { min-width: 44px; min-height: 44px; }
+}
+
+/* FIX #7 — botão admin ancorado dentro da viewport */
+@media (max-width: 640px) {
+  .app-settings-tab.pj-admin-only {
+    right: 8px;
+    max-width: calc(100vw - 32px);
+    font-size: 12px;
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+}
+
+/* FIX #8 — touch targets 44x44 WCAG 2.5.5 */
+@media (pointer: coarse), (max-width: 640px) {
+  .main-tab,
+  .app-home-btn,
+  .theme-picker-btn,
+  .app-uazapi-status,
+  .btn-close-panel,
+  .modal-btn,
+  .modal-btn-secondary,
+  .estudio-bar-back,
+  .estudio-bar-btn,
+  .estudio-mock-tab,
+  .app-settings-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .modal-btn-secondary { padding: 10px 16px; height: auto; }
+  .theme-picker-btn,
+  #bdIconBtn,
+  #themePickerBtn { width: 44px !important; height: 44px !important; }
+  .app-settings-link { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 4px; }
+}
+
+/* FIX #9 — textos legíveis mobile + iOS não zooma inputs */
+@media (max-width: 640px) {
+  .estudio-field-hint,
+  .estudio-field-counter,
+  #charCounter,
+  .modal-label,
+  .preview-label,
+  .app-settings-link,
+  .pj-dash-kpi-label,
+  .pj-dash-kpi-sub,
+  .pj-dash-task-meta,
+  .pj-inbox-count-badge,
+  .pj-dash-see-all,
+  .pj-notif-time span {
+    font-size: 12px !important;
+    letter-spacing: 0.02em;
+  }
+  /* iOS bloqueia zoom automático se input font-size ≥ 16px */
+  input, textarea, select { font-size: 16px; }
+}
+
+/* FIX #10 — safety net global (clip preserva sticky/fixed) */
+html, body {
+  overflow-x: clip;
+  max-width: 100vw;
+  width: 100%;
+}
+@media (max-width: 640px) {
+  img, video, iframe, canvas { max-width: 100%; height: auto; }
+  pre, code, table { max-width: 100%; overflow-x: auto; }
+  .tab-panel.active > * { max-width: 100vw; }
+}
