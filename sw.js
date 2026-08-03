@@ -2,7 +2,7 @@
 // V2: cache app-shell para modo offline. Mutations Firestore são tratadas
 // pela própria persistência IndexedDB do Firestore (queue automática).
 // Bump cache version cada vez que mudar lógica:
-const SW_VERSION = 'fg-v3.16.0';
+const SW_VERSION = 'fg-v3.16.1';
 const SHELL_CACHE = `fg-shell-${SW_VERSION}`;
 const RUNTIME_CACHE = `fg-runtime-${SW_VERSION}`;
 
@@ -68,8 +68,22 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Same-origin static assets → stale-while-revalidate
+  // Same-origin static: CSS/JS → network-first (evita cache stale que quebra layout)
+  // Imagens/fontes/outros → stale-while-revalidate (rápido, aceita atrasar 1 revisão)
   if (url.origin === location.origin) {
+    const isCritical = /\.(css|js)(\?|$)/i.test(url.pathname + url.search);
+    if (isCritical) {
+      event.respondWith(
+        fetch(req).then(res => {
+          if (res && res.status === 200 && res.type === 'basic') {
+            const copy = res.clone();
+            caches.open(RUNTIME_CACHE).then(c => c.put(req, copy)).catch(()=>{});
+          }
+          return res;
+        }).catch(() => caches.match(req))
+      );
+      return;
+    }
     event.respondWith(
       caches.match(req).then(cached => {
         const fetchPromise = fetch(req).then(res => {
