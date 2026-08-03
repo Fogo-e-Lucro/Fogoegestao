@@ -12455,6 +12455,14 @@ html, body {
    Prefix .sp2- para não colidir com .sp-* legado.
    ============================================================ */
 
+/* Fix cascade: [hidden] attribute deve vencer qualquer display definido depois.
+   Sem isso, os display:flex/block das regras .sp2-* mostram elementos que
+   deveriam estar escondidos (collab body, type swap menu, select hidden, etc). */
+.sp2-app [hidden],
+#tab-social select[hidden] {
+  display: none !important;
+}
+
 .sp2-app {
   max-width: 560px;
   margin: 0 auto;
