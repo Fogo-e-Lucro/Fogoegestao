@@ -3861,6 +3861,30 @@ async function addMember() {
         uid: null, email, name, role: pjRole, pending: true, createdAt: Date.now()
       });
     } catch(_) {}
+    // NOVO: cria conta no Firebase Auth via backend (fg-live /auth/create-user)
+    // Antes dependia do "primeiro login" pra criar, o que confundia.
+    if (authType === 'password' && pwd) {
+      try {
+        const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
+        const apiUrl = (cfg.url || 'https://89-116-30-126.sslip.io').replace(/\/+$/,'');
+        const apiTok = cfg.token || '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
+        const r = await fetch(apiUrl + '/auth/create-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiTok },
+          body: JSON.stringify({ email, password: pwd, displayName: name }),
+        });
+        if (r.ok) {
+          const j = await r.json();
+          console.log('[addMember] Firebase Auth criado uid=' + j.uid);
+        } else {
+          console.warn('[addMember] backend /auth/create-user falhou:', r.status, await r.text().catch(()=>''));
+          showToast('warn','⚠️', 'Salvou no banco mas Firebase Auth falhou. Usa a senha na 1a vez pra reconfigurar.');
+        }
+      } catch(e) {
+        console.warn('[addMember] backend nao respondeu:', e.message);
+        // Nao bloqueia — cai no fallback do primeiro login
+      }
+    }
     // Upsert no array local (não duplica se já tiver entrada)
     const idx = _acessoMembers.findIndex(m => m.email === email);
     if (idx >= 0) _acessoMembers[idx] = member;
@@ -4232,6 +4256,16 @@ async function acessoUploadAvatar(el, targetEmail) {
 async function removeMember(email) {
   if (!confirm(`Remover acesso de ${email}?`)) return;
   try {
+    // NOVO: deleta tambem do Firebase Auth via backend
+    try {
+      const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
+      const apiUrl = (cfg.url || 'https://89-116-30-126.sslip.io').replace(/\/+$/,'');
+      const apiTok = cfg.token || '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
+      await fetch(apiUrl + '/auth/delete-user?email=' + encodeURIComponent(email), {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + apiTok },
+      });
+    } catch(e) { console.warn('[removeMember] backend delete falhou:', e.message); }
     const docId = btoa(email).replace(/[^a-zA-Z0-9]/g,'_');
     await _db.collection('app_members').doc(docId).delete();
     // Allowed emails legacy list
