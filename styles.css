@@ -11800,7 +11800,8 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
 /* SPLIT: mantém 2 colunas em desktop (60% palco + minmax 420/480 painel) */
 @media (min-width: 901px) {
   #tab-entrada .estudio-split {
-    grid-template-columns: minmax(0, 1fr) minmax(420px, 480px);
+    /* Palco fixo (phone 300 + padding + folga) — painel usa o resto */
+    grid-template-columns: 400px minmax(0, 1fr);
   }
 }
 #tab-entrada .estudio-panel { min-width: 0; }
@@ -11811,12 +11812,15 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 40px 24px;
+  padding: 40px 20px;
   gap: 20px;
-  position: static;
-  max-height: none;
+  position: sticky;
+  top: 60px;
+  align-self: start;
+  max-height: calc(100vh - 60px);
   height: auto;
-  overflow: visible;
+  overflow-y: auto;
+  overflow-x: hidden;
   min-width: 0;
   background: radial-gradient(circle at 50% 30%, var(--bg2) 0%, var(--bg) 70%);
   border-right: 1px solid var(--border);
