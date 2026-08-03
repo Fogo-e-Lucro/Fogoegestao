@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260803-2">
+<link rel="stylesheet" href="styles.css?v=20260803-3">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -1625,59 +1625,137 @@ ufw allow 3000/tcp</pre>
           </button>
         </header>
         <form id="form-new-live" class="drawer__body">
-          <label class="field">
-            <span class="field__label">Nome do cliente / rotulo</span>
-            <input type="text" name="label" required maxlength="60" placeholder="Ex: Pizza Hot lancamento sexta"/>
+
+          <!-- 1. NOME -->
+          <label class="lv-field">
+            <span class="lv-field__label">Nome do cliente ou rótulo</span>
+            <input type="text" name="label" required maxlength="60" placeholder="Ex: Pizza Hot lançamento sexta"/>
+            <small class="lv-field__hint">Aparece só no seu painel pra saber de quem é o card.</small>
           </label>
-          <fieldset class="field field--group">
-            <legend class="field__label">Tipo de midia</legend>
-            <label class="radio"><input type="radio" name="type" value="video" checked/><span>Video (loop ou unico)</span></label>
-            <label class="radio"><input type="radio" name="type" value="image_audio"/><span>Imagem + audio</span></label>
-            <label class="radio"><input type="radio" name="type" value="image"/><span>Imagem estatica</span></label>
+
+          <!-- 2. TIPO — cards visuais com ícone -->
+          <fieldset class="lv-field lv-field--group">
+            <legend class="lv-field__label">Tipo de mídia</legend>
+            <div class="lv-type-grid">
+              <label class="lv-type-card">
+                <input type="radio" name="type" value="video" checked/>
+                <span class="lv-type-card__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
+                </span>
+                <span class="lv-type-card__name">Vídeo</span>
+                <span class="lv-type-card__sub">MP4 em loop ou único</span>
+              </label>
+              <label class="lv-type-card">
+                <input type="radio" name="type" value="image_audio"/>
+                <span class="lv-type-card__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg>
+                </span>
+                <span class="lv-type-card__name">Imagem + áudio</span>
+                <span class="lv-type-card__sub">Cover fixa com trilha</span>
+              </label>
+              <label class="lv-type-card">
+                <input type="radio" name="type" value="image"/>
+                <span class="lv-type-card__icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                </span>
+                <span class="lv-type-card__name">Imagem estática</span>
+                <span class="lv-type-card__sub">Só a imagem, sem som</span>
+              </label>
+            </div>
           </fieldset>
-          <label class="field">
-            <span class="field__label">Arquivo</span>
-            <input type="file" name="video" id="lv-file" accept="video/mp4,image/*" required/>
-            <small class="field__hint">Video ate 3500 kbps ou imagem ate 5 MB. Fica no servidor.</small>
-          </label>
-          <label class="field" id="lv-audio-field" hidden>
-            <span class="field__label">Trilha (mp3/m4a) — para tipo Imagem + audio</span>
-            <input type="file" name="audio" accept="audio/*"/>
-          </label>
-          <label class="checkbox">
+
+          <!-- 3. UPLOAD — dropzone bonito -->
+          <div class="lv-field">
+            <span class="lv-field__label">Arquivo</span>
+            <label class="lv-drop" id="lv-drop-main">
+              <input type="file" name="video" id="lv-file" accept="video/mp4,image/*" required hidden/>
+              <span class="lv-drop__icon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+              </span>
+              <span class="lv-drop__title" id="lv-drop-title">Arraste o arquivo</span>
+              <span class="lv-drop__sub" id="lv-drop-sub">ou clique pra escolher · MP4 (vídeo até 3500 kbps) ou JPG/PNG até 5 MB</span>
+            </label>
+          </div>
+
+          <!-- 4. AUDIO (só se image_audio) -->
+          <div class="lv-field" id="lv-audio-field" hidden>
+            <span class="lv-field__label">Trilha de áudio</span>
+            <label class="lv-drop lv-drop--sm">
+              <input type="file" name="audio" id="lv-audio-file" accept="audio/*" hidden/>
+              <span class="lv-drop__icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              </span>
+              <span class="lv-drop__title" id="lv-audio-title">Escolher trilha</span>
+              <span class="lv-drop__sub" id="lv-audio-sub">MP3, WAV ou M4A</span>
+            </label>
+          </div>
+
+          <!-- 5. LOOP toggle -->
+          <label class="lv-toggle">
             <input type="checkbox" name="loop" checked/>
-            <span>Reproduzir em loop</span>
+            <span class="lv-toggle__switch"></span>
+            <span class="lv-toggle__body">
+              <span class="lv-toggle__title">Reproduzir em loop</span>
+              <span class="lv-toggle__sub">Quando o vídeo termina, começa do zero automaticamente.</span>
+            </span>
           </label>
-          <label class="field">
-            <span class="field__label">URL RTMP do destino</span>
-            <input type="text" name="rtmpUrl" required placeholder="rtmps://live-api-s.facebook.com:443/rtmp/"/>
+
+          <!-- 6. RTMP + CHAVE -->
+          <div class="lv-field-group">
+            <label class="lv-field">
+              <span class="lv-field__label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;opacity:.7"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                URL RTMP do destino
+              </span>
+              <input type="text" name="rtmpUrl" required placeholder="rtmps://live-api-s.facebook.com:443/rtmp/"/>
+              <small class="lv-field__hint">Copie do Live Producer no Instagram/Facebook.</small>
+            </label>
+            <label class="lv-field">
+              <span class="lv-field__label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;opacity:.7"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>
+                Chave da transmissão
+              </span>
+              <div class="lv-input-wrap">
+                <input type="password" name="streamKey" id="lv-key" required placeholder="FB-XXXXXXXXXX"/>
+                <button type="button" class="lv-input-toggle" data-toggle-key aria-label="Mostrar chave">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </label>
+          </div>
+
+          <!-- 7. AUTO STOP -->
+          <label class="lv-field">
+            <span class="lv-field__label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;opacity:.7"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Parar sozinho depois de
+            </span>
+            <div class="lv-chip-row">
+              <label class="lv-chip"><input type="radio" name="autoStopHours" value="" checked/><span>Não parar</span></label>
+              <label class="lv-chip"><input type="radio" name="autoStopHours" value="1"/><span>1 h</span></label>
+              <label class="lv-chip"><input type="radio" name="autoStopHours" value="2"/><span>2 h</span></label>
+              <label class="lv-chip"><input type="radio" name="autoStopHours" value="4"/><span>4 h</span></label>
+              <label class="lv-chip"><input type="radio" name="autoStopHours" value="6"/><span>6 h</span></label>
+              <label class="lv-chip"><input type="radio" name="autoStopHours" value="12"/><span>12 h</span></label>
+              <label class="lv-chip"><input type="radio" name="autoStopHours" value="24"/><span>24 h</span></label>
+            </div>
           </label>
-          <label class="field">
-            <span class="field__label">Chave da transmissao</span>
-            <input type="password" name="streamKey" required placeholder="FB-XXXXXXXXXX"/>
-          </label>
-          <label class="field">
-            <span class="field__label">Auto-parar em</span>
-            <select name="autoStopHours">
-              <option value="">Nao parar sozinha</option>
-              <option value="1">1 hora</option>
-              <option value="2">2 horas</option>
-              <option value="4">4 horas</option>
-              <option value="6">6 horas</option>
-              <option value="12">12 horas</option>
-              <option value="24">24 horas</option>
-            </select>
-            <small class="field__hint">Corta o stream limpo quando bater o tempo.</small>
-          </label>
-          <label class="checkbox">
+
+          <!-- 8. RESTART toggle -->
+          <label class="lv-toggle">
             <input type="checkbox" name="restartOnFail" checked/>
-            <span>Reiniciar se cair</span>
-            <small class="checkbox__hint">Ate 3 tentativas em 5 min. Depois avisa.</small>
+            <span class="lv-toggle__switch"></span>
+            <span class="lv-toggle__body">
+              <span class="lv-toggle__title">Reiniciar se cair</span>
+              <span class="lv-toggle__sub">Até 3 tentativas em 5 min. Depois avisa.</span>
+            </span>
           </label>
+
           <div class="drawer__footer">
             <button type="button" class="btn-ghost" data-close-drawer>Cancelar</button>
             <button type="submit" class="btn-primary" id="btn-submit-live">
-              <span data-submit-label>Subir agora</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 16.1 2 19"/><path d="m2 5 2.9 2.9"/><circle cx="12" cy="12" r="3"/><path d="M16.2 7.8 19 5"/><path d="m19 19-2.8-2.8"/></svg>
+              <span data-submit-label>Entrar no ar</span>
             </button>
           </div>
         </form>
@@ -27582,8 +27660,43 @@ const LIV = (() => {
         const val = document.querySelector('#form-new-live input[name="type"]:checked')?.value;
         const af = document.getElementById('lv-audio-field'); if (af) af.hidden = (val !== 'image_audio');
         const f = document.getElementById('lv-file'); if (f) f.accept = (val === 'video') ? 'video/*' : 'image/*';
+        // Reset drop title
+        const tt = document.getElementById('lv-drop-title'); if (tt && !f.files[0]) tt.textContent = (val === 'video') ? 'Arraste o vídeo' : 'Arraste a imagem';
       });
     });
+    // File input → drop label update
+    document.getElementById('lv-file')?.addEventListener('change', () => updateDropLabel('lv-file','lv-drop-main','lv-drop-title','lv-drop-sub','MP4 (vídeo até 3500 kbps) ou JPG/PNG até 5 MB'));
+    document.getElementById('lv-audio-file')?.addEventListener('change', () => updateDropLabel('lv-audio-file', null, 'lv-audio-title','lv-audio-sub','MP3, WAV ou M4A'));
+    // Drag & drop pro dropzone principal
+    const drop = document.getElementById('lv-drop-main');
+    if (drop) {
+      ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('is-drag'); }));
+      ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('is-drag'); }));
+      drop.addEventListener('drop', e => {
+        const f = e.dataTransfer.files?.[0]; if (!f) return;
+        const input = document.getElementById('lv-file');
+        try { const dt = new DataTransfer(); dt.items.add(f); input.files = dt.files; input.dispatchEvent(new Event('change')); } catch(_){}
+      });
+    }
+    // Toggle olho chave
+    document.querySelector('#form-new-live [data-toggle-key]')?.addEventListener('click', () => {
+      const k = document.getElementById('lv-key');
+      if (k) k.type = k.type === 'password' ? 'text' : 'password';
+    });
+  }
+  function updateDropLabel(fileId, dropId, titleId, subId, defaultSub) {
+    const f = document.getElementById(fileId)?.files?.[0];
+    const t = document.getElementById(titleId), s = document.getElementById(subId);
+    const drop = dropId ? document.getElementById(dropId) : document.getElementById(fileId)?.closest('.lv-drop');
+    if (f) {
+      if (t) t.textContent = f.name.length > 40 ? f.name.slice(0, 40) + '…' : f.name;
+      if (s) s.textContent = (f.size / 1024 / 1024).toFixed(1) + ' MB · clique pra trocar';
+      if (drop) drop.classList.add('has-file');
+    } else {
+      if (t) t.textContent = 'Arraste o arquivo';
+      if (s) s.textContent = defaultSub;
+      if (drop) drop.classList.remove('has-file');
+    }
   }
 
   async function onSubmitNew(e) {
