@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260803-3">
+<link rel="stylesheet" href="styles.css?v=20260803-4">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -1673,7 +1673,7 @@ ufw allow 3000/tcp</pre>
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
               </span>
               <span class="lv-drop__title" id="lv-drop-title">Arraste o arquivo</span>
-              <span class="lv-drop__sub" id="lv-drop-sub">ou clique pra escolher · MP4 (vídeo até 3500 kbps) ou JPG/PNG até 5 MB</span>
+              <span class="lv-drop__sub" id="lv-drop-sub">ou clique pra escolher · MP4 (vídeo até 3500 kbps) ou JPG/PNG · até 500 MB</span>
             </label>
           </div>
 
@@ -27655,15 +27655,30 @@ const LIV = (() => {
     document.addEventListener('click', () => {
       document.querySelectorAll('.menu[data-menu]').forEach(m => m.hidden = true);
     });
+    const syncType = () => {
+      const val = document.querySelector('#form-new-live input[name="type"]:checked')?.value || 'video';
+      const af = document.getElementById('lv-audio-field'); if (af) af.hidden = (val !== 'image_audio');
+      const f = document.getElementById('lv-file');
+      if (f) f.accept = (val === 'video') ? 'video/*' : 'image/*';
+      const tt = document.getElementById('lv-drop-title'); if (tt && (!f || !f.files[0])) tt.textContent = (val === 'video') ? 'Arraste o vídeo' : 'Arraste a imagem';
+    };
     document.querySelectorAll('#form-new-live input[name="type"]').forEach(r => {
-      r.addEventListener('change', () => {
-        const val = document.querySelector('#form-new-live input[name="type"]:checked')?.value;
-        const af = document.getElementById('lv-audio-field'); if (af) af.hidden = (val !== 'image_audio');
-        const f = document.getElementById('lv-file'); if (f) f.accept = (val === 'video') ? 'video/*' : 'image/*';
-        // Reset drop title
-        const tt = document.getElementById('lv-drop-title'); if (tt && !f.files[0]) tt.textContent = (val === 'video') ? 'Arraste o vídeo' : 'Arraste a imagem';
+      r.addEventListener('change', syncType);
+    });
+    // Failsafe: click no card garante que o radio dele fica checked + dispara change
+    document.querySelectorAll('#form-new-live .lv-type-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        // Se click NAO foi direto no input, força
+        const inp = card.querySelector('input[type="radio"]');
+        if (!inp || e.target === inp) return;
+        setTimeout(() => {
+          if (!inp.checked) { inp.checked = true; }
+          syncType();
+        }, 0);
       });
     });
+    // Roda 1x no init pra alinhar estado (caso browser reste um radio 'checked' diff do default)
+    syncType();
     // File input → drop label update
     document.getElementById('lv-file')?.addEventListener('change', () => updateDropLabel('lv-file','lv-drop-main','lv-drop-title','lv-drop-sub','MP4 (vídeo até 3500 kbps) ou JPG/PNG até 5 MB'));
     document.getElementById('lv-audio-file')?.addEventListener('change', () => updateDropLabel('lv-audio-file', null, 'lv-audio-title','lv-audio-sub','MP3, WAV ou M4A'));

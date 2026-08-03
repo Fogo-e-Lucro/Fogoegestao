@@ -11776,7 +11776,8 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
   transition: all var(--t) var(--ease);
 }
 #tab-lives .lv-type-card:hover { border-color: var(--text3); transform: translateY(-1px); }
-#tab-lives .lv-type-card input { position: absolute; opacity: 0; pointer-events: none; }
+/* SR-only pattern: input invisivel mas ainda participa de click/focus/change via label */
+#tab-lives .lv-type-card input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 #tab-lives .lv-type-card__icon {
   width: 36px; height: 36px; border-radius: 10px;
   display: grid; place-items: center;
@@ -11833,7 +11834,7 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
   transition: border-color var(--t) var(--ease);
 }
 #tab-lives .lv-toggle:has(input:checked) { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
-#tab-lives .lv-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+#tab-lives .lv-toggle input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 #tab-lives .lv-toggle__switch {
   position: relative; width: 40px; height: 22px; border-radius: 999px;
   background: var(--bg3); border: 1px solid var(--border);
@@ -11861,7 +11862,7 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
 #tab-lives .lv-chip {
   position: relative; cursor: pointer;
 }
-#tab-lives .lv-chip input { position: absolute; opacity: 0; pointer-events: none; }
+#tab-lives .lv-chip input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 #tab-lives .lv-chip span {
   display: inline-block; padding: 8px 14px;
   background: var(--card); border: 1px solid var(--border);
