@@ -10746,6 +10746,19 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
 }
 
 
+
+/* FALLBACK defensivo: garante tamanho de SVG mesmo se estilos abaixo não carregarem */
+#tab-lives svg { width: 1em; height: 1em; flex-shrink: 0; }
+#tab-lives .liv-header__badge svg { width: 22px; height: 22px; }
+#tab-lives .liv-empty__icon svg   { width: 44px; height: 44px; }
+#tab-lives .liv-cta svg           { width: 16px; height: 16px; }
+#tab-lives .liv-iconbtn svg       { width: 18px; height: 18px; }
+#tab-lives .liv-danger svg        { width: 14px; height: 14px; }
+#tab-lives .liv-card__typeIcon svg { width: 18px; height: 18px; }
+#tab-lives .liv-note svg          { width: 14px; height: 14px; }
+#tab-lives .liv-drop svg          { width: 24px; height: 24px; }
+#tab-lives .liv-type svg          { width: 20px; height: 20px; }
+
 /* ============================================================
    ESTÚDIO — aba "Ao Vivo" (redesign 2026-08-02)
    Painel de transmissões RTMP multi-live; ícones SVG, não emojis.
