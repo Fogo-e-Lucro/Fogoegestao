@@ -2,7 +2,7 @@
 // V2: cache app-shell para modo offline. Mutations Firestore são tratadas
 // pela própria persistência IndexedDB do Firestore (queue automática).
 // Bump cache version cada vez que mudar lógica:
-const SW_VERSION = 'fg-v3.16.2';
+const SW_VERSION = 'fg-v3.16.3';
 const SHELL_CACHE = `fg-shell-${SW_VERSION}`;
 const RUNTIME_CACHE = `fg-runtime-${SW_VERSION}`;
 
@@ -29,11 +29,15 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
+  // Purga total: apaga TODOS os caches fg-* (nao so os antigos).
+  // Assim quando ativa, os proximos fetch vao network-first e re-cacheiam versao nova.
+  // Resolve usuarios com SW pre-v3.16 servindo styles.css/index.html cacheados velhos.
   event.waitUntil(
     caches.keys().then(keys => Promise.all(
-      keys.filter(k => k !== SHELL_CACHE && k !== RUNTIME_CACHE && k.startsWith('fg-'))
-          .map(k => caches.delete(k))
+      keys.filter(k => k.startsWith('fg-')).map(k => caches.delete(k))
     )).then(() => self.clients.claim())
+    .then(() => self.clients.matchAll({ type: 'window' }))
+    .then(clients => clients.forEach(c => { try { c.navigate(c.url); } catch(_){} }))
   );
 });
 
