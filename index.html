@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260803-1">
+<link rel="stylesheet" href="styles.css?v=20260803-2">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -1508,186 +1508,183 @@ ufw allow 3000/tcp</pre>
   <!-- ═══ ABA AO VIVO (Estúdio de transmissões multi-live) ═══ -->
   <div class="tab-panel liv" id="tab-lives">
 
-    <!-- HEADER MISSION CONTROL -->
-    <header class="liv-header">
-      <div class="liv-header__brand">
-        <span class="liv-header__badge" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4.9 16.1 2 19"/><path d="m2 5 2.9 2.9"/><path d="M7.8 13.2 5 16"/><path d="M8 8 5.2 5.2"/>
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M16.2 7.8 19 5"/><path d="m19 19-2.8-2.8"/>
-          </svg>
-        </span>
-        <div>
-          <h1 class="liv-header__title">Ao Vivo</h1>
-          <p class="liv-header__subtitle">Estúdio de transmissões</p>
+    <!-- STUDIO PRO — Mission Control (v2 2026-08-03) -->
+    <header class="studio-header">
+      <div class="studio-header__left">
+        <h1 class="studio-title">Studio de lives</h1>
+        <div class="studio-meta">
+          <span class="studio-meta__chip"><span id="studio-count">0</span> no ar</span>
+          <span class="studio-meta__chip studio-meta__chip--host" id="studio-host">
+            <span class="host-dot host-dot--ok"></span>
+            <span id="studio-host-label">Checando servidor</span>
+          </span>
         </div>
-        <span class="liv-count" id="livCount" hidden>
-          <span class="liv-count__dot"></span>
-          <span id="livCountLabel">0 no ar</span>
-        </span>
       </div>
-
-      <div class="liv-header__actions">
-        <span class="liv-health" id="livHealth" data-state="unknown" title="Estado do servidor de transmissão">
-          <span class="liv-health__dot"></span>
-          <span class="liv-health__label">Checando servidor</span>
-        </span>
-
-        <button class="liv-iconbtn" id="livOpenSettings" type="button" aria-label="Configurações do servidor" onclick="liveOpenSettings()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
+      <div class="studio-header__right">
+        <div class="studio-filters" role="tablist" aria-label="Filtrar lives">
+          <button type="button" class="pill is-active" data-filter="all">Todas</button>
+          <button type="button" class="pill" data-filter="reconnecting">Reconectando</button>
+          <button type="button" class="pill" data-filter="failed">Falha</button>
+        </div>
+        <button type="button" id="btn-open-drawer" class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Nova live
         </button>
-
-        <button class="liv-cta" id="livNewBtn" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-          Nova transmissão
+        <button type="button" id="btn-studio-config" class="btn-ghost btn-ghost--icon" aria-label="Configuracoes do servidor" onclick="liveOpenSettings()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
         </button>
       </div>
     </header>
 
-    <div class="liv-grid" id="livGrid" role="list"></div>
-
-    <div class="liv-empty" id="livEmpty">
-      <div class="liv-empty__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect width="20" height="15" x="2" y="7" rx="2"/>
-          <polyline points="17 2 12 7 7 2"/>
-        </svg>
-      </div>
-      <h2 class="liv-empty__title">Nada no ar agora</h2>
-      <p class="liv-empty__text">Quando uma transmissão começar, ela aparece aqui com cronômetro e status do encoder.</p>
-      <button class="liv-cta liv-cta--ghost" id="livEmptyCTA" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-        Começar primeira transmissão
+    <div id="studio-empty" class="studio-empty">
+      <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12a7 7 0 0 1 14 0"/><path d="M8.5 12a3.5 3.5 0 0 1 7 0"/><circle cx="12" cy="12" r="1.2"/><path d="M12 13v8"/><path d="M8 21h8"/>
+      </svg>
+      <h3>Nada no ar ainda</h3>
+      <p>Suba a primeira transmissao pra um cliente e acompanhe tudo por aqui.</p>
+      <button type="button" class="btn-primary btn-primary--lg" data-open-drawer>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nova transmissao
       </button>
     </div>
 
-    <template id="livCardTpl">
-      <article class="liv-card" role="listitem">
-        <header class="liv-card__head">
-          <span class="liv-card__typeIcon" data-type-icon></span>
-          <input class="liv-card__label" type="text" maxlength="60" placeholder="Sem nome" data-label>
-          <span class="liv-card__live" data-live>
-            <span class="liv-card__live-dot"></span>
-            <span data-timer>00:00:00</span>
-          </span>
-        </header>
-        <div class="liv-card__thumb" data-thumb>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+    <div id="studio-grid" class="studio-grid" hidden></div>
+
+    <template id="tpl-live-card">
+      <article class="live-card" data-live-id="" data-status="live">
+        <div class="live-card__thumb">
+          <img class="live-card__preview" alt="Preview da transmissao" loading="lazy" width="480" height="270"/>
+          <div class="live-card__thumb-fallback">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M10 10l5 2-5 2z"/></svg>
+            <span class="live-card__fallback-label"></span>
+          </div>
+          <div class="live-card__overlay live-card__overlay--tl">
+            <span class="live-badge">
+              <span class="live-badge__dot"></span>
+              <span class="live-badge__label">AO VIVO</span>
+            </span>
+            <span class="live-timer" data-timer>00:00:00</span>
+          </div>
+          <div class="live-card__overlay live-card__overlay--tr">
+            <button type="button" class="icon-btn icon-btn--dark" data-menu-toggle aria-label="Mais opcoes" aria-haspopup="true" aria-expanded="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></svg>
+            </button>
+            <div class="menu" data-menu hidden role="menu">
+              <button type="button" role="menuitem" data-action="rename">Renomear</button>
+              <button type="button" role="menuitem" data-action="copy-rtmp">Copiar RTMP</button>
+              <button type="button" role="menuitem" data-action="open-dest">Abrir destino</button>
+              <button type="button" role="menuitem" data-action="toggle-log">Ver log ffmpeg</button>
+            </div>
+          </div>
+          <div class="live-card__stats">
+            <span class="stat" data-bitrate>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+              <span data-bitrate-value>-</span> kbps
+            </span>
+            <span class="stat stat--dest" data-dest-label>RTMP</span>
+          </div>
         </div>
-        <dl class="liv-card__meta">
-          <div><dt>Tipo</dt><dd data-type-label>Vídeo</dd></div>
-          <div><dt>Encoder</dt><dd data-status>Rodando</dd></div>
-        </dl>
-        <details class="liv-card__log">
-          <summary>
-            <svg class="liv-card__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-            Ver log do encoder
-          </summary>
-          <pre class="liv-card__logbox" data-log></pre>
-        </details>
-        <footer class="liv-card__foot">
-          <button class="liv-danger" type="button" data-stop>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="12" height="12" x="6" y="6" rx="1"/></svg>
-            Parar transmissão
-          </button>
-        </footer>
+        <div class="live-card__body">
+          <div class="live-card__title-row">
+            <button type="button" class="live-card__title" data-inline-rename>
+              <span data-label>Sem nome</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4z"/></svg>
+            </button>
+            <span class="health-badge" data-health="ok">
+              <span class="health-dot"></span>
+              <span data-health-label>Estavel</span>
+            </span>
+          </div>
+          <div class="live-card__sub">
+            <span data-source-type>Arquivo</span>
+            <span class="dot-sep"></span>
+            <span data-autostop-label>Sem auto-parar</span>
+          </div>
+          <div class="live-card__actions">
+            <button type="button" class="btn-ghost btn-ghost--sm" data-toggle-log>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+              Log
+            </button>
+            <button type="button" class="btn-danger btn-danger--sm" data-stop>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
+              Parar
+            </button>
+          </div>
+          <pre class="live-card__log" data-log hidden></pre>
+        </div>
       </article>
     </template>
 
-    <aside class="liv-drawer" id="livDrawer" aria-hidden="true">
-      <div class="liv-drawer__scrim" data-close></div>
-      <form class="liv-drawer__panel" id="livForm" novalidate>
-        <header class="liv-drawer__head">
-          <h2>Nova transmissão</h2>
-          <button class="liv-iconbtn" type="button" data-close aria-label="Fechar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    <aside id="drawer-new-live" class="drawer" hidden aria-hidden="true" aria-labelledby="drawer-title">
+      <div class="drawer__backdrop" data-close-drawer></div>
+      <div class="drawer__panel" role="dialog" aria-modal="true">
+        <header class="drawer__header">
+          <h3 id="drawer-title">Nova transmissao</h3>
+          <button type="button" class="icon-btn" data-close-drawer aria-label="Fechar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </header>
-
-        <div class="liv-drawer__body">
-          <label class="liv-field">
-            <span>Nome ou cliente</span>
-            <input type="text" name="label" maxlength="60" placeholder="Ex: Pizza Hot Guará" required>
-            <small>Aparece só pra você. Ajuda a saber qual card é de quem.</small>
+        <form id="form-new-live" class="drawer__body">
+          <label class="field">
+            <span class="field__label">Nome do cliente / rotulo</span>
+            <input type="text" name="label" required maxlength="60" placeholder="Ex: Pizza Hot lancamento sexta"/>
           </label>
-
-          <fieldset class="liv-field liv-field--types">
-            <legend>Tipo de mídia</legend>
-            <div class="liv-types" role="radiogroup">
-              <label class="liv-type"><input type="radio" name="type" value="video" checked>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
-                Vídeo
-              </label>
-              <label class="liv-type"><input type="radio" name="type" value="image_audio">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg>
-                Imagem + áudio
-              </label>
-              <label class="liv-type"><input type="radio" name="type" value="image">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                Imagem
-              </label>
-            </div>
+          <fieldset class="field field--group">
+            <legend class="field__label">Tipo de midia</legend>
+            <label class="radio"><input type="radio" name="type" value="video" checked/><span>Video (loop ou unico)</span></label>
+            <label class="radio"><input type="radio" name="type" value="image_audio"/><span>Imagem + audio</span></label>
+            <label class="radio"><input type="radio" name="type" value="image"/><span>Imagem estatica</span></label>
           </fieldset>
-
-          <label class="liv-drop" for="livFile">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-            <strong id="livDropTitle">Arraste o arquivo</strong>
-            <span id="livDropSub">ou clique pra escolher</span>
-            <input type="file" id="livFile" name="file" hidden>
+          <label class="field">
+            <span class="field__label">Arquivo</span>
+            <input type="file" name="video" id="lv-file" accept="video/mp4,image/*" required/>
+            <small class="field__hint">Video ate 3500 kbps ou imagem ate 5 MB. Fica no servidor.</small>
           </label>
-
-          <div class="liv-field" id="livAudioField" hidden>
-            <label class="liv-drop liv-drop--audio" for="livAudioFile">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-              <strong id="livAudioTitle">Arraste a trilha</strong>
-              <span id="livAudioSub">MP3, WAV, M4A</span>
-              <input type="file" id="livAudioFile" name="audio" accept="audio/*" hidden>
-            </label>
+          <label class="field" id="lv-audio-field" hidden>
+            <span class="field__label">Trilha (mp3/m4a) — para tipo Imagem + audio</span>
+            <input type="file" name="audio" accept="audio/*"/>
+          </label>
+          <label class="checkbox">
+            <input type="checkbox" name="loop" checked/>
+            <span>Reproduzir em loop</span>
+          </label>
+          <label class="field">
+            <span class="field__label">URL RTMP do destino</span>
+            <input type="text" name="rtmpUrl" required placeholder="rtmps://live-api-s.facebook.com:443/rtmp/"/>
+          </label>
+          <label class="field">
+            <span class="field__label">Chave da transmissao</span>
+            <input type="password" name="streamKey" required placeholder="FB-XXXXXXXXXX"/>
+          </label>
+          <label class="field">
+            <span class="field__label">Auto-parar em</span>
+            <select name="autoStopHours">
+              <option value="">Nao parar sozinha</option>
+              <option value="1">1 hora</option>
+              <option value="2">2 horas</option>
+              <option value="4">4 horas</option>
+              <option value="6">6 horas</option>
+              <option value="12">12 horas</option>
+              <option value="24">24 horas</option>
+            </select>
+            <small class="field__hint">Corta o stream limpo quando bater o tempo.</small>
+          </label>
+          <label class="checkbox">
+            <input type="checkbox" name="restartOnFail" checked/>
+            <span>Reiniciar se cair</span>
+            <small class="checkbox__hint">Ate 3 tentativas em 5 min. Depois avisa.</small>
+          </label>
+          <div class="drawer__footer">
+            <button type="button" class="btn-ghost" data-close-drawer>Cancelar</button>
+            <button type="submit" class="btn-primary" id="btn-submit-live">
+              <span data-submit-label>Subir agora</span>
+            </button>
           </div>
-
-          <label class="liv-check">
-            <input type="checkbox" name="loop" checked>
-            <span>Reproduzir em loop enquanto a transmissão estiver no ar</span>
-          </label>
-
-          <label class="liv-field">
-            <span>URL RTMP</span>
-            <input type="text" name="rtmp" placeholder="rtmps://live-api-s.facebook.com:443/rtmp/" required>
-          </label>
-
-          <label class="liv-field">
-            <span>Chave da transmissão</span>
-            <div class="liv-inputwrap">
-              <input type="password" name="key" placeholder="FB-XXXXXXXXXX" required>
-              <button type="button" class="liv-iconbtn" data-toggle-key aria-label="Mostrar chave">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-              </button>
-            </div>
-          </label>
-
-          <label class="liv-field">
-            <span>Comentário fixado (opcional)</span>
-            <textarea name="comment" rows="2" placeholder="Aparece na hora de copiar depois que iniciar"></textarea>
-            <small class="liv-note">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
-              O Meta bloqueou envio por API. Depois de iniciar, o texto fica pronto pra copiar e colar no Live Producer.
-            </small>
-          </label>
-        </div>
-
-        <footer class="liv-drawer__foot">
-          <button type="button" class="liv-btn liv-btn--ghost" data-close>Cancelar</button>
-          <button type="submit" class="liv-btn liv-btn--primary" id="livSubmit">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 16.1 2 19"/><path d="m2 5 2.9 2.9"/><circle cx="12" cy="12" r="3"/><path d="M16.2 7.8 19 5"/><path d="m19 19-2.8-2.8"/></svg>
-            Entrar no ar
-          </button>
-        </footer>
-      </form>
+        </form>
+      </div>
     </aside>
+
+    <div id="studio-toasts" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
   </div><!-- /tab-lives -->
 
   <!-- ═══ ABA POPs (Playbook + POPs por cadeira/cargo) ═══ -->
@@ -27183,19 +27180,33 @@ window.addEventListener('load', () => {
    Reusa endpoints do backend em /opt/fg-live/server.js:
    GET /health, GET /streams, POST /stream, DELETE /stream/:id, POST /upload
    ============================================================ */
+/* ============================================================
+   STUDIO PRO — LIV v2 (2026-08-03)
+   Grid multi-live com preview thumbnail (GET /preview/:id),
+   filtros de status, drawer lateral, cronometro tick unico.
+   Endpoints atuais: /health, /streams, /stream (POST/DELETE),
+   /upload, /preview/:id (novo, backend precisa upgrade).
+   ============================================================ */
 const LIV = (() => {
   const DEFAULT_API = 'https://89-116-30-126.sslip.io';
   const DEFAULT_TOKEN = '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
+  const POLL_MS = 4000;
+  const PREVIEW_MS = 4000;
+  const TICK_MS = 1000;
+
   const state = {
     lives: new Map(),
-    health: 'unknown',
-    healthBackoff: 5000,
+    startedAt: new Map(),
+    previewTimers: new Map(),
+    tickTimer: null,
     pollTimer: null,
     healthTimer: null,
-    tickTimer: null,
+    filter: 'all',
     inited: false,
     labels: (() => { try { return JSON.parse(localStorage.getItem('livLabels') || '{}'); } catch(_) { return {}; } })(),
+    lastFile: null,
   };
+
   function api() {
     try {
       const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
@@ -27214,14 +27225,22 @@ const LIV = (() => {
     if (t) h['Authorization'] = 'Bearer ' + t;
     return h;
   }
+  function livesTabActive() { return document.body.dataset.activeTab === 'lives'; }
 
-  /* HEALTH */
-  function _livesTabActive() {
-    return document.body.dataset.activeTab === 'lives';
+  /* ---- TOAST ---- */
+  function toast(msg, kind = 'ok', ms = 3500) {
+    const stack = document.getElementById('studio-toasts');
+    if (!stack) { if (typeof showToast === 'function') showToast(kind, '', msg); return; }
+    const t = document.createElement('div');
+    t.className = 'toast toast--' + (kind === 'ok' ? 'ok' : kind === 'warn' ? 'warn' : 'error');
+    t.textContent = msg;
+    stack.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 200); }, ms);
   }
+
+  /* ---- HEALTH ---- */
   async function healthCheck() {
-    // Se saiu da aba, agenda check longo (60s) sem gastar rede fazendo fetch
-    if (!_livesTabActive()) {
+    if (!livesTabActive()) {
       clearTimeout(state.healthTimer);
       state.healthTimer = setTimeout(healthCheck, 60000);
       return;
@@ -27230,33 +27249,33 @@ const LIV = (() => {
       const r = await fetch(api() + '/health', { cache: 'no-store' });
       if (!r.ok) throw new Error('http_' + r.status);
       const j = await r.json();
-      setHealth(j.active >= 3 ? 'warn' : 'ok', (j.active || 0) + ' ativa(s)');
-      state.healthBackoff = 5000;
+      setHost({ status: 'ok', cpu: j.cpu, mem: j.mem, active: j.active || j.streams });
     } catch(e) {
-      setHealth('down', 'Sem conexão com o servidor');
-      state.healthBackoff = Math.min(state.healthBackoff * 1.7, 30000);
+      setHost({ status: 'down' });
     }
     clearTimeout(state.healthTimer);
-    state.healthTimer = setTimeout(healthCheck, state.healthBackoff);
+    state.healthTimer = setTimeout(healthCheck, 6000);
   }
-  function setHealth(s, label) {
-    state.health = s;
-    const el = document.getElementById('livHealth');
-    if (!el) return;
-    el.dataset.state = s;
-    const lb = el.querySelector('.liv-health__label');
-    if (!lb) return;
-    lb.textContent =
-      s === 'ok'   ? 'Servidor online'
-    : s === 'warn' ? label
-    : s === 'down' ? 'Servidor offline'
-                   : 'Checando servidor';
+  function setHost(h) {
+    const el = document.getElementById('studio-host');
+    const lb = document.getElementById('studio-host-label');
+    if (!el || !lb) return;
+    const dot = el.querySelector('.host-dot');
+    if (h.status === 'down') {
+      dot.className = 'host-dot host-dot--down';
+      lb.textContent = 'Servidor offline';
+    } else if ((h.cpu && h.cpu > 80) || (h.mem && h.mem > 85)) {
+      dot.className = 'host-dot host-dot--warn';
+      lb.textContent = 'Servidor: ' + Math.round(h.cpu || 0) + '% CPU';
+    } else {
+      dot.className = 'host-dot host-dot--ok';
+      lb.textContent = h.cpu != null ? 'Servidor: ' + Math.round(h.cpu) + '% CPU' : 'Servidor online';
+    }
   }
 
-  /* LISTAGEM / RECONCILIAÇÃO */
+  /* ---- POLL STREAMS ---- */
   async function pollStreams() {
-    // Se saiu da aba Lives ou browser em background, poll longo (30s) sem fetch
-    if (!_livesTabActive() || document.hidden) {
+    if (!livesTabActive() || document.hidden) {
       clearTimeout(state.pollTimer);
       state.pollTimer = setTimeout(pollStreams, 30000);
       return;
@@ -27265,280 +27284,400 @@ const LIV = (() => {
       const r = await fetch(api() + '/streams', { cache: 'no-store', headers: authHeaders() });
       if (!r.ok) throw 0;
       const list = await r.json();
-      reconcile(Array.isArray(list) ? list : []);
+      const arr = Array.isArray(list) ? list : (Array.isArray(list.streams) ? list.streams : []);
+      reconcile(arr);
     } catch(e) { /* silencioso; health cobre */ }
     finally {
       clearTimeout(state.pollTimer);
-      state.pollTimer = setTimeout(pollStreams, 5000);
+      state.pollTimer = setTimeout(pollStreams, POLL_MS);
     }
   }
   function reconcile(list) {
-    const incoming = new Map(list.map(x => [x.id, hydrateLive(x)]));
-    for (const id of state.lives.keys()) if (!incoming.has(id)) removeCard(id);
-    for (const [id, live] of incoming) {
-      if (!state.lives.has(id)) renderCard(live);
-      else updateCard(live);
-      state.lives.set(id, live);
+    const seen = new Set();
+    for (const s of list) {
+      const hy = hydrateLive(s);
+      seen.add(hy.id);
+      if (state.lives.has(hy.id)) updateCard(hy);
+      else addCard(hy);
+      state.lives.set(hy.id, hy);
     }
-    updateHeaderCount();
+    for (const id of [...state.lives.keys()]) if (!seen.has(id)) removeCard(id);
+    renderCountAndEmpty();
+    applyFilter();
   }
   function hydrateLive(x) {
-    const label = x.label || state.labels[x.id] || 'Sem nome';
+    const stErr = Array.isArray(x.stderr) ? x.stderr.join('\n') : (x.stderr || '');
+    let status = 'live';
+    if (x.exitedAt) status = x.exitCode ? 'failed' : 'live';
+    if (x.status) status = x.status;
+    if (x.restartAttempts > 0 && !x.exitedAt) status = 'reconnecting';
     return {
-      id: x.id, type: x.type || 'video',
-      label,
+      id: x.id,
+      type: x.type || 'video',
+      label: x.label || state.labels[x.id] || 'Sem nome',
       startedAt: x.startedAt || Date.now(),
-      status: x.exitedAt ? (x.exitCode ? 'error' : 'stopped') : (x.pid ? 'running' : 'unknown'),
-      stderr: Array.isArray(x.stderr) ? x.stderr.join('\n') : (x.stderr || ''),
-      thumbUrl: state.labels['thumb:' + x.id] || null,
+      status,
+      log: stErr || x.log || '',
+      bitrateKbps: x.bitrateKbps || null,
+      droppedFrames: x.droppedFrames || 0,
+      restartAttempts: x.restartAttempts || 0,
+      autoStopHours: x.autoStopHours || null,
+      destination: x.destination || 'rtmp',
+      thumbLocal: state.labels['thumb:' + x.id] || null,
     };
   }
 
-  /* START */
-  async function startLive(form) {
-    const label   = form.label.value.trim();
-    const type    = form.type.value;
-    const rtmp    = form.rtmp.value.trim();
-    const key     = form.key.value.trim();
-    const loop    = form.loop.checked;
-    const comment = form.comment.value.trim();
-    const file    = form.file.files[0];
-    const audioEl = document.getElementById('livAudioFile');
-    const audioFile = audioEl && audioEl.files[0];
-    if (!file) return safeToast('warn', '⚠️', 'Escolhe um arquivo antes de entrar no ar');
-    if (!rtmp || !key) return safeToast('warn', '⚠️', 'Preencha URL RTMP e Chave');
-
-    const submitBtn = document.getElementById('livSubmit');
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = 0.6; }
-
-    try {
-      // 1) upload mídia principal
-      const fd = new FormData(); fd.append('file', file);
-      const upRes = await fetch(api() + '/upload', { method: 'POST', body: fd, headers: authHeaders() });
-      if (!upRes.ok) throw new Error('upload_' + upRes.status);
-      const up = await upRes.json();
-
-      // 2) upload audio (se image_audio)
-      let audioPath = null;
-      if (type === 'image_audio' && audioFile) {
-        const fd2 = new FormData(); fd2.append('file', audioFile);
-        const upA = await fetch(api() + '/upload', { method: 'POST', body: fd2, headers: authHeaders() });
-        if (upA.ok) { const j = await upA.json(); audioPath = j.path; }
-      }
-
-      // 3) start ffmpeg
-      const body = { type, rtmpUrl: rtmp, streamKey: key, loop, mediaPath: up.path, audioPath, label };
-      const res = await fetch(api() + '/stream', {
-        method: 'POST',
-        headers: authHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error('stream_' + res.status);
-      const j = await res.json();
-      if (!j.id) throw new Error('no_id');
-
-      // 4) fallback local pro label + thumb
-      state.labels[j.id] = label;
-      state.labels['thumb:' + j.id] = URL.createObjectURL(file);
-      try { localStorage.setItem('livLabels', JSON.stringify(state.labels)); } catch(_){}
-
-      closeDrawer();
-      safeToast('success', '🎥', 'No ar: ' + (label || 'transmissão'));
-      if (comment) copyToClipboard(comment);
-      pollStreams();
-      setTimeout(() => flashCard(j.id), 400);
-    } catch(e) {
-      console.error('[LIV] start fail:', e);
-      safeToast('danger', '❌', 'Não deu pra iniciar. Confere URL, chave e servidor.');
-    } finally {
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = 1; }
-    }
+  /* ---- RENDER ---- */
+  function tpl() {
+    const t = document.getElementById('tpl-live-card');
+    return t.content.firstElementChild.cloneNode(true);
   }
-
-  async function stopLive(id) {
-    if (!confirm('Tirar essa transmissão do ar agora?')) return;
-    const card = document.querySelector('.liv-card[data-id="' + id + '"]');
-    if (card) card.style.opacity = 0.5;
-    try {
-      await fetch(api() + '/stream/' + id, { method: 'DELETE', headers: authHeaders() });
-      safeToast('success', '⏹', 'Transmissão encerrada');
-    } catch(e) {
-      safeToast('danger', '❌', 'Falhou ao parar. Tenta de novo.');
-      if (card) card.style.opacity = 1;
-    } finally { pollStreams(); }
-  }
-
-  /* RENDER */
-  function tplCard() {
-    const tpl = document.getElementById('livCardTpl');
-    return tpl.content.firstElementChild.cloneNode(true);
-  }
-  function iconFor(type) {
-    const svgs = {
-      video:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>',
-      image:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>',
-      image_audio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg>',
-    };
-    return svgs[type] || svgs.video;
-  }
-  function renderCard(live) {
-    const grid = document.getElementById('livGrid');
+  function addCard(hy) {
+    const grid = document.getElementById('studio-grid');
     if (!grid) return;
-    const node = tplCard();
-    node.dataset.id = live.id;
-    hydrateCardNode(node, live);
-    grid.prepend(node);
-    const emp = document.getElementById('livEmpty'); if (emp) emp.hidden = true;
-
-    node.querySelector('[data-stop]').addEventListener('click', () => stopLive(live.id));
-    node.querySelector('[data-label]').addEventListener('change', e => {
-      state.labels[live.id] = e.target.value;
-      try { localStorage.setItem('livLabels', JSON.stringify(state.labels)); } catch(_){}
-    });
+    const card = tpl();
+    card.dataset.liveId = hy.id;
+    grid.prepend(card);
+    state.startedAt.set(hy.id, hy.startedAt);
+    updateCard(hy);
+    bindCardActions(card, hy.id);
+    startPreview(hy.id, card);
   }
-  function updateCard(live) {
-    const node = document.querySelector('.liv-card[data-id="' + live.id + '"]');
-    if (!node) return;
-    hydrateCardNode(node, live);
-  }
-  function hydrateCardNode(node, live) {
-    const typeLabel = { video: 'Vídeo', image: 'Imagem estática', image_audio: 'Imagem + trilha' }[live.type] || live.type;
-    const statusLabel = { running: 'Rodando', error: 'Falhou', stopped: 'Encerrada', unknown: 'Reconectando' }[live.status] || live.status;
-    const iconEl = node.querySelector('[data-type-icon]');
-    if (iconEl) iconEl.innerHTML = iconFor(live.type);
-    const labelEl = node.querySelector('[data-label]');
-    if (labelEl && document.activeElement !== labelEl) labelEl.value = live.label;
-    node.querySelector('[data-type-label]').textContent = typeLabel;
-    node.querySelector('[data-status]').textContent = statusLabel;
-    node.querySelector('[data-log]').textContent = live.stderr || '(sem saída)';
-    node.querySelector('[data-timer]').dataset.startedAt = live.startedAt;
-    const thumb = node.querySelector('[data-thumb]');
-    if (thumb && live.thumbUrl) { thumb.style.backgroundImage = 'url("' + live.thumbUrl + '")'; thumb.innerHTML = ''; }
+  function updateCard(hy) {
+    const card = document.querySelector('.live-card[data-live-id="' + hy.id + '"]');
+    if (!card) return;
+    card.dataset.status = hy.status;
+    const labelEl = card.querySelector('[data-label]');
+    if (labelEl && document.activeElement !== labelEl) labelEl.textContent = hy.label;
+    card.querySelector('[data-source-type]').textContent = sourceLabel(hy.type);
+    card.querySelector('[data-autostop-label]').textContent = hy.autoStopHours ? ('Auto-parar em ' + hy.autoStopHours + 'h') : 'Sem auto-parar';
+    card.querySelector('[data-bitrate-value]').textContent = hy.bitrateKbps || '-';
+    card.querySelector('[data-dest-label]').textContent = destLabel(hy.destination);
+    card.querySelector('.live-card__fallback-label').textContent = hy.label;
+    const hb = card.querySelector('.health-badge');
+    const hl = card.querySelector('[data-health-label]');
+    if (hy.status === 'reconnecting') { hb.dataset.health = 'reconnecting'; hl.textContent = 'Reconect ' + (hy.restartAttempts || 1) + '/3'; }
+    else if (hy.status === 'failed') { hb.dataset.health = 'failed'; hl.textContent = 'Falhou'; }
+    else { hb.dataset.health = 'ok'; hl.textContent = hy.droppedFrames > 0 ? (hy.droppedFrames + ' drops') : 'Estavel'; }
+    const logEl = card.querySelector('[data-log]');
+    if (!logEl.hidden) logEl.textContent = hy.log || '(sem saída)';
   }
   function removeCard(id) {
-    const node = document.querySelector('.liv-card[data-id="' + id + '"]');
-    if (node) { node.style.opacity = 0; setTimeout(() => node.remove(), 240); }
+    const card = document.querySelector('.live-card[data-live-id="' + id + '"]');
+    if (card) { card.style.opacity = 0; setTimeout(() => card.remove(), 240); }
+    stopPreview(id);
     if (state.labels['thumb:' + id]) { try { URL.revokeObjectURL(state.labels['thumb:' + id]); } catch(_){} }
     state.lives.delete(id);
-    if (!state.lives.size) { const emp = document.getElementById('livEmpty'); if (emp) emp.hidden = false; }
+    state.startedAt.delete(id);
   }
-  function flashCard(id) {
-    const n = document.querySelector('.liv-card[data-id="' + id + '"]');
-    if (!n) return;
-    n.classList.add('liv-card--flash');
-    setTimeout(() => n.classList.remove('liv-card--flash'), 1800);
-  }
-  function updateHeaderCount() {
+  function renderCountAndEmpty() {
     const n = state.lives.size;
-    const chip = document.getElementById('livCount');
-    if (chip) chip.hidden = n === 0;
-    const label = document.getElementById('livCountLabel');
-    if (label) label.textContent = n === 1 ? '1 no ar' : n + ' no ar';
-    const emp = document.getElementById('livEmpty'); if (emp) emp.hidden = n > 0;
+    const count = document.getElementById('studio-count');
+    if (count) count.textContent = n;
+    const emp = document.getElementById('studio-empty');
+    const grid = document.getElementById('studio-grid');
+    if (emp) emp.hidden = n > 0;
+    if (grid) grid.hidden = n === 0;
+  }
+  function sourceLabel(t) {
+    return t === 'video' ? 'Video' : t === 'image_audio' ? 'Imagem + trilha' : t === 'image' ? 'Imagem' : 'RTMP';
+  }
+  function destLabel(d) {
+    if (/instagram|ig/i.test(d)) return 'Instagram';
+    if (/facebook|fb/i.test(d)) return 'Facebook';
+    if (/youtube|yt/i.test(d)) return 'YouTube';
+    return 'RTMP';
+  }
+  function applyFilter() {
+    document.querySelectorAll('.live-card').forEach(c => {
+      const s = c.dataset.status;
+      const show = state.filter === 'all'
+        || (state.filter === 'reconnecting' && s === 'reconnecting')
+        || (state.filter === 'failed' && s === 'failed');
+      c.style.display = show ? '' : 'none';
+    });
   }
 
-  /* TICK */
+  /* ---- PREVIEW THUMBNAIL ---- */
+  function startPreview(id, card) {
+    const img = card.querySelector('.live-card__preview');
+    if (!img) return;
+    const hy = state.lives.get(id);
+    // Fallback local: se tem thumb local salvo (do upload), usa como imagem inicial
+    if (hy && hy.thumbLocal) { img.src = hy.thumbLocal; img.classList.add('is-loaded'); }
+    const load = () => {
+      const url = api() + '/preview/' + id + '?t=' + Date.now();
+      const probe = new Image();
+      probe.onload = () => { img.src = url; img.classList.add('is-loaded'); };
+      probe.onerror = () => { /* mantém thumbLocal se houver, ou fallback icon */ };
+      probe.src = url;
+    };
+    load();
+    const tId = setInterval(load, PREVIEW_MS);
+    state.previewTimers.set(id, tId);
+  }
+  function stopPreview(id) {
+    const t = state.previewTimers.get(id);
+    if (t) clearInterval(t);
+    state.previewTimers.delete(id);
+  }
+
+  /* ---- TICK CRONOMETRO ---- */
   function fmt(ms) {
     const t = Math.max(0, Math.floor(ms / 1000));
-    return [Math.floor(t / 3600), Math.floor(t / 60) % 60, t % 60].map(n => String(n).padStart(2, '0')).join(':');
+    return [Math.floor(t/3600), Math.floor(t/60)%60, t%60].map(n => String(n).padStart(2,'0')).join(':');
   }
   function startTick() {
     if (state.tickTimer) return;
     state.tickTimer = setInterval(() => {
-      document.querySelectorAll('#tab-lives [data-timer]').forEach(el => {
-        const s = Number(el.dataset.startedAt || 0);
-        if (!s) return;
-        el.textContent = fmt(Date.now() - s);
+      const now = Date.now();
+      document.querySelectorAll('.live-card').forEach(c => {
+        const id = c.dataset.liveId;
+        const start = state.startedAt.get(id);
+        if (!start) return;
+        const el = c.querySelector('[data-timer]');
+        if (el) el.textContent = fmt(now - start);
       });
-    }, 1000);
+    }, TICK_MS);
   }
 
-  /* DRAWER */
+  /* ---- CARD ACTIONS ---- */
+  function bindCardActions(card, id) {
+    const menuBtn = card.querySelector('[data-menu-toggle]');
+    const menu = card.querySelector('[data-menu]');
+    menuBtn?.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = menu.hidden;
+      document.querySelectorAll('.menu[data-menu]').forEach(m => m.hidden = true);
+      menu.hidden = !open;
+      menuBtn.setAttribute('aria-expanded', String(open));
+    });
+    menu?.querySelectorAll('button').forEach(b => b.addEventListener('click', () => onMenu(id, b.dataset.action, card)));
+    card.querySelector('[data-inline-rename]')?.addEventListener('click', () => inlineRename(id, card));
+    card.querySelector('[data-toggle-log]')?.addEventListener('click', () => toggleLog(id, card));
+    card.querySelector('[data-stop]')?.addEventListener('click', e => confirmStop(id, e.currentTarget));
+  }
+  function onMenu(id, action, card) {
+    card.querySelector('[data-menu]').hidden = true;
+    if (action === 'rename') inlineRename(id, card);
+    else if (action === 'copy-rtmp') copyRtmp(id);
+    else if (action === 'toggle-log') toggleLog(id, card);
+    else if (action === 'open-dest') openDest(id);
+  }
+  async function copyRtmp(id) {
+    const hy = state.lives.get(id);
+    if (!hy || !navigator.clipboard) return toast('Clipboard indisponivel', 'warn');
+    // Como backend nao ecoa rtmpUrl, so podemos avisar
+    toast('RTMP so aparece no destino (Live Producer)', 'warn');
+  }
+  function openDest(id) {
+    const hy = state.lives.get(id);
+    const links = {
+      instagram: 'https://business.facebook.com/latest/producer',
+      facebook: 'https://business.facebook.com/latest/producer',
+      youtube: 'https://studio.youtube.com/channel/UC/livestreaming',
+    };
+    window.open(links[destLabel(hy?.destination).toLowerCase()] || 'https://www.instagram.com/live/', '_blank');
+  }
+  function inlineRename(id, card) {
+    const btn = card.querySelector('[data-inline-rename]');
+    const span = btn.querySelector('[data-label]');
+    const current = span.textContent;
+    btn.innerHTML = '<input type="text" maxlength="60"/>';
+    const input = btn.querySelector('input');
+    input.value = current;
+    input.focus(); input.select();
+    const commit = async () => {
+      const value = input.value.trim() || current;
+      // Salva local (backend PATCH pode nao existir ainda)
+      state.labels[id] = value;
+      try { localStorage.setItem('livLabels', JSON.stringify(state.labels)); } catch(_){}
+      try {
+        await fetch(api() + '/stream/' + id, {
+          method: 'PATCH',
+          headers: authHeaders({'Content-Type':'application/json'}),
+          body: JSON.stringify({ label: value }),
+        });
+      } catch(_){}
+      const hy = state.lives.get(id); if (hy) hy.label = value;
+      btn.innerHTML = '<span data-label></span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4z"/></svg>';
+      btn.querySelector('[data-label]').textContent = value;
+    };
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') input.blur();
+      if (e.key === 'Escape') { input.value = current; input.blur(); }
+    });
+  }
+  function toggleLog(id, card) {
+    const log = card.querySelector('[data-log]');
+    log.hidden = !log.hidden;
+    if (!log.hidden) {
+      fetch(api() + '/stream/' + id, { headers: authHeaders() }).then(r => r.json()).then(d => {
+        const st = Array.isArray(d.stderr) ? d.stderr.join('\n') : (d.stderr || d.log || d.lastErr || '(sem saída)');
+        log.textContent = Array.isArray(st) ? st.join('\n') : st;
+      }).catch(() => { log.textContent = '(sem saída)'; });
+    }
+  }
+  function confirmStop(id, btn) {
+    if (btn.classList.contains('is-confirming')) { doStop(id, btn); return; }
+    btn.classList.add('is-confirming');
+    const original = btn.innerHTML;
+    btn.dataset.originalHtml = original;
+    btn.innerHTML = 'Confirmar?';
+    setTimeout(() => {
+      if (btn.classList.contains('is-confirming')) {
+        btn.classList.remove('is-confirming');
+        btn.innerHTML = btn.dataset.originalHtml || original;
+      }
+    }, 4000);
+  }
+  async function doStop(id, btn) {
+    btn.disabled = true;
+    try {
+      await fetch(api() + '/stream/' + id, { method: 'DELETE', headers: authHeaders() });
+      toast('Live encerrada', 'ok');
+      removeCard(id);
+      renderCountAndEmpty();
+    } catch(e) {
+      toast('Falhou ao parar. Tenta de novo.', 'error');
+      btn.disabled = false;
+      btn.classList.remove('is-confirming');
+      if (btn.dataset.originalHtml) btn.innerHTML = btn.dataset.originalHtml;
+    }
+  }
+
+  /* ---- DRAWER ---- */
   function openDrawer() {
-    const d = document.getElementById('livDrawer');
+    const d = document.getElementById('drawer-new-live');
     if (!d) return;
-    d.dataset.open = '1'; d.setAttribute('aria-hidden', 'false');
-    setTimeout(() => { const el = d.querySelector('input[name="label"]'); if (el) el.focus(); }, 200);
+    d.hidden = false;
+    d.setAttribute('aria-hidden', 'false');
+    setTimeout(() => { d.querySelector('input[name="label"]')?.focus(); }, 100);
   }
   function closeDrawer() {
-    const d = document.getElementById('livDrawer');
+    const d = document.getElementById('drawer-new-live');
     if (!d) return;
-    d.dataset.open = '0'; d.setAttribute('aria-hidden', 'true');
-    const form = document.getElementById('livForm');
+    d.hidden = true;
+    d.setAttribute('aria-hidden', 'true');
+    const form = document.getElementById('form-new-live');
     if (form) form.reset();
-    renderDropSummary();
-    document.getElementById('livAudioField').hidden = true;
+    const af = document.getElementById('lv-audio-field'); if (af) af.hidden = true;
+    state.lastFile = null;
+  }
+  function bindDrawer() {
+    document.getElementById('btn-open-drawer')?.addEventListener('click', openDrawer);
+    document.querySelectorAll('[data-open-drawer]').forEach(b => b.addEventListener('click', openDrawer));
+    document.querySelectorAll('#drawer-new-live [data-close-drawer]').forEach(b => b.addEventListener('click', closeDrawer));
+    document.getElementById('form-new-live')?.addEventListener('submit', onSubmitNew);
+    document.addEventListener('keydown', e => {
+      const d = document.getElementById('drawer-new-live');
+      if (e.key === 'Escape' && d && !d.hidden) closeDrawer();
+    });
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.menu[data-menu]').forEach(m => m.hidden = true);
+    });
+    document.querySelectorAll('#form-new-live input[name="type"]').forEach(r => {
+      r.addEventListener('change', () => {
+        const val = document.querySelector('#form-new-live input[name="type"]:checked')?.value;
+        const af = document.getElementById('lv-audio-field'); if (af) af.hidden = (val !== 'image_audio');
+        const f = document.getElementById('lv-file'); if (f) f.accept = (val === 'video') ? 'video/*' : 'image/*';
+      });
+    });
   }
 
-  function renderDropSummary() {
-    const f = document.getElementById('livFile').files[0];
-    document.getElementById('livDropTitle').textContent = f ? f.name : 'Arraste o arquivo';
-    document.getElementById('livDropSub').textContent = f ? ((f.size / 1024 / 1024).toFixed(1) + ' MB') : 'ou clique pra escolher';
-  }
-  function onTypeChange() {
-    const type = document.querySelector('#livForm input[name="type"]:checked')?.value;
-    document.getElementById('livAudioField').hidden = (type !== 'image_audio');
-    const fileInput = document.getElementById('livFile');
-    if (type === 'video') fileInput.accept = 'video/*';
-    else fileInput.accept = 'image/*';
-  }
-  function toggleKey() {
-    const input = document.querySelector('#livForm input[name="key"]');
-    if (input) input.type = input.type === 'password' ? 'text' : 'password';
+  async function onSubmitNew(e) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const btn = document.getElementById('btn-submit-live');
+    const lbl = btn.querySelector('[data-submit-label]');
+    const fd = new FormData(form);
+    const label = fd.get('label')?.trim();
+    const type = fd.get('type');
+    const rtmpUrl = fd.get('rtmpUrl')?.trim();
+    const streamKey = fd.get('streamKey')?.trim();
+    const loop = fd.get('loop') === 'on';
+    const autoStopHours = fd.get('autoStopHours') ? Number(fd.get('autoStopHours')) : null;
+    const restartOnFail = fd.get('restartOnFail') === 'on';
+    const file = fd.get('video');
+    const audioFile = fd.get('audio');
+
+    if (!label) return toast('Coloca um nome pra live', 'warn');
+    if (!rtmpUrl || !streamKey) return toast('Preenche URL RTMP e Chave', 'warn');
+    if (!file || !file.size) return toast('Escolhe um arquivo', 'warn');
+
+    lbl.textContent = 'Subindo...'; btn.disabled = true;
+    try {
+      // Upload principal
+      const up1 = new FormData(); up1.append('file', file);
+      const r1 = await fetch(api() + '/upload', { method: 'POST', body: up1, headers: authHeaders() });
+      if (!r1.ok) throw new Error('upload_' + r1.status);
+      const j1 = await r1.json();
+      // Upload audio (se image_audio)
+      let audioPath = null;
+      if (type === 'image_audio' && audioFile && audioFile.size) {
+        const up2 = new FormData(); up2.append('file', audioFile);
+        const r2 = await fetch(api() + '/upload', { method: 'POST', body: up2, headers: authHeaders() });
+        if (r2.ok) { const j2 = await r2.json(); audioPath = j2.path; }
+      }
+      // Start stream
+      const body = {
+        type, rtmpUrl, streamKey, loop,
+        mediaPath: j1.path, audioPath, label,
+        autoStopHours, restartOnFail,
+      };
+      const r3 = await fetch(api() + '/stream', {
+        method: 'POST',
+        headers: authHeaders({'Content-Type':'application/json'}),
+        body: JSON.stringify(body),
+      });
+      if (!r3.ok) throw new Error('stream_' + r3.status);
+      const j3 = await r3.json();
+      if (!j3.id) throw new Error('no_id');
+      // Save local (label + thumb from file)
+      state.labels[j3.id] = label;
+      if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+        try { state.labels['thumb:' + j3.id] = URL.createObjectURL(file); } catch(_){}
+      }
+      try { localStorage.setItem('livLabels', JSON.stringify(state.labels)); } catch(_){}
+      toast('Live "' + label + '" no ar', 'ok');
+      closeDrawer();
+      pollStreams();
+    } catch(err) {
+      console.error('[LIV start]', err);
+      toast('Nao conseguiu subir. Confere URL, chave e servidor.', 'error', 5000);
+    } finally {
+      lbl.textContent = 'Subir agora'; btn.disabled = false;
+    }
   }
 
-  function safeToast(kind, icon, msg) {
-    if (typeof showToast === 'function') { try { showToast(kind, icon, msg); return; } catch(_){} }
-    console.log('[LIV toast]', kind, msg);
-  }
-  function copyToClipboard(txt) {
-    if (!navigator.clipboard) return;
-    navigator.clipboard.writeText(txt).then(
-      () => safeToast('success', '📋', 'Comentário copiado. Cola no Live Producer.'),
-      () => safeToast('warn', '⚠️', 'Não deu pra copiar. Copia manual.')
-    );
-  }
-
-  /* BOOTSTRAP */
+  /* ---- INIT ---- */
   function init() {
     if (state.inited) return;
     state.inited = true;
-    document.getElementById('livNewBtn')?.addEventListener('click', openDrawer);
-    document.getElementById('livEmptyCTA')?.addEventListener('click', openDrawer);
-    document.querySelectorAll('#livDrawer [data-close]').forEach(el => el.addEventListener('click', closeDrawer));
-    document.getElementById('livForm')?.addEventListener('submit', e => { e.preventDefault(); startLive(e.target); });
-    document.querySelectorAll('#livForm input[name="type"]').forEach(r => r.addEventListener('change', onTypeChange));
-    document.querySelector('#livForm [data-toggle-key]')?.addEventListener('click', toggleKey);
-    document.getElementById('livFile')?.addEventListener('change', renderDropSummary);
-    document.getElementById('livAudioFile')?.addEventListener('change', () => {
-      const f = document.getElementById('livAudioFile').files[0];
-      document.getElementById('livAudioTitle').textContent = f ? f.name : 'Arraste a trilha';
-      document.getElementById('livAudioSub').textContent = f ? ((f.size / 1024 / 1024).toFixed(1) + ' MB') : 'MP3, WAV, M4A';
-    });
-    const drop = document.querySelector('#livForm .liv-drop:not(.liv-drop--audio)');
-    if (drop) {
-      drop.addEventListener('dragover', e => { e.preventDefault(); drop.dataset.drag = '1'; });
-      drop.addEventListener('dragleave', () => { delete drop.dataset.drag; });
-      drop.addEventListener('drop', e => { e.preventDefault(); delete drop.dataset.drag;
-        document.getElementById('livFile').files = e.dataTransfer.files;
-        renderDropSummary();
+    bindDrawer();
+    document.querySelectorAll('.studio-filters .pill').forEach(p => {
+      p.addEventListener('click', () => {
+        document.querySelectorAll('.studio-filters .pill').forEach(x => x.classList.remove('is-active'));
+        p.classList.add('is-active');
+        state.filter = p.dataset.filter;
+        applyFilter();
       });
-    }
+    });
     startTick();
     healthCheck();
     pollStreams();
   }
   function ensureInit() { init(); }
 
-  return { init, ensureInit, openDrawer, closeDrawer, stopLive, pollStreams };
+  return { init, ensureInit, openDrawer, closeDrawer, pollStreams };
 })();
 
 // Init quando a aba abrir
 (function _wireLivesTab() {
   const orig = window.switchTab;
   if (typeof orig !== 'function') { setTimeout(_wireLivesTab, 500); return; }
-  const already = orig._livesWrapped;
-  if (already) return;
+  if (orig._livesWrapped) return;
   const wrapped = function(tab, btn) {
     const r = orig.apply(this, arguments);
     if (tab === 'lives') setTimeout(() => LIV.ensureInit(), 100);
