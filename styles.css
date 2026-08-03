@@ -12204,21 +12204,25 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
   .estudio-bar-btn.primary { padding: 11px 16px; }
 }
 
-/* FIX #6 — painel do dia vira bottom-sheet mobile */
+/* FIX #6 — painel do dia vira bottom-sheet mobile, FECHADO por padrao */
 @media (max-width: 640px) {
   .day-panel {
     left: 0 !important;
     right: 0 !important;
+    top: auto !important;
+    bottom: 0 !important;
     width: 100vw !important;
     max-width: 100vw !important;
+    height: auto !important;
+    max-height: 80vh !important;
     border-radius: 16px 16px 0 0;
-    transform: none !important;
+    border-left: 0;
+    /* Fica FORA da tela por padrao (bottom sheet slide-up) */
+    transform: translateY(100%);
   }
-  .day-panel-header {
-    width: auto;
-    max-width: 100%;
-    padding: 12px 14px;
-  }
+  /* Quando 'open', desliza pra cima */
+  .day-panel.open { transform: translateY(0) !important; }
+  .day-panel-header { width: auto; max-width: 100%; padding: 12px 14px; }
   .btn-close-panel { min-width: 44px; min-height: 44px; }
 }
 
