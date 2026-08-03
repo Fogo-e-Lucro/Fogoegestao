@@ -12301,3 +12301,42 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
   .vitrine15 .estudio-ig-top { padding-top: 30px !important; height: 40px !important; }
   .vitrine15 .estudio-ig-actions { height: 36px !important; }
 }
+
+/* ============================================================
+   VITRINE 15 — HOTFIX layout stage (2026-08-03 10:38)
+   O place-items grid do stage quebrou o split parent — trocar por flex.
+   ============================================================ */
+.estudio-stage.vitrine15 {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  place-items: unset !important;
+  padding: 32px 20px !important;
+  gap: 20px !important;
+  position: sticky !important;
+  top: 60px !important;
+  align-self: start !important;
+  max-height: calc(100vh - 60px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+.vitrine15 .estudio-stage-scroll {
+  width: 100% !important;
+  max-width: 340px !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 20px !important;
+}
+.vitrine15 .estudio-mock {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 20px !important;
+  width: 100% !important;
+}
