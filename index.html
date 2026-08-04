@@ -5876,16 +5876,17 @@ function fgWaLog(msg, kind) {
 }
 async function fgWaCheckStatus(silent) {
   const c = fgWaGetConfig();
-  if (!c.key) { fgWaSetBadge('unknown'); return; }
+  if (!c.key) { fgWaSetBadge('unknown'); fgWaShowGlobalAlert('unknown'); return; }
   try {
     const r = await fetch(`${c.url}/instance/fetchInstances?instanceName=${encodeURIComponent(c.instance)}`, {
       headers: { apikey: c.key }
     });
-    if (!r.ok) { fgWaSetBadge('error'); fgWaShowEmpty('⚠️',`Erro HTTP ${r.status}`,'Servidor Evolution fora do ar?'); return; }
+    if (!r.ok) { fgWaSetBadge('error'); fgWaShowGlobalAlert('error'); fgWaShowEmpty('⚠️',`Erro HTTP ${r.status}`,'Servidor Evolution fora do ar?'); return; }
     const arr = await r.json();
     const inst = Array.isArray(arr) ? arr[0] : null;
     const state = inst?.connectionStatus || 'unknown';
     fgWaSetBadge(state);
+    fgWaShowGlobalAlert(state);
     if (state === 'open') {
       const num = (inst?.ownerJid || '').replace('@s.whatsapp.net','');
       fgWaShowEmpty('✅','WhatsApp conectado', num ? `Vinculado ao número ${num}` : 'Vinculado e pronto');
@@ -5908,6 +5909,54 @@ async function fgWaCheckStatus(silent) {
     fgWaShowEmpty('⚠️','Falha ao consultar', e.message);
   }
 }
+/* Banner global de alerta — só admin vê. Fica fixo no topo quando disconnect. */
+function fgWaShowGlobalAlert(state) {
+  const admin = (typeof userIsAdmin === 'function') && userIsAdmin();
+  let el = document.getElementById('fgWaGlobalAlert');
+  const bad = state !== 'open' && state !== 'connecting' && state !== 'unknown';
+  if (!admin || !bad) { if (el) el.remove(); return; }
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'fgWaGlobalAlert';
+    el.className = 'fg-wa-global-alert';
+    el.setAttribute('role', 'alert');
+    document.body.appendChild(el);
+  }
+  const msg = state === 'error'
+    ? { icon: '⚠️', title: 'WhatsApp da Central com erro', sub: 'Servidor Evolution pode estar fora — abre pra ver o log' }
+    : { icon: '🚨', title: 'WhatsApp da Central caiu', sub: 'Relatório 6h + alertas parados. Reconecta agora antes que rode a próxima cron.' };
+  el.innerHTML = `
+    <span class="fg-wa-global-icon">${msg.icon}</span>
+    <div class="fg-wa-global-text">
+      <strong>${msg.title}</strong>
+      <span>${msg.sub}</span>
+    </div>
+    <button type="button" class="fg-wa-global-cta" onclick="fgWaOpenFromAlert()">Reconectar agora</button>
+    <button type="button" class="fg-wa-global-close" onclick="document.getElementById('fgWaGlobalAlert')?.remove()" title="Dispensar">✕</button>
+  `;
+}
+function fgWaOpenFromAlert() {
+  const modal = document.getElementById('appSettingsModal');
+  if (modal) modal.style.display = 'flex';
+  // Ativa a aba WhatsApp
+  document.querySelectorAll('.app-settings-tab').forEach(t => t.classList.toggle('active', t.dataset.pane === 'wa'));
+  document.querySelectorAll('.app-settings-pane').forEach(p => p.style.display = p.dataset.pane === 'wa' ? '' : 'none');
+  if (typeof fgWaOnOpen === 'function') fgWaOnOpen();
+}
+
+/* Polling global — só pra admin, roda a cada 60s enquanto logado.
+   Detecta disconnect antes do David abrir o modal. */
+let _fgWaGlobalPollTimer = null;
+function fgWaStartGlobalPoll() {
+  if (_fgWaGlobalPollTimer) return;
+  const tick = () => {
+    if (!(typeof userIsAdmin === 'function') || !userIsAdmin()) return;
+    if (typeof fgWaCheckStatus === 'function') fgWaCheckStatus(true);
+  };
+  tick(); // primeiro check imediato
+  _fgWaGlobalPollTimer = setInterval(tick, 60000);
+}
+
 async function fgWaReconnect() {
   const c = fgWaGetConfig();
   if (!c.key) { fgWaLog('Sem API Key configurada.', 'error'); return; }
@@ -23968,6 +24017,8 @@ window.addEventListener('load', () => {
       firebase.auth().onAuthStateChanged(() => {
         // chamado a cada mudança de auth — pjCleanupAutoCheck checa interna se já rodou hoje
         pjCleanupAutoCheck();
+        // Polling global do WhatsApp da Central (só admin)
+        if (typeof fgWaStartGlobalPoll === 'function') fgWaStartGlobalPoll();
       });
     }
   }, 5000);
