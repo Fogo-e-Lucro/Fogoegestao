@@ -1137,6 +1137,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             <img id="spPreviewImg" src="" alt="">
             <video id="spPreviewVid" muted playsinline></video>
             <button class="sp2-remove-media" onclick="spRemoveMedia(event)" title="Remover">✕</button>
+            <div id="sp2RatioBadge" class="sp2-ratio-badge" style="display:none"></div>
           </div>
         </div>
 
@@ -1173,6 +1174,10 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
                 Sugerir com IA
               </button>
+              <button type="button" class="sp2-chip" id="sp2PacksBtn" onclick="sp2OpenPacksModal()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                Packs
+              </button>
               <button type="button" class="sp2-chip" id="spCollabToggle" onclick="spToggleCollab()" aria-expanded="false">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 Collab
@@ -1185,6 +1190,18 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             <div class="sp2-collab-inputs" id="spCollabBody">
               <input id="spCollabUser1" type="text" class="sp2-input-mini" placeholder="@usuario1" oninput="this.value=this.value.replace('@','')">
               <input id="spCollabUser2" type="text" class="sp2-input-mini" placeholder="@usuario2 (opcional)" oninput="this.value=this.value.replace('@','')">
+            </div>
+          </div>
+          <!-- Primeiro comentário (hashtags fora da legenda) -->
+          <div class="sp2-first-comment" id="sp2FirstCommentWrap">
+            <label class="sp2-first-comment-label" for="spFirstComment">
+              Primeiro comentário
+              <span>hashtags que vão sozinhas depois do post subir</span>
+            </label>
+            <textarea id="spFirstComment" class="sp2-first-comment-input" rows="2" placeholder="#hashtag1 #hashtag2 #hashtag3" oninput="sp2OnFirstCommentInput(this)"></textarea>
+            <div class="sp2-first-comment-foot">
+              <span class="sp2-first-comment-hint" id="sp2FirstCommentHint">Story não recebe primeiro comentário</span>
+              <span class="sp2-first-comment-count"><span id="sp2FirstCommentCount">0</span>/2200</span>
             </div>
           </div>
         </div>
@@ -1338,6 +1355,59 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           </div>
           <div id="spQueue" class="sp2-queue-list">
             <!-- populado por JS (spAddToQueue) -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Cropper (aspect ratio adjust) -->
+      <div class="sp2-cropper-backdrop" id="sp2CropperBackdrop" onclick="if(event.target===this)sp2CloseCropper()">
+        <div class="sp2-cropper-modal" role="dialog" aria-label="Ajustar recorte">
+          <div class="sp2-cropper-head">
+            <div>
+              <h3 class="sp2-cropper-title">Ajustar recorte</h3>
+              <p class="sp2-cropper-sub">Arrasta pra reposicionar, usa o slider pra zoom</p>
+            </div>
+            <button type="button" class="sp2-cropper-close" onclick="sp2CloseCropper()" aria-label="Fechar">✕</button>
+          </div>
+          <div class="sp2-cropper-canvas-wrap">
+            <canvas id="sp2CropCanvas"
+              onmousedown="sp2CropDragStart(event)" onmousemove="sp2CropDragMove(event)" onmouseup="sp2CropDragEnd()" onmouseleave="sp2CropDragEnd()"
+              ontouchstart="sp2CropTouchStart(event)" ontouchmove="sp2CropTouchMove(event)" ontouchend="sp2CropDragEnd()"></canvas>
+          </div>
+          <div class="sp2-cropper-ratios">
+            <button type="button" class="sp2-cropper-ratio" data-ratio="1" onclick="sp2SetCropRatio(1)">1:1 Feed</button>
+            <button type="button" class="sp2-cropper-ratio" data-ratio="0.8" onclick="sp2SetCropRatio(0.8)">4:5 Retrato</button>
+            <button type="button" class="sp2-cropper-ratio" data-ratio="0.5625" onclick="sp2SetCropRatio(0.5625)">9:16 Story/Reels</button>
+          </div>
+          <div class="sp2-cropper-zoom">
+            <span>Zoom</span>
+            <input type="range" id="sp2CropZoom" min="1" max="4" step="0.05" value="1" oninput="sp2CropZoom(this.value)">
+          </div>
+          <div class="sp2-cropper-actions">
+            <button type="button" class="sp2-cropper-btn secondary" onclick="sp2CloseCropper()">Cancelar</button>
+            <button type="button" class="sp2-cropper-btn primary" onclick="sp2ApplyCrop()">Aplicar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Hashtag Packs -->
+      <div class="sp2-packs-backdrop" id="sp2PacksBackdrop" onclick="if(event.target===this)sp2ClosePacksModal()">
+        <div class="sp2-packs-modal" role="dialog" aria-label="Packs de hashtags">
+          <div class="sp2-packs-head">
+            <div>
+              <h3 class="sp2-packs-title">Packs de hashtags</h3>
+              <p class="sp2-packs-sub" id="sp2PacksSubtitle">Escolhe um pra jogar no primeiro comentário</p>
+            </div>
+            <button type="button" class="sp2-packs-close" onclick="sp2ClosePacksModal()" aria-label="Fechar">✕</button>
+          </div>
+          <div class="sp2-packs-body" id="sp2PacksBody">
+            <div class="sp2-packs-empty">Carregando packs...</div>
+          </div>
+          <div class="sp2-packs-foot">
+            <button type="button" class="sp2-cropper-btn primary" onclick="sp2StartCreatePack()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Criar pack
+            </button>
           </div>
         </div>
       </div>
@@ -7974,6 +8044,7 @@ function spHandleFile(file) {
     spUpdatePublishBtn();
   };
   reader.readAsDataURL(file);
+  if (typeof spCheckAspectRatio === 'function') spCheckAspectRatio(file);
 }
 
 function spRemoveMedia(e) {
@@ -7983,6 +8054,8 @@ function spRemoveMedia(e) {
   document.getElementById('spUploadPreview').style.display = 'none';
   document.getElementById('spPreviewImg').src = '';
   document.getElementById('spPreviewVid').src = '';
+  const _rb = document.getElementById('sp2RatioBadge');
+  if (_rb) { _rb.style.display = 'none'; _rb.classList.remove('ok','warn'); _rb.innerHTML = ''; }
   if (typeof sp2AutoDetectType === 'function') sp2AutoDetectType();
   if (typeof sp2UpdateTypeBadge === 'function') sp2UpdateTypeBadge();
   if (typeof sp2UpdateFeedPreview === 'function') sp2UpdateFeedPreview();
@@ -8307,11 +8380,25 @@ async function spSubmitPost() {
       const r2 = await fetch(`https://graph.facebook.com/v25.0/${acc.igId}/media_publish`, { method: 'POST', body: new URLSearchParams({ creation_id: containerId, access_token: acc.pageToken }) });
       const d2 = await r2.json();
       if (d2.error) throw new Error(d2.error.message);
+      // Primeiro comentário (hashtags) — Feed/Carrossel/Reels apenas; Story não aceita
+      const firstCommentEl = document.getElementById('spFirstComment');
+      const firstComment = firstCommentEl ? firstCommentEl.value.trim() : '';
+      if (firstComment && spCurrentType !== 'STORIES' && d2.id) {
+        try {
+          statusEl.innerHTML = '<span style="color:var(--text2)">Postando primeiro comentário...</span>';
+          const cRes = await fetch(`https://graph.facebook.com/v25.0/${d2.id}/comments`, {
+            method: 'POST',
+            body: new URLSearchParams({ message: firstComment, access_token: acc.pageToken })
+          });
+          const cData = await cRes.json();
+          if (cData.error) console.warn('[Publipost] Primeiro comentário falhou:', cData.error.message);
+        } catch(commentErr) { console.warn('[Publipost] Primeiro comentário erro rede:', commentErr); }
+      }
       statusEl.innerHTML = '<span class="sp-status-ok"><span class="sp-status-dot"></span>Publicado</span>';
       spAddToQueue({ acc, type: spCurrentType, caption, when: 'now', status: 'published', date: new Date().toISOString(), mediaUrl: firstMediaUrl });
     } else {
       statusEl.innerHTML = '<span class="sp-status-ok"><span class="sp-status-dot"></span>Agendado</span>';
-      spAddToQueue({ acc, type: spCurrentType, caption, when: scheduleDate, status: 'pending', date: new Date().toISOString(), mediaUrl: firstMediaUrl });
+      spAddToQueue({ acc, type: spCurrentType, caption, when: scheduleDate, status: 'pending', date: new Date().toISOString(), mediaUrl: firstMediaUrl, firstComment: (document.getElementById('spFirstComment')?.value.trim() || '') });
     }
     // Reset
     spRemoveMedia({ stopPropagation: ()=>{} });
@@ -8319,6 +8406,8 @@ async function spSubmitPost() {
     renderCarouselStrip();
     document.getElementById('spCaption').value = '';
     document.getElementById('spCaptionCount').textContent = '0';
+    const fcReset = document.getElementById('spFirstComment');
+    if (fcReset) { fcReset.value = ''; const fcResetCount = document.getElementById('sp2FirstCommentCount'); if (fcResetCount) fcResetCount.textContent = '0'; }
     if (storyLink) document.getElementById('spStoryLink').value = '';
   } catch(e) {
     statusEl.innerHTML = `<span class="sp-status-err"><span class="sp-status-dot"></span>${e.message}</span>`;
@@ -8722,7 +8811,355 @@ function sp2UpdateKpi() {
   kpi.classList.toggle('empty', publishedToday === 0 && !next);
 }
 
+/* ═══════════════════════════════════════════════════════
+   PUBLIPOST v2 — Primeiro comentário + Hashtag Packs
+═══════════════════════════════════════════════════════ */
+function sp2OnFirstCommentInput(el) {
+  const count = document.getElementById('sp2FirstCommentCount');
+  if (count) count.textContent = String(el.value.length);
+}
 
+// Cache local dos packs (evita re-fetch em cada abertura)
+let _sp2PacksCache = null;
+let _sp2PackEditing = null; // id do pack sendo editado, ou null pra novo
+
+async function sp2LoadPacks() {
+  try {
+    if (!_db) return [];
+    const uid = _auth?.currentUser?.uid || _currentUser?.uid;
+    if (!uid) return [];
+    const snap = await _db.collection('hashtag_packs').where('ownerUid', '==', uid).get();
+    _sp2PacksCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    return _sp2PacksCache;
+  } catch(e) {
+    console.warn('[Publipost] Erro carregando packs:', e);
+    return [];
+  }
+}
+
+function sp2CurrentClientHandle() {
+  const sel = document.getElementById('spAccountSelect');
+  const idx = sel?.value;
+  if (idx === '' || idx == null) return null;
+  const acc = spAccounts[parseInt(idx)];
+  return acc?.igUsername || null;
+}
+
+async function sp2OpenPacksModal() {
+  const backdrop = document.getElementById('sp2PacksBackdrop');
+  const body = document.getElementById('sp2PacksBody');
+  const sub = document.getElementById('sp2PacksSubtitle');
+  if (!backdrop || !body) return;
+  const handle = sp2CurrentClientHandle();
+  if (sub) sub.textContent = handle ? `Escolhe um pack pra @${handle}` : 'Escolhe um pack pra jogar no primeiro comentário';
+  backdrop.classList.add('on');
+  body.innerHTML = '<div class="sp2-packs-empty">Carregando packs...</div>';
+  const packs = await sp2LoadPacks();
+  sp2RenderPacksList(packs);
+}
+function sp2ClosePacksModal() {
+  document.getElementById('sp2PacksBackdrop')?.classList.remove('on');
+  _sp2PackEditing = null;
+}
+function sp2RenderPacksList(packs) {
+  const body = document.getElementById('sp2PacksBody');
+  if (!body) return;
+  const handle = sp2CurrentClientHandle();
+  // Filtra: global sempre aparece; específicos só quando bate com conta atual
+  const visible = packs.filter(p => !p.igUsername || p.igUsername === handle);
+  visible.sort((a,b) => {
+    if (!!a.igUsername !== !!b.igUsername) return a.igUsername ? -1 : 1;
+    return (a.name || '').localeCompare(b.name || '', 'pt-BR');
+  });
+  if (!visible.length) {
+    body.innerHTML = '<div class="sp2-packs-empty">Nenhum pack ainda. Clica em <b>Criar pack</b> pra montar o primeiro.</div>';
+    return;
+  }
+  body.innerHTML = visible.map(p => `
+    <div class="sp2-pack-item" data-id="${escHtml(p.id)}">
+      <div class="sp2-pack-item-top">
+        <div class="sp2-pack-name">${escHtml(p.name || 'Sem nome')}</div>
+        <span class="sp2-pack-scope">${p.igUsername ? '@' + escHtml(p.igUsername) : 'GLOBAL'}</span>
+      </div>
+      <div class="sp2-pack-tags">${escHtml((p.tags || []).join(' '))}</div>
+      <div class="sp2-pack-actions">
+        <button type="button" class="primary" onclick="sp2ApplyPack('${escJs(p.id)}')">Aplicar</button>
+        <button type="button" onclick="sp2StartEditPack('${escJs(p.id)}')">Editar</button>
+        <button type="button" onclick="sp2DeletePack('${escJs(p.id)}')">Excluir</button>
+      </div>
+    </div>
+  `).join('');
+}
+function sp2ApplyPack(id) {
+  const pack = (_sp2PacksCache || []).find(p => p.id === id);
+  if (!pack) return;
+  const fc = document.getElementById('spFirstComment');
+  if (!fc) return;
+  const text = (pack.tags || []).join(' ');
+  fc.value = text;
+  sp2OnFirstCommentInput(fc);
+  sp2ClosePacksModal();
+  if (typeof showToast === 'function') showToast('ok', '✓', `Pack "${pack.name}" aplicado`);
+}
+function sp2StartCreatePack() {
+  _sp2PackEditing = null;
+  sp2RenderPackForm();
+}
+function sp2StartEditPack(id) {
+  _sp2PackEditing = id;
+  sp2RenderPackForm();
+}
+function sp2RenderPackForm() {
+  const body = document.getElementById('sp2PacksBody');
+  if (!body) return;
+  const pack = _sp2PackEditing ? (_sp2PacksCache || []).find(p => p.id === _sp2PackEditing) : null;
+  const handle = sp2CurrentClientHandle();
+  body.innerHTML = `
+    <div class="sp2-pack-form">
+      <input id="sp2PackNameInp" type="text" placeholder="Nome do pack (ex: Pizzaria noite)" value="${escHtml(pack?.name || '')}">
+      <textarea id="sp2PackTagsInp" placeholder="#hashtag1 #hashtag2 #hashtag3">${escHtml((pack?.tags || []).join(' '))}</textarea>
+      <div class="sp2-pack-scope-row">
+        <label><input type="radio" name="sp2PackScope" value="account" ${(!pack || pack.igUsername) ? 'checked' : ''}> Só ${handle ? '@' + handle : 'conta atual'}</label>
+        <label><input type="radio" name="sp2PackScope" value="global" ${(pack && !pack.igUsername) ? 'checked' : ''} ${!handle ? 'checked' : ''}> Global</label>
+      </div>
+      <div class="sp2-pack-form-buttons">
+        <button type="button" class="sp2-cropper-btn secondary" onclick="sp2CancelPackEdit()">Cancelar</button>
+        <button type="button" class="sp2-cropper-btn primary" onclick="sp2SavePackForm()">Salvar</button>
+      </div>
+    </div>
+  `;
+}
+function sp2CancelPackEdit() { sp2OpenPacksModal(); }
+async function sp2SavePackForm() {
+  try {
+    const name = document.getElementById('sp2PackNameInp')?.value.trim();
+    const tagsRaw = document.getElementById('sp2PackTagsInp')?.value.trim() || '';
+    const scope = document.querySelector('input[name="sp2PackScope"]:checked')?.value || 'account';
+    if (!name) { if (typeof showToast === 'function') showToast('warn', '⚠️', 'Nome vazio'); return; }
+    const tags = tagsRaw.split(/\s+/).filter(t => t.startsWith('#') || (t = '#' + t)).map(t => t.replace(/^##/, '#'));
+    if (!tags.length) { if (typeof showToast === 'function') showToast('warn', '⚠️', 'Adiciona ao menos 1 hashtag'); return; }
+    const uid = _auth?.currentUser?.uid || _currentUser?.uid;
+    if (!uid || !_db) { if (typeof showToast === 'function') showToast('error', '✗', 'Faça login primeiro'); return; }
+    const handle = sp2CurrentClientHandle();
+    const data = {
+      ownerUid: uid,
+      igUsername: scope === 'global' ? null : handle,
+      name, tags,
+      updatedAt: Date.now(),
+    };
+    if (_sp2PackEditing) {
+      await _db.collection('hashtag_packs').doc(_sp2PackEditing).update(data);
+    } else {
+      data.createdAt = Date.now();
+      await _db.collection('hashtag_packs').add(data);
+    }
+    if (typeof showToast === 'function') showToast('ok', '✓', 'Pack salvo');
+    _sp2PackEditing = null;
+    _sp2PacksCache = null;
+    sp2OpenPacksModal();
+  } catch(e) {
+    console.error('[Publipost] savePack erro:', e);
+    if (typeof showToast === 'function') showToast('error', '✗', 'Erro ao salvar: ' + (e.message || e));
+  }
+}
+async function sp2DeletePack(id) {
+  if (!confirm('Excluir este pack?')) return;
+  try {
+    await _db.collection('hashtag_packs').doc(id).delete();
+    if (typeof showToast === 'function') showToast('ok', '✓', 'Pack excluído');
+    _sp2PacksCache = null;
+    sp2OpenPacksModal();
+  } catch(e) {
+    if (typeof showToast === 'function') showToast('error', '✗', 'Erro: ' + (e.message || e));
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   PUBLIPOST v2 — Aspect Ratio Validator + Cropper (canvas puro)
+═══════════════════════════════════════════════════════ */
+// State do cropper
+let _sp2Crop = {
+  img: null,      // HTMLImageElement carregada
+  originalFile: null,
+  scale: 1,
+  offX: 0, offY: 0,
+  ratio: 1,       // aspect ratio de saída (width/height do frame)
+  dragging: false, dragStartX: 0, dragStartY: 0, dragBaseX: 0, dragBaseY: 0,
+  canvasW: 0, canvasH: 0,
+};
+
+function sp2RatioForCurrentType() {
+  if (spCurrentType === 'REELS' || spCurrentType === 'STORIES') return { min: 0.5625, max: 0.5625, ideal: 0.5625, label: '9:16' };
+  if (spCurrentType === 'CAROUSEL') return { min: 1, max: 1, ideal: 1, label: '1:1' };
+  return { min: 0.8, max: 1.91, ideal: 1, label: '1:1 ou 4:5' };
+}
+
+async function spCheckAspectRatio(file) {
+  if (!file) return;
+  const badge = document.getElementById('sp2RatioBadge');
+  if (!badge) return;
+  badge.style.display = 'inline-flex';
+  badge.classList.remove('ok', 'warn');
+  badge.innerHTML = '<span>Analisando...</span>';
+  const isVideo = (file.type || '').startsWith('video/');
+  let w, h;
+  try {
+    if (isVideo) {
+      const url = URL.createObjectURL(file);
+      const v = document.createElement('video');
+      v.preload = 'metadata';
+      v.src = url;
+      await new Promise((res, rej) => { v.onloadedmetadata = res; v.onerror = rej; setTimeout(rej, 5000); });
+      w = v.videoWidth; h = v.videoHeight;
+      URL.revokeObjectURL(url);
+    } else {
+      const bmp = await createImageBitmap(file);
+      w = bmp.width; h = bmp.height;
+      bmp.close?.();
+    }
+  } catch(e) {
+    console.warn('[Publipost] aspect ratio detect fail:', e);
+    badge.style.display = 'none';
+    return;
+  }
+  const ratio = w / h;
+  const spec = sp2RatioForCurrentType();
+  const inRange = ratio >= spec.min * 0.98 && ratio <= spec.max * 1.02;
+  const near = Math.abs(ratio - spec.ideal) < 0.03;
+  if (inRange || near) {
+    badge.classList.add('ok');
+    badge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${spec.label} pronto`;
+  } else {
+    badge.classList.add('warn');
+    const canCrop = !isVideo;
+    badge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Vai cortar as bordas${canCrop ? '<button type="button" onclick="sp2OpenCropper()">Ajustar</button>' : ''}`;
+  }
+}
+
+// Cropper canvas
+function sp2OpenCropper() {
+  if (!spCurrentFile) return;
+  if (!(spCurrentFile.type || '').startsWith('image/')) return;
+  const backdrop = document.getElementById('sp2CropperBackdrop');
+  if (!backdrop) return;
+  backdrop.classList.add('on');
+  const spec = sp2RatioForCurrentType();
+  _sp2Crop.ratio = spec.ideal;
+  _sp2Crop.originalFile = spCurrentFile;
+  _sp2Crop.scale = 1; _sp2Crop.offX = 0; _sp2Crop.offY = 0;
+  document.getElementById('sp2CropZoom').value = '1';
+  document.querySelectorAll('.sp2-cropper-ratio').forEach(b => b.classList.toggle('on', parseFloat(b.dataset.ratio) === spec.ideal));
+  // Carrega img
+  const img = new Image();
+  img.onload = () => { _sp2Crop.img = img; sp2CropDraw(); };
+  const reader = new FileReader();
+  reader.onload = e => { img.src = e.target.result; };
+  reader.readAsDataURL(spCurrentFile);
+}
+function sp2CloseCropper() {
+  document.getElementById('sp2CropperBackdrop')?.classList.remove('on');
+  _sp2Crop.img = null;
+}
+function sp2SetCropRatio(r) {
+  _sp2Crop.ratio = r;
+  _sp2Crop.offX = 0; _sp2Crop.offY = 0;
+  _sp2Crop.scale = 1;
+  document.getElementById('sp2CropZoom').value = '1';
+  document.querySelectorAll('.sp2-cropper-ratio').forEach(b => b.classList.toggle('on', parseFloat(b.dataset.ratio) === r));
+  sp2CropDraw();
+}
+function sp2CropZoom(v) {
+  _sp2Crop.scale = parseFloat(v);
+  sp2CropDraw();
+}
+function sp2CropDraw() {
+  const canvas = document.getElementById('sp2CropCanvas');
+  if (!canvas || !_sp2Crop.img) return;
+  const cw = Math.min(400, window.innerWidth - 80);
+  const ch = Math.round(cw / _sp2Crop.ratio);
+  canvas.width = cw; canvas.height = ch;
+  _sp2Crop.canvasW = cw; _sp2Crop.canvasH = ch;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, cw, ch);
+  const img = _sp2Crop.img;
+  const imgR = img.width / img.height;
+  const canR = cw / ch;
+  let baseW, baseH;
+  // Cover fit
+  if (imgR > canR) { baseH = ch; baseW = ch * imgR; }
+  else { baseW = cw; baseH = cw / imgR; }
+  const finalW = baseW * _sp2Crop.scale;
+  const finalH = baseH * _sp2Crop.scale;
+  const cx = (cw - finalW) / 2 + _sp2Crop.offX;
+  const cy = (ch - finalH) / 2 + _sp2Crop.offY;
+  ctx.drawImage(img, cx, cy, finalW, finalH);
+  // Grid regra dos terços
+  ctx.strokeStyle = 'rgba(255,255,255,.35)';
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 3; i++) {
+    ctx.beginPath(); ctx.moveTo((cw/3)*i, 0); ctx.lineTo((cw/3)*i, ch); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, (ch/3)*i); ctx.lineTo(cw, (ch/3)*i); ctx.stroke();
+  }
+}
+function sp2CropDragStart(e) {
+  _sp2Crop.dragging = true;
+  _sp2Crop.dragStartX = e.clientX; _sp2Crop.dragStartY = e.clientY;
+  _sp2Crop.dragBaseX = _sp2Crop.offX; _sp2Crop.dragBaseY = _sp2Crop.offY;
+}
+function sp2CropDragMove(e) {
+  if (!_sp2Crop.dragging) return;
+  _sp2Crop.offX = _sp2Crop.dragBaseX + (e.clientX - _sp2Crop.dragStartX);
+  _sp2Crop.offY = _sp2Crop.dragBaseY + (e.clientY - _sp2Crop.dragStartY);
+  sp2CropDraw();
+}
+function sp2CropDragEnd() { _sp2Crop.dragging = false; }
+function sp2CropTouchStart(e) {
+  if (!e.touches[0]) return;
+  e.preventDefault();
+  _sp2Crop.dragging = true;
+  _sp2Crop.dragStartX = e.touches[0].clientX;
+  _sp2Crop.dragStartY = e.touches[0].clientY;
+  _sp2Crop.dragBaseX = _sp2Crop.offX;
+  _sp2Crop.dragBaseY = _sp2Crop.offY;
+}
+function sp2CropTouchMove(e) {
+  if (!_sp2Crop.dragging || !e.touches[0]) return;
+  e.preventDefault();
+  _sp2Crop.offX = _sp2Crop.dragBaseX + (e.touches[0].clientX - _sp2Crop.dragStartX);
+  _sp2Crop.offY = _sp2Crop.dragBaseY + (e.touches[0].clientY - _sp2Crop.dragStartY);
+  sp2CropDraw();
+}
+async function sp2ApplyCrop() {
+  const canvas = document.getElementById('sp2CropCanvas');
+  if (!canvas) return;
+  // Redesenha em resolução maior (1080 base) pra manter qualidade
+  const outW = 1080;
+  const outH = Math.round(outW / _sp2Crop.ratio);
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = outW; outCanvas.height = outH;
+  const ctx = outCanvas.getContext('2d');
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, outW, outH);
+  const img = _sp2Crop.img;
+  const imgR = img.width / img.height;
+  const canR = outW / outH;
+  let baseW, baseH;
+  if (imgR > canR) { baseH = outH; baseW = outH * imgR; }
+  else { baseW = outW; baseH = outW / imgR; }
+  const finalW = baseW * _sp2Crop.scale;
+  const finalH = baseH * _sp2Crop.scale;
+  const scaleFactor = outW / _sp2Crop.canvasW;
+  const cx = (outW - finalW) / 2 + _sp2Crop.offX * scaleFactor;
+  const cy = (outH - finalH) / 2 + _sp2Crop.offY * scaleFactor;
+  ctx.drawImage(img, cx, cy, finalW, finalH);
+  outCanvas.toBlob(blob => {
+    if (!blob) { if (typeof showToast === 'function') showToast('error', '✗', 'Falha ao recortar'); return; }
+    const cropped = new File([blob], (_sp2Crop.originalFile?.name || 'crop') + '.jpg', { type: 'image/jpeg' });
+    sp2CloseCropper();
+    spHandleFile(cropped);
+    if (typeof showToast === 'function') showToast('ok', '✓', 'Foto ajustada');
+  }, 'image/jpeg', 0.92);
+}
 
 /* ═══════════════════════════════════════════════════════
    MÉTRICAS

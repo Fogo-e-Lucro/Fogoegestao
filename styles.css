@@ -13277,6 +13277,243 @@ html, body {
 .sp2-legacy-hidden,
 .sp2-legacy-hidden[hidden] { display: none !important; }
 
+/* ─────────── Primeiro comentário (hashtags fora da legenda) ─────────── */
+.sp2-first-comment {
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  display: flex; flex-direction: column; gap: 6px;
+  padding-left: 14px; padding-right: 14px; padding-bottom: 12px;
+}
+.sp2-first-comment-label {
+  font-size: 12px; font-weight: 600; color: var(--text);
+  display: flex; align-items: center; gap: 6px;
+}
+.sp2-first-comment-label span {
+  font-weight: 400; color: var(--text3); font-size: 11px;
+}
+.sp2-first-comment-input {
+  width: 100%; box-sizing: border-box;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px;
+  color: var(--text); font-family: var(--font);
+  font-size: 13px; line-height: 1.4;
+  resize: vertical; min-height: 52px; outline: none;
+  transition: border-color .18s ease, background .18s ease;
+}
+.sp2-first-comment-input:focus { border-color: var(--accent); background: var(--card); }
+.sp2-first-comment-input::placeholder { color: var(--text3); }
+.sp2-first-comment-foot {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; color: var(--text3);
+}
+.sp2-first-comment-hint { font-style: italic; }
+.sp2-first-comment-count { font-variant-numeric: tabular-nums; }
+
+/* ─────────── Packs de hashtags modal ─────────── */
+.sp2-packs-backdrop,
+.sp2-cropper-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, .55);
+  z-index: 10000;
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 16px;
+}
+.sp2-packs-backdrop.on,
+.sp2-cropper-backdrop.on {
+  display: flex;
+  animation: sp2FadeIn .22s ease-out;
+}
+@keyframes sp2FadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+.sp2-packs-modal, .sp2-cropper-modal {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px;
+  width: 100%; max-width: 520px; max-height: 88vh;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+}
+.sp2-packs-head, .sp2-cropper-head {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+}
+.sp2-packs-title, .sp2-cropper-title {
+  font-size: 15px; font-weight: 700; color: var(--text); margin: 0;
+}
+.sp2-packs-sub, .sp2-cropper-sub {
+  font-size: 12px; color: var(--text3); margin: 2px 0 0;
+}
+.sp2-packs-close, .sp2-cropper-close {
+  background: transparent; border: 0; color: var(--text2);
+  font-size: 22px; line-height: 1; cursor: pointer;
+  padding: 4px 8px; border-radius: 6px;
+  transition: background .18s ease;
+}
+.sp2-packs-close:hover, .sp2-cropper-close:hover { background: var(--bg2); color: var(--text); }
+
+.sp2-packs-body {
+  padding: 14px 18px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.sp2-packs-empty {
+  padding: 24px 8px; text-align: center;
+  color: var(--text3); font-size: 13px; line-height: 1.5;
+}
+.sp2-pack-item {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 6px;
+  transition: border-color .18s ease, transform .12s ease;
+}
+.sp2-pack-item:hover { border-color: var(--accent); transform: translateY(-1px); }
+.sp2-pack-item-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.sp2-pack-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.sp2-pack-scope {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--text3); padding: 2px 6px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 4px;
+}
+.sp2-pack-tags {
+  font-size: 12px; color: var(--text2); line-height: 1.4;
+  word-break: break-word;
+}
+.sp2-pack-actions {
+  display: flex; gap: 6px;
+}
+.sp2-pack-actions button {
+  flex: 1; background: transparent; border: 1px solid var(--border);
+  color: var(--text2); font-size: 12px; font-weight: 500;
+  padding: 6px 10px; border-radius: 6px; cursor: pointer;
+  transition: all .15s ease;
+}
+.sp2-pack-actions button.primary {
+  background: var(--accent); color: #fff; border-color: transparent;
+}
+.sp2-pack-actions button:hover:not(.primary) { border-color: var(--accent); color: var(--text); }
+.sp2-pack-actions button.primary:hover { opacity: .9; }
+
+.sp2-packs-foot {
+  padding: 12px 18px; border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end;
+}
+
+.sp2-pack-form {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px; background: var(--bg2);
+  border: 1px dashed var(--border); border-radius: 10px;
+}
+.sp2-pack-form input, .sp2-pack-form textarea {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 8px 10px;
+  font-family: var(--font); font-size: 13px; color: var(--text);
+  outline: none;
+}
+.sp2-pack-form input:focus, .sp2-pack-form textarea:focus { border-color: var(--accent); }
+.sp2-pack-form textarea { min-height: 60px; resize: vertical; }
+.sp2-pack-scope-row {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  font-size: 12px; color: var(--text2);
+}
+.sp2-pack-scope-row label { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+.sp2-pack-form-buttons { display: flex; gap: 6px; justify-content: flex-end; }
+
+/* ─────────── Ratio badge ─────────── */
+.sp2-ratio-badge {
+  position: absolute; top: 12px; left: 12px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 700;
+  backdrop-filter: blur(6px);
+  z-index: 3;
+  animation: sp2FadeIn .22s ease-out;
+}
+.sp2-ratio-badge.ok {
+  background: rgba(34, 197, 94, .18);
+  color: #14532d;
+  border: 1px solid rgba(34, 197, 94, .35);
+}
+.sp2-ratio-badge.warn {
+  background: rgba(234, 179, 8, .22);
+  color: #713f12;
+  border: 1px solid rgba(234, 179, 8, .5);
+}
+@media (prefers-color-scheme: dark) {
+  .sp2-ratio-badge.ok { color: #86efac; }
+  .sp2-ratio-badge.warn { color: #fde68a; }
+}
+.sp2-ratio-badge svg { flex-shrink: 0; }
+.sp2-ratio-badge button {
+  background: rgba(0, 0, 0, .12); color: inherit;
+  border: 0; padding: 2px 8px; margin-left: 4px;
+  border-radius: 999px; font-size: 11px; font-weight: 700;
+  cursor: pointer;
+  transition: background .15s ease;
+}
+.sp2-ratio-badge button:hover { background: rgba(0, 0, 0, .2); }
+
+/* ─────────── Cropper modal ─────────── */
+.sp2-cropper-modal { max-width: 480px; }
+.sp2-cropper-canvas-wrap {
+  padding: 14px 18px 8px;
+  display: flex; justify-content: center;
+  background: var(--bg2);
+}
+#sp2CropCanvas {
+  max-width: 100%; max-height: 60vh;
+  border-radius: 8px;
+  touch-action: none;
+  cursor: grab;
+  background: #000;
+}
+#sp2CropCanvas:active { cursor: grabbing; }
+
+.sp2-cropper-ratios {
+  padding: 10px 18px 6px;
+  display: flex; gap: 6px;
+}
+.sp2-cropper-ratio {
+  flex: 1; background: transparent; border: 1px solid var(--border);
+  color: var(--text2); font-family: var(--font);
+  font-size: 12px; font-weight: 600;
+  padding: 8px 10px; border-radius: 8px; cursor: pointer;
+  transition: all .15s ease;
+}
+.sp2-cropper-ratio:hover { border-color: var(--accent); color: var(--text); }
+.sp2-cropper-ratio.on {
+  background: var(--accent); color: #fff; border-color: transparent;
+}
+
+.sp2-cropper-zoom {
+  padding: 6px 18px 12px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12px; color: var(--text3);
+}
+.sp2-cropper-zoom input[type=range] { flex: 1; accent-color: var(--accent); }
+
+.sp2-cropper-actions {
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 8px; justify-content: flex-end;
+}
+.sp2-cropper-btn {
+  padding: 9px 16px; border-radius: 8px;
+  font-family: var(--font); font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border);
+  background: transparent; color: var(--text);
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all .15s ease;
+}
+.sp2-cropper-btn.secondary { color: var(--text2); }
+.sp2-cropper-btn.secondary:hover { border-color: var(--text2); color: var(--text); }
+.sp2-cropper-btn.primary {
+  background: var(--accent); color: #fff; border-color: transparent;
+}
+.sp2-cropper-btn.primary:hover { opacity: .9; }
+
 /* ── Workspace split: editor + preview IG (desktop) ── */
 .sp2-workspace {
   display: flex;
