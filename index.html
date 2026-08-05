@@ -25734,7 +25734,15 @@ async function pjSaveSpace(editId) {
   pjCloseFormModal(); pjRenderSidebar();
 }
 async function pjDeleteSpace(id) {
-  if (!confirm('Excluir este espaço e TODAS as suas listas e tarefas?')) return;
+  if (typeof userIsAdmin !== 'function' || !userIsAdmin()) {
+    if (typeof showToast === 'function') showToast('warn','⚠️','Só admin pode excluir espaços');
+    return;
+  }
+  const sp = pjSpaces.find(s => s.id === id);
+  const name = sp?.name || 'este espaço';
+  const listCount = pjLists.filter(l => l.spaceId === id).length;
+  const typed = prompt(`Excluir "${name}" e TUDO dentro (${listCount} lista${listCount!==1?'s':''} + tarefas)?\n\nPra confirmar, digita o nome: ${name}`);
+  if (typed !== name) { if (typed !== null && typeof showToast === 'function') showToast('warn','⚠️','Nome não bate. Cancelado.'); return; }
   try { pjAskAiNotifyDeleted('space', id); } catch(_){}
   // Delete all lists in space
   const listIds = pjLists.filter(l=>l.spaceId===id).map(l=>l.id);
@@ -25871,7 +25879,19 @@ async function pjSaveFolder(editId, spaceId) {
   pjCloseFormModal(); pjRenderSidebar();
 }
 async function pjDeleteFolder(id) {
-  if (!confirm('Excluir esta pasta e suas listas?')) return;
+  if (typeof userIsAdmin !== 'function' || !userIsAdmin()) {
+    if (typeof showToast === 'function') showToast('warn','⚠️','Só admin pode excluir pastas');
+    return;
+  }
+  const f = pjFolders.find(x => x.id === id);
+  const name = f?.name || 'esta pasta';
+  const listCount = pjLists.filter(l => l.folderId === id).length;
+  if (listCount > 0) {
+    const typed = prompt(`Excluir "${name}" e ${listCount} lista${listCount!==1?'s':''} dentro?\n\nPra confirmar, digita o nome: ${name}`);
+    if (typed !== name) { if (typed !== null && typeof showToast === 'function') showToast('warn','⚠️','Nome não bate. Cancelado.'); return; }
+  } else {
+    if (!confirm(`Excluir "${name}"? (pasta vazia)`)) return;
+  }
   try { pjAskAiNotifyDeleted('folder', id); } catch(_){}
   const listIds = pjLists.filter(l=>l.folderId===id).map(l=>l.id);
   for (const lid of listIds) { try { pjAskAiNotifyDeleted('list', lid); } catch(_){} await pjDeleteListData(lid); }
@@ -25905,6 +25925,10 @@ async function pjSaveList(editId, folderId, spaceId) {
   pjCloseFormModal(); pjRenderSidebar();
 }
 async function pjDeleteList(id) {
+  if (typeof userIsAdmin !== 'function' || !userIsAdmin()) {
+    if (typeof showToast === 'function') showToast('warn','⚠️','Só admin pode excluir listas');
+    return;
+  }
   const list = pjLists.find(l => l.id === id);
   if (!list) return;
   // Snapshot pra restaurar caso usuário faça undo
