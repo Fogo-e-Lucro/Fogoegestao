@@ -846,6 +846,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             </button>
             <div class="estudio-block-body">
               <div class="estudio-obj-grid" id="objetivoGrid"></div>
+              <div class="estudio-obj-desc" id="objetivoDesc" hidden></div>
             </div>
           </section>
 
@@ -29448,9 +29449,48 @@ document.addEventListener('input', (e) => {
    ================================================================ */
 
 const OBJETIVOS_ESTUDIO = [
-  { id: 'Atrair',     icon: '🎯', hint: 'Chamar atenção, alcance novo' },
-  { id: 'Relacionar', icon: '💬', hint: 'Conversar, criar vínculo' },
-  { id: 'Vender',     icon: '💰', hint: 'Levar pra compra agora' },
+  {
+    id: 'Atrair',
+    icon: '🎯',
+    funnel: 'Topo do funil',
+    hint: 'Pra quem ainda não conhece — parar o scroll e virar seguidor novo',
+    examples: [
+      'Reels de tendência com áudio da moda',
+      'Meme, humor, "adivinha o prato"',
+      'Curiosidade da cozinha, bastidor engraçado',
+      'Opinião polêmica ("é errado comer X com Y?")',
+      'UGC (cliente postou algo bom)',
+      'Trend que dá pra encaixar',
+    ],
+  },
+  {
+    id: 'Relacionar',
+    icon: '💬',
+    funnel: 'Meio do funil',
+    hint: 'Pra quem já segue mas ainda não é fiel — criar vínculo, mostrar gente humana',
+    examples: [
+      'História do dono, como o prato é feito',
+      'Apresentar a equipe',
+      'Aniversário do restaurante, marco importante',
+      'Review em vídeo do cliente',
+      'Por que a gente usa tal ingrediente',
+      'Pergunta na legenda pedindo opinião',
+    ],
+  },
+  {
+    id: 'Vender',
+    icon: '💰',
+    funnel: 'Fundo do funil',
+    hint: 'Pra quem já tá pronto — converter em pedido ou reserva agora',
+    examples: [
+      'Promoção do dia, combo novo',
+      'Evento na casa, ao vivo',
+      'Cupom, desconto de primeira reserva',
+      '"Última semana do prato tal"',
+      'Cardápio novo com preço visível',
+      'Story com sticker de link, "peça pelo link da bio"',
+    ],
+  },
 ];
 
 let estudioState = {
@@ -29621,6 +29661,29 @@ function selectObjetivoEstudio(obj) {
   document.querySelectorAll('.estudio-obj-chip').forEach(b => b.classList.toggle('active', b.dataset.obj === obj));
   const op = document.getElementById('objetivoPreview'); if (op) op.textContent = obj;
   document.querySelector('[data-block="objetivo"]')?.classList.add('filled');
+  // Renderiza a descrição/exemplos do objetivo escolhido
+  const desc = document.getElementById('objetivoDesc');
+  const meta = OBJETIVOS_ESTUDIO.find(o => o.id === obj);
+  if (desc && meta) {
+    desc.hidden = false;
+    desc.innerHTML = `
+      <div class="estudio-obj-desc-head">
+        <span class="estudio-obj-desc-icon">${meta.icon}</span>
+        <div>
+          <div class="estudio-obj-desc-title">${meta.id}</div>
+          <div class="estudio-obj-desc-funnel">${escHtml(meta.funnel)}</div>
+        </div>
+      </div>
+      <div class="estudio-obj-desc-hint">${escHtml(meta.hint)}</div>
+      <div class="estudio-obj-desc-examples-label">Aqui entram</div>
+      <ul class="estudio-obj-desc-examples">
+        ${meta.examples.map(e => `<li>${escHtml(e)}</li>`).join('')}
+      </ul>
+    `;
+  } else if (desc) {
+    desc.hidden = true;
+    desc.innerHTML = '';
+  }
   scheduleAutoSave();
 }
 
