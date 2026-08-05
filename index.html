@@ -957,7 +957,15 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
     </header>
 
     <!-- 2. STRIP DE CLIENTES (filtro primeira classe) -->
-    <nav class="ed-client-strip" id="edClientStrip" role="tablist" aria-label="Filtrar por cliente"></nav>
+    <div class="ed-client-strip-wrap">
+      <nav class="ed-client-strip" id="edClientStrip" role="tablist" aria-label="Filtrar por cliente"></nav>
+      <button type="button" class="ed-client-strip-arrow left"  id="edClientStripArrowL" onclick="edClientStripScroll(-1)" aria-label="Rolar para trás"  hidden>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button type="button" class="ed-client-strip-arrow right" id="edClientStripArrowR" onclick="edClientStripScroll(1)"  aria-label="Rolar para frente" hidden>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
 
     <!-- 3. CONTROLES: stats + segmented -->
     <div class="ed-controls" data-reveal>
@@ -5193,7 +5201,36 @@ function renderClientStrip(){
   const sl = strip.scrollLeft;
   strip.innerHTML = parts.join('');
   strip.scrollLeft = sl;
+  edClientStripUpdateArrows();
 }
+
+// Setas de scroll horizontal — mostradas só se tem overflow, e escondem
+// quando chega no início/fim. Fade edge é CSS puro.
+function edClientStripUpdateArrows() {
+  const strip = document.getElementById('edClientStrip');
+  const l = document.getElementById('edClientStripArrowL');
+  const r = document.getElementById('edClientStripArrowR');
+  if (!strip || !l || !r) return;
+  const overflow = strip.scrollWidth - strip.clientWidth > 4;
+  const atStart  = strip.scrollLeft <= 2;
+  const atEnd    = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 2;
+  l.hidden = !overflow || atStart;
+  r.hidden = !overflow || atEnd;
+  // Fade edge via data-attr (CSS lê)
+  strip.dataset.fadeLeft  = (!atStart && overflow) ? '1' : '0';
+  strip.dataset.fadeRight = (!atEnd   && overflow) ? '1' : '0';
+}
+function edClientStripScroll(dir) {
+  const strip = document.getElementById('edClientStrip');
+  if (!strip) return;
+  const step = Math.max(200, strip.clientWidth * 0.7);
+  strip.scrollBy({ left: step * dir, behavior: 'smooth' });
+}
+window.addEventListener('resize', () => { if (typeof edClientStripUpdateArrows === 'function') edClientStripUpdateArrows(); });
+document.addEventListener('DOMContentLoaded', () => {
+  const strip = document.getElementById('edClientStrip');
+  if (strip) strip.addEventListener('scroll', () => edClientStripUpdateArrows(), { passive: true });
+});
 
 function selectClient(name){
   if (activeRestaurante === name) return;
@@ -29411,13 +29448,9 @@ document.addEventListener('input', (e) => {
    ================================================================ */
 
 const OBJETIVOS_ESTUDIO = [
-  { id: 'Desejo',       icon: '🔥', hint: 'Provocar fome' },
-  { id: 'Conexão',      icon: '💬', hint: 'Falar de gente' },
-  { id: 'Meme',         icon: '😂', hint: 'Rir junto' },
-  { id: 'Experiência',  icon: '✨', hint: 'Mostrar a casa' },
-  { id: 'UGC',          icon: '📱', hint: 'Cliente que postou' },
-  { id: 'Prova Social', icon: '⭐', hint: 'Fila, review, prêmio' },
-  { id: 'Conversão',    icon: '💰', hint: 'Ir buscar agora' },
+  { id: 'Atrair',     icon: '🎯', hint: 'Chamar atenção, alcance novo' },
+  { id: 'Relacionar', icon: '💬', hint: 'Conversar, criar vínculo' },
+  { id: 'Vender',     icon: '💰', hint: 'Levar pra compra agora' },
 ];
 
 let estudioState = {

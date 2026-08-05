@@ -9906,15 +9906,70 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
 .ed-new-post-btn:active { transform: translateY(0); }
 
 /* ---------- 2. CLIENT STRIP ---------- */
+.ed-client-strip-wrap {
+  position: relative;
+  margin: 0 -4px 14px;
+}
 .ed-client-strip {
   display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden;
-  padding: 4px 4px 14px; margin: 0 -4px 14px;
+  padding: 4px 4px 14px;
   scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   border-bottom: 1px solid var(--border);
+  scroll-behavior: smooth;
 }
 .ed-client-strip::-webkit-scrollbar { display: none; }
+
+/* Fade edges — mostra visualmente que tem mais conteúdo pro lado */
+.ed-client-strip-wrap::before,
+.ed-client-strip-wrap::after {
+  content: '';
+  position: absolute; top: 0; bottom: 14px;
+  width: 48px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .2s ease;
+  z-index: 2;
+}
+.ed-client-strip-wrap::before {
+  left: 0;
+  background: linear-gradient(to right, var(--bg) 20%, transparent);
+}
+.ed-client-strip-wrap::after {
+  right: 0;
+  background: linear-gradient(to left, var(--bg) 20%, transparent);
+}
+.ed-client-strip-wrap:has(.ed-client-strip[data-fade-left="1"])::before  { opacity: 1; }
+.ed-client-strip-wrap:has(.ed-client-strip[data-fade-right="1"])::after  { opacity: 1; }
+
+/* Arrows de scroll — só aparecem quando tem overflow */
+.ed-client-strip-arrow {
+  position: absolute; top: 50%; transform: translateY(calc(-50% - 7px));
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  display: grid; place-items: center;
+  cursor: pointer;
+  z-index: 3;
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  transition: color .15s, transform .12s, box-shadow .15s;
+}
+.ed-client-strip-arrow.left  { left: -6px; }
+.ed-client-strip-arrow.right { right: -6px; }
+.ed-client-strip-arrow:hover {
+  color: var(--accent);
+  transform: translateY(calc(-50% - 7px)) scale(1.08);
+  box-shadow: 0 6px 16px rgba(0,0,0,.18);
+}
+.ed-client-strip-arrow[hidden] { display: none; }
+@media (max-width: 640px) {
+  .ed-client-strip-arrow { display: none; } /* touch mobile já rola natural */
+  .ed-client-strip-wrap::before,
+  .ed-client-strip-wrap::after { width: 28px; }
+}
 
 .ed-client-chip {
   --client-color: var(--accent);
