@@ -28184,6 +28184,12 @@ window.bdUploadCustomImage = async function(cid, fid, input) {
             _reloading = true;
             location.reload();
           });
+          // Poll de update a cada 2min — força o browser a rebuscar sw.js
+          // mesmo com aba aberta o dia todo. Sem isso, updates ficam presos
+          // até o usuário fechar tudo (comum: PWA no iPad, tab pinada).
+          setInterval(() => { reg.update().catch(()=>{}); }, 120_000);
+          // Update também quando volta o foco (usuário ativo agora)
+          window.addEventListener('focus', () => { reg.update().catch(()=>{}); });
         })
         .catch(err => console.warn('[SW] registration failed:', err));
     });
