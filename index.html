@@ -20061,25 +20061,12 @@ async function pjExecAutomationAction(action, ctx) {
       });
     } catch(_) {}
   } else if (action.type === 'send_whatsapp') {
-    // O server (pj-auto-watcher na VPS) é responsável primário por send_whatsapp
-    // porque roda pra QUALQUER usuário que mude status (não depende de cache
-    // do browser, apikey local, CORS, etc). Client aguarda 3s e checa se o
-    // server já enviou. Se sim: skip. Se não (server offline?): fallback envia.
-    const logActivity = (outcome, detail) => {
-      try { if (typeof pjLogActivity === 'function') pjLogActivity(task.id, { type:'automation_wa', outcome, detail, ruleName: automation?.name || '' }); } catch(_) {}
-    };
-    if (!action.message) { console.warn('[automation] send_whatsapp SEM mensagem'); logActivity('skip','sem mensagem'); return; }
-    // Aguarda server processar
-    await new Promise(r => setTimeout(r, 3000));
-    // Re-checa estado atualizado pelo listener do Firestore
-    const fresh = (typeof pjAllTasks !== 'undefined') ? pjAllTasks.find(t => t.id === task.id) : task;
-    const dedupKey = `${automation.id}_send_whatsapp_${task.statusId || 'na'}`;
-    const lastRun = fresh?.automationsRan?.[dedupKey];
-    if (lastRun && (Date.now() - lastRun) < 30000) {
-      console.log('[automation] send_whatsapp já enviado pelo server-side watcher, skip');
-      return;
-    }
-    console.log('[automation] server não processou em 3s, fallback client-side');
+    // Delegado 100% pro server-side watcher (pj-auto-watcher no VPS Contabo).
+    // Client NÃO envia mais — evita duplicação com browsers em cache antigo
+    // e centraliza envios num único lugar (rastreável via pm2 logs).
+    // Se o server estiver offline, o banner global do WhatsApp Central alerta o admin.
+    console.log('[automation] send_whatsapp: delegado ao server-side watcher');
+    return;
     const cfg = (typeof fgWaGetConfig === 'function') ? fgWaGetConfig() : null;
     if (!cfg || !cfg.key || !cfg.url || !cfg.instance) {
       console.warn('[automation] WhatsApp Central sem config');
