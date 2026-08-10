@@ -20058,6 +20058,39 @@ async function pjExecAutomationAction(action, ctx) {
         createdAt: pjNow(),
       });
     } catch(_) {}
+  } else if (action.type === 'send_whatsapp') {
+    if (!action.message) { console.warn('[automation] send_whatsapp SEM mensagem — pulando'); return; }
+    const cfg = (typeof fgWaGetConfig === 'function') ? fgWaGetConfig() : null;
+    if (!cfg || !cfg.key || !cfg.url || !cfg.instance) {
+      console.warn('[automation] WhatsApp Central sem config — pulando');
+      if (typeof showToast === 'function') showToast('warn', '⚠️', 'Automação WhatsApp: Central sem token');
+      return;
+    }
+    let number;
+    if ((action.waDestType||'group') === 'group') {
+      if (!action.waGroupJid) { console.warn('[automation] send_whatsapp SEM grupo — pulando'); return; }
+      number = action.waGroupJid; // grupo JID: 120363xxx@g.us
+    } else {
+      if (!action.waNumber) { console.warn('[automation] send_whatsapp SEM número — pulando'); return; }
+      const digits = String(action.waNumber).replace(/\D+/g, '');
+      if (!digits) return;
+      // Se não começar com DDI, assume +55 (Brasil)
+      number = digits.length > 11 ? digits : ('55' + digits);
+    }
+    const text = fmt(action.message);
+    try {
+      const r = await fetch(`${cfg.url}/message/sendText/${encodeURIComponent(cfg.instance)}`, {
+        method: 'POST',
+        headers: { apikey: cfg.key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ number, text })
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        console.warn('[automation] send_whatsapp falhou:', err);
+      } else {
+        console.log('[automation] send_whatsapp OK →', number);
+      }
+    } catch(e) { console.warn('[automation] send_whatsapp erro rede:', e); }
   }
 }
 
@@ -26384,16 +26417,32 @@ function pjRenderAutomationRow(a, idx, list) {
               <option value="notify_user" ${action.type==='notify_user'?'selected':''}>🔔 Notificar membro</option>
               <option value="assign_user" ${action.type==='assign_user'?'selected':''}>👤 Atribuir tarefa</option>
               <option value="add_comment" ${action.type==='add_comment'?'selected':''}>💬 Comentar</option>
+              <option value="send_whatsapp" ${action.type==='send_whatsapp'?'selected':''}>📱 Enviar WhatsApp</option>
             </select>
             <select class="pj-auto-input pj-auto-input-strong pj-auto-target-user" data-key="actions.0.userId"
                     style="display:${(action.type==='notify_user'||action.type==='assign_user')?'':'none'}">
               ${memberOpts}
             </select>
+            <select class="pj-auto-input pj-auto-input-strong pj-auto-wa-dest-type" data-key="actions.0.waDestType" onchange="pjAutomationWaDestChanged(this, ${idx})"
+                    style="display:${action.type==='send_whatsapp'?'':'none'}">
+              <option value="group" ${(action.waDestType||'group')==='group'?'selected':''}>Pra um grupo</option>
+              <option value="number" ${action.waDestType==='number'?'selected':''}>Pra um número</option>
+            </select>
           </div>
+          <select class="pj-auto-input pj-auto-wa-group" data-key="actions.0.waGroupJid"
+                  style="display:${(action.type==='send_whatsapp' && (action.waDestType||'group')==='group')?'':'none'};margin-top:8px;">
+            <option value="">— carregando grupos... —</option>
+            ${action.waGroupJid ? `<option value="${escHtml(action.waGroupJid)}" selected>${escHtml(action.waGroupName || action.waGroupJid)}</option>` : ''}
+          </select>
+          <input type="hidden" data-key="actions.0.waGroupName" value="${escHtml(action.waGroupName||'')}">
+          <input class="pj-auto-input pj-auto-wa-number" data-key="actions.0.waNumber"
+                 placeholder="Ex: 55 85 98507-4333"
+                 value="${escHtml(action.waNumber||'')}"
+                 style="display:${(action.type==='send_whatsapp' && action.waDestType==='number')?'':'none'};margin-top:8px;">
           <input class="pj-auto-input pj-auto-msg" data-key="actions.0.message"
                  placeholder="Mensagem (opcional) — use {title}, {status}, {list}"
                  value="${escHtml(action.message||'')}"
-                 style="display:${(action.type==='add_comment'||action.type==='notify_user')?'':'none'};margin-top:8px;">
+                 style="display:${(action.type==='add_comment'||action.type==='notify_user'||action.type==='send_whatsapp')?'':'none'};margin-top:8px;">
         </div>
       </div>
     </div>
@@ -26406,8 +26455,61 @@ function pjAutomationActionTypeChanged(sel, idx) {
   const type = sel.value;
   const userSel = row.querySelector('.pj-auto-target-user');
   const msgInp  = row.querySelector('.pj-auto-msg');
+  const waDestType = row.querySelector('.pj-auto-wa-dest-type');
+  const waGroup = row.querySelector('.pj-auto-wa-group');
+  const waNumber = row.querySelector('.pj-auto-wa-number');
   if (userSel) userSel.style.display = (type==='notify_user'||type==='assign_user') ? '' : 'none';
-  if (msgInp)  msgInp.style.display  = (type==='add_comment'||type==='notify_user') ? '' : 'none';
+  if (msgInp)  msgInp.style.display  = (type==='add_comment'||type==='notify_user'||type==='send_whatsapp') ? '' : 'none';
+  if (waDestType) waDestType.style.display = (type==='send_whatsapp') ? '' : 'none';
+  const wtype = waDestType?.value || 'group';
+  if (waGroup)  waGroup.style.display  = (type==='send_whatsapp' && wtype==='group') ? '' : 'none';
+  if (waNumber) waNumber.style.display = (type==='send_whatsapp' && wtype==='number') ? '' : 'none';
+  // Carrega grupos se ainda não populou
+  if (type === 'send_whatsapp' && waGroup && waGroup.options.length <= 2) pjLoadWhatsappGroups(waGroup);
+}
+
+function pjAutomationWaDestChanged(sel, idx) {
+  const row = sel.closest('.pj-auto-row');
+  if (!row) return;
+  const wtype = sel.value;
+  const waGroup = row.querySelector('.pj-auto-wa-group');
+  const waNumber = row.querySelector('.pj-auto-wa-number');
+  if (waGroup)  waGroup.style.display  = (wtype==='group')  ? '' : 'none';
+  if (waNumber) waNumber.style.display = (wtype==='number') ? '' : 'none';
+}
+
+// Cache dos grupos pra evitar refetch a cada abertura de select
+let _pjWaGroupsCache = null;
+async function pjLoadWhatsappGroups(selectEl) {
+  try {
+    const cfg = (typeof fgWaGetConfig === 'function') ? fgWaGetConfig() : null;
+    if (!cfg || !cfg.key || !cfg.url || !cfg.instance) {
+      selectEl.innerHTML = '<option value="">— WhatsApp Central não configurado —</option>';
+      return;
+    }
+    if (!_pjWaGroupsCache) {
+      const r = await fetch(`${cfg.url}/group/fetchAllGroups/${encodeURIComponent(cfg.instance)}?getParticipants=false`, { headers: { apikey: cfg.key } });
+      if (!r.ok) { selectEl.innerHTML = '<option value="">— erro ao carregar grupos —</option>'; return; }
+      const data = await r.json();
+      _pjWaGroupsCache = Array.isArray(data) ? data : (data.data || []);
+    }
+    const currentVal = selectEl.value;
+    const opts = ['<option value="">— escolher grupo —</option>'].concat(
+      _pjWaGroupsCache
+        .filter(g => g.id && g.id.endsWith('@g.us'))
+        .sort((a,b) => (a.subject||'').localeCompare(b.subject||'', 'pt-BR'))
+        .map(g => `<option value="${g.id}" ${currentVal===g.id?'selected':''}>${(g.subject||'(sem nome)').replace(/[<>]/g,'')}</option>`)
+    );
+    selectEl.innerHTML = opts.join('');
+    // Sync hidden name field ao mudar seleção
+    selectEl.addEventListener('change', () => {
+      const nameInp = selectEl.parentElement.querySelector('[data-key="actions.0.waGroupName"]');
+      if (nameInp) nameInp.value = selectEl.options[selectEl.selectedIndex]?.textContent || '';
+    }, { once: true });
+  } catch(e) {
+    console.warn('[pjLoadWhatsappGroups] erro:', e);
+    selectEl.innerHTML = '<option value="">— erro: ' + (e.message || 'sem rede') + ' —</option>';
+  }
 }
 
 function pjAutomationAdd(listId) {
@@ -26463,13 +26565,29 @@ async function pjAutomationsSave(listId) {
     if (userSel && (action.type==='notify_user'||action.type==='assign_user')) {
       action.userId = userSel.value || '';
     }
-    if (msgInp && (action.type==='add_comment'||action.type==='notify_user')) {
+    if (msgInp && (action.type==='add_comment'||action.type==='notify_user'||action.type==='send_whatsapp')) {
       const m = msgInp.value.trim();
       if (m) action.message = m;
+    }
+    if (action.type === 'send_whatsapp') {
+      const waDest = row.querySelector('[data-key="actions.0.waDestType"]')?.value || 'group';
+      action.waDestType = waDest;
+      if (waDest === 'group') {
+        const gSel = row.querySelector('[data-key="actions.0.waGroupJid"]');
+        action.waGroupJid = gSel?.value || '';
+        action.waGroupName = gSel?.options[gSel.selectedIndex]?.textContent?.trim() || '';
+      } else {
+        action.waNumber = row.querySelector('[data-key="actions.0.waNumber"]')?.value.trim() || '';
+      }
     }
     // Valida: precisa ter ação preenchida
     if ((action.type==='notify_user' || action.type==='assign_user') && !action.userId) return; // skip
     if (action.type==='add_comment' && !action.message) return;
+    if (action.type==='send_whatsapp') {
+      if (action.waDestType==='group' && !action.waGroupJid) return;
+      if (action.waDestType==='number' && !action.waNumber) return;
+      if (!action.message) return;
+    }
     automations.push({
       id: 'au_'+Date.now()+Math.random().toString(36).slice(2,5),
       name: name || `Quando ${trigger.statusId === 'any' ? 'qualquer status' : 'status'} mudar`,
