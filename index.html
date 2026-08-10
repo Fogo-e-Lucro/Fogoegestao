@@ -20059,26 +20059,32 @@ async function pjExecAutomationAction(action, ctx) {
       });
     } catch(_) {}
   } else if (action.type === 'send_whatsapp') {
-    if (!action.message) { console.warn('[automation] send_whatsapp SEM mensagem — pulando'); return; }
+    // Registra tentativa na activity da tarefa pra rastreabilidade
+    const logActivity = (outcome, detail) => {
+      try { if (typeof pjLogActivity === 'function') pjLogActivity(task.id, { type:'automation_wa', outcome, detail, ruleName: automation?.name || '' }); } catch(_) {}
+    };
+    if (!action.message) { console.warn('[automation] send_whatsapp SEM mensagem'); logActivity('skip','sem mensagem'); return; }
     const cfg = (typeof fgWaGetConfig === 'function') ? fgWaGetConfig() : null;
     if (!cfg || !cfg.key || !cfg.url || !cfg.instance) {
-      console.warn('[automation] WhatsApp Central sem config — pulando');
-      if (typeof showToast === 'function') showToast('warn', '⚠️', 'Automação WhatsApp: Central sem token');
+      console.warn('[automation] WhatsApp Central sem config');
+      const isAdm = (typeof userIsAdmin === 'function') && userIsAdmin();
+      if (isAdm && typeof showToast === 'function') showToast('warn', '⚠️', 'Automação WhatsApp: Central sem config');
+      logActivity('fail','sem config');
       return;
     }
-    let number;
+    let number, dest;
     if ((action.waDestType||'group') === 'group') {
-      if (!action.waGroupJid) { console.warn('[automation] send_whatsapp SEM grupo — pulando'); return; }
-      number = action.waGroupJid; // grupo JID: 120363xxx@g.us
+      if (!action.waGroupJid) { logActivity('skip','sem grupo'); return; }
+      number = action.waGroupJid; dest = action.waGroupName || action.waGroupJid;
     } else {
-      if (!action.waNumber) { console.warn('[automation] send_whatsapp SEM número — pulando'); return; }
+      if (!action.waNumber) { logActivity('skip','sem número'); return; }
       const digits = String(action.waNumber).replace(/\D+/g, '');
       if (!digits) return;
-      // Se não começar com DDI, assume +55 (Brasil)
       number = digits.length > 11 ? digits : ('55' + digits);
+      dest = action.waNumber;
     }
     const text = fmt(action.message);
-    try {
+    const doSend = async () => {
       const r = await fetch(`${cfg.url}/message/sendText/${encodeURIComponent(cfg.instance)}`, {
         method: 'POST',
         headers: { apikey: cfg.key, 'Content-Type': 'application/json' },
@@ -20086,11 +20092,28 @@ async function pjExecAutomationAction(action, ctx) {
       });
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
-        console.warn('[automation] send_whatsapp falhou:', err);
-      } else {
-        console.log('[automation] send_whatsapp OK →', number);
+        throw new Error('HTTP ' + r.status + ': ' + (err?.response?.message?.[0] || err?.message || JSON.stringify(err).slice(0,120)));
       }
-    } catch(e) { console.warn('[automation] send_whatsapp erro rede:', e); }
+      return r.json();
+    };
+    try {
+      await doSend();
+      console.log('[automation] send_whatsapp OK →', number);
+      logActivity('ok', dest);
+    } catch(e1) {
+      console.warn('[automation] send_whatsapp tentativa 1 falhou, retry em 2s:', e1?.message);
+      await new Promise(r => setTimeout(r, 2000));
+      try {
+        await doSend();
+        console.log('[automation] send_whatsapp OK no retry →', number);
+        logActivity('ok', dest + ' (retry)');
+      } catch(e2) {
+        console.warn('[automation] send_whatsapp falhou definitivo:', e2?.message);
+        logActivity('fail', (e2?.message || 'erro').slice(0,180));
+        const isAdm = (typeof userIsAdmin === 'function') && userIsAdmin();
+        if (isAdm && typeof showToast === 'function') showToast('error', '❌', 'Automação WhatsApp falhou: ' + (e2?.message || 'erro rede').slice(0,80));
+      }
+    }
   }
 }
 
