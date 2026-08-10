@@ -19995,11 +19995,13 @@ async function pjExecAutomationAction(action, ctx) {
   const { task, list, automation, myUid } = ctx;
   if (!action?.type) return;
   console.log('[automation] executando', { action, taskId: task?.id, automation: automation?.name });
-  // Substitui placeholders na mensagem: {title}, {list}, {status}
+  // Substitui placeholders na mensagem: {title}, {list}, {status}, {client}
   const fmt = (s) => String(s||'')
     .replace(/\{title\}/g, task.title || '')
     .replace(/\{list\}/g, list?.name || '')
-    .replace(/\{status\}/g, (list?.statuses||PJ_DEFAULT_STATUSES).find(s => s.id === task.statusId)?.name || '');
+    .replace(/\{status\}/g, (list?.statuses||PJ_DEFAULT_STATUSES).find(s => s.id === task.statusId)?.name || '')
+    .replace(/\{client\}/g, task.client || '')
+    .replace(/\{cliente\}/g, task.client || '');
 
   if (action.type === 'notify_user') {
     if (!action.userId) {
