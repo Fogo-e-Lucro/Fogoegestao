@@ -5349,7 +5349,16 @@ async function _pushToCloud() {
     const batch = _db.batch();
     // Upsert all current posts (no full-collection wipe — preserves other users' additions)
     posts.forEach(post => {
-      const { imagens, _localOnly, ...postData } = post;
+      const { _localOnly, ...postData } = post;
+      // Filtra placeholders de upload em andamento e blob:// órfãos — só sobe URLs https
+      if (Array.isArray(postData.imagens)) {
+        postData.imagens = postData.imagens.filter(src => {
+          if (!src) return false;
+          if (typeof src === 'object' && src._loading) return false;
+          if (typeof src === 'string' && src.startsWith('blob:')) return false;
+          return true;
+        });
+      }
       batch.set(_db.collection('posts').doc(post.id), postData);
     });
     // Apply explicit post deletions only
@@ -5379,15 +5388,24 @@ async function loadFromCloud() {
     if (_postsUnsub) { try { _postsUnsub(); } catch(_) {} }
     _postsUnsub = _db.collection('posts').onSnapshot(snap => {
       const cloudPosts = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-      // Re-attach local-only images (base64 stays out of Firestore)
-      const localMap = {};
-      posts.forEach(p => { if (p.imagens?.length) localMap[p.id] = p.imagens; });
+      // Nuvem é fonte de verdade das imagens (URLs https no Firebase Storage).
+      // Preserva só placeholders de upload em andamento do próprio device.
+      const localImgs = {};
+      posts.forEach(p => {
+        if (!Array.isArray(p.imagens)) return;
+        const pending = p.imagens.filter(x => x && typeof x === 'object' && x._loading);
+        if (pending.length) localImgs[p.id] = pending;
+      });
       const cloudIds = new Set(cloudPosts.map(p => p.id));
-      const merged = cloudPosts.map(cp => ({ ...cp, imagens: localMap[cp.id] || cp.imagens || [] }));
+      const merged = cloudPosts.map(cp => {
+        const cloudImgs = Array.isArray(cp.imagens) ? cp.imagens : [];
+        const localExtras = localImgs[cp.id] || [];
+        return { ...cp, imagens: [...cloudImgs, ...localExtras] };
+      });
       // Keep local-only posts (created offline, not yet synced)
       posts.forEach(lp => { if (!cloudIds.has(lp.id) && lp._localOnly) merged.push(lp); });
       posts = merged;
-      try { localStorage.setItem('roteiros_posts', JSON.stringify(posts)); } catch(_) {}
+      try { localStorage.setItem('roteiros_posts', JSON.stringify(posts)); } catch(e) { console.warn('[posts] localStorage cheio, seguindo em memória:', e?.message); }
       setSyncStatus('ok');
       try { renderAll(); } catch(_) {}
     }, e => { console.warn('Posts listener error:', e); setSyncStatus('err'); });
@@ -6145,7 +6163,11 @@ function uuid() {
   }) + '-' + Date.now().toString(36);
 }
 
-function savePosts() { localStorage.setItem('roteiros_posts', JSON.stringify(posts)); schedulePush(); }
+function savePosts() {
+  try { localStorage.setItem('roteiros_posts', JSON.stringify(posts)); }
+  catch(e) { console.warn('[posts] localStorage cheio, save em memória:', e?.message); }
+  schedulePush();
+}
 
 function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -6421,12 +6443,30 @@ function switchImgTab(tab, e) {
   document.querySelectorAll('.img-tab-btn')[tab==='upload'?0:1].classList.add('active');
 }
 
-function handleImageUpload(e) {
+async function handleImageUpload(e) {
   const files = Array.from(e.target.files || []);
   if (!files.length) return;
+
+  // Descobre pasta destino a partir do restaurante do rascunho
+  const clienteRaw = (document.getElementById('restaurante')?.value
+    || (typeof estudioState !== 'undefined' ? estudioState?.cliente : '')
+    || 'geral').toString();
+  const clienteSlug = clienteRaw.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'geral';
+  const pathPrefix = 'posts/' + clienteSlug;
+
+  const MAX_MB = 100;
+
   files.forEach(file => {
     const isVid = (file.type || '').startsWith('video/');
     const sizeMb = (file.size / (1024*1024)).toFixed(1);
+
+    if (file.size > MAX_MB * 1024 * 1024) {
+      if (typeof showToast === 'function') showToast('error','❌', `Arquivo maior que ${MAX_MB}MB (${sizeMb}MB)`);
+      return;
+    }
+
     // Placeholder imediato "carregando" no lugar que vai ficar a mídia
     const loadingId = 'ld_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
     const placeholder = { _loading: true, _id: loadingId, _name: file.name, _isVid: isVid, _sizeMb: sizeMb };
@@ -6448,28 +6488,18 @@ function handleImageUpload(e) {
       if (typeof renderMediaThumbs === 'function') renderMediaThumbs();
     };
 
-    if (isVid) {
-      // Video: blob URL — mostra direto no <video> tag do preview
-      // (probe.onerror antes era falso-positivo em alguns MP4 com moov no fim)
-      try {
-        const blobUrl = URL.createObjectURL(file);
-        console.log('[upload] video ok:', file.name, sizeMb+'MB → blob criado');
-        replaceLoader(blobUrl);
-      } catch(err) {
-        console.error('[upload] blob fail:', err);
-        if (typeof showToast === 'function') showToast('error','❌','Falhou ao processar vídeo: ' + (err.message || err));
+    // Sobe pro Firebase Storage — devolve URL pública https persistente,
+    // sincroniza pra colaboradores e portal do cliente, não estoura localStorage.
+    pjUploadToStorage(file, pathPrefix)
+      .then(url => {
+        console.log('[upload] ok:', file.name, sizeMb+'MB → cloud');
+        replaceLoader(url);
+      })
+      .catch(err => {
+        console.error('[upload] storage fail:', err);
+        if (typeof showToast === 'function') showToast('error','❌','Falhou ao subir: ' + (err?.message || err));
         removeLoader();
-      }
-    } else {
-      // Image: dataURL (persiste no localStorage)
-      const r = new FileReader();
-      r.onload = ev => replaceLoader(ev.target.result);
-      r.onerror = () => {
-        if (typeof showToast === 'function') showToast('error','❌','Erro lendo imagem');
-        removeLoader();
-      };
-      r.readAsDataURL(file);
-    }
+      });
   });
   // Limpa input pra permitir escolher o mesmo arquivo de novo
   try { e.target.value = ''; } catch(_) {}
