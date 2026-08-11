@@ -6449,22 +6449,12 @@ function handleImageUpload(e) {
     };
 
     if (isVid) {
-      // Video: blob URL — instantâneo mas verifica se o video carrega mesmo
+      // Video: blob URL — mostra direto no <video> tag do preview
+      // (probe.onerror antes era falso-positivo em alguns MP4 com moov no fim)
       try {
         const blobUrl = URL.createObjectURL(file);
-        const probe = document.createElement('video');
-        probe.preload = 'metadata';
-        probe.muted = true;
-        probe.playsInline = true;
-        probe.onloadedmetadata = () => { replaceLoader(blobUrl); probe.remove(); };
-        probe.onerror = () => {
-          console.error('[upload] video erro:', file.name, sizeMb+'MB');
-          if (typeof showToast === 'function') showToast('error','❌', `Erro ao carregar vídeo (${file.name}) — formato não suportado?`);
-          URL.revokeObjectURL(blobUrl);
-          removeLoader();
-          probe.remove();
-        };
-        probe.src = blobUrl;
+        console.log('[upload] video ok:', file.name, sizeMb+'MB → blob criado');
+        replaceLoader(blobUrl);
       } catch(err) {
         console.error('[upload] blob fail:', err);
         if (typeof showToast === 'function') showToast('error','❌','Falhou ao processar vídeo: ' + (err.message || err));
