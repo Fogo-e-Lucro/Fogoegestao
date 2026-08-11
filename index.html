@@ -30968,6 +30968,11 @@ function abrirComboClientes() {
   const dd = document.getElementById('clienteDropdown');
   if (dd) dd.hidden = false;
   const busca = document.getElementById('clienteBusca');
+  // Defensivo: se _bdClientes ainda não populou, força init do listener
+  // (usuário abriu Criar Post direto sem passar pela Base de Clientes antes)
+  if (typeof _bdClientes === 'undefined' || !Array.isArray(_bdClientes) || _bdClientes.length === 0) {
+    if (typeof bdInit === 'function') { try { bdInit(); } catch(_){} }
+  }
   filtrarClientes(busca ? busca.value : '');
 }
 function fecharComboClientes() {
