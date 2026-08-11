@@ -5350,12 +5350,17 @@ async function _pushToCloud() {
     // Upsert all current posts (no full-collection wipe — preserves other users' additions)
     posts.forEach(post => {
       const { _localOnly, ...postData } = post;
-      // Filtra placeholders de upload em andamento e blob:// órfãos — só sobe URLs https
+      // Só sobe URLs persistíveis: placeholders {_loading}, blob: efêmero e
+      // data: base64 ficam fora (base64 grande estora o teto de 1MB por doc
+      // do Firestore e derruba o batch inteiro).
       if (Array.isArray(postData.imagens)) {
         postData.imagens = postData.imagens.filter(src => {
           if (!src) return false;
           if (typeof src === 'object' && src._loading) return false;
-          if (typeof src === 'string' && src.startsWith('blob:')) return false;
+          if (typeof src === 'string') {
+            if (src.startsWith('blob:')) return false;
+            if (src.startsWith('data:')) return false;
+          }
           return true;
         });
       }
@@ -5388,19 +5393,22 @@ async function loadFromCloud() {
     if (_postsUnsub) { try { _postsUnsub(); } catch(_) {} }
     _postsUnsub = _db.collection('posts').onSnapshot(snap => {
       const cloudPosts = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-      // Nuvem é fonte de verdade das imagens (URLs https no Firebase Storage).
-      // Preserva só placeholders de upload em andamento do próprio device.
-      const localImgs = {};
-      posts.forEach(p => {
-        if (!Array.isArray(p.imagens)) return;
-        const pending = p.imagens.filter(x => x && typeof x === 'object' && x._loading);
-        if (pending.length) localImgs[p.id] = pending;
-      });
+      // Nuvem é fonte de verdade das imagens (URLs https no Firebase Storage),
+      // mas quando o post cloud vier SEM imagens (posts antigos, pré-Storage,
+      // que só existiam no localStorage como base64), preserva o que tem local
+      // pra não sumir mídia histórica. Placeholders {_loading} do próprio
+      // device sempre são preservados por cima do merge.
+      const localBy = {};
+      posts.forEach(p => { localBy[p.id] = p; });
       const cloudIds = new Set(cloudPosts.map(p => p.id));
       const merged = cloudPosts.map(cp => {
         const cloudImgs = Array.isArray(cp.imagens) ? cp.imagens : [];
-        const localExtras = localImgs[cp.id] || [];
-        return { ...cp, imagens: [...cloudImgs, ...localExtras] };
+        const localImgs = Array.isArray(localBy[cp.id]?.imagens) ? localBy[cp.id].imagens : [];
+        const pending = localImgs.filter(x => x && typeof x === 'object' && x._loading);
+        const legacy = cloudImgs.length === 0
+          ? localImgs.filter(x => typeof x === 'string' && (x.startsWith('data:') || x.startsWith('http')))
+          : [];
+        return { ...cp, imagens: [...cloudImgs, ...legacy, ...pending] };
       });
       // Keep local-only posts (created offline, not yet synced)
       posts.forEach(lp => { if (!cloudIds.has(lp.id) && lp._localOnly) merged.push(lp); });
@@ -6454,7 +6462,8 @@ async function handleImageUpload(e) {
   const clienteSlug = clienteRaw.toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'geral';
-  const pathPrefix = 'posts/' + clienteSlug;
+  // Reusa namespace de anexos que já tem Storage Rules liberadas em produção
+  const pathPrefix = 'task_attachments/posts/' + clienteSlug;
 
   const MAX_MB = 100;
 
@@ -6474,19 +6483,33 @@ async function handleImageUpload(e) {
     if (typeof renderImagePreviews === 'function') renderImagePreviews();
     if (typeof renderMediaThumbs === 'function') renderMediaThumbs();
 
-    const replaceLoader = (finalUrl) => {
-      const idx = currentImages.findIndex(x => x && x._id === loadingId);
-      if (idx === -1) return; // usuário removeu antes de terminar
-      currentImages.splice(idx, 1, finalUrl);
+    // Patcha o placeholder em currentImages E em qualquer post salvo que já
+    // referencie esse loadingId (evita órfão se usuário salvou antes de terminar).
+    const patchAll = (replacement /* string url ou null pra remover */) => {
+      let touched = false;
+      const cIdx = currentImages.findIndex(x => x && x._id === loadingId);
+      if (cIdx !== -1) {
+        if (replacement) currentImages.splice(cIdx, 1, replacement);
+        else currentImages.splice(cIdx, 1);
+        touched = true;
+      }
+      if (Array.isArray(posts)) {
+        posts.forEach(p => {
+          if (!Array.isArray(p.imagens)) return;
+          const j = p.imagens.findIndex(x => x && x._id === loadingId);
+          if (j === -1) return;
+          if (replacement) p.imagens.splice(j, 1, replacement);
+          else p.imagens.splice(j, 1);
+          touched = true;
+        });
+      }
+      if (touched && typeof savePosts === 'function') savePosts();
       if (typeof renderImagePreviews === 'function') renderImagePreviews();
       if (typeof renderMediaThumbs === 'function') renderMediaThumbs();
+      if (touched && typeof renderAll === 'function') { try { renderAll(); } catch(_){} }
     };
-    const removeLoader = () => {
-      const idx = currentImages.findIndex(x => x && x._id === loadingId);
-      if (idx !== -1) currentImages.splice(idx, 1);
-      if (typeof renderImagePreviews === 'function') renderImagePreviews();
-      if (typeof renderMediaThumbs === 'function') renderMediaThumbs();
-    };
+    const replaceLoader = (finalUrl) => patchAll(finalUrl);
+    const removeLoader = () => patchAll(null);
 
     // Sobe pro Firebase Storage — devolve URL pública https persistente,
     // sincroniza pra colaboradores e portal do cliente, não estoura localStorage.
@@ -7802,7 +7825,8 @@ function renderPosts() {
 }
 
 function renderPostCard(post) {
-  const imgs    = post.imagens ? post.imagens.map(s=>`<img src="${s}" alt="" onclick="event.stopPropagation();pjOpenLightbox(this.src,'')" style="cursor:zoom-in;">`).join('') : '';
+  const cleanImgs = (post.imagens || []).filter(s => typeof s === 'string');
+  const imgs    = cleanImgs.length ? cleanImgs.map(s=>`<img src="${s}" alt="" onclick="event.stopPropagation();pjOpenLightbox(this.src,'')" style="cursor:zoom-in;">`).join('') : '';
   const thumbs  = imgs ? `<div class="post-thumb">${imgs}</div>` : '';
   const scriptSafe = escHtml(post.script||'');
   const legendaSafe = escHtml(post.legenda||'');
@@ -8130,7 +8154,8 @@ function generateExportHTML(theme) {
     const bc={REELS:c.br,FOTO:c.bf,CARROSSEL:c.bc,STORY:c.bs}[post.tipo];
     const prato=post.pratoDestaque?`<div style="font-size:12px;color:${c.accent};margin-bottom:14px;">${escHtml(post.pratoDestaque)}</div>`:'';
     const script=post.script?`<div class="card-script-block"><div class="card-section-label">Roteiro</div><div style="font-size:13px;color:${c.text2};line-height:1.75;white-space:pre-wrap;">${escHtml(post.script)}</div></div>`:'';
-    const thumbs=post.imagens?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">${post.imagens.map(src=>`<img src="${src}" class="card-thumb" onclick="openLb('${src.replace(/'/g,"\\'")}')\" style="width:72px;height:72px;object-fit:cover;border-radius:4px;border:1px solid ${c.border};">`).join('')}</div>`:'';
+    const cleanExpImgs=(post.imagens||[]).filter(s=>typeof s==='string');
+    const thumbs=cleanExpImgs.length?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">${cleanExpImgs.map(src=>`<img src="${src}" class="card-thumb" onclick="openLb('${src.replace(/'/g,"\\'")}')\" style="width:72px;height:72px;object-fit:cover;border-radius:4px;border:1px solid ${c.border};">`).join('')}</div>`:'';
     const link=post.link?`<a href="${escHtml(post.link)}" target="_blank" class="card-link-btn">Ver referencia</a>`:'';
     return `<div class="card" id="${id}" data-collapsible="card" data-date="${post.dataPublicacao}"><div class="card-head" data-toggle="${id}"><div class="card-head-left"><div class="card-meta-row"><span style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:${bc}18;color:${bc};padding:4px 10px;border-radius:2px;">${post.tipo}</span><span style="font-size:9px;font-weight:500;color:${c.text2};padding:4px 10px;background:${c.bg2};border:1px solid ${c.border};border-radius:2px;">${escHtml(post.objetivo)}</span></div><div class="card-gancho">${escHtml(post.gancho)}</div><div class="card-date-txt">${formatDate(post.dataPublicacao)}${post.horario?' · '+post.horario:''}</div></div><div class="card-toggle-btn"><svg class="cchev-svg" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="0.5 0.5 6 7.5 11.5 0.5"/></svg></div></div><div class="card-body" id="${id}-body"><div class="card-inner" id="${id}-inner">${thumbs}${prato}${script}<div style="margin-bottom:16px;"><div class="card-section-label">Legenda</div><div style="font-size:13px;color:${c.text2};line-height:1.78;white-space:pre-wrap;">${escHtml(post.legenda)}</div></div>${link}</div></div></div>`;
   }
