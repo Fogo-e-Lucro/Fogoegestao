@@ -4246,6 +4246,10 @@ function appCoEditRender() {
 if (typeof firebase !== 'undefined' && firebase.auth) {
   firebase.auth().onAuthStateChanged(async u => {
     if (u) {
+      // Portal do cliente usa auth anônima só pra ler Firestore — NÃO deve
+      // iniciar heartbeat de presença (senão vira registro órfão "?" na
+      // lista de admin do Fogo & Gestão principal).
+      if (window._isPortalMode || u.isAnonymous) return;
       await appConfigLoad();
       appStartQueueListener();
       appStartUazapiPolling();
