@@ -123,15 +123,42 @@
       <div class="portal-header-sub" id="portalSub">Cuidado pela Fogo &amp; Lucro</div>
     </header>
 
-    <section class="portal-section">
-      <div class="portal-cal-nav">
-        <button type="button" class="portal-cal-nav-btn" onclick="portalCalNav(-1)" aria-label="Mês anterior">‹</button>
-        <div class="portal-cal-month-big" id="portalCalMonth">—</div>
-        <button type="button" class="portal-cal-nav-btn" onclick="portalCalNav(1)" aria-label="Próximo mês">›</button>
-      </div>
-      <div class="portal-cal-grid" id="portalCal"></div>
-      <div class="portal-cal-list" id="portalCalList"></div>
-    </section>
+    <div class="portal-cal-nav">
+      <button type="button" class="portal-cal-nav-btn" onclick="portalCalNav(-1)" aria-label="Mês anterior">‹</button>
+      <div class="portal-cal-month-big" id="portalCalMonth">—</div>
+      <button type="button" class="portal-cal-nav-btn" onclick="portalCalNav(1)" aria-label="Próximo mês">›</button>
+    </div>
+
+    <!-- Tabs mobile-only: Feed / Story -->
+    <div class="portal-tabs" id="portalTabs">
+      <button type="button" class="portal-tab on" data-view="feed" onclick="portalSetView('feed')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        Feed
+      </button>
+      <button type="button" class="portal-tab" data-view="story" onclick="portalSetView('story')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-dasharray="3 2.5"/><circle cx="12" cy="12" r="4"/></svg>
+        Story
+      </button>
+    </div>
+
+    <!-- Workspace: split desktop, tabs mobile -->
+    <div class="portal-workspace">
+      <section class="portal-col portal-col-feed" data-view="feed">
+        <div class="portal-col-head">
+          <div class="portal-col-title">Feed</div>
+          <div class="portal-col-count" id="portalFeedCount">0</div>
+        </div>
+        <div class="portal-feed-grid" id="portalFeedGrid"></div>
+      </section>
+
+      <section class="portal-col portal-col-story" data-view="story">
+        <div class="portal-col-head">
+          <div class="portal-col-title">Stories</div>
+          <div class="portal-col-count" id="portalStoryCount">0</div>
+        </div>
+        <div class="portal-story-list" id="portalStoryList"></div>
+      </section>
+    </div>
 
     <footer class="portal-footer">
       Cuidado pela <strong>Fogo &amp; Lucro</strong> · Qualquer coisa, chama no WhatsApp
@@ -3135,49 +3162,33 @@ function portalPostThumb(post) {
   return first.url || first.cloudUrl || first.dataUrl || null;
 }
 
+function portalIsStory(tipo) {
+  const k = String(tipo || '').toLowerCase();
+  return k.includes('stor');
+}
+
+function portalSetView(view) {
+  _portalState.view = view;
+  document.querySelectorAll('.portal-tab').forEach(t => t.classList.toggle('on', t.dataset.view === view));
+  document.querySelectorAll('.portal-col').forEach(c => {
+    c.classList.toggle('portal-col-active', c.dataset.view === view);
+  });
+}
+
 function portalRenderCalendar() {
   const s = _portalState;
-  const cal = document.getElementById('portalCal');
-  const list = document.getElementById('portalCalList');
   const monthLabel = document.getElementById('portalCalMonth');
-  if (!cal || !list || !monthLabel) return;
+  const feedGrid = document.getElementById('portalFeedGrid');
+  const storyList = document.getElementById('portalStoryList');
+  const feedCount = document.getElementById('portalFeedCount');
+  const storyCount = document.getElementById('portalStoryCount');
+  if (!monthLabel || !feedGrid || !storyList) return;
+
   const view = s.viewMonth;
   const y = view.getFullYear(), m = view.getMonth();
   monthLabel.textContent = view.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-  const now = new Date();
-  const isCurrentMonth = (y === now.getFullYear() && m === now.getMonth());
-  const first = new Date(y, m, 1);
-  const daysInMonth = new Date(y, m+1, 0).getDate();
-  const startDow = first.getDay();
-  // Agrupa posts por dia (dataPublicacao YYYY-MM-DD)
-  const byDay = {};
-  s.posts.forEach(p => {
-    if (!p.dataPublicacao) return;
-    const [py, pm, pd] = p.dataPublicacao.split('-').map(Number);
-    if (py !== y || pm !== m + 1) return;
-    if (!byDay[pd]) byDay[pd] = [];
-    byDay[pd].push(p);
-  });
-  const dows = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  let html = dows.map(d => `<div class="portal-cal-dow">${d}</div>`).join('');
-  for (let i = 0; i < startDow; i++) html += '<div class="portal-cal-cell empty"></div>';
-  for (let d = 1; d <= daysInMonth; d++) {
-    const isToday = isCurrentMonth && d === now.getDate();
-    const dayPosts = byDay[d] || [];
-    const chips = dayPosts.slice(0, 3).map(p => {
-      const cor = portalTipoCor(p.tipo);
-      const thumb = portalPostThumb(p);
-      const bg = thumb ? `background-image:url('${String(thumb).replace(/'/g,"\\'")}');background-size:cover;background-position:center;` : `background:${cor};`;
-      return `<div class="portal-cal-chip" style="${bg}" title="${portalEsc(p.gancho || portalTipoLabel(p.tipo))}">${thumb ? '' : `<span class="portal-cal-chip-icon">${portalTipoIcon(p.tipo)}</span>`}</div>`;
-    }).join('');
-    const more = dayPosts.length > 3 ? `<div class="portal-cal-more">+${dayPosts.length - 3}</div>` : '';
-    html += `<div class="portal-cal-cell${isToday ? ' today' : ''}${dayPosts.length ? ' has-post' : ''}">
-      <div class="portal-cal-cell-day">${d}</div>
-      ${chips}${more}
-    </div>`;
-  }
-  cal.innerHTML = html;
-  // Lista embaixo — todos os posts do mês em ordem cronológica
+
+  // Filtra do mês corrente + separa feed vs story
   const monthPosts = s.posts
     .filter(p => {
       if (!p.dataPublicacao) return false;
@@ -3185,32 +3196,85 @@ function portalRenderCalendar() {
       return py === y && pm === m + 1;
     })
     .sort((a,b) => (a.dataPublicacao + (a.horario||'')).localeCompare(b.dataPublicacao + (b.horario||'')));
-  if (!monthPosts.length) {
-    list.innerHTML = `<div class="portal-cal-list-empty">Nada agendado nesse mês ainda. Assim que a agência publicar novos posts no calendário, eles aparecem aqui.</div>`;
-    return;
+
+  const feedPosts = monthPosts.filter(p => !portalIsStory(p.tipo));
+  const storyPosts = monthPosts.filter(p => portalIsStory(p.tipo));
+
+  feedCount.textContent = feedPosts.length;
+  storyCount.textContent = storyPosts.length;
+
+  // Inicializa view no primeiro render
+  if (!s.view) { s.view = 'feed'; portalSetView('feed'); }
+
+  // FEED — grid 3 col estilo IG (aspect 4:5)
+  if (!feedPosts.length) {
+    feedGrid.innerHTML = `<div class="portal-empty">Sem post de feed programado nesse mês. Aparece aqui assim que a agência adicionar.</div>`;
+  } else {
+    feedGrid.innerHTML = feedPosts.map(p => portalRenderFeedCard(p)).join('');
   }
-  const dowShort = ['dom','seg','ter','qua','qui','sex','sáb'];
-  list.innerHTML = monthPosts.map(p => {
-    const [py, pm, pd] = (p.dataPublicacao||'').split('-').map(Number);
-    const dt = new Date(py, pm - 1, pd);
-    const cor = portalTipoCor(p.tipo);
-    const tipoLabel = portalTipoLabel(p.tipo);
-    const thumb = portalPostThumb(p);
-    const thumbHtml = thumb
-      ? `<div class="portal-post-thumb" style="background-image:url('${String(thumb).replace(/'/g,"\\'")}')"></div>`
-      : `<div class="portal-post-thumb" style="background:${cor};display:grid;place-items:center;color:#fff;font-size:20px;">${portalTipoIcon(p.tipo)}</div>`;
-    return `<div class="portal-post-item">
-      ${thumbHtml}
-      <div class="portal-post-body">
-        <div class="portal-post-head">
-          <span class="portal-post-tipo" style="background:color-mix(in srgb, ${cor} 15%, transparent);color:${cor};">${tipoLabel}</span>
-          <span class="portal-post-date">${dt.getDate().toString().padStart(2,'0')}/${(dt.getMonth()+1).toString().padStart(2,'0')} · ${dowShort[dt.getDay()]}${p.horario ? ' · ' + p.horario : ''}</span>
-        </div>
-        <div class="portal-post-title">${portalEsc(p.gancho || 'Post sem título')}</div>
-        ${p.prato ? `<div class="portal-post-meta">Prato: ${portalEsc(p.prato)}</div>` : ''}
+
+  // STORIES — cards verticais 9:16
+  if (!storyPosts.length) {
+    storyList.innerHTML = `<div class="portal-empty">Sem story programado nesse mês.</div>`;
+  } else {
+    storyList.innerHTML = storyPosts.map(p => portalRenderStoryCard(p)).join('');
+  }
+}
+
+function portalRenderFeedCard(p) {
+  const [py, pm, pd] = (p.dataPublicacao||'').split('-').map(Number);
+  const dt = new Date(py, pm - 1, pd);
+  const cor = portalTipoCor(p.tipo);
+  const thumb = portalPostThumb(p);
+  const tipoLabel = portalTipoLabel(p.tipo);
+  const isReels = String(p.tipo || '').toLowerCase().includes('reel');
+  const isCarrossel = String(p.tipo || '').toLowerCase().includes('carr');
+  const bg = thumb
+    ? `background-image:url('${String(thumb).replace(/'/g,"\\'")}');background-size:cover;background-position:center;`
+    : `background:linear-gradient(135deg, ${cor}, color-mix(in srgb, ${cor} 60%, #000));`;
+  const dayStr = String(dt.getDate()).padStart(2, '0');
+  const monStr = dt.toLocaleDateString('pt-BR', { month: 'short' }).replace('.','');
+  return `
+    <div class="portal-feed-card">
+      <div class="portal-feed-mockup" style="${bg}">
+        ${!thumb ? `<div class="portal-mockup-icon">${portalTipoIcon(p.tipo)}</div>` : ''}
+        ${isReels ? `<div class="portal-feed-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Reels
+        </div>` : ''}
+        ${isCarrossel ? `<div class="portal-feed-badge portal-feed-badge-carrossel">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="14" height="14" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>
+        </div>` : ''}
       </div>
-    </div>`;
-  }).join('');
+      <div class="portal-feed-info">
+        <div class="portal-feed-date"><b>${dayStr}</b> ${monStr}${p.horario ? ' · ' + p.horario : ''}</div>
+        <div class="portal-feed-title">${portalEsc(p.gancho || tipoLabel)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function portalRenderStoryCard(p) {
+  const [py, pm, pd] = (p.dataPublicacao||'').split('-').map(Number);
+  const dt = new Date(py, pm - 1, pd);
+  const thumb = portalPostThumb(p);
+  const bg = thumb
+    ? `background-image:url('${String(thumb).replace(/'/g,"\\'")}');background-size:cover;background-position:center;`
+    : `background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);`;
+  const dayStr = String(dt.getDate()).padStart(2, '0');
+  const monStr = dt.toLocaleDateString('pt-BR', { month: 'short' }).replace('.','');
+  return `
+    <div class="portal-story-card">
+      <div class="portal-story-mockup" style="${bg}">
+        <div class="portal-story-ring"></div>
+        <div class="portal-story-progress"></div>
+      </div>
+      <div class="portal-story-info">
+        <div class="portal-story-date"><b>${dayStr}</b> ${monStr}${p.horario ? ' · ' + p.horario : ''}</div>
+        <div class="portal-story-title">${portalEsc(p.gancho || 'Story')}</div>
+      </div>
+    </div>
+  `;
 }
 
 function portalEsc(s) {

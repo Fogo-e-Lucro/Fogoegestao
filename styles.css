@@ -13691,7 +13691,7 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
 
 
 /* ═══════════════════════════════════════════════════════
-   PORTAL DO CLIENTE v2 — branquinho, ultra intuitivo, tipo Google Calendar
+   PORTAL DO CLIENTE v3 — Feed + Stories separados, mockup IG-like
 ═══════════════════════════════════════════════════════ */
 .portal-root {
   --pc-bg: #ffffff;
@@ -13699,7 +13699,7 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
   --pc-ink-2: #4b4b58;
   --pc-ink-3: #9195a3;
   --pc-line: #e8ebf0;
-  --pc-line-soft: #f2f4f7;
+  --pc-line-soft: #f4f6f9;
   --pc-brand: #7c3aed;
   --pc-radius: 14px;
   --pc-radius-sm: 10px;
@@ -13714,7 +13714,6 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
   color-scheme: light;
 }
 
-/* Loading + erro */
 .portal-loading, .portal-error {
   min-height: 100vh;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -13734,16 +13733,16 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
 .portal-error-sub { font-size: 14px; max-width: 320px; line-height: 1.5; }
 
 .portal-app {
-  max-width: 720px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px 60px;
+  padding: 0 24px 60px;
 }
 
-/* Header — SEM barra colorida gigante, só nome + subtítulo */
+/* Header limpo, preto no branco */
 .portal-header {
   background: transparent !important;
   color: var(--pc-ink) !important;
-  padding: 30px 0 20px;
+  padding: 32px 0 20px;
   border-radius: 0;
   border-bottom: 1px solid var(--pc-line);
   margin-bottom: 24px;
@@ -13753,10 +13752,10 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
   font-size: 11px; font-weight: 600;
   letter-spacing: .12em; text-transform: uppercase;
   color: var(--pc-ink-3);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .portal-header-name {
-  font-size: 30px; font-weight: 750;
+  font-size: 32px; font-weight: 750;
   letter-spacing: -0.025em; line-height: 1.1;
   margin: 0 0 4px;
   color: var(--pc-ink);
@@ -13766,14 +13765,10 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
   color: var(--pc-ink-3);
 }
 
-.portal-section {
-  padding: 0;
-}
-
 /* Navegação de mês */
 .portal-cal-nav {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin-bottom: 20px;
 }
 .portal-cal-nav-btn {
   width: 36px; height: 36px;
@@ -13792,153 +13787,200 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
   color: var(--pc-ink);
   text-transform: capitalize;
   letter-spacing: -0.015em;
-  flex: 1; text-align: center;
+  min-width: 160px; text-align: center;
 }
 
-/* Grid calendário — sem borda, cells brancas e aeradas */
-.portal-cal-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-  background: transparent;
-  border: 1px solid var(--pc-line);
-  border-radius: var(--pc-radius);
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-.portal-cal-grid .portal-cal-dow {
-  font-size: 10.5px; font-weight: 600;
-  color: var(--pc-ink-3);
-  text-transform: uppercase;
-  text-align: center;
-  padding: 10px 0 8px;
+/* Tabs Feed/Story — só no mobile */
+.portal-tabs {
+  display: none;
   background: var(--pc-line-soft);
-  aspect-ratio: auto;
-  letter-spacing: .04em;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 20px;
 }
-.portal-cal-cell {
-  min-height: 80px;
-  padding: 6px 6px 4px;
-  background: #fff;
-  display: flex; flex-direction: column;
-  gap: 3px;
-  position: relative;
-  overflow: hidden;
-}
-.portal-cal-cell.empty {
-  background: var(--pc-line-soft);
-  visibility: visible;
-  min-height: 80px;
-}
-.portal-cal-cell-day {
-  font-size: 12.5px; font-weight: 600;
-  color: var(--pc-ink-2);
-  line-height: 1;
-  margin-bottom: 3px;
-  text-align: right;
-  padding: 2px 4px 0 0;
-}
-.portal-cal-cell.today .portal-cal-cell-day {
+.portal-tab {
+  flex: 1;
   display: inline-flex; align-items: center; justify-content: center;
-  width: 22px; height: 22px;
-  background: var(--pc-brand);
-  color: #fff;
-  border-radius: 50%;
-  font-weight: 700;
-  align-self: flex-end;
-  padding: 0;
-  margin-bottom: 2px;
-}
-.portal-cal-cell.has-post .portal-cal-cell-day {
-  color: var(--pc-ink);
-}
-
-/* Chip do post dentro do dia — barrinha colorida com título */
-.portal-cal-chip {
-  height: auto;
-  padding: 3px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 600;
-  color: #fff;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.2;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-}
-.portal-cal-chip-icon { display: none; }
-.portal-cal-more {
-  font-size: 10px;
+  gap: 6px;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
   color: var(--pc-ink-3);
-  padding: 1px 6px;
-  font-weight: 600;
+  font-family: var(--pc-font);
+  font-size: 13.5px; font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s, color .15s, box-shadow .15s;
+}
+.portal-tab.on {
+  background: #fff;
+  color: var(--pc-ink);
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
 }
 
-/* Lista de posts do mês embaixo */
-.portal-cal-list {
-  margin-top: 24px;
-  display: flex; flex-direction: column;
+/* Workspace: desktop 2 col (feed grande + story 320px), mobile 1 col */
+.portal-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 32px;
+  align-items: start;
+}
+
+.portal-col-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.portal-col-title {
+  font-size: 14px; font-weight: 700;
+  color: var(--pc-ink);
+  letter-spacing: -0.01em;
+}
+.portal-col-count {
+  font-size: 12px; font-weight: 600;
+  color: var(--pc-ink-3);
+  background: var(--pc-line-soft);
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* FEED — grid 3 col, aspect 4:5 IG */
+.portal-feed-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
-.portal-cal-list-empty {
-  padding: 40px 20px;
+.portal-feed-card {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.portal-feed-mockup {
+  aspect-ratio: 4 / 5;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--pc-line-soft);
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.portal-mockup-icon {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  font-size: 40px;
+  color: rgba(255,255,255,.8);
+  text-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.portal-feed-badge {
+  position: absolute; top: 8px; right: 8px;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 8px;
+  background: rgba(0,0,0,.6);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 10.5px; font-weight: 700;
+  backdrop-filter: blur(6px);
+}
+.portal-feed-badge.portal-feed-badge-carrossel {
+  padding: 5px;
+}
+.portal-feed-badge svg { display: block; }
+.portal-feed-info {
+  padding: 0 2px;
+}
+.portal-feed-date {
+  font-size: 11px;
+  color: var(--pc-ink-3);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 3px;
+}
+.portal-feed-date b {
+  color: var(--pc-ink);
+  font-weight: 700;
+  margin-right: 3px;
+}
+.portal-feed-title {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--pc-ink);
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+
+/* STORIES — lista vertical estilo tela de story, aspect 9:16 */
+.portal-story-list {
+  display: flex; flex-direction: column;
+  gap: 12px;
+}
+.portal-story-card {
+  display: flex; gap: 12px;
+  align-items: center;
+}
+.portal-story-mockup {
+  flex-shrink: 0;
+  width: 78px;
+  aspect-ratio: 9 / 16;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--pc-line-soft);
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.portal-story-ring {
+  position: absolute;
+  top: 6px; left: 6px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b, #ef4444, #a855f7);
+  border: 1.5px solid #fff;
+}
+.portal-story-progress {
+  position: absolute;
+  top: 4px; left: 26px; right: 6px;
+  height: 2px;
+  background: rgba(255,255,255,.4);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.portal-story-progress::after {
+  content: '';
+  display: block;
+  height: 100%; width: 60%;
+  background: #fff;
+}
+.portal-story-info {
+  flex: 1; min-width: 0;
+}
+.portal-story-date {
+  font-size: 11px;
+  color: var(--pc-ink-3);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 3px;
+}
+.portal-story-date b {
+  color: var(--pc-ink);
+  font-weight: 700;
+  margin-right: 3px;
+}
+.portal-story-title {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--pc-ink);
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+
+.portal-empty {
+  padding: 32px 20px;
   text-align: center;
   color: var(--pc-ink-3);
-  font-size: 13.5px;
+  font-size: 13px;
   line-height: 1.5;
   background: var(--pc-line-soft);
   border-radius: var(--pc-radius);
   border: 1px dashed var(--pc-line);
-}
-.portal-post-item {
-  background: #fff;
-  border: 1px solid var(--pc-line);
-  border-radius: var(--pc-radius-sm);
-  padding: 12px;
-  display: flex; gap: 14px;
-  align-items: center;
-  transition: border-color .15s, transform .12s;
-}
-.portal-post-item:hover {
-  border-color: var(--pc-ink-3);
-}
-.portal-post-thumb {
-  width: 60px; height: 60px;
-  flex-shrink: 0;
-  border-radius: 10px;
-  background-size: cover; background-position: center;
-  background-color: var(--pc-line-soft);
-}
-.portal-post-body {
-  flex: 1; min-width: 0;
-  display: flex; flex-direction: column; gap: 4px;
-}
-.portal-post-head {
-  display: flex; align-items: center; gap: 8px;
-  flex-wrap: wrap;
-}
-.portal-post-tipo {
-  font-size: 10px; font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 4px;
-  text-transform: uppercase; letter-spacing: .05em;
-}
-.portal-post-date {
-  font-size: 11.5px; color: var(--pc-ink-3);
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
-}
-.portal-post-title {
-  font-size: 14px; font-weight: 600; color: var(--pc-ink);
-  line-height: 1.35;
-  overflow: hidden; text-overflow: ellipsis;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-}
-.portal-post-meta {
-  font-size: 11.5px; color: var(--pc-ink-3);
 }
 
 .portal-footer {
@@ -13949,15 +13991,19 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
 }
 .portal-footer strong { color: var(--pc-ink-2); font-weight: 700; }
 
-/* Mobile — grid maior, cells um pouco menores */
-@media (max-width: 480px) {
-  .portal-app { padding: 0 14px 60px; }
-  .portal-header { padding: 24px 0 16px; margin-bottom: 18px; }
-  .portal-header-name { font-size: 24px; }
-  .portal-cal-cell { min-height: 64px; padding: 4px 4px 3px; }
-  .portal-cal-cell-day { font-size: 11.5px; padding: 1px 3px 0 0; }
-  .portal-cal-cell.today .portal-cal-cell-day { width: 20px; height: 20px; font-size: 11px; }
-  .portal-cal-chip { font-size: 9px; padding: 2px 4px; }
-  .portal-cal-more { font-size: 9px; }
-  .portal-post-thumb { width: 52px; height: 52px; }
+/* Mobile — tabs aparecem, cols empilham, mostra só a ativa */
+@media (max-width: 900px) {
+  .portal-tabs { display: flex; }
+  .portal-workspace { grid-template-columns: 1fr; gap: 0; }
+  .portal-col { display: none; }
+  .portal-col.portal-col-active { display: block; }
+  .portal-app { max-width: 560px; padding: 0 16px 60px; }
+  .portal-header { padding: 24px 0 16px; margin-bottom: 20px; }
+  .portal-header-name { font-size: 26px; }
+  .portal-feed-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+}
+
+@media (max-width: 400px) {
+  .portal-feed-title, .portal-story-title { font-size: 11.5px; }
+  .portal-feed-date, .portal-story-date { font-size: 10.5px; }
 }
