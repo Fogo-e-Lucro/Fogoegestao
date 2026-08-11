@@ -30968,11 +30968,11 @@ function abrirComboClientes() {
   const dd = document.getElementById('clienteDropdown');
   if (dd) dd.hidden = false;
   const busca = document.getElementById('clienteBusca');
-  // Defensivo: se _bdClientes ainda não populou, força init do listener
-  // (usuário abriu Criar Post direto sem passar pela Base de Clientes antes)
-  if (typeof _bdClientes === 'undefined' || !Array.isArray(_bdClientes) || _bdClientes.length === 0) {
-    if (typeof bdInit === 'function') { try { bdInit(); } catch(_){} }
-  }
+  // Defensivo: força init do listener se ainda não rodou (usuário abriu
+  // Criar Post direto sem passar pela Base). bdInit é idempotente
+  // (checa _bdUnsub e evita duplicar).
+  const empty = typeof _bdClientes === 'undefined' || !Array.isArray(_bdClientes) || _bdClientes.length === 0;
+  if (empty && typeof bdInit === 'function') { try { bdInit(); } catch(_){} }
   filtrarClientes(busca ? busca.value : '');
 }
 function fecharComboClientes() {
@@ -30982,13 +30982,14 @@ function fecharComboClientes() {
 let _clienteRetryTimer = null;
 function filtrarClientes(q) {
   const rests = (typeof getRestaurants === 'function' ? getRestaurants() : []);
-  const bd = window._bdClientes || [];
+  // _bdClientes é let (top-level), não vive em window — usa direto
+  const bd = (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes)) ? _bdClientes : [];
   const query = (q || '').toLowerCase().trim();
   const filtrados = rests.filter(r => r.toLowerCase().includes(query));
   const lista = document.getElementById('clienteLista');
   if (!lista) return;
   // Firestore ainda carregando? mostra loading + retry
-  const bdReady = Array.isArray(window._bdClientes);
+  const bdReady = (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes));
   if (!bdReady && rests.length === 0) {
     lista.innerHTML = `<div class="estudio-combo-empty">Carregando clientes…</div>`;
     clearTimeout(_clienteRetryTimer);
