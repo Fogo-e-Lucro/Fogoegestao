@@ -14061,3 +14061,144 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
   font-size: 12px; color: var(--text2, #4b4b58);
   line-height: 1.5;
 }
+
+/* ═══ Portal — Calendário rico (v2) ═══ */
+.portal-cal-nav {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-bottom: 14px;
+}
+.portal-cal-nav-btn {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--pc-card);
+  border: 1px solid var(--pc-line);
+  color: var(--pc-ink-2);
+  font-size: 22px; line-height: 1;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.portal-cal-nav-btn:hover { color: var(--pc-brand); border-color: var(--pc-brand); }
+.portal-cal-month-big {
+  font-size: 16px; font-weight: 700; color: var(--pc-ink);
+  text-transform: capitalize;
+  letter-spacing: -0.01em;
+  flex: 1; text-align: center;
+}
+
+.portal-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  background: var(--pc-card);
+  border: 1px solid var(--pc-line);
+  border-radius: var(--pc-radius-sm);
+  padding: 8px;
+}
+.portal-cal-grid .portal-cal-dow {
+  font-size: 10.5px; font-weight: 700;
+  color: var(--pc-ink-3);
+  text-transform: uppercase;
+  text-align: center;
+  padding: 6px 0 4px;
+  aspect-ratio: auto;
+}
+.portal-cal-cell {
+  min-height: 62px;
+  border-radius: 8px;
+  padding: 4px 5px 5px;
+  display: flex; flex-direction: column;
+  gap: 2px;
+  background: transparent;
+  position: relative;
+}
+.portal-cal-cell.empty { visibility: hidden; }
+.portal-cal-cell-day {
+  font-size: 11.5px; font-weight: 600;
+  color: var(--pc-ink-2);
+  line-height: 1;
+  margin-bottom: 3px;
+}
+.portal-cal-cell.today {
+  background: color-mix(in srgb, var(--pc-brand) 10%, transparent);
+}
+.portal-cal-cell.today .portal-cal-cell-day {
+  color: var(--pc-brand);
+  font-weight: 700;
+}
+.portal-cal-cell.has-post .portal-cal-cell-day {
+  color: var(--pc-ink);
+  font-weight: 700;
+}
+.portal-cal-chip {
+  height: 14px;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  color: #fff;
+  font-size: 9px;
+}
+.portal-cal-chip-icon { font-size: 8.5px; line-height: 1; }
+.portal-cal-more {
+  font-size: 9px;
+  color: var(--pc-ink-3);
+  text-align: center;
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+/* Lista embaixo — cards visuais de cada post do mês */
+.portal-cal-list {
+  margin-top: 18px;
+  display: flex; flex-direction: column;
+  gap: 10px;
+}
+.portal-post-item {
+  background: var(--pc-card);
+  border: 1px solid var(--pc-line);
+  border-radius: var(--pc-radius-sm);
+  padding: 12px;
+  display: flex; gap: 12px;
+  align-items: center;
+}
+.portal-post-thumb {
+  width: 68px; height: 68px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background-size: cover; background-position: center;
+  background-color: var(--pc-line);
+}
+.portal-post-body {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.portal-post-head {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap;
+}
+.portal-post-tipo {
+  font-size: 10.5px; font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.portal-post-date {
+  font-size: 11.5px; color: var(--pc-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.portal-post-title {
+  font-size: 14px; font-weight: 600; color: var(--pc-ink);
+  line-height: 1.35;
+  overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.portal-post-meta {
+  font-size: 11.5px; color: var(--pc-ink-3);
+}
+
+/* Ajuste mobile pra cells um pouco maiores */
+@media (max-width: 380px) {
+  .portal-cal-cell { min-height: 54px; padding: 3px 4px 4px; }
+  .portal-cal-cell-day { font-size: 10.5px; }
+  .portal-cal-chip { height: 12px; }
+  .portal-post-thumb { width: 56px; height: 56px; }
+}

@@ -118,34 +118,18 @@
   </div>
   <div class="portal-app" id="portalApp" style="display:none">
     <header class="portal-header" id="portalHeader">
-      <div class="portal-header-tag">Painel do parceiro</div>
+      <div class="portal-header-tag">Seu calendário de conteúdos</div>
       <h1 class="portal-header-name" id="portalName">—</h1>
       <div class="portal-header-sub" id="portalSub">Cuidado pela Fogo &amp; Lucro</div>
     </header>
 
     <section class="portal-section">
-      <div class="portal-section-title">Seus números da semana</div>
-      <div class="portal-kpis" id="portalKpis">
-        <div class="portal-kpi portal-kpi-skel"></div>
-        <div class="portal-kpi portal-kpi-skel"></div>
-        <div class="portal-kpi portal-kpi-skel"></div>
-        <div class="portal-kpi portal-kpi-skel"></div>
+      <div class="portal-cal-nav">
+        <button type="button" class="portal-cal-nav-btn" onclick="portalCalNav(-1)" aria-label="Mês anterior">‹</button>
+        <div class="portal-cal-month-big" id="portalCalMonth">—</div>
+        <button type="button" class="portal-cal-nav-btn" onclick="portalCalNav(1)" aria-label="Próximo mês">›</button>
       </div>
-    </section>
-
-    <section class="portal-section">
-      <div class="portal-section-title">O que a gente fez essa semana</div>
-      <div class="portal-feed" id="portalFeed">
-        <div class="portal-feed-empty">Sem atividade registrada ainda pra semana. Isso vai encher assim que o time começar a mexer.</div>
-      </div>
-    </section>
-
-    <section class="portal-section">
-      <div class="portal-section-title-row">
-        <div class="portal-section-title">O que vem pela frente</div>
-        <div class="portal-cal-month" id="portalCalMonth">—</div>
-      </div>
-      <div class="portal-cal" id="portalCal"></div>
+      <div class="portal-cal-grid" id="portalCal"></div>
       <div class="portal-cal-list" id="portalCalList"></div>
     </section>
 
@@ -2918,30 +2902,47 @@ function portalShowError() {
   document.getElementById('portalError').style.display = 'flex';
 }
 
+// State do portal (pra navegação de mês)
+window._portalState = { cliente: null, posts: [], viewMonth: new Date() };
+
 async function portalRender(cliente) {
   const loading = document.getElementById('portalLoading');
   const app = document.getElementById('portalApp');
   const header = document.getElementById('portalHeader');
   const nameEl = document.getElementById('portalName');
-  // Cor de fundo do header baseada na cor da marca do cliente
   const brand = cliente.cor || '#7c3aed';
   document.getElementById('portalRoot').style.setProperty('--pc-brand', brand);
   header.style.background = brand;
-  // Cor do texto: branco se marca escura, preto se marca clara
   const ink = portalContrastInk(brand);
   header.style.color = ink;
   document.getElementById('portalRoot').style.setProperty('--pc-brand-ink', ink);
   nameEl.textContent = cliente.nome || 'Restaurante';
-  // Carrega dados em paralelo
-  const [tasks, upcoming] = await Promise.all([
-    portalFetchDoneTasks(cliente.nome),
-    portalFetchUpcoming(cliente.nome),
-  ]);
-  portalRenderKpis(cliente, tasks, upcoming);
-  portalRenderFeed(tasks);
-  portalRenderCalendar(upcoming);
+  _portalState.cliente = cliente;
+  // Busca posts do restaurante (mesma coleção da Pauta)
+  _portalState.posts = await portalFetchPosts(cliente.nome);
+  _portalState.viewMonth = new Date();
+  portalRenderCalendar();
   loading.style.display = 'none';
   app.style.display = 'block';
+}
+
+async function portalFetchPosts(clientName) {
+  if (!clientName) return [];
+  try {
+    const snap = await _db.collection('posts').where('restaurante','==', clientName).limit(500).get();
+    const posts = [];
+    snap.forEach(d => posts.push({ id: d.id, ...d.data() }));
+    return posts.sort((a,b) => (a.dataPublicacao||'').localeCompare(b.dataPublicacao||''));
+  } catch(e) {
+    console.warn('[portal] posts fail:', e);
+    return [];
+  }
+}
+
+function portalCalNav(dir) {
+  const s = _portalState;
+  s.viewMonth = new Date(s.viewMonth.getFullYear(), s.viewMonth.getMonth() + dir, 1);
+  portalRenderCalendar();
 }
 
 function portalContrastInk(hex) {
@@ -3070,45 +3071,118 @@ function portalRenderFeed(doneTasks) {
   `).join('');
 }
 
-function portalRenderCalendar(upcoming) {
+const PORTAL_TIPO_COR = {
+  REELS: '#a855f7', REEL: '#a855f7',
+  FOTO: '#3b82f6', IMAGEM: '#3b82f6',
+  CARROSSEL: '#f97316', CAROUSEL: '#f97316',
+  STORY: '#ec4899', STORIES: '#ec4899',
+};
+const PORTAL_TIPO_ICON = {
+  REELS: '▶', REEL: '▶',
+  FOTO: '◧', IMAGEM: '◧',
+  CARROSSEL: '⊞', CAROUSEL: '⊞',
+  STORY: '⭕', STORIES: '⭕',
+};
+function portalTipoCor(t) {
+  const k = String(t || '').toUpperCase();
+  return PORTAL_TIPO_COR[k] || '#6b7280';
+}
+function portalTipoIcon(t) {
+  const k = String(t || '').toUpperCase();
+  return PORTAL_TIPO_ICON[k] || '•';
+}
+function portalTipoLabel(t) {
+  const k = String(t || '').toLowerCase();
+  if (k.includes('reel')) return 'Reels';
+  if (k.includes('foto') || k.includes('imag')) return 'Foto';
+  if (k.includes('carr')) return 'Carrossel';
+  if (k.includes('stor')) return 'Story';
+  return t || 'Post';
+}
+function portalPostThumb(post) {
+  const imgs = Array.isArray(post.imagens) ? post.imagens : [];
+  const first = imgs[0];
+  if (!first) return null;
+  if (typeof first === 'string') return first;
+  return first.url || first.cloudUrl || first.dataUrl || null;
+}
+
+function portalRenderCalendar() {
+  const s = _portalState;
   const cal = document.getElementById('portalCal');
   const list = document.getElementById('portalCalList');
   const monthLabel = document.getElementById('portalCalMonth');
+  if (!cal || !list || !monthLabel) return;
+  const view = s.viewMonth;
+  const y = view.getFullYear(), m = view.getMonth();
+  monthLabel.textContent = view.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   const now = new Date();
-  const y = now.getFullYear(), m = now.getMonth();
-  monthLabel.textContent = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const isCurrentMonth = (y === now.getFullYear() && m === now.getMonth());
   const first = new Date(y, m, 1);
   const daysInMonth = new Date(y, m+1, 0).getDate();
   const startDow = first.getDay();
-  const daysWithPost = new Set(upcoming.filter(u => u.due.getMonth() === m && u.due.getFullYear() === y).map(u => u.due.getDate()));
-  const dows = ['D','S','T','Q','Q','S','S'];
+  // Agrupa posts por dia (dataPublicacao YYYY-MM-DD)
+  const byDay = {};
+  s.posts.forEach(p => {
+    if (!p.dataPublicacao) return;
+    const [py, pm, pd] = p.dataPublicacao.split('-').map(Number);
+    if (py !== y || pm !== m + 1) return;
+    if (!byDay[pd]) byDay[pd] = [];
+    byDay[pd].push(p);
+  });
+  const dows = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   let html = dows.map(d => `<div class="portal-cal-dow">${d}</div>`).join('');
-  for (let i = 0; i < startDow; i++) html += '<div class="portal-cal-day empty"></div>';
+  for (let i = 0; i < startDow; i++) html += '<div class="portal-cal-cell empty"></div>';
   for (let d = 1; d <= daysInMonth; d++) {
-    const isToday = d === now.getDate();
-    const hasPost = daysWithPost.has(d);
-    html += `<div class="portal-cal-day${isToday ? ' today' : ''}${hasPost ? ' has-post' : ''}">${d}</div>`;
+    const isToday = isCurrentMonth && d === now.getDate();
+    const dayPosts = byDay[d] || [];
+    const chips = dayPosts.slice(0, 3).map(p => {
+      const cor = portalTipoCor(p.tipo);
+      const thumb = portalPostThumb(p);
+      const bg = thumb ? `background-image:url('${String(thumb).replace(/'/g,"\\'")}');background-size:cover;background-position:center;` : `background:${cor};`;
+      return `<div class="portal-cal-chip" style="${bg}" title="${portalEsc(p.gancho || portalTipoLabel(p.tipo))}">${thumb ? '' : `<span class="portal-cal-chip-icon">${portalTipoIcon(p.tipo)}</span>`}</div>`;
+    }).join('');
+    const more = dayPosts.length > 3 ? `<div class="portal-cal-more">+${dayPosts.length - 3}</div>` : '';
+    html += `<div class="portal-cal-cell${isToday ? ' today' : ''}${dayPosts.length ? ' has-post' : ''}">
+      <div class="portal-cal-cell-day">${d}</div>
+      ${chips}${more}
+    </div>`;
   }
   cal.innerHTML = html;
-  // Lista dos próximos 5
-  const next5 = upcoming.slice(0, 5);
-  if (!next5.length) {
-    list.innerHTML = '<div class="portal-cal-list-empty">Nenhum item programado ainda. Assim que o time deixar uma tarefa com data, aparece aqui.</div>';
+  // Lista embaixo — todos os posts do mês em ordem cronológica
+  const monthPosts = s.posts
+    .filter(p => {
+      if (!p.dataPublicacao) return false;
+      const [py, pm] = p.dataPublicacao.split('-').map(Number);
+      return py === y && pm === m + 1;
+    })
+    .sort((a,b) => (a.dataPublicacao + (a.horario||'')).localeCompare(b.dataPublicacao + (b.horario||'')));
+  if (!monthPosts.length) {
+    list.innerHTML = `<div class="portal-cal-list-empty">Nada agendado nesse mês ainda. Assim que a agência publicar novos posts no calendário, eles aparecem aqui.</div>`;
     return;
   }
   const dowShort = ['dom','seg','ter','qua','qui','sex','sáb'];
-  list.innerHTML = next5.map(u => `
-    <div class="portal-cal-item">
-      <div class="portal-cal-item-date">
-        <div class="portal-cal-item-day">${u.due.getDate()}</div>
-        <div class="portal-cal-item-dow">${dowShort[u.due.getDay()]}</div>
+  list.innerHTML = monthPosts.map(p => {
+    const [py, pm, pd] = (p.dataPublicacao||'').split('-').map(Number);
+    const dt = new Date(py, pm - 1, pd);
+    const cor = portalTipoCor(p.tipo);
+    const tipoLabel = portalTipoLabel(p.tipo);
+    const thumb = portalPostThumb(p);
+    const thumbHtml = thumb
+      ? `<div class="portal-post-thumb" style="background-image:url('${String(thumb).replace(/'/g,"\\'")}')"></div>`
+      : `<div class="portal-post-thumb" style="background:${cor};display:grid;place-items:center;color:#fff;font-size:20px;">${portalTipoIcon(p.tipo)}</div>`;
+    return `<div class="portal-post-item">
+      ${thumbHtml}
+      <div class="portal-post-body">
+        <div class="portal-post-head">
+          <span class="portal-post-tipo" style="background:color-mix(in srgb, ${cor} 15%, transparent);color:${cor};">${tipoLabel}</span>
+          <span class="portal-post-date">${dt.getDate().toString().padStart(2,'0')}/${(dt.getMonth()+1).toString().padStart(2,'0')} · ${dowShort[dt.getDay()]}${p.horario ? ' · ' + p.horario : ''}</span>
+        </div>
+        <div class="portal-post-title">${portalEsc(p.gancho || 'Post sem título')}</div>
+        ${p.prato ? `<div class="portal-post-meta">Prato: ${portalEsc(p.prato)}</div>` : ''}
       </div>
-      <div class="portal-cal-item-body">
-        <div class="portal-cal-item-title">${portalEsc(u.title || 'Tarefa')}</div>
-        <div class="portal-cal-item-meta">${u.due.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</div>
-      </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function portalEsc(s) {
