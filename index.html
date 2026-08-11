@@ -844,7 +844,8 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             </button>
             <div class="estudio-block-body">
               <div class="estudio-combo">
-                <input type="text" class="estudio-combo-input" id="clienteBusca" placeholder="Busque pelo nome do cliente" autocomplete="off" oninput="filtrarClientes(this.value)" onfocus="abrirComboClientes()" onblur="setTimeout(fecharComboClientes,120)">
+                <input type="text" class="estudio-combo-input" id="clienteBusca" placeholder="Busque pelo nome do cliente" autocomplete="off" oninput="filtrarClientes(this.value)" onfocus="abrirComboClientes();this.select()" onblur="setTimeout(fecharComboClientes,180)">
+                <button type="button" class="estudio-combo-clear" id="clienteBuscaClear" onclick="limparClienteBusca()" title="Trocar cliente" aria-label="Limpar" hidden>×</button>
                 <div class="estudio-combo-dropdown" id="clienteDropdown" hidden>
                   <div class="estudio-combo-list" id="clienteLista" role="listbox"></div>
                   <button class="estudio-combo-new" onmousedown="criarNovoCliente()"><span class="estudio-combo-plus">+</span> Novo cliente</button>
@@ -30992,12 +30993,31 @@ function abrirComboClientes() {
   const dd = document.getElementById('clienteDropdown');
   if (dd) dd.hidden = false;
   const busca = document.getElementById('clienteBusca');
-  // Defensivo: força init do listener se ainda não rodou (usuário abriu
-  // Criar Post direto sem passar pela Base). bdInit é idempotente
-  // (checa _bdUnsub e evita duplicar).
   const empty = typeof _bdClientes === 'undefined' || !Array.isArray(_bdClientes) || _bdClientes.length === 0;
   if (empty && typeof bdInit === 'function') { try { bdInit(); } catch(_){} }
-  filtrarClientes(busca ? busca.value : '');
+  // Se o valor no input bate 100% com o cliente atualmente selecionado,
+  // mostra TODOS os clientes (é o caso de "quero trocar de cliente").
+  // Assim não precisa apagar manualmente pra ver as outras opções.
+  const val = busca?.value || '';
+  const jaSelecionado = val && (typeof estudioState !== 'undefined') && estudioState.cliente === val;
+  filtrarClientes(jaSelecionado ? '' : val);
+}
+function limparClienteBusca() {
+  const busca = document.getElementById('clienteBusca');
+  if (busca) { busca.value = ''; busca.focus(); }
+  if (typeof estudioState !== 'undefined') estudioState.cliente = null;
+  document.querySelector('[data-block="cliente"]')?.classList.remove('filled');
+  const cp = document.getElementById('clientePreview'); if (cp) cp.textContent = 'Escolha um';
+  const cc = document.getElementById('crumbCliente'); if (cc) { cc.hidden = true; cc.textContent = ''; }
+  const cs = document.getElementById('crumbSep'); if (cs) cs.hidden = true;
+  atualizarBotaoLimparCliente();
+  filtrarClientes('');
+}
+function atualizarBotaoLimparCliente() {
+  const btn = document.getElementById('clienteBuscaClear');
+  const busca = document.getElementById('clienteBusca');
+  if (!btn || !busca) return;
+  btn.hidden = !busca.value;
 }
 function fecharComboClientes() {
   const dd = document.getElementById('clienteDropdown');
@@ -31012,6 +31032,8 @@ function filtrarClientes(q) {
   const filtrados = rests.filter(r => r.toLowerCase().includes(query));
   const lista = document.getElementById('clienteLista');
   if (!lista) return;
+  // Atualiza botão × visível sempre que filtra
+  if (typeof atualizarBotaoLimparCliente === 'function') atualizarBotaoLimparCliente();
   // Firestore ainda carregando? mostra loading + retry
   const bdReady = (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes));
   if (!bdReady && rests.length === 0) {
@@ -31045,6 +31067,7 @@ function escolherCliente(nome) {
   const rInput = document.getElementById('restaurante'); if (rInput) rInput.value = nome;
   const rSel = document.getElementById('restauranteSelect'); if (rSel) rSel.value = nome;
   const busca = document.getElementById('clienteBusca'); if (busca) busca.value = nome;
+  if (typeof atualizarBotaoLimparCliente === 'function') atualizarBotaoLimparCliente();
   const cp = document.getElementById('clientePreview'); if (cp) cp.textContent = nome;
   const cs = document.getElementById('crumbSep'); if (cs) cs.hidden = false;
   const cc = document.getElementById('crumbCliente'); if (cc) { cc.hidden = false; cc.textContent = nome; }
