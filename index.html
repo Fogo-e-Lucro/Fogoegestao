@@ -6503,7 +6503,9 @@ function removeImage(i) {
 }
 
 function renderImagePreviews() {
-  document.getElementById('imagePreviewList').innerHTML = currentImages.map((src,i) => {
+  const el = document.getElementById('imagePreviewList');
+  if (!el) return; // editor do Estúdio não tem esse container — usa #mediaThumbs
+  el.innerHTML = currentImages.map((src,i) => {
     if (src && typeof src === 'object' && src._loading) {
       return `<div class="img-preview-item img-preview-loading">
         <div class="thumb-spinner"></div>
