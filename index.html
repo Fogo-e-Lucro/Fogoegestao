@@ -27307,6 +27307,73 @@ async function bdDelete(id) {
 
 function _bdEsc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
+/* ═══════════════════════════════════════════════════════
+   PORTAL DO PARCEIRO — botão de compartilhar link
+═══════════════════════════════════════════════════════ */
+function bdSlugify(str) {
+  return String(str || '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-');
+}
+
+async function bdEnsureSlug(c) {
+  if (c.slug) return c.slug;
+  const slug = bdSlugify(c.nome);
+  if (!slug) return null;
+  try {
+    await _db.collection('clientes_base').doc(c.id).update({ slug });
+    c.slug = slug;
+    return slug;
+  } catch(e) { console.warn('[bdEnsureSlug]', e); return null; }
+}
+
+function bdOpenPortalDialog(clienteId) {
+  const c = (_bdClientes || []).find(x => x.id === clienteId);
+  if (!c) return;
+  bdEnsureSlug(c).then(slug => {
+    if (!slug) { showToast('error', '✗', 'Cliente sem nome válido pra gerar link'); return; }
+    const url = `${location.origin}/cliente/${slug}`;
+    const wa = c.whatsapp || c.telefone || '';
+    const waNumero = String(wa).replace(/\D+/g, '');
+    const waHref = waNumero
+      ? `https://wa.me/${waNumero.length > 11 ? waNumero : ('55' + waNumero)}?text=` +
+        encodeURIComponent(`Oi ${(c.nomeContato || c.nome || '').split(' ')[0] || ''}, esse é o teu painel do Fogo & Gestão. Pode salvar nos favoritos, tá tudo do teu restaurante aí: ${url}`)
+      : null;
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'bd-portal-modal-bg';
+    backdrop.onclick = (ev) => { if (ev.target === backdrop) backdrop.remove(); };
+    backdrop.innerHTML = `
+      <div class="bd-portal-modal" onclick="event.stopPropagation()">
+        <div class="bd-portal-modal-head">
+          <div>
+            <div class="bd-portal-modal-title">Portal do parceiro</div>
+            <div class="bd-portal-modal-sub">Link único do ${_bdEsc(c.nome)} pra abrir no celular</div>
+          </div>
+          <button class="bd-portal-modal-close" onclick="this.closest('.bd-portal-modal-bg').remove()" aria-label="Fechar">✕</button>
+        </div>
+        <div class="bd-portal-url" onclick="this.select&&this.select()">${_bdEsc(url)}</div>
+        <div class="bd-portal-actions">
+          <button class="bd-portal-btn primary" onclick="navigator.clipboard.writeText('${url}').then(()=>{showToast('ok','✓','Link copiado — cola no WhatsApp do cliente');});">
+            📋 Copiar link
+          </button>
+          ${waHref ? `<a class="bd-portal-btn" href="${waHref}" target="_blank" onclick="setTimeout(()=>this.closest('.bd-portal-modal-bg')?.remove(), 200)">
+            💬 Enviar pro ${_bdEsc((c.nomeContato||'contato').split(' ')[0])}
+          </a>` : `<div class="bd-portal-hint-empty">Cadastra o WhatsApp do dono na ficha pra enviar em 1 clique.</div>`}
+          <button class="bd-portal-btn" onclick="window.open('${url}', '_blank')">
+            👁️ Abrir preview
+          </button>
+        </div>
+        <div class="bd-portal-tip">O dono do restaurante abre no celular. Sem login, sem senha. Ele vê o painel dele com os números da semana, o que a agência fez e o calendário de posts.</div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+  });
+}
+
 function _bdHealthScore(c) {
   // Calcula % completo da ficha (campos importantes)
   const checks = [
@@ -27421,6 +27488,7 @@ function bdRenderDetail(id) {
           <div class="bd-header-actions">
             <button class="bd-action-btn primary" onclick='bdAIBrief(${JSON.stringify(c).replace(/'/g,"&#39;")})'>✨ Copiar contexto pra IA</button>
             <button class="bd-action-btn" onclick='bdOpenAll(${JSON.stringify(c).replace(/'/g,"&#39;")})'>🔗 Abrir tudo</button>
+            <button class="bd-action-btn" onclick="bdOpenPortalDialog('${c.id}')" title="Portal do parceiro (dono do restaurante abre no celular)">🪟 Portal</button>
             ${waLink?`<a class="bd-action-btn" href="${waLink}" target="_blank" style="text-decoration:none;">💬 WhatsApp</a>`:''}
             <button class="bd-action-btn" onclick="bdOpenFieldsConfig()" title="Configurar campos da ficha">⚙️ Campos</button>
             <button class="bd-action-btn" onclick="bdDelete('${c.id}')" style="margin-left:auto;">🗑️ Excluir</button>
