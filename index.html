@@ -90,6 +90,21 @@
 </script>
 
 
+<script>
+  // SPA GitHub Pages: restaura o path original quando 404.html redirecionou
+  // com ?/cliente/palhoca no querystring
+  (function(l) {
+    if (l.search[1] === '/') {
+      var decoded = l.search.slice(1).split('&').map(function(s) {
+        return s.replace(/~and~/g, '&');
+      }).join('?');
+      window.history.replaceState(null, null,
+        l.pathname.slice(0, -1) + decoded + l.hash
+      );
+    }
+  })(window.location);
+</script>
+
 <!-- PORTAL DO CLIENTE (rota /cliente/[slug]) -->
 <div id="portalRoot" class="portal-root" style="display:none">
   <div class="portal-loading" id="portalLoading">
