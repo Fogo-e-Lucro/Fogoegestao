@@ -14250,3 +14250,123 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
 @media (max-width: 400px) {
   .portal-modal-card { max-width: 100%; border-radius: 16px; }
 }
+
+/* ═══ Portal v5 — Calendário grande estilo Google Calendar com mini-mockups ═══ */
+.portal-calendar {
+  animation: portalFadeUp .35s ease-out;
+  margin-bottom: 20px;
+}
+.portal-calendar .portal-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--pc-line);
+  border: 1px solid var(--pc-line);
+  border-radius: var(--pc-radius);
+  overflow: hidden;
+}
+.portal-calendar .portal-cal-dow {
+  font-size: 11px; font-weight: 700;
+  color: var(--pc-ink-3);
+  text-transform: uppercase;
+  text-align: center;
+  padding: 12px 0 10px;
+  background: var(--pc-line-soft);
+  letter-spacing: .05em;
+}
+.portal-calendar .portal-cal-cell {
+  min-height: 120px;
+  padding: 6px;
+  background: #fff;
+  display: flex; flex-direction: column;
+  gap: 4px;
+  position: relative;
+  transition: background .18s;
+}
+.portal-calendar .portal-cal-cell:hover:not(.empty) {
+  background: var(--pc-line-soft);
+}
+.portal-calendar .portal-cal-cell.empty {
+  background: #fafbfc;
+}
+.portal-calendar .portal-cal-cell-day {
+  font-size: 13px; font-weight: 600;
+  color: var(--pc-ink-2);
+  line-height: 1;
+  padding: 2px 4px;
+  align-self: flex-start;
+}
+.portal-calendar .portal-cal-cell.today .portal-cal-cell-day {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  background: var(--pc-brand);
+  color: #fff;
+  border-radius: 50%;
+  font-weight: 700;
+  padding: 0;
+}
+.portal-calendar .portal-cal-cell.has-post .portal-cal-cell-day {
+  color: var(--pc-ink);
+}
+
+/* Mini-mockups dentro do dia */
+.portal-cal-thumbs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3px;
+  flex: 1;
+  min-height: 0;
+}
+.portal-cal-thumbs:has(> :nth-child(1):last-child) {
+  grid-template-columns: 1fr;
+}
+.portal-cal-thumb {
+  aspect-ratio: 4 / 5;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  background-color: var(--pc-line);
+  overflow: hidden;
+  opacity: 0;
+  animation: portalFadeUp .4s ease-out forwards;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.portal-cal-thumb:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+  z-index: 2;
+}
+.portal-cal-thumb.story {
+  border-radius: 5px;
+  outline: 1.5px solid #ec4899;
+  outline-offset: -1.5px;
+}
+.portal-cal-thumb-play {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 12px;
+  text-shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+.portal-cal-more {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--pc-ink-3);
+  padding: 2px 4px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--pc-line-soft);
+  border-radius: 5px;
+}
+
+/* Mobile — cells menores */
+@media (max-width: 640px) {
+  .portal-calendar .portal-cal-cell { min-height: 82px; padding: 4px; gap: 2px; }
+  .portal-calendar .portal-cal-cell-day { font-size: 11.5px; padding: 1px 3px; }
+  .portal-calendar .portal-cal-cell.today .portal-cal-cell-day { width: 20px; height: 20px; font-size: 11px; }
+  .portal-cal-thumbs { grid-template-columns: 1fr; gap: 2px; }
+  .portal-cal-thumb { aspect-ratio: 1 / 1; border-radius: 4px; }
+  .portal-cal-thumb-play { font-size: 10px; }
+  .portal-cal-more { font-size: 9.5px; }
+}
