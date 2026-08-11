@@ -848,7 +848,6 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
                 <button type="button" class="estudio-combo-clear" id="clienteBuscaClear" onclick="limparClienteBusca()" title="Trocar cliente" aria-label="Limpar" hidden>×</button>
                 <div class="estudio-combo-dropdown" id="clienteDropdown" hidden>
                   <div class="estudio-combo-list" id="clienteLista" role="listbox"></div>
-                  <button class="estudio-combo-new" onmousedown="criarNovoCliente()"><span class="estudio-combo-plus">+</span> Novo cliente</button>
                 </div>
                 <input type="hidden" id="restaurante">
                 <input type="hidden" id="restauranteSelect">
@@ -3139,6 +3138,23 @@ function portalOpenDayModal(dayNum) {
 // ESC fecha
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && document.getElementById('portalModal')?.classList.contains('open')) portalCloseModal();
+});
+
+// Fecha qualquer backdrop/modal preso (ESC ou click fora) — universal
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  // Cropper
+  const crop = document.getElementById('sp2CropperBackdrop');
+  if (crop?.classList.contains('on')) { if (typeof sp2CloseCropper === 'function') sp2CloseCropper(); return; }
+  // Packs
+  const packs = document.getElementById('sp2PacksBackdrop');
+  if (packs?.classList.contains('on')) { if (typeof sp2ClosePacksModal === 'function') sp2ClosePacksModal(); return; }
+  // Portal do parceiro (modal de compartilhar link)
+  const portalShare = document.querySelector('.bd-portal-modal-bg');
+  if (portalShare) { portalShare.remove(); return; }
+  // Dropdown de cliente
+  const dd = document.getElementById('clienteDropdown');
+  if (dd && !dd.hidden) { dd.hidden = true; return; }
 });
 
 function portalContrastInk(hex) {
@@ -31046,8 +31062,8 @@ function filtrarClientes(q) {
     return;
   }
   if (!filtrados.length) {
-    if (query) lista.innerHTML = `<div class="estudio-combo-empty">Nenhum cliente com "${escHtml(query)}". Cria abaixo.</div>`;
-    else       lista.innerHTML = `<div class="estudio-combo-empty">Nenhum cliente cadastrado. Cria o primeiro abaixo.</div>`;
+    if (query) lista.innerHTML = `<div class="estudio-combo-empty">Nenhum cliente com "${escHtml(query)}". Cadastra na aba <b>Base de Clientes</b>.</div>`;
+    else       lista.innerHTML = `<div class="estudio-combo-empty">Nenhum cliente cadastrado ainda. Vá na aba <b>Base de Clientes</b> pra cadastrar.</div>`;
     return;
   }
   lista.innerHTML = filtrados.map(nome => {
