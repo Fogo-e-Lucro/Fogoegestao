@@ -14576,3 +14576,21 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
   transform: scale(1.08) translateY(-1px);
   box-shadow: 0 8px 20px rgba(0,0,0,.24), 0 0 0 2px rgba(255,255,255,.6);
 }
+
+/* Thumb com vídeo — mostra o vídeo com play icon sobreposto */
+.estudio-media-thumbs .thumb-video { position: relative; overflow: hidden; }
+.estudio-media-thumbs .thumb-video video {
+  width: 100%; height: 100%; object-fit: cover;
+  position: absolute; inset: 0;
+}
+.estudio-media-thumbs .thumb-video .thumb-play {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff; font-size: 22px;
+  text-shadow: 0 2px 6px rgba(0,0,0,.5);
+  pointer-events: none;
+  z-index: 1;
+}
+.estudio-media-thumbs .thumb-video button { z-index: 2; }
+
+.img-preview-item { position: relative; }

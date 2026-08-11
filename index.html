@@ -976,7 +976,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
               <div class="estudio-field">
                 <span class="estudio-field-head"><span class="estudio-field-label">Mídia</span></span>
                 <label class="estudio-media-drop" id="mediaDrop" tabindex="0">
-                  <input type="file" id="imgUpload" accept="image/*" hidden onchange="handleImageUpload(event)">
+                  <input type="file" id="imgUpload" accept="image/*,video/*" hidden multiple onchange="handleImageUpload(event)">
                   <span class="estudio-media-drop-icon">↑</span>
                   <span class="estudio-media-drop-title">Solte a arte aqui</span>
                   <span class="estudio-media-drop-sub">ou clique pra escolher do computador</span>
@@ -3298,8 +3298,13 @@ function portalPostThumb(post) {
   const imgs = Array.isArray(post.imagens) ? post.imagens : [];
   const first = imgs[0];
   if (!first) return null;
-  if (typeof first === 'string') return first;
-  return first.url || first.cloudUrl || first.dataUrl || null;
+  const url = typeof first === 'string' ? first : (first.url || first.cloudUrl || first.dataUrl || null);
+  if (!url) return null;
+  // Se é vídeo (data:video/, blob:, ou .mp4/.mov/.webm), retorna null pro fallback
+  // (portal renderiza como background-image que não suporta vídeo — melhor mostrar
+  // gradiente com ícone play do que quebrado). Detecção idêntica ao isVideoUrl.
+  if (url.startsWith('data:video/') || url.startsWith('blob:') || /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(url)) return null;
+  return url;
 }
 
 function portalIsStory(tipo) {
@@ -6430,14 +6435,36 @@ function switchImgTab(tab, e) {
 
 function handleImageUpload(e) {
   Array.from(e.target.files).forEach(file => {
-    const r = new FileReader();
-    r.onload = ev => {
-      currentImages.push(ev.target.result);
+    const isVid = (file.type || '').startsWith('video/');
+    if (isVid) {
+      // Video: blob URL (dataURL de vídeo estoura RAM em arquivos grandes)
+      const blobUrl = URL.createObjectURL(file);
+      currentImages.push(blobUrl);
       if (typeof renderImagePreviews === 'function') renderImagePreviews();
       if (typeof renderMediaThumbs === 'function') renderMediaThumbs();
-    };
-    r.readAsDataURL(file);
+    } else {
+      // Image: dataURL (persiste no localStorage sem depender do blob)
+      const r = new FileReader();
+      r.onload = ev => {
+        currentImages.push(ev.target.result);
+        if (typeof renderImagePreviews === 'function') renderImagePreviews();
+        if (typeof renderMediaThumbs === 'function') renderMediaThumbs();
+      };
+      r.readAsDataURL(file);
+    }
   });
+}
+
+// Detecta se uma URL/dataURL é vídeo
+function isVideoUrl(s) {
+  if (!s) return false;
+  const str = typeof s === 'string' ? s : (s.url || s.type === 'video' ? '' : '');
+  if (typeof s === 'object' && s.type === 'video') return true;
+  return typeof str === 'string' && (
+    str.startsWith('data:video/') ||
+    str.startsWith('blob:') ||  // heurística: blobs quase sempre são video no nosso fluxo
+    /\.(mp4|mov|webm|m4v|avi)(\?|#|$)/i.test(str)
+  );
 }
 
 function addImageUrl() {
@@ -6458,7 +6485,9 @@ function removeImage(i) {
 function renderImagePreviews() {
   document.getElementById('imagePreviewList').innerHTML = currentImages.map((src,i) => `
     <div class="img-preview-item">
-      <img src="${src}" alt="">
+      ${isVideoUrl(src)
+        ? `<video src="${src}" muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video><span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:20px;text-shadow:0 1px 3px rgba(0,0,0,.4);pointer-events:none;">▶</span>`
+        : `<img src="${src}" alt="">`}
       <button onclick="removeImage(${i})">✕</button>
     </div>`).join('');
 }
@@ -31208,17 +31237,34 @@ function bindEstudioDragDrop() {
 function renderMediaThumbs() {
   const cont = document.getElementById('mediaThumbs');
   if (!cont) return;
-  cont.innerHTML = (currentImages || []).map((src, i) =>
-    `<div class="thumb" style="background-image:url('${String(src).replace(/'/g,"%27")}')"><button onclick="removeImage(${i})" title="Remover">×</button></div>`
-  ).join('');
+  cont.innerHTML = (currentImages || []).map((src, i) => {
+    const safe = String(src).replace(/'/g,"%27");
+    if (isVideoUrl(src)) {
+      return `<div class="thumb thumb-video">
+        <video src="${safe}" muted playsinline preload="metadata"></video>
+        <span class="thumb-play">▶</span>
+        <button onclick="removeImage(${i})" title="Remover">×</button>
+      </div>`;
+    }
+    return `<div class="thumb" style="background-image:url('${safe}')"><button onclick="removeImage(${i})" title="Remover">×</button></div>`;
+  }).join('');
   const media = document.getElementById('mockMedia');
   const mock = document.getElementById('estudioMock');
   const first = (currentImages || [])[0];
   if (media && mock) {
     if (first) {
-      media.style.backgroundImage = `url('${String(first).replace(/'/g,"%27")}')`;
+      if (isVideoUrl(first)) {
+        // Video no mockup: usa <video> tag
+        const safe = String(first).replace(/'/g,"%27");
+        media.style.backgroundImage = '';
+        media.innerHTML = `<video src="${safe}" muted playsinline autoplay loop style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"></video>`;
+      } else {
+        media.innerHTML = '';
+        media.style.backgroundImage = `url('${String(first).replace(/'/g,"%27")}')`;
+      }
       mock.classList.add('has-media');
     } else {
+      media.innerHTML = '';
       media.style.backgroundImage = '';
       mock.classList.remove('has-media');
     }
