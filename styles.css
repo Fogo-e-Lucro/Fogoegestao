@@ -10538,6 +10538,8 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
   background: var(--card); border: 1px solid var(--border); border-radius: 14px;
   overflow: hidden; transition: border-color var(--t) var(--ease);
 }
+/* Bloco cliente precisa deixar dropdown vazar (position:absolute cortado por overflow:hidden) */
+.estudio-block[data-block="cliente"] { overflow: visible; }
 .estudio-block:focus-within { border-color: rgba(124,58,237,.35); }
 .estudio-block-head {
   display: grid; grid-template-columns: 22px 1fr auto 18px;
