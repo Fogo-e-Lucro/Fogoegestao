@@ -5,5 +5,8 @@
       "path": "/api/daily-report-cron",
       "schedule": "0 9 * * *"
     }
+  ],
+  "rewrites": [
+    { "source": "/cliente/:slug*", "destination": "/index.html" }
   ]
 }

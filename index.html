@@ -90,6 +90,56 @@
 </script>
 
 
+<!-- PORTAL DO CLIENTE (rota /cliente/[slug]) -->
+<div id="portalRoot" class="portal-root" style="display:none">
+  <div class="portal-loading" id="portalLoading">
+    <div class="portal-spinner"></div>
+    <div>Carregando seu painel…</div>
+  </div>
+  <div class="portal-error" id="portalError" style="display:none">
+    <div class="portal-error-icon">🔎</div>
+    <div class="portal-error-title">Painel não encontrado</div>
+    <div class="portal-error-sub">Confere o link ou pede um novo pro time da Fogo &amp; Lucro no WhatsApp.</div>
+  </div>
+  <div class="portal-app" id="portalApp" style="display:none">
+    <header class="portal-header" id="portalHeader">
+      <div class="portal-header-tag">Painel do parceiro</div>
+      <h1 class="portal-header-name" id="portalName">—</h1>
+      <div class="portal-header-sub" id="portalSub">Cuidado pela Fogo &amp; Lucro</div>
+    </header>
+
+    <section class="portal-section">
+      <div class="portal-section-title">Seus números da semana</div>
+      <div class="portal-kpis" id="portalKpis">
+        <div class="portal-kpi portal-kpi-skel"></div>
+        <div class="portal-kpi portal-kpi-skel"></div>
+        <div class="portal-kpi portal-kpi-skel"></div>
+        <div class="portal-kpi portal-kpi-skel"></div>
+      </div>
+    </section>
+
+    <section class="portal-section">
+      <div class="portal-section-title">O que a gente fez essa semana</div>
+      <div class="portal-feed" id="portalFeed">
+        <div class="portal-feed-empty">Sem atividade registrada ainda pra semana. Isso vai encher assim que o time começar a mexer.</div>
+      </div>
+    </section>
+
+    <section class="portal-section">
+      <div class="portal-section-title-row">
+        <div class="portal-section-title">O que vem pela frente</div>
+        <div class="portal-cal-month" id="portalCalMonth">—</div>
+      </div>
+      <div class="portal-cal" id="portalCal"></div>
+      <div class="portal-cal-list" id="portalCalList"></div>
+    </section>
+
+    <footer class="portal-footer">
+      Cuidado pela <strong>Fogo &amp; Lucro</strong> · Qualquer coisa, chama no WhatsApp
+    </footer>
+  </div>
+</div>
+
 <!-- LOGIN SCREEN -->
 <div class="login-screen" id="loginScreen">
   <div class="login-orb3"></div>
@@ -2808,6 +2858,247 @@ firebase.initializeApp({
 });
 const _db = firebase.firestore();
 const _auth = firebase.auth();
+
+/* ═══════════════════════════════════════════════════════
+   PORTAL DO CLIENTE — rota /cliente/[slug]
+   Detecta cedo, desvia antes do app normal carregar.
+═══════════════════════════════════════════════════════ */
+(function initPortalIfMatched() {
+  const m = location.pathname.match(/^\/cliente\/([a-z0-9-]+)\/?$/i);
+  if (!m) return;
+  const slug = m[1].toLowerCase();
+  window._isPortalMode = true;
+  // Esconde a app inteira
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('body > *').forEach(el => {
+      if (el.id !== 'portalRoot' && el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE' && el.tagName !== 'NOSCRIPT') {
+        el.style.display = 'none';
+      }
+    });
+    const pr = document.getElementById('portalRoot');
+    if (pr) pr.style.display = 'block';
+    // Auth anônima pra ler Firestore com rules mínimas
+    _auth.signInAnonymously().then(() => portalBoot(slug)).catch(e => {
+      console.error('[portal] auth anon fail:', e);
+      portalShowError();
+    });
+  });
+})();
+
+async function portalBoot(slug) {
+  try {
+    const snap = await _db.collection('clientes_base').where('slug','==', slug).limit(1).get();
+    if (snap.empty) { portalShowError(); return; }
+    const cliente = { id: snap.docs[0].id, ...snap.docs[0].data() };
+    portalRender(cliente);
+  } catch(e) {
+    console.error('[portal] boot fail:', e);
+    portalShowError();
+  }
+}
+
+function portalShowError() {
+  document.getElementById('portalLoading').style.display = 'none';
+  document.getElementById('portalApp').style.display = 'none';
+  document.getElementById('portalError').style.display = 'flex';
+}
+
+async function portalRender(cliente) {
+  const loading = document.getElementById('portalLoading');
+  const app = document.getElementById('portalApp');
+  const header = document.getElementById('portalHeader');
+  const nameEl = document.getElementById('portalName');
+  // Cor de fundo do header baseada na cor da marca do cliente
+  const brand = cliente.cor || '#7c3aed';
+  document.getElementById('portalRoot').style.setProperty('--pc-brand', brand);
+  header.style.background = brand;
+  // Cor do texto: branco se marca escura, preto se marca clara
+  const ink = portalContrastInk(brand);
+  header.style.color = ink;
+  document.getElementById('portalRoot').style.setProperty('--pc-brand-ink', ink);
+  nameEl.textContent = cliente.nome || 'Restaurante';
+  // Carrega dados em paralelo
+  const [tasks, upcoming] = await Promise.all([
+    portalFetchDoneTasks(cliente.nome),
+    portalFetchUpcoming(cliente.nome),
+  ]);
+  portalRenderKpis(cliente, tasks, upcoming);
+  portalRenderFeed(tasks);
+  portalRenderCalendar(upcoming);
+  loading.style.display = 'none';
+  app.style.display = 'block';
+}
+
+function portalContrastInk(hex) {
+  try {
+    const h = hex.replace('#','');
+    const r = parseInt(h.substring(0,2), 16);
+    const g = parseInt(h.substring(2,4), 16);
+    const b = parseInt(h.substring(4,6), 16);
+    const yiq = (r*299 + g*587 + b*114) / 1000;
+    return yiq >= 155 ? '#17171f' : '#ffffff';
+  } catch(_) { return '#ffffff'; }
+}
+
+async function portalFetchDoneTasks(clientName) {
+  if (!clientName) return [];
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+  try {
+    const snap = await _db.collection('pj_tasks').where('client','==', clientName).limit(500).get();
+    const done = [];
+    snap.forEach(d => {
+      const t = d.data();
+      if (t.statusId === 'done') {
+        // Verifica se atividade recente é done na última semana
+        const acts = (t.activity||[]).filter(a => a.type === 'status' && (a.ts||0) >= weekAgo.getTime());
+        if (acts.length) {
+          const last = acts[acts.length - 1];
+          done.push({ id: d.id, title: t.title, ts: last.ts || t.updatedAt || 0, type: t.type });
+        }
+      }
+    });
+    done.sort((a,b) => b.ts - a.ts);
+    return done.slice(0, 8);
+  } catch(e) { console.warn('[portal] tasks fail:', e); return []; }
+}
+
+async function portalFetchUpcoming(clientName) {
+  if (!clientName) return [];
+  try {
+    const snap = await _db.collection('pj_tasks').where('client','==', clientName).limit(500).get();
+    const today = new Date(); today.setHours(0,0,0,0);
+    const in30 = new Date(today); in30.setDate(in30.getDate() + 30);
+    const up = [];
+    snap.forEach(d => {
+      const t = d.data();
+      if (t.statusId === 'done') return;
+      if (!t.dueDate) return;
+      const due = new Date(t.dueDate + 'T00:00:00');
+      if (due >= today && due <= in30) {
+        up.push({ id: d.id, title: t.title, due, dueDate: t.dueDate, statusId: t.statusId });
+      }
+    });
+    up.sort((a,b) => a.due - b.due);
+    return up;
+  } catch(e) { console.warn('[portal] upcoming fail:', e); return []; }
+}
+
+function portalRenderKpis(cliente, doneTasks, upcoming) {
+  const el = document.getElementById('portalKpis');
+  const doneCount = doneTasks.length;
+  const nextCount = upcoming.length;
+  // Última atividade
+  const lastActive = doneTasks[0]?.ts;
+  const lastActiveTxt = lastActive ? portalRelativeTime(lastActive) : '—';
+  // Dias com atividade na última semana (unique)
+  const daysActive = new Set(doneTasks.map(t => new Date(t.ts).toDateString())).size;
+  el.innerHTML = `
+    <div class="portal-kpi">
+      <div class="portal-kpi-label">Entregas na semana</div>
+      <div class="portal-kpi-value">${doneCount}</div>
+      <div class="portal-kpi-hint">${doneCount === 0 ? 'começando devagar' : (daysActive > 3 ? 'ritmo forte' : 'em movimento')}</div>
+    </div>
+    <div class="portal-kpi">
+      <div class="portal-kpi-label">Programado pros próximos 30 dias</div>
+      <div class="portal-kpi-value">${nextCount}</div>
+      <div class="portal-kpi-hint">${nextCount === 0 ? 'nada agendado ainda' : (nextCount >= 5 ? 'mês cheio' : 'agenda montando')}</div>
+    </div>
+    <div class="portal-kpi">
+      <div class="portal-kpi-label">Última atividade</div>
+      <div class="portal-kpi-value" style="font-size:16px;line-height:1.2;">${lastActiveTxt}</div>
+      <div class="portal-kpi-hint">${daysActive} dia${daysActive !== 1 ? 's' : ''} com movimento</div>
+    </div>
+    <div class="portal-kpi">
+      <div class="portal-kpi-label">Instagram do restaurante</div>
+      <div class="portal-kpi-value" style="font-size:14px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${cliente.ig ? '@' + String(cliente.ig).replace(/^.*instagram\.com\//,'').replace(/\/+$/,'') : '—'}</div>
+      <div class="portal-kpi-hint">${cliente.cidade || 'sem cidade'}</div>
+    </div>
+  `;
+}
+
+function portalRelativeTime(ts) {
+  const diff = Date.now() - ts;
+  const min = Math.floor(diff / 60000);
+  if (min < 60) return `há ${min || 1} min`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `há ${hr} h`;
+  const days = Math.floor(hr / 24);
+  if (days === 1) return 'ontem';
+  if (days < 7) return `há ${days} dias`;
+  return new Date(ts).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+}
+
+function portalRenderFeed(doneTasks) {
+  const el = document.getElementById('portalFeed');
+  if (!doneTasks.length) {
+    el.innerHTML = '<div class="portal-feed-empty">Sem atividade registrada essa semana ainda. Isso enche quando o time começar a marcar tarefas como feitas.</div>';
+    return;
+  }
+  const icon = (title) => {
+    const t = (title || '').toLowerCase();
+    if (t.includes('reels') || t.includes('vídeo') || t.includes('video')) return '🎬';
+    if (t.includes('foto')) return '📸';
+    if (t.includes('story')) return '⭕';
+    if (t.includes('arte') || t.includes('carrossel')) return '🎨';
+    if (t.includes('campanha') || t.includes('ads') || t.includes('anúncio')) return '📈';
+    if (t.includes('reunião') || t.includes('call')) return '💬';
+    return '✅';
+  };
+  el.innerHTML = doneTasks.map(t => `
+    <div class="portal-feed-item">
+      <div class="portal-feed-icon">${icon(t.title)}</div>
+      <div class="portal-feed-body">
+        <div class="portal-feed-title">${portalEsc(t.title || 'Tarefa')}</div>
+        <div class="portal-feed-meta">Concluído ${portalRelativeTime(t.ts)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function portalRenderCalendar(upcoming) {
+  const cal = document.getElementById('portalCal');
+  const list = document.getElementById('portalCalList');
+  const monthLabel = document.getElementById('portalCalMonth');
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  monthLabel.textContent = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const first = new Date(y, m, 1);
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const startDow = first.getDay();
+  const daysWithPost = new Set(upcoming.filter(u => u.due.getMonth() === m && u.due.getFullYear() === y).map(u => u.due.getDate()));
+  const dows = ['D','S','T','Q','Q','S','S'];
+  let html = dows.map(d => `<div class="portal-cal-dow">${d}</div>`).join('');
+  for (let i = 0; i < startDow; i++) html += '<div class="portal-cal-day empty"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = d === now.getDate();
+    const hasPost = daysWithPost.has(d);
+    html += `<div class="portal-cal-day${isToday ? ' today' : ''}${hasPost ? ' has-post' : ''}">${d}</div>`;
+  }
+  cal.innerHTML = html;
+  // Lista dos próximos 5
+  const next5 = upcoming.slice(0, 5);
+  if (!next5.length) {
+    list.innerHTML = '<div class="portal-cal-list-empty">Nenhum item programado ainda. Assim que o time deixar uma tarefa com data, aparece aqui.</div>';
+    return;
+  }
+  const dowShort = ['dom','seg','ter','qua','qui','sex','sáb'];
+  list.innerHTML = next5.map(u => `
+    <div class="portal-cal-item">
+      <div class="portal-cal-item-date">
+        <div class="portal-cal-item-day">${u.due.getDate()}</div>
+        <div class="portal-cal-item-dow">${dowShort[u.due.getDay()]}</div>
+      </div>
+      <div class="portal-cal-item-body">
+        <div class="portal-cal-item-title">${portalEsc(u.title || 'Tarefa')}</div>
+        <div class="portal-cal-item-meta">${u.due.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function portalEsc(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
 // Persistência offline IndexedDB (multi-tab). Mutations são enfileiradas
 // e sincronizadas automaticamente quando voltar a conexão.
 try {

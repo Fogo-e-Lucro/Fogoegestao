@@ -13688,3 +13688,305 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
 }
 :root[data-theme="dark"] .sp2-btn-pick { background: #f4f4f7; color: #0f0f14; }
 :root[data-theme="light"] .sp2-btn-pick { background: #0f0f14; color: #fff; }
+
+/* ═══════════════════════════════════════════════════════
+   PORTAL DO CLIENTE — fogoegestao.com.br/cliente/[slug]
+   Mobile-first, scope próprio (não herda do app interno).
+═══════════════════════════════════════════════════════ */
+.portal-root {
+  --pc-bg: #fafafa;
+  --pc-card: #ffffff;
+  --pc-ink: #17171f;
+  --pc-ink-2: #4b4b58;
+  --pc-ink-3: #8b8b98;
+  --pc-line: #ececf0;
+  --pc-brand: #7c3aed;
+  --pc-brand-ink: #ffffff;
+  --pc-radius: 18px;
+  --pc-radius-sm: 12px;
+  --pc-font: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+  position: fixed; inset: 0;
+  overflow-y: auto; overflow-x: hidden;
+  background: var(--pc-bg);
+  font-family: var(--pc-font);
+  color: var(--pc-ink);
+  -webkit-font-smoothing: antialiased;
+  z-index: 100000;
+}
+@media (prefers-color-scheme: dark) {
+  .portal-root {
+    --pc-bg: #0d0d12;
+    --pc-card: #16161d;
+    --pc-ink: #f4f4f7;
+    --pc-ink-2: #a5a5b3;
+    --pc-ink-3: #6a6a78;
+    --pc-line: #24242f;
+  }
+}
+
+/* Loading + erro */
+.portal-loading, .portal-error {
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 40px 24px; text-align: center;
+  color: var(--pc-ink-2);
+}
+.portal-spinner {
+  width: 28px; height: 28px;
+  border: 2.5px solid var(--pc-line);
+  border-top-color: var(--pc-brand);
+  border-radius: 50%;
+  animation: portalSpin .8s linear infinite;
+}
+@keyframes portalSpin { to { transform: rotate(360deg); } }
+.portal-error-icon { font-size: 44px; }
+.portal-error-title { font-size: 18px; font-weight: 700; color: var(--pc-ink); }
+.portal-error-sub { font-size: 14px; max-width: 320px; line-height: 1.5; }
+
+/* App wrapper */
+.portal-app {
+  max-width: 560px; margin: 0 auto;
+  padding: 0 0 60px;
+}
+
+/* Header — usa a cor da marca do cliente */
+.portal-header {
+  background: var(--pc-brand);
+  color: var(--pc-brand-ink);
+  padding: 44px 22px 32px;
+  border-radius: 0 0 24px 24px;
+  position: relative; overflow: hidden;
+}
+.portal-header::after {
+  content: '';
+  position: absolute; top: -40%; right: -20%;
+  width: 260px; height: 260px; border-radius: 50%;
+  background: rgba(255,255,255,.08);
+  pointer-events: none;
+}
+.portal-header-tag {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  opacity: .82;
+  margin-bottom: 6px;
+}
+.portal-header-name {
+  font-size: 30px; font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0 0 4px;
+  text-wrap: balance;
+}
+.portal-header-sub {
+  font-size: 13px; opacity: .8;
+}
+
+/* Sections */
+.portal-section {
+  padding: 24px 20px 8px;
+}
+.portal-section-title,
+.portal-section-title-row {
+  font-size: 14px; font-weight: 700;
+  color: var(--pc-ink);
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+.portal-section-title-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 10px;
+}
+.portal-cal-month {
+  font-size: 12px; font-weight: 600; color: var(--pc-ink-3);
+  text-transform: capitalize;
+}
+
+/* KPIs — grid 2x2 */
+.portal-kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.portal-kpi {
+  background: var(--pc-card);
+  border: 1px solid var(--pc-line);
+  border-radius: var(--pc-radius-sm);
+  padding: 14px 14px 12px;
+  min-height: 88px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.portal-kpi-label {
+  font-size: 11.5px; font-weight: 600; color: var(--pc-ink-3);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.portal-kpi-value {
+  font-size: 26px; font-weight: 700; color: var(--pc-ink);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  margin-top: 4px;
+}
+.portal-kpi-hint {
+  font-size: 11.5px; color: var(--pc-ink-2);
+  margin-top: 4px;
+}
+.portal-kpi-hint.up { color: #16a34a; }
+.portal-kpi-hint.down { color: #dc2626; }
+.portal-kpi-skel {
+  background: linear-gradient(90deg, var(--pc-card) 0%, var(--pc-line) 50%, var(--pc-card) 100%);
+  background-size: 200% 100%;
+  animation: portalShimmer 1.4s ease-in-out infinite;
+}
+@keyframes portalShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Feed — timeline do que a agência fez */
+.portal-feed {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.portal-feed-empty {
+  padding: 24px 14px;
+  text-align: center;
+  color: var(--pc-ink-3);
+  font-size: 13px;
+  background: var(--pc-card);
+  border: 1px dashed var(--pc-line);
+  border-radius: var(--pc-radius-sm);
+  line-height: 1.5;
+}
+.portal-feed-item {
+  background: var(--pc-card);
+  border: 1px solid var(--pc-line);
+  border-radius: var(--pc-radius-sm);
+  padding: 12px 14px;
+  display: flex; gap: 12px;
+  align-items: flex-start;
+}
+.portal-feed-icon {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  display: grid; place-items: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--pc-brand) 12%, transparent);
+  color: var(--pc-brand);
+}
+.portal-feed-body {
+  flex: 1; min-width: 0;
+}
+.portal-feed-title {
+  font-size: 14px; font-weight: 600; color: var(--pc-ink);
+  line-height: 1.35;
+}
+.portal-feed-meta {
+  font-size: 12px; color: var(--pc-ink-3);
+  margin-top: 3px;
+}
+
+/* Calendário */
+.portal-cal {
+  background: var(--pc-card);
+  border: 1px solid var(--pc-line);
+  border-radius: var(--pc-radius-sm);
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.portal-cal-dow, .portal-cal-day {
+  aspect-ratio: 1 / 1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  border-radius: 8px;
+  position: relative;
+}
+.portal-cal-dow {
+  font-size: 10px; font-weight: 700;
+  color: var(--pc-ink-3);
+  text-transform: uppercase;
+  aspect-ratio: auto;
+  padding: 6px 0 4px;
+}
+.portal-cal-day {
+  color: var(--pc-ink-2);
+  font-weight: 500;
+}
+.portal-cal-day.empty { color: transparent; }
+.portal-cal-day.today {
+  background: color-mix(in srgb, var(--pc-brand) 14%, transparent);
+  color: var(--pc-brand);
+  font-weight: 700;
+}
+.portal-cal-day.has-post::after {
+  content: '';
+  position: absolute; bottom: 6px; left: 50%;
+  transform: translateX(-50%);
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--pc-brand);
+}
+.portal-cal-day.has-post.today::after { background: var(--pc-brand); box-shadow: 0 0 0 2px var(--pc-card); }
+
+.portal-cal-list {
+  margin-top: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.portal-cal-list-empty {
+  padding: 16px 14px;
+  text-align: center;
+  color: var(--pc-ink-3);
+  font-size: 12.5px;
+}
+.portal-cal-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  background: var(--pc-card);
+  border: 1px solid var(--pc-line);
+  border-radius: var(--pc-radius-sm);
+}
+.portal-cal-item-date {
+  flex-shrink: 0;
+  width: 44px; text-align: center;
+  border-right: 1px solid var(--pc-line);
+  padding-right: 12px;
+}
+.portal-cal-item-day {
+  font-size: 20px; font-weight: 700; color: var(--pc-ink);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.portal-cal-item-dow {
+  font-size: 10px; font-weight: 600; color: var(--pc-ink-3);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.portal-cal-item-body {
+  flex: 1; min-width: 0;
+}
+.portal-cal-item-title {
+  font-size: 13.5px; font-weight: 600; color: var(--pc-ink);
+  line-height: 1.35;
+  overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.portal-cal-item-meta {
+  font-size: 11.5px; color: var(--pc-ink-3);
+  margin-top: 2px;
+}
+
+/* Footer */
+.portal-footer {
+  padding: 28px 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--pc-ink-3);
+}
+.portal-footer strong { color: var(--pc-ink-2); font-weight: 700; }
+
+/* Mobile refinements (é o default, aqui só polimentos) */
+@media (max-width: 380px) {
+  .portal-header { padding: 36px 18px 26px; }
+  .portal-header-name { font-size: 26px; }
+  .portal-section { padding: 20px 16px 6px; }
+  .portal-kpi-value { font-size: 22px; }
+}
