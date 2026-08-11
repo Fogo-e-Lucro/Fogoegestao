@@ -2899,10 +2899,25 @@ const _auth = firebase.auth();
     });
     const pr = document.getElementById('portalRoot');
     if (pr) pr.style.display = 'block';
-    // Auth anônima pra ler Firestore com rules mínimas
-    _auth.signInAnonymously().then(() => portalBoot(slug)).catch(e => {
-      console.error('[portal] auth anon fail:', e);
-      portalShowError();
+    // Se JÁ tem user logado (admin do próprio Fogo & Gestão), usa ele.
+    // Só faz signInAnonymously se ninguém está logado — senão sobrescreve
+    // a sessão do admin em todas as abas do domínio (Firebase Auth persiste
+    // em IndexedDB compartilhada).
+    const bootWhenReady = () => portalBoot(slug);
+    const waitAuth = new Promise((resolve) => {
+      if (_auth.currentUser) return resolve(_auth.currentUser);
+      const unsub = _auth.onAuthStateChanged(u => {
+        unsub();
+        resolve(u);
+      });
+      setTimeout(() => resolve(null), 1500); // não trava indefinidamente
+    });
+    waitAuth.then(u => {
+      if (u) return bootWhenReady();
+      _auth.signInAnonymously().then(bootWhenReady).catch(e => {
+        console.error('[portal] auth anon fail:', e);
+        portalShowError();
+      });
     });
   });
 })();
