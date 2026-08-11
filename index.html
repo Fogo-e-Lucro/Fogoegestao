@@ -3053,8 +3053,72 @@ function portalOpenModal(postId) {
 function portalCloseModal() {
   const modal = document.getElementById('portalModal');
   if (!modal) return;
-  modal.classList.remove('open');
+  modal.classList.remove('open', 'portal-modal-day');
   document.body.style.overflow = '';
+}
+
+function portalOpenDayModal(dayNum) {
+  const s = _portalState;
+  const view = s.viewMonth;
+  const y = view.getFullYear(), m = view.getMonth();
+  const dayPosts = s.posts.filter(p => {
+    if (!p.dataPublicacao) return false;
+    const [py, pm, pd] = p.dataPublicacao.split('-').map(Number);
+    return py === y && pm === m + 1 && pd === dayNum;
+  }).sort((a,b) => (a.horario||'').localeCompare(b.horario||''));
+  if (!dayPosts.length) return;
+
+  const dt = new Date(y, m, dayNum);
+  const dateStr = dt.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+  const modal = document.getElementById('portalModal');
+  const card = document.getElementById('portalModalCard');
+  const feedPosts = dayPosts.filter(p => !portalIsStory(p.tipo));
+  const storyPosts = dayPosts.filter(p => portalIsStory(p.tipo));
+  const igHandle = s.cliente?.ig ? '@' + String(s.cliente.ig).replace(/^.*instagram\.com\//,'').replace(/\/+$/,'') : '@' + (s.cliente?.nome || 'restaurante').toLowerCase().replace(/\s+/g,'');
+
+  const renderPostRow = (p) => {
+    const cor = portalTipoCor(p.tipo);
+    const thumb = portalPostThumb(p);
+    const tipoLabel = portalTipoLabel(p.tipo);
+    const isReels = String(p.tipo||'').toLowerCase().includes('reel');
+    const bg = thumb
+      ? `background-image:url('${String(thumb).replace(/'/g,"\\'")}');background-size:cover;background-position:center;`
+      : `background:linear-gradient(135deg, ${cor}, color-mix(in srgb, ${cor} 55%, #000));`;
+    return `<div class="portal-day-post">
+      <div class="portal-day-mockup" style="${bg}">
+        ${isReels ? '<div class="portal-day-play">▶</div>' : ''}
+      </div>
+      <div class="portal-day-info">
+        <div class="portal-day-tag" style="background:color-mix(in srgb, ${cor} 15%, transparent);color:${cor}">${tipoLabel}${p.horario ? ' · ' + p.horario : ''}</div>
+        <div class="portal-day-title">${portalEsc(p.gancho || 'Sem título')}</div>
+        ${p.prato ? `<div class="portal-day-meta"><span>Prato:</span> ${portalEsc(p.prato)}</div>` : ''}
+        ${p.legenda ? `<div class="portal-day-caption">${portalEsc(p.legenda)}</div>` : ''}
+      </div>
+    </div>`;
+  };
+
+  card.innerHTML = `
+    <button type="button" class="portal-modal-close" onclick="portalCloseModal()">✕</button>
+    <div class="portal-day-header">
+      <div class="portal-day-datebig">${String(dayNum).padStart(2,'0')}</div>
+      <div>
+        <div class="portal-day-datefull">${dateStr}</div>
+        <div class="portal-day-datehandle">${portalEsc(igHandle)} · ${dayPosts.length} ${dayPosts.length === 1 ? 'postagem' : 'postagens'}</div>
+      </div>
+    </div>
+    <div class="portal-day-body">
+      ${feedPosts.length ? `<div class="portal-day-section">
+        <div class="portal-day-section-title">Feed <span>${feedPosts.length}</span></div>
+        ${feedPosts.map(renderPostRow).join('')}
+      </div>` : ''}
+      ${storyPosts.length ? `<div class="portal-day-section">
+        <div class="portal-day-section-title">Stories <span>${storyPosts.length}</span></div>
+        ${storyPosts.map(renderPostRow).join('')}
+      </div>` : ''}
+    </div>
+  `;
+  modal.classList.add('open', 'portal-modal-day');
+  document.body.style.overflow = 'hidden';
 }
 // ESC fecha
 document.addEventListener('keydown', (e) => {
@@ -3329,7 +3393,9 @@ function portalRenderCalendar() {
       ? `<div class="portal-cal-more">+${remaining}</div>`
       : '';
 
-    html += `<div class="portal-cal-cell${isToday ? ' today' : ''}${dayPosts.length ? ' has-post' : ''}">
+    const dayClickable = dayPosts.length > 0;
+    html += `<div class="portal-cal-cell${isToday ? ' today' : ''}${dayPosts.length ? ' has-post' : ''}${dayClickable ? ' clickable' : ''}"
+      ${dayClickable ? `onclick="portalOpenDayModal(${d})"` : ''}>
       <div class="portal-cal-cell-day">${d}</div>
       <div class="portal-cal-thumbs">${thumbs}${moreBadge}</div>
     </div>`;

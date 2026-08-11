@@ -14370,3 +14370,209 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
   .portal-cal-thumb-play { font-size: 10px; }
   .portal-cal-more { font-size: 9.5px; }
 }
+
+/* ═══ Portal v6 — modal do dia + degradê + motion polido ═══ */
+
+/* Degradê sutil no fundo do calendário */
+.portal-calendar {
+  background: linear-gradient(180deg, transparent 0%, var(--pc-line-soft) 100%);
+  border-radius: var(--pc-radius);
+  padding: 4px;
+}
+
+/* Cell clicável — hover com degradê elegante */
+.portal-calendar .portal-cal-cell.clickable {
+  cursor: pointer;
+}
+.portal-calendar .portal-cal-cell.clickable::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 0%, color-mix(in srgb, var(--pc-brand) 0%, transparent) 100%);
+  pointer-events: none;
+  transition: background .28s ease;
+  border-radius: 4px;
+}
+.portal-calendar .portal-cal-cell.clickable:hover::before {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--pc-brand) 6%, transparent) 0%, color-mix(in srgb, var(--pc-brand) 14%, transparent) 100%);
+}
+.portal-calendar .portal-cal-cell.clickable:active { transform: scale(.995); }
+
+/* Header do portal com degradê sutil da cor da marca */
+.portal-header {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--pc-brand) 6%, transparent) 0%,
+    transparent 100%
+  ) !important;
+  padding: 40px 20px 24px !important;
+  border-radius: var(--pc-radius);
+  margin: 0 -20px 24px !important;
+  border-bottom: none !important;
+}
+
+/* Chip filter — motion suave no ativo */
+.portal-chip {
+  position: relative;
+  overflow: hidden;
+}
+.portal-chip.on {
+  background: linear-gradient(135deg, var(--pc-ink), #2d2d3a);
+  box-shadow: 0 4px 12px rgba(0,0,0,.14);
+}
+
+/* Modal do dia — visual mais rico */
+.portal-modal-day .portal-modal-card {
+  max-width: 480px;
+}
+.portal-day-header {
+  padding: 24px 20px 20px;
+  display: flex; align-items: center; gap: 16px;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--pc-brand) 12%, #fff) 0%,
+    #fff 100%
+  );
+  border-bottom: 1px solid var(--pc-line);
+}
+.portal-day-datebig {
+  font-size: 44px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--pc-brand);
+  font-variant-numeric: tabular-nums;
+}
+.portal-day-datefull {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--pc-ink);
+  text-transform: capitalize;
+  line-height: 1.2;
+}
+.portal-day-datehandle {
+  font-size: 12px;
+  color: var(--pc-ink-3);
+  margin-top: 3px;
+}
+.portal-day-body {
+  padding: 16px 20px 22px;
+  max-height: 60vh;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 18px;
+}
+.portal-day-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--pc-ink-3);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.portal-day-section-title span {
+  background: var(--pc-line-soft);
+  color: var(--pc-ink-2);
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+.portal-day-post {
+  display: flex; gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--pc-line-soft);
+  opacity: 0;
+  animation: portalFadeUp .35s ease-out forwards;
+}
+.portal-day-post:first-of-type { border-top: none; }
+.portal-day-post:nth-child(2) { animation-delay: .04s; }
+.portal-day-post:nth-child(3) { animation-delay: .08s; }
+.portal-day-post:nth-child(4) { animation-delay: .12s; }
+.portal-day-post:nth-child(5) { animation-delay: .16s; }
+.portal-day-mockup {
+  width: 68px; aspect-ratio: 4 / 5;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background-color: var(--pc-line);
+  background-size: cover; background-position: center;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(0,0,0,.08);
+}
+.portal-day-play {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 14px;
+  text-shadow: 0 2px 6px rgba(0,0,0,.4);
+}
+.portal-day-info {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.portal-day-tag {
+  align-self: flex-start;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 5px;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.portal-day-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pc-ink);
+  line-height: 1.3;
+}
+.portal-day-meta {
+  font-size: 12px;
+  color: var(--pc-ink-2);
+}
+.portal-day-meta span {
+  font-weight: 600;
+  color: var(--pc-ink-3);
+}
+.portal-day-caption {
+  font-size: 12.5px;
+  color: var(--pc-ink-2);
+  line-height: 1.5;
+  padding: 6px 10px;
+  background: var(--pc-line-soft);
+  border-radius: 6px;
+  margin-top: 4px;
+  white-space: pre-wrap;
+}
+
+/* Skeleton com shimmer gradiente pro loading */
+.portal-loading {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--pc-brand) 4%, #fff) 0%,
+    #fff 60%,
+    color-mix(in srgb, var(--pc-brand) 3%, #fff) 100%
+  );
+}
+
+/* Motion do modal — spring mais elástico */
+@keyframes portalModalCardIn {
+  0% { opacity: 0; transform: translateY(30px) scale(.92); }
+  60% { opacity: 1; transform: translateY(-4px) scale(1.005); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.portal-modal-card {
+  animation: portalModalCardIn .42s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* Backdrop com gradiente radial */
+.portal-modal {
+  background: radial-gradient(circle at 50% 50%,
+    rgba(20,20,25,.72) 0%,
+    rgba(20,20,25,.85) 100%
+  );
+}
+
+/* Mini-thumbs no calendário — hover mais elegante */
+.portal-cal-thumb {
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+}
+.portal-cal-thumb:hover {
+  transform: scale(1.08) translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.24), 0 0 0 2px rgba(255,255,255,.6);
+}
