@@ -6434,25 +6434,67 @@ function switchImgTab(tab, e) {
 }
 
 function handleImageUpload(e) {
-  Array.from(e.target.files).forEach(file => {
+  const files = Array.from(e.target.files || []);
+  if (!files.length) return;
+  files.forEach(file => {
     const isVid = (file.type || '').startsWith('video/');
-    if (isVid) {
-      // Video: blob URL (dataURL de vídeo estoura RAM em arquivos grandes)
-      const blobUrl = URL.createObjectURL(file);
-      currentImages.push(blobUrl);
+    const sizeMb = (file.size / (1024*1024)).toFixed(1);
+    // Placeholder imediato "carregando" no lugar que vai ficar a mídia
+    const loadingId = 'ld_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    const placeholder = { _loading: true, _id: loadingId, _name: file.name, _isVid: isVid, _sizeMb: sizeMb };
+    currentImages.push(placeholder);
+    if (typeof renderImagePreviews === 'function') renderImagePreviews();
+    if (typeof renderMediaThumbs === 'function') renderMediaThumbs();
+
+    const replaceLoader = (finalUrl) => {
+      const idx = currentImages.findIndex(x => x && x._id === loadingId);
+      if (idx === -1) return; // usuário removeu antes de terminar
+      currentImages.splice(idx, 1, finalUrl);
       if (typeof renderImagePreviews === 'function') renderImagePreviews();
       if (typeof renderMediaThumbs === 'function') renderMediaThumbs();
+    };
+    const removeLoader = () => {
+      const idx = currentImages.findIndex(x => x && x._id === loadingId);
+      if (idx !== -1) currentImages.splice(idx, 1);
+      if (typeof renderImagePreviews === 'function') renderImagePreviews();
+      if (typeof renderMediaThumbs === 'function') renderMediaThumbs();
+    };
+
+    if (isVid) {
+      // Video: blob URL — instantâneo mas verifica se o video carrega mesmo
+      try {
+        const blobUrl = URL.createObjectURL(file);
+        const probe = document.createElement('video');
+        probe.preload = 'metadata';
+        probe.muted = true;
+        probe.playsInline = true;
+        probe.onloadedmetadata = () => { replaceLoader(blobUrl); probe.remove(); };
+        probe.onerror = () => {
+          console.error('[upload] video erro:', file.name, sizeMb+'MB');
+          if (typeof showToast === 'function') showToast('error','❌', `Erro ao carregar vídeo (${file.name}) — formato não suportado?`);
+          URL.revokeObjectURL(blobUrl);
+          removeLoader();
+          probe.remove();
+        };
+        probe.src = blobUrl;
+      } catch(err) {
+        console.error('[upload] blob fail:', err);
+        if (typeof showToast === 'function') showToast('error','❌','Falhou ao processar vídeo: ' + (err.message || err));
+        removeLoader();
+      }
     } else {
-      // Image: dataURL (persiste no localStorage sem depender do blob)
+      // Image: dataURL (persiste no localStorage)
       const r = new FileReader();
-      r.onload = ev => {
-        currentImages.push(ev.target.result);
-        if (typeof renderImagePreviews === 'function') renderImagePreviews();
-        if (typeof renderMediaThumbs === 'function') renderMediaThumbs();
+      r.onload = ev => replaceLoader(ev.target.result);
+      r.onerror = () => {
+        if (typeof showToast === 'function') showToast('error','❌','Erro lendo imagem');
+        removeLoader();
       };
       r.readAsDataURL(file);
     }
   });
+  // Limpa input pra permitir escolher o mesmo arquivo de novo
+  try { e.target.value = ''; } catch(_) {}
 }
 
 // Detecta se uma URL/dataURL é vídeo
@@ -6483,13 +6525,21 @@ function removeImage(i) {
 }
 
 function renderImagePreviews() {
-  document.getElementById('imagePreviewList').innerHTML = currentImages.map((src,i) => `
-    <div class="img-preview-item">
+  document.getElementById('imagePreviewList').innerHTML = currentImages.map((src,i) => {
+    if (src && typeof src === 'object' && src._loading) {
+      return `<div class="img-preview-item img-preview-loading">
+        <div class="thumb-spinner"></div>
+        <div class="thumb-loading-label">${src._isVid ? '🎬' : '🖼️'} ${src._sizeMb}MB</div>
+        <button onclick="removeImage(${i})">✕</button>
+      </div>`;
+    }
+    return `<div class="img-preview-item">
       ${isVideoUrl(src)
         ? `<video src="${src}" muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video><span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:20px;text-shadow:0 1px 3px rgba(0,0,0,.4);pointer-events:none;">▶</span>`
         : `<img src="${src}" alt="">`}
       <button onclick="removeImage(${i})">✕</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -31238,6 +31288,13 @@ function renderMediaThumbs() {
   const cont = document.getElementById('mediaThumbs');
   if (!cont) return;
   cont.innerHTML = (currentImages || []).map((src, i) => {
+    if (src && typeof src === 'object' && src._loading) {
+      return `<div class="thumb thumb-loading" title="Carregando ${src._name || 'mídia'}...">
+        <div class="thumb-spinner"></div>
+        <div class="thumb-loading-label">${src._isVid ? '🎬' : '🖼️'} ${src._sizeMb}MB</div>
+        <button onclick="removeImage(${i})" title="Cancelar">×</button>
+      </div>`;
+    }
     const safe = String(src).replace(/'/g,"%27");
     if (isVideoUrl(src)) {
       return `<div class="thumb thumb-video">
@@ -31252,9 +31309,8 @@ function renderMediaThumbs() {
   const mock = document.getElementById('estudioMock');
   const first = (currentImages || [])[0];
   if (media && mock) {
-    if (first) {
+    if (first && !(typeof first === 'object' && first._loading)) {
       if (isVideoUrl(first)) {
-        // Video no mockup: usa <video> tag
         const safe = String(first).replace(/'/g,"%27");
         media.style.backgroundImage = '';
         media.innerHTML = `<video src="${safe}" muted playsinline autoplay loop style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"></video>`;
@@ -31262,6 +31318,10 @@ function renderMediaThumbs() {
         media.innerHTML = '';
         media.style.backgroundImage = `url('${String(first).replace(/'/g,"%27")}')`;
       }
+      mock.classList.add('has-media');
+    } else if (first && typeof first === 'object' && first._loading) {
+      media.innerHTML = `<div class="mock-loading"><div class="thumb-spinner"></div><div>Carregando ${first._name || 'mídia'}...</div></div>`;
+      media.style.backgroundImage = '';
       mock.classList.add('has-media');
     } else {
       media.innerHTML = '';
