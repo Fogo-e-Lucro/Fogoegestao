@@ -27648,15 +27648,39 @@ async function bdInit() {
       _bdClientes = [];
       snap.forEach(doc => _bdClientes.push({ id: doc.id, ...doc.data() }));
       _bdClientes.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+      console.log('[bd] clientes carregados:', _bdClientes.length);
       bdRenderList();
       if (_bdSelectedId) bdRenderDetail(_bdSelectedId);
       bdCheckAvisos();
-      // Propaga mudanças pra outras abas (dropdowns de cliente)
       try { if (typeof onClientesBaseChanged === 'function') onClientesBaseChanged(); } catch(e) {}
-    }, () => {});
+      // Atualiza combobox do Estúdio se estiver aberto
+      const dd = document.getElementById('clienteDropdown');
+      if (dd && !dd.hidden && typeof filtrarClientes === 'function') {
+        filtrarClientes(document.getElementById('clienteBusca')?.value || '');
+      }
+    }, err => {
+      console.error('[bd] listener erro:', err);
+      _bdUnsub = null; // permite retry
+      if (err.code === 'permission-denied' || String(err).includes('permission')) {
+        if (typeof showToast === 'function') {
+          showToast('error', '🔒', 'Sessão expirada — faça login de novo pra ver os clientes.');
+        }
+        // Re-check auth: força signout/signin flow
+        try {
+          const u = firebase.auth?.()?.currentUser;
+          if (!u) {
+            const login = document.getElementById('loginScreen');
+            if (login) { login.classList.remove('hidden'); login.style.display = ''; }
+          }
+        } catch(_) {}
+      } else {
+        if (typeof showToast === 'function') {
+          showToast('error', '⚠️', 'Erro carregando clientes: ' + (err.message || err.code || 'sem rede'));
+        }
+      }
+    });
   } catch(e) { console.error('BD init:', e); }
-  // Timer pra checar avisos
-  if (!_bdAvisosTimer) _bdAvisosTimer = setInterval(bdCheckAvisos, 60 * 60 * 1000); // 1x por hora
+  if (!_bdAvisosTimer) _bdAvisosTimer = setInterval(bdCheckAvisos, 60 * 60 * 1000);
 }
 
 function bdSearch(q) {
