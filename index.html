@@ -2928,15 +2928,43 @@ async function portalRender(cliente) {
 
 async function portalFetchPosts(clientName) {
   if (!clientName) return [];
+  const posts = [];
+  // Fonte primária: coleção posts (aba Pauta)
   try {
     const snap = await _db.collection('posts').where('restaurante','==', clientName).limit(500).get();
-    const posts = [];
-    snap.forEach(d => posts.push({ id: d.id, ...d.data() }));
-    return posts.sort((a,b) => (a.dataPublicacao||'').localeCompare(b.dataPublicacao||''));
-  } catch(e) {
-    console.warn('[portal] posts fail:', e);
-    return [];
-  }
+    snap.forEach(d => posts.push({ id: d.id, ...d.data(), _source: 'pauta' }));
+  } catch(e) { console.warn('[portal] posts fail:', e); }
+  // Fallback: pj_tasks com dueDate (das listas de produção) — vira post cadastrado
+  try {
+    const snap = await _db.collection('pj_tasks').where('client','==', clientName).limit(500).get();
+    snap.forEach(d => {
+      const t = d.data();
+      if (!t.dueDate) return;
+      // Skip se já tá em posts (evita duplicação se cliente usa os 2)
+      if (posts.some(p => p.id === d.id)) return;
+      posts.push({
+        id: d.id,
+        restaurante: clientName,
+        dataPublicacao: t.dueDate,
+        horario: t.dueTime || '',
+        gancho: t.title || 'Post',
+        tipo: portalGuessType(t.title),
+        prato: '',
+        imagens: [],
+        _source: 'task',
+        _status: t.statusId,
+      });
+    });
+  } catch(e) { console.warn('[portal] tasks fail:', e); }
+  return posts.sort((a,b) => (a.dataPublicacao||'').localeCompare(b.dataPublicacao||''));
+}
+function portalGuessType(title) {
+  const t = String(title || '').toLowerCase();
+  if (t.includes('reels') || t.includes('vídeo') || t.includes('video')) return 'REELS';
+  if (t.includes('story') || t.includes('stories')) return 'STORY';
+  if (t.includes('carrossel')) return 'CARROSSEL';
+  if (t.includes('foto') || t.includes('imagem') || t.includes('arte')) return 'FOTO';
+  return 'FEED';
 }
 
 function portalCalNav(dir) {
