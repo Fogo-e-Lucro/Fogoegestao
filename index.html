@@ -31335,6 +31335,7 @@ function atualizarAgendaPreview() {
 /* RECORRÊNCIA (Estúdio — o selectRecorrencia legado é sobrescrito só quando ele existir) */
 window.selectRecorrencia = function(rec) {
   estudioState.recorrencia = rec;
+  selectedRecorrencia = rec; // atualiza a let de módulo que savePost lê
   window.selectedRecorrencia = rec;
   document.querySelectorAll('#recorrenciaPills button').forEach(b => b.classList.toggle('active', b.dataset.rec === rec));
   const qwrap = document.getElementById('recorrenciaSemQtdWrap'); if (qwrap) qwrap.hidden = !rec;
