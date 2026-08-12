@@ -31107,12 +31107,26 @@ function escolherCliente(nome) {
   const cc = document.getElementById('crumbCliente'); if (cc) { cc.hidden = false; cc.textContent = nome; }
   document.querySelector('[data-block="cliente"]')?.classList.add('filled');
   fecharComboClientes();
+  // Tira foco do input pra evitar que o dropdown reabra por qualquer evento residual
+  try { busca?.blur(); } catch(_){}
   if (typeof onBdClienteSelected === 'function') {
     const c = (window._bdClientes || []).find(x => (x.nome||x.razaoSocial) === nome);
     if (c) try { onBdClienteSelected(c); } catch(_){}
   }
   atualizarPreview();
   scheduleAutoSave();
+}
+
+// Fecha o combo se click cair fora do bloco cliente (garante fechamento
+// mesmo quando o input não perde foco, ex: click em elemento não-focável).
+if (typeof window !== 'undefined' && !window.__clienteComboOutsideBound) {
+  window.__clienteComboOutsideBound = true;
+  document.addEventListener('mousedown', (ev) => {
+    const dd = document.getElementById('clienteDropdown');
+    if (!dd || dd.hidden) return;
+    const block = document.querySelector('[data-block="cliente"]');
+    if (block && !block.contains(ev.target)) fecharComboClientes();
+  });
 }
 function criarNovoCliente() {
   const busca = document.getElementById('clienteBusca');
