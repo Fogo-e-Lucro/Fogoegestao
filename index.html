@@ -6595,8 +6595,8 @@ function validateForm() {
     if (!el.value?.trim()) { el.classList.add('error'); showError(eid); missing.push({ label, id: fid }); }
     else { el.classList.remove('error'); clearError(eid); }
   });
-  if (!selectedTipo) { showError('err-tipo'); missing.push({ label: 'Formato', id: null }); } else clearError('err-tipo');
-  if (!selectedObj)  { showError('err-objetivo'); missing.push({ label: 'Objetivo', id: null }); } else clearError('err-objetivo');
+  if (!selectedTipo) { showError('err-tipo'); missing.push({ label: 'Formato', id: null, block: 'formato' }); } else clearError('err-tipo');
+  if (!selectedObj)  { showError('err-objetivo'); missing.push({ label: 'Objetivo', id: null, block: 'objetivo' }); } else clearError('err-objetivo');
   return { ok: missing.length === 0, missing };
 }
 
@@ -7251,12 +7251,22 @@ function savePost() {
   if (!v.ok) {
     const nomes = v.missing.map(m => m.label).join(', ');
     if (typeof showToast === 'function') showToast('error','⚠️', 'Falta preencher: ' + nomes);
-    // Foca/rola até o primeiro campo faltante que existe no DOM
-    const first = v.missing.find(m => m.id && document.getElementById(m.id));
-    if (first) {
-      const el = document.getElementById(first.id);
-      try { el.scrollIntoView({ behavior:'smooth', block:'center' }); } catch(_){}
-      if (el.type !== 'hidden') { try { el.focus(); } catch(_){} }
+    // Foca/rola até o primeiro faltante que existe no DOM (id de input OU data-block do estúdio)
+    let target = null;
+    for (const m of v.missing) {
+      if (m.id) {
+        const el = document.getElementById(m.id);
+        if (el) { target = el; break; }
+      }
+      if (m.block) {
+        const el = document.querySelector(`[data-block="${m.block}"]`);
+        if (el) { target = el; break; }
+      }
+    }
+    if (target) {
+      try { target.scrollIntoView({ behavior:'smooth', block:'center' }); } catch(_){}
+      if (target.tagName === 'INPUT' && target.type !== 'hidden') { try { target.focus(); } catch(_){} }
+      if (target.tagName === 'TEXTAREA') { try { target.focus(); } catch(_){} }
     }
     return;
   }
@@ -31168,6 +31178,7 @@ function criarNovoCliente() {
 /* FORMATO */
 function escolherFormato(tipo) {
   estudioState.tipo = tipo;
+  selectedTipo = tipo; // atualiza a let de módulo que validateForm lê
   window.selectedTipo = tipo;
   document.querySelectorAll('.estudio-format-card').forEach(b => b.classList.toggle('active', b.dataset.tipo === tipo));
   document.querySelectorAll('.estudio-mock-tab').forEach(b => b.classList.toggle('active', b.dataset.format === tipo));
@@ -31214,6 +31225,7 @@ function renderObjetivosEstudio() {
 }
 function selectObjetivoEstudio(obj) {
   estudioState.objetivo = obj;
+  selectedObj = obj; // atualiza a let de módulo que validateForm lê
   window.selectedObj = obj;
   document.querySelectorAll('.estudio-obj-chip').forEach(b => b.classList.toggle('active', b.dataset.obj === obj));
   const op = document.getElementById('objetivoPreview'); if (op) op.textContent = obj;
