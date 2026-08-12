@@ -2864,6 +2864,13 @@ let filterSearch   = '';
 let exportPeriod   = 'all'; // 'all' | 'YYYY-MM'
 let selectedRecorrencia = ''; // '' | 'semanal' | 'quinzenal' | 'mensal'
 
+// Debug: expõe leitura de posts/state pra DevTools sem depender de escopo de módulo.
+// (getters, não setters — código do app continua usando as let bare.)
+Object.defineProperty(window, '__fgDebug', { get() { return {
+  posts, currentImages, editingId, selectedTipo, selectedObj, selectedRecorrencia,
+  activeRestaurante, estudioState: (typeof estudioState !== 'undefined' ? estudioState : null),
+}; }, configurable: true });
+
 /* ═══════════════════════════════════════════════════════
    BACKUP / RESTORE
 ═══════════════════════════════════════════════════════ */
@@ -7909,15 +7916,24 @@ function renderPostCardCompact(post) {
   const recBadge = post.recorrente ? `<span class="badge recorrente">🔄 ${post.recorrente}</span>` : '';
   const restPill = post.restaurante ? `<span class="post-rest-pill">🏪 ${escHtml(post.restaurante)}</span>` : '';
   const horaBadge = post.horario ? `<span class="badge" style="background:var(--bg2);color:var(--text2);">🕐 ${escHtml(post.horario)}</span>` : '';
-  const cleanImgs = (post.imagens || []).filter(s => typeof s === 'string');
+  const rawImgs = Array.isArray(post.imagens) ? post.imagens : [];
+  const cleanImgs = rawImgs.filter(s => typeof s === 'string' && !s.startsWith('blob:'));
+  const brokenLocal = rawImgs.length > 0 && cleanImgs.length === 0; // tinha algo mas nada persistente
   const isVid = (s) => typeof isVideoUrl === 'function' ? isVideoUrl(s) : /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(s);
-  const thumbs = cleanImgs.length ? `<div class="post-card-thumbs" style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;">
-    ${cleanImgs.slice(0,4).map(src => isVid(src)
-      ? `<div style="position:relative;width:56px;height:56px;border-radius:8px;overflow:hidden;background:#000;border:1px solid var(--border);"><video src="${escHtml(src)}" muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video><span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:14px;text-shadow:0 1px 3px rgba(0,0,0,.6);pointer-events:none;">▶</span></div>`
-      : `<img src="${escHtml(src)}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:zoom-in;" onclick="typeof pjOpenLightbox==='function' && pjOpenLightbox(this.src,'')">`
-    ).join('')}
-    ${cleanImgs.length > 4 ? `<div style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2);">+${cleanImgs.length-4}</div>` : ''}
-  </div>` : '';
+  let thumbs = '';
+  if (cleanImgs.length) {
+    thumbs = `<div class="post-card-thumbs" style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;">
+      ${cleanImgs.slice(0,4).map(src => isVid(src)
+        ? `<div style="position:relative;width:56px;height:56px;border-radius:8px;overflow:hidden;background:#000;border:1px solid var(--border);"><video src="${escHtml(src)}" muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video><span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:14px;text-shadow:0 1px 3px rgba(0,0,0,.6);pointer-events:none;">▶</span></div>`
+        : `<img src="${escHtml(src)}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:zoom-in;" onclick="typeof pjOpenLightbox==='function' && pjOpenLightbox(this.src,'')">`
+      ).join('')}
+      ${cleanImgs.length > 4 ? `<div style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2);">+${cleanImgs.length-4}</div>` : ''}
+    </div>`;
+  } else if (brokenLocal) {
+    thumbs = `<div style="margin:8px 0;padding:10px 12px;background:var(--bg2);border:1px dashed var(--border);border-radius:8px;font-size:12px;color:var(--text2);">⚠️ Mídia local não sincronizou. Abra o post em <b>Editar</b> e reenvie o arquivo.</div>`;
+  } else if (['REELS','FOTO','CARROSSEL','STORY'].includes(post.tipo)) {
+    thumbs = `<div style="margin:8px 0;padding:10px 12px;background:var(--bg2);border:1px dashed var(--border);border-radius:8px;font-size:12px;color:var(--text3);">📎 Sem mídia anexada</div>`;
+  }
   const section = (label, value) => value ? `<div style="margin-top:10px;"><div style="font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;">${label}</div><div style="font-size:13px;color:var(--text2);line-height:1.55;white-space:pre-wrap;">${escHtml(value)}</div></div>` : '';
   const link = post.link ? `<div style="margin-top:10px;"><a href="${escHtml(post.link)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--accent);text-decoration:none;">🔗 Ver referência</a></div>` : '';
   return `<div class="post-card revealed post-card-compact">
