@@ -6582,21 +6582,22 @@ function showError(id) { const e=document.getElementById(id); e&&e.classList.add
 function clearError(id) { const e=document.getElementById(id); e&&e.classList.remove('visible'); }
 
 function validateForm() {
-  let ok = true;
+  const missing = [];
   const fields = [
-    ['restaurante','err-restaurante'],
-    ['dataPublicacao','err-data'],
-    ['gancho','err-gancho'],
-    ['legenda','err-legenda']
+    ['restaurante','err-restaurante','Cliente'],
+    ['dataPublicacao','err-data','Data de publicação'],
+    ['gancho','err-gancho','Gancho'],
+    ['legenda','err-legenda','Legenda']
   ];
-  fields.forEach(([fid, eid]) => {
+  fields.forEach(([fid, eid, label]) => {
     const el = document.getElementById(fid);
-    if (!el.value.trim()) { el.classList.add('error'); showError(eid); ok=false; }
+    if (!el) return;
+    if (!el.value?.trim()) { el.classList.add('error'); showError(eid); missing.push({ label, id: fid }); }
     else { el.classList.remove('error'); clearError(eid); }
   });
-  if (!selectedTipo) { showError('err-tipo'); ok=false; } else clearError('err-tipo');
-  if (!selectedObj)  { showError('err-objetivo'); ok=false; } else clearError('err-objetivo');
-  return ok;
+  if (!selectedTipo) { showError('err-tipo'); missing.push({ label: 'Formato', id: null }); } else clearError('err-tipo');
+  if (!selectedObj)  { showError('err-objetivo'); missing.push({ label: 'Objetivo', id: null }); } else clearError('err-objetivo');
+  return { ok: missing.length === 0, missing };
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -7240,7 +7241,25 @@ ${c.script?'Melhore e complete o roteiro acima nos 3 blocos.':'Crie o roteiro de
    SAVE / EDIT / DELETE
 ═══════════════════════════════════════════════════════ */
 function savePost() {
-  if (!validateForm()) return;
+  // Bloqueia salvar enquanto tiver mídia subindo pra evitar placeholder órfão no post
+  const uploading = Array.isArray(currentImages) && currentImages.some(x => x && typeof x === 'object' && x._loading);
+  if (uploading) {
+    if (typeof showToast === 'function') showToast('warn','⏳','Aguarde o upload da mídia terminar');
+    return;
+  }
+  const v = validateForm();
+  if (!v.ok) {
+    const nomes = v.missing.map(m => m.label).join(', ');
+    if (typeof showToast === 'function') showToast('error','⚠️', 'Falta preencher: ' + nomes);
+    // Foca/rola até o primeiro campo faltante que existe no DOM
+    const first = v.missing.find(m => m.id && document.getElementById(m.id));
+    if (first) {
+      const el = document.getElementById(first.id);
+      try { el.scrollIntoView({ behavior:'smooth', block:'center' }); } catch(_){}
+      if (el.type !== 'hidden') { try { el.focus(); } catch(_){} }
+    }
+    return;
+  }
   const baseDate = document.getElementById('dataPublicacao').value;
   const post = {
     id: editingId || uuid(),
