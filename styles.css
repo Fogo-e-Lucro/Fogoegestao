@@ -14653,3 +14653,65 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
 }
 .estudio-combo-clear:hover { background: rgba(0,0,0,.16); color: rgba(0,0,0,.8); }
 .estudio-combo-clear[hidden] { display: none; }
+
+/* Diálogo de confirmação destrutivo (usado em pjRemoveTaskAttachment etc) */
+.pj-confirm-danger {
+  position: fixed; inset: 0; z-index: 9999;
+  display: grid; place-items: center;
+  animation: pjCdFade .18s ease-out;
+}
+.pj-confirm-danger__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(20, 6, 6, .68);
+  backdrop-filter: blur(6px);
+}
+.pj-confirm-danger__box {
+  position: relative;
+  width: min(92vw, 420px);
+  background: var(--card, #fff);
+  border: 2px solid #dc2626;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px -20px rgba(220,38,38,.45), 0 12px 30px rgba(0,0,0,.25);
+  padding: 24px 22px 18px;
+  text-align: center;
+  animation: pjCdIn .22s cubic-bezier(.2,.9,.3,1.2);
+}
+.pj-confirm-danger__icon {
+  font-size: 34px; line-height: 1; margin-bottom: 8px;
+}
+.pj-confirm-danger__title {
+  font-size: 15px; font-weight: 700; color: #dc2626;
+  text-transform: uppercase; letter-spacing: 1.2px;
+  margin-bottom: 10px;
+}
+.pj-confirm-danger__msg {
+  font-size: 15px; line-height: 1.5;
+  color: var(--text, #18181b);
+  margin-bottom: 20px;
+}
+.pj-confirm-danger__buttons {
+  display: flex; gap: 10px; justify-content: center;
+}
+.pj-confirm-danger__cancel,
+.pj-confirm-danger__confirm {
+  padding: 10px 18px; border-radius: 10px; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: 1.5px solid transparent;
+  transition: transform .12s, box-shadow .12s, background .12s;
+}
+.pj-confirm-danger__cancel {
+  background: var(--bg2, #f4f4f5); color: var(--text2, #52525b);
+  border-color: var(--border, #e4e4e7);
+}
+.pj-confirm-danger__cancel:hover { background: var(--bg, #fff); }
+.pj-confirm-danger__confirm {
+  background: #dc2626; color: #fff;
+}
+.pj-confirm-danger__confirm:hover { background: #b91c1c; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(220,38,38,.4); }
+.pj-confirm-danger__confirm:focus-visible { outline: 3px solid rgba(220,38,38,.35); outline-offset: 2px; }
+
+@keyframes pjCdFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pjCdIn { from { transform: scale(.9) translateY(6px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+
+@media (prefers-color-scheme: dark) {
+  .pj-confirm-danger__box { background: var(--card, #18181b); }
+}

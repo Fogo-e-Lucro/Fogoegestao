@@ -25415,6 +25415,49 @@ window.addEventListener('load', () => {
   }, 5000);
 });
 
+// Retorna o primeiro nome do user logado (fallback: 'Você')
+function pjGetFirstName() {
+  try {
+    const u = (typeof _auth !== 'undefined' && _auth?.currentUser) || (typeof _currentUser !== 'undefined' && _currentUser) || null;
+    const uid = u?.uid;
+    const m = (typeof pjMembers !== 'undefined' && Array.isArray(pjMembers)) ? pjMembers.find(x => x.uid === uid) : null;
+    const nome = (m?.name || u?.displayName || u?.email || '').toString();
+    if (!nome) return 'Você';
+    const first = nome.split(/\s+|@/)[0] || nome;
+    return first.charAt(0).toUpperCase() + first.slice(1);
+  } catch(_) { return 'Você'; }
+}
+
+// Diálogo de confirmação destrutivo (vermelho). Retorna Promise<boolean>.
+function pjConfirmDanger(opts) {
+  const { icon='⚠️', title='Confirmar', message='Tem certeza?', confirmLabel='Sim', cancelLabel='Cancelar' } = opts || {};
+  return new Promise(resolve => {
+    // Remove qualquer instância anterior
+    document.querySelectorAll('.pj-confirm-danger').forEach(n => n.remove());
+    const el = document.createElement('div');
+    el.className = 'pj-confirm-danger';
+    el.innerHTML = `
+      <div class="pj-confirm-danger__backdrop"></div>
+      <div class="pj-confirm-danger__box" role="alertdialog" aria-modal="true">
+        <div class="pj-confirm-danger__icon">${icon}</div>
+        <div class="pj-confirm-danger__title">${escHtml(title)}</div>
+        <div class="pj-confirm-danger__msg">${escHtml(message)}</div>
+        <div class="pj-confirm-danger__buttons">
+          <button type="button" class="pj-confirm-danger__cancel">${escHtml(cancelLabel)}</button>
+          <button type="button" class="pj-confirm-danger__confirm">${escHtml(confirmLabel)}</button>
+        </div>
+      </div>`;
+    const done = (v) => { el.remove(); document.removeEventListener('keydown', onKey); resolve(v); };
+    const onKey = (e) => { if (e.key === 'Escape') done(false); if (e.key === 'Enter') done(true); };
+    document.addEventListener('keydown', onKey);
+    el.querySelector('.pj-confirm-danger__backdrop').addEventListener('click', () => done(false));
+    el.querySelector('.pj-confirm-danger__cancel').addEventListener('click', () => done(false));
+    el.querySelector('.pj-confirm-danger__confirm').addEventListener('click', () => done(true));
+    document.body.appendChild(el);
+    setTimeout(() => el.querySelector('.pj-confirm-danger__confirm')?.focus(), 30);
+  });
+}
+
 async function pjAddTaskAttachment(file) {
   if (!pjCurrentTaskId) return;
   const taskId = pjCurrentTaskId;
@@ -25516,9 +25559,19 @@ async function pjAddTaskAttachment(file) {
 
 async function pjRemoveTaskAttachment(idx) {
   if (!pjCurrentTaskId) return;
-  if (!confirm('Remover este anexo?')) return;
   const task = pjAllTasks.find(t => t.id === pjCurrentTaskId);
   if (!task || !Array.isArray(task.attachments)) return;
+  const target = task.attachments[idx];
+  const nome = pjGetFirstName();
+  const arqNome = target?.name ? ` "${target.name}"` : '';
+  const ok = await pjConfirmDanger({
+    icon: '🗑️',
+    title: 'Excluir anexo',
+    message: `${nome}, tem certeza que deseja apagar${arqNome}?`,
+    confirmLabel: 'Sim, apagar',
+    cancelLabel: 'Cancelar',
+  });
+  if (!ok) return;
   const removed = task.attachments[idx];
   task.attachments.splice(idx, 1);
   pjRenderTaskAttachments(pjCurrentTaskId);
