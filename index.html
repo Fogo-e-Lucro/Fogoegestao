@@ -25429,32 +25429,56 @@ function pjGetFirstName() {
 }
 
 // Diálogo de confirmação destrutivo (vermelho). Retorna Promise<boolean>.
+// Estilo inline pra não depender de styles.css cacheado velho.
 function pjConfirmDanger(opts) {
   const { icon='⚠️', title='Confirmar', message='Tem certeza?', confirmLabel='Sim', cancelLabel='Cancelar' } = opts || {};
   return new Promise(resolve => {
-    // Remove qualquer instância anterior
-    document.querySelectorAll('.pj-confirm-danger').forEach(n => n.remove());
-    const el = document.createElement('div');
-    el.className = 'pj-confirm-danger';
-    el.innerHTML = `
-      <div class="pj-confirm-danger__backdrop"></div>
-      <div class="pj-confirm-danger__box" role="alertdialog" aria-modal="true">
-        <div class="pj-confirm-danger__icon">${icon}</div>
-        <div class="pj-confirm-danger__title">${escHtml(title)}</div>
-        <div class="pj-confirm-danger__msg">${escHtml(message)}</div>
-        <div class="pj-confirm-danger__buttons">
-          <button type="button" class="pj-confirm-danger__cancel">${escHtml(cancelLabel)}</button>
-          <button type="button" class="pj-confirm-danger__confirm">${escHtml(confirmLabel)}</button>
-        </div>
+    document.querySelectorAll('[data-pj-confirm-danger]').forEach(n => n.remove());
+    const overlay = document.createElement('div');
+    overlay.setAttribute('data-pj-confirm-danger', '1');
+    overlay.style.cssText = [
+      'position:fixed','inset:0','z-index:2147483647',
+      'display:flex','align-items:center','justify-content:center',
+      'background:rgba(20,6,6,.68)','backdrop-filter:blur(6px)',
+      '-webkit-backdrop-filter:blur(6px)',
+      'animation:pjCdFade .18s ease-out',
+      'font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif',
+    ].join(';');
+    const box = document.createElement('div');
+    box.setAttribute('role','alertdialog');
+    box.setAttribute('aria-modal','true');
+    box.style.cssText = [
+      'position:relative','width:min(92vw,420px)','max-width:420px',
+      'background:#ffffff','color:#18181b',
+      'border:2px solid #dc2626','border-radius:16px',
+      'box-shadow:0 24px 60px -20px rgba(220,38,38,.45),0 12px 30px rgba(0,0,0,.25)',
+      'padding:24px 22px 20px','text-align:center',
+      'animation:pjCdIn .22s cubic-bezier(.2,.9,.3,1.2)',
+    ].join(';');
+    box.innerHTML = `
+      <div style="font-size:34px;line-height:1;margin-bottom:8px;">${icon}</div>
+      <div style="font-size:13px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:1.4px;margin-bottom:12px;">${escHtml(title)}</div>
+      <div style="font-size:15px;line-height:1.5;color:#18181b;margin-bottom:22px;">${escHtml(message)}</div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button type="button" data-pj-cancel style="padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid #e4e4e7;background:#f4f4f5;color:#52525b;">${escHtml(cancelLabel)}</button>
+        <button type="button" data-pj-confirm style="padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:1.5px solid transparent;background:#dc2626;color:#fff;box-shadow:0 4px 12px rgba(220,38,38,.3);">${escHtml(confirmLabel)}</button>
       </div>`;
-    const done = (v) => { el.remove(); document.removeEventListener('keydown', onKey); resolve(v); };
-    const onKey = (e) => { if (e.key === 'Escape') done(false); if (e.key === 'Enter') done(true); };
+    overlay.appendChild(box);
+    // Keyframes injetadas 1x
+    if (!document.getElementById('pjCdKeyframes')) {
+      const kf = document.createElement('style');
+      kf.id = 'pjCdKeyframes';
+      kf.textContent = '@keyframes pjCdFade{from{opacity:0}to{opacity:1}}@keyframes pjCdIn{from{transform:scale(.9) translateY(6px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}';
+      document.head.appendChild(kf);
+    }
+    const done = (v) => { overlay.remove(); document.removeEventListener('keydown', onKey); resolve(v); };
+    const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); done(false); } if (e.key === 'Enter') { e.preventDefault(); done(true); } };
     document.addEventListener('keydown', onKey);
-    el.querySelector('.pj-confirm-danger__backdrop').addEventListener('click', () => done(false));
-    el.querySelector('.pj-confirm-danger__cancel').addEventListener('click', () => done(false));
-    el.querySelector('.pj-confirm-danger__confirm').addEventListener('click', () => done(true));
-    document.body.appendChild(el);
-    setTimeout(() => el.querySelector('.pj-confirm-danger__confirm')?.focus(), 30);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) done(false); });
+    box.querySelector('[data-pj-cancel]').addEventListener('click', () => done(false));
+    box.querySelector('[data-pj-confirm]').addEventListener('click', () => done(true));
+    (document.body || document.documentElement).appendChild(overlay);
+    setTimeout(() => box.querySelector('[data-pj-confirm]')?.focus(), 30);
   });
 }
 
