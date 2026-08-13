@@ -11912,70 +11912,62 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
 /* Drawer body: mais respiro entre grupos */
 #tab-lives .drawer__body { gap: 22px !important; padding: 24px 24px !important; }
 
-/* Bloco Destino da transmissão (redesign 2026-08-13) */
+/* Bloco Instagram Live (redesign 2026-08-13) */
 #tab-lives .lv-dest-block {
-  display: flex; flex-direction: column; gap: 14px;
-  padding: 18px 18px 20px; border-radius: 14px;
-  background: linear-gradient(180deg, var(--bg2) 0%, color-mix(in srgb, var(--bg2) 60%, transparent) 100%);
-  border: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 16px;
+  padding: 18px; border-radius: 14px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, #d62976 4%, var(--card)) 0%, var(--card) 100%);
+  border: 1px solid color-mix(in srgb, #d62976 18%, var(--border));
+  box-shadow: 0 2px 12px color-mix(in srgb, #d62976 6%, transparent);
 }
-#tab-lives .lv-dest-head {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+#tab-lives .lv-ig-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
 }
-#tab-lives .lv-dest-title {
-  font-size: 11px; font-weight: 700; letter-spacing: 1.4px;
-  text-transform: uppercase; color: var(--text2);
+#tab-lives .lv-ig-badge {
+  display: inline-flex; align-items: center; gap: 10px;
 }
+#tab-lives .lv-ig-badge__icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: linear-gradient(135deg,#feda75 0%,#fa7e1e 25%,#d62976 50%,#962fbf 75%,#4f5bd5 100%);
+  color: #fff; display: grid; place-items: center;
+  box-shadow: 0 4px 12px color-mix(in srgb, #d62976 40%, transparent);
+}
+#tab-lives .lv-ig-badge__text { display: flex; flex-direction: column; line-height: 1.2; }
+#tab-lives .lv-ig-badge__label { font-size: 15px; font-weight: 700; color: var(--text); }
+#tab-lives .lv-ig-badge__sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
 #tab-lives .lv-dest-paste {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
-  cursor: pointer; transition: all var(--t) var(--ease);
+  padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  background: linear-gradient(135deg,#feda75,#fa7e1e 40%,#d62976 60%,#962fbf 80%,#4f5bd5);
+  color: #fff; border: none; cursor: pointer;
+  transition: all var(--t) var(--ease);
+  box-shadow: 0 2px 8px color-mix(in srgb, #d62976 30%, transparent);
 }
 #tab-lives .lv-dest-paste:hover {
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
   transform: translateY(-1px);
+  box-shadow: 0 4px 14px color-mix(in srgb, #d62976 45%, transparent);
 }
-#tab-lives .lv-dest-presets {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+#tab-lives .lv-ig-howto {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 12px 14px; border-radius: 10px;
+  background: color-mix(in srgb, var(--bg2) 60%, transparent);
+  border: 1px solid var(--border);
+  font-size: 12px; color: var(--text2); line-height: 1.5;
 }
-#tab-lives .lv-dest-preset {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  padding: 12px 8px; border-radius: 10px;
-  background: var(--card); border: 1.5px solid var(--border);
-  cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text2);
-  transition: all var(--t) var(--ease);
+#tab-lives .lv-ig-howto__step b:first-child {
+  display: inline-block; min-width: 14px;
+  color: #d62976; font-weight: 800; margin-right: 2px;
 }
-#tab-lives .lv-dest-preset:hover {
-  border-color: var(--text3); transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+#tab-lives .lv-ig-howto__link {
+  margin-top: 4px; align-self: flex-start;
+  font-size: 12px; font-weight: 600;
+  color: #d62976; text-decoration: none;
 }
-#tab-lives .lv-dest-preset.active {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, var(--card));
-  color: var(--text);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
-}
-#tab-lives .lv-dest-preset__icon {
-  width: 32px; height: 32px; border-radius: 8px;
-  display: grid; place-items: center;
-}
-#tab-lives .lv-dest-url input {
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  font-size: 12px;
-}
-#tab-lives .lv-dest-url input[readonly] {
-  background: color-mix(in srgb, var(--bg) 60%, transparent);
-  color: var(--text2); cursor: default;
-  border-style: dashed;
-}
-#tab-lives .lv-dest-url input.lv-dest-url__custom {
-  background: var(--card); color: var(--text); border-style: solid;
-}
+#tab-lives .lv-ig-howto__link:hover { text-decoration: underline; }
 @media (max-width: 520px) {
-  #tab-lives .lv-dest-presets { grid-template-columns: repeat(2, 1fr); }
-  #tab-lives .lv-dest-head { flex-direction: column; align-items: flex-start; gap: 8px; }
+  #tab-lives .lv-ig-head { flex-direction: column; align-items: flex-start; }
+  #tab-lives .lv-dest-paste { align-self: stretch; justify-content: center; }
 }
 
 /* Mobile */
