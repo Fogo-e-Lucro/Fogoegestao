@@ -28186,7 +28186,7 @@ function bdRenderDetail(id) {
       ${_bdSectionContato(c)}
       ${_bdSectionRedes(c)}
       ${_bdSectionEstrategia(c)}
-      ${((typeof userIsAdmin === 'function') && userIsAdmin()) ? _bdSectionDocs(c) : ''}
+      ${_bdSectionDocs(c)}
       ${((typeof userIsAdmin === 'function') && userIsAdmin()) ? _bdSectionSenhas(c) : ''}
       ${_bdSectionOperacao(c)}
       ${_bdSectionDatas(c)}
