@@ -275,8 +275,8 @@
     <div class="modal-sub">Chaves de API e integrações. Centralizadas no Firestore para não ficarem expostas no código.</div>
 
     <div class="app-settings-tabs">
-      <button class="app-settings-tab active" data-tab="apis" onclick="appSettingsTab('apis')">🔑 APIs</button>
-      <button class="app-settings-tab" data-tab="integ" onclick="appSettingsTab('integ')">🔌 Integrações</button>
+      <button class="app-settings-tab active pj-admin-only" data-tab="apis" onclick="appSettingsTab('apis')">🔑 APIs</button>
+      <button class="app-settings-tab pj-admin-only" data-tab="integ" onclick="appSettingsTab('integ')">🔌 Integrações</button>
       <button class="app-settings-tab" data-tab="rec" onclick="appSettingsTab('rec')">🎥 Gravador</button>
       <button class="app-settings-tab pj-admin-only" data-tab="equipe" onclick="appSettingsTab('equipe')">👥 Equipe</button>
       <button class="app-settings-tab pj-admin-only" data-tab="wa" onclick="appSettingsTab('wa');fgWaOnOpen()">📱 WhatsApp</button>
@@ -6647,9 +6647,11 @@ function getClaudeKey() {
 function openAppSettings() {
   const m = document.getElementById('appSettingsModal');
   if (!m) return;
-  if (!userIsAdmin()) {
-    if (typeof showToast === 'function') showToast('warn','🔒','Apenas administradores podem abrir as configurações.');
-    return;
+  const isAdmin = (typeof userIsAdmin === 'function') && userIsAdmin();
+  // Colaborador vê só as abas sem chaves sensíveis (Gravador). Default seleciona uma aba visível.
+  if (!isAdmin) {
+    // Ativa aba "Gravador" por padrão (única não admin-only)
+    setTimeout(() => { if (typeof appSettingsTab === 'function') appSettingsTab('rec'); }, 0);
   }
   // Popula inputs com config atual
   const cfg = window._appConfig || {};
@@ -6689,6 +6691,12 @@ function closeAppSettings() {
   m.style.display = 'none';
 }
 function appSettingsTab(tab) {
+  const adminOnlyTabs = ['apis','integ','equipe','wa'];
+  const isAdmin = (typeof userIsAdmin === 'function') && userIsAdmin();
+  if (!isAdmin && adminOnlyTabs.includes(tab)) {
+    if (typeof showToast === 'function') showToast('warn','🔒','Essa aba é só pra admin');
+    tab = 'rec'; // redireciona pra aba permitida
+  }
   document.querySelectorAll('.app-settings-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.app-settings-pane').forEach(p => { p.style.display = (p.dataset.pane === tab) ? 'block' : 'none'; });
   if (tab === 'equipe') {
