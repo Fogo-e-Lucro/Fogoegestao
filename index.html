@@ -32194,5 +32194,72 @@ const POP = (() => {
   window.switchTab = wrapped;
 })();
 </script>
+
+<!-- Bottom Tab Bar (só mobile, Fase 2 mobile 2026-08-20) -->
+<nav class="fg-mnav" id="fgMnav" aria-label="Navegação">
+  <button type="button" class="fg-mnav__i" data-tab="visualizar" onclick="switchTab('visualizar')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span>Calendário</span>
+  </button>
+  <button type="button" class="fg-mnav__i" data-tab="social" onclick="switchTab('social')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+    <span>Publipost</span>
+  </button>
+  <button type="button" class="fg-mnav__i" data-tab="projetos" onclick="switchTab('projetos')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span>Tarefas</span>
+  </button>
+  <button type="button" class="fg-mnav__i" onclick="fgMoreOpen()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    <span>Mais</span>
+  </button>
+</nav>
+
+<!-- Bottom sheet "Mais" -->
+<div class="fg-more" id="fgMore" hidden>
+  <div class="fg-more__bd" onclick="fgMoreClose()"></div>
+  <div class="fg-more__pn" role="dialog" aria-modal="true">
+    <div class="fg-more__gr"></div>
+    <h3>Ferramentas</h3>
+    <div class="fg-more__gd">
+      <button onclick="switchTab('entrada');fgMoreClose()" class="fg-more__b"><span>✏️</span>Criar post</button>
+      <button onclick="switchTab('lives');fgMoreClose()" class="fg-more__b"><span>📡</span>Ao Vivo</button>
+      <button onclick="switchTab('pop');fgMoreClose()" class="fg-more__b"><span>📖</span>POPs</button>
+      <button onclick="switchTab('gmb');fgMoreClose()" class="fg-more__b"><span>📍</span>Google</button>
+      <button onclick="switchTab('metricas');fgMoreClose()" class="fg-more__b"><span>📊</span>Métricas</button>
+      <button onclick="switchTab('base');fgMoreClose()" class="fg-more__b"><span>🏢</span>Clientes</button>
+      <button onclick="if(typeof openAppSettings==='function')openAppSettings();fgMoreClose()" class="fg-more__b"><span>⚙️</span>Config</button>
+    </div>
+  </div>
+</div>
+
+<script>
+window.fgMoreOpen = function() { const m = document.getElementById('fgMore'); if (m) m.hidden = false; };
+window.fgMoreClose = function() { const m = document.getElementById('fgMore'); if (m) m.hidden = true; };
+// Marca item ativo no bottom nav conforme troca de aba
+(function() {
+  const nav = document.getElementById('fgMnav');
+  if (!nav) return;
+  const orig = window.switchTab;
+  const wrapped = function(tab, ...args) {
+    const r = orig ? orig(tab, ...args) : null;
+    nav.querySelectorAll('.fg-mnav__i').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === tab);
+    });
+    return r;
+  };
+  wrapped._navWrapped = true;
+  Object.assign(wrapped, orig);
+  window.switchTab = wrapped;
+  // Inicializa marcador com aba atual
+  const active = document.querySelector('.tab-panel.active');
+  if (active) {
+    const id = (active.id || '').replace(/^tab-/, '');
+    nav.querySelectorAll('.fg-mnav__i').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === id);
+    });
+  }
+})();
+</script>
 </body>
 </html>
