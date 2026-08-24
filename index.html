@@ -16332,9 +16332,6 @@ function pjListRowHtml(l, indent, isAdmin) {
   if (typeof isAdmin === 'undefined') isAdmin = (typeof userIsAdmin === 'function') ? userIsAdmin() : true;
   const count = (pjTasks[l.id]||[]).filter(t => !pjIsDone(t)).length;
   const active = pjCurrentView.id === l.id ? 'active' : '';
-  // Sidebar limpo: SEM ícones na linha. Toda configuração da lista
-  // (editar nome, status, campos, automações, excluir) fica nos botões
-  // do header quando a lista está aberta — não polui a navegação lateral.
   const actions = '';
   return `
   <div class="pj-list-row ${indent?'indent2':''} ${active}"
