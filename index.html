@@ -20098,6 +20098,9 @@ function pjResolveTaskClient(t) {
 // t.clienteId (FK) e custom field type='client'. Usado como guard antes de
 // permitir fechar o modal ou concluir a tarefa — cliente eh obrigatorio.
 function pjTaskHasClient(t) {
+  // Se a lista tem noClient=true, cliente não é obrigatório (passa direto).
+  const list = pjLists?.find?.(l => l.id === t?.listId);
+  if (list?.noClient) return true;
   const raw = pjResolveTaskClient(t);
   return !!(raw && String(raw).trim());
 }
@@ -24740,6 +24743,8 @@ function pjRenderTaskModal(task) {
       <button class="pj-icon-btn" style="font-size:12px;padding:3px 9px;" title="Gerenciar campos (adicionar, renomear, excluir)" onclick="pjOpenFieldsEditor('${list.id}')">⚙️ Gerenciar</button>
     </div><div class="pj-fields-grid">`;
     fields.forEach(f => {
+      // Pula campo cliente se a lista tem noClient=true (lista interna sem cliente)
+      if (f.type === 'client' && list?.noClient) return;
       const val = task.customFieldValues?.[f.id] || '';
       let input;
       if (f.type === 'client') {
@@ -26924,8 +26929,16 @@ async function pjDeleteFolder(id) {
 
 function pjOpenListForm(folderId, spaceId, editId) {
   const l = editId ? pjLists.find(x=>x.id===editId) : null;
+  const noClientChecked = l?.noClient ? 'checked' : '';
   const html = `<h3>${l?'Editar':'Nova'} Lista</h3>
     <input class="pj-form-input" id="pjFName" placeholder="Nome da lista" value="${l?escHtml(l.name):''}">
+    <label style="display:flex;align-items:flex-start;gap:8px;margin:14px 0 4px;cursor:pointer;font-size:13px;">
+      <input type="checkbox" id="pjFNoClient" ${noClientChecked} style="margin-top:2px;flex-shrink:0;">
+      <span>
+        <b>Não precisa de cliente</b><br>
+        <span style="font-size:11px;color:var(--text3);">Marque em listas internas (ideias, referências, RH). Tarefas dessa lista não vão pedir cliente e podem ser concluídas sem selecionar restaurante.</span>
+      </span>
+    </label>
     <div class="pj-form-actions">
       <button class="pj-btn pj-btn-secondary" onclick="pjCloseFormModal()">Cancelar</button>
       <button class="pj-btn pj-btn-primary" onclick="pjSaveList('${editId||''}','${folderId||''}','${spaceId||''}')">Salvar</button>
@@ -26934,16 +26947,18 @@ function pjOpenListForm(folderId, spaceId, editId) {
 }
 async function pjSaveList(editId, folderId, spaceId) {
   const name = document.getElementById('pjFName')?.value.trim(); if(!name)return;
+  const noClient = !!document.getElementById('pjFNoClient')?.checked;
   if (editId) {
-    await pjC('pj_lists').doc(editId).update({name});
-    const l = pjLists.find(x=>x.id===editId); if(l) l.name=name;
+    await pjC('pj_lists').doc(editId).update({name, noClient});
+    const l = pjLists.find(x=>x.id===editId); if(l) { l.name=name; l.noClient=noClient; }
   } else {
     const id = pjId();
-    const data = {name, spaceId, folderId:folderId||null, statuses:[...PJ_DEFAULT_STATUSES], customFields:[], order:pjLists.length, createdAt:pjNow()};
+    const data = {name, noClient, spaceId, folderId:folderId||null, statuses:[...PJ_DEFAULT_STATUSES], customFields:[], order:pjLists.length, createdAt:pjNow()};
     await pjC('pj_lists').doc(id).set(data);
     pjLists.push({id,...data});
   }
   pjCloseFormModal(); pjRenderSidebar();
+  if (typeof pjRenderCurrentView === 'function') pjRenderCurrentView();
 }
 async function pjDeleteList(id) {
   if (typeof userIsAdmin !== 'function' || !userIsAdmin()) {
