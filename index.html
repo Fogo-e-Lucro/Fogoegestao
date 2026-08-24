@@ -4512,6 +4512,7 @@ async function signOutUser() {
   // Para o heartbeat e cleanup de listeners
   try {
     if (_appPresenceHeartbeatTimer) { clearInterval(_appPresenceHeartbeatTimer); _appPresenceHeartbeatTimer = null; }
+    if (_appPresenceRefreshTokenTimer) { clearInterval(_appPresenceRefreshTokenTimer); _appPresenceRefreshTokenTimer = null; }
     if (_appPresenceUnsub) { _appPresenceUnsub(); _appPresenceUnsub = null; }
   } catch(_){}
   try { if (typeof pjCleanupListeners === 'function') pjCleanupListeners(); } catch(_){}
@@ -16191,15 +16192,45 @@ function pjCleanupListeners() {
   }
   try { _pjRealtimeUnsub && _pjRealtimeUnsub(); } catch(_){}
   _pjRealtimeUnsub = null;
+  _pjRealtimeReady = false;
   try { _pjQueueUnsub && _pjQueueUnsub(); } catch(_){}
   _pjQueueUnsub = null;
   try { _pjViewersUnsub && _pjViewersUnsub(); } catch(_){}
   _pjViewersUnsub = null;
   if (_pjViewersStaleTimer) { clearInterval(_pjViewersStaleTimer); _pjViewersStaleTimer = null; }
   pjViewersByTask = {};
+  // Cleanup dos outros listeners de módulos (posts, permissions, notif, BD, presence refresh)
+  try { if (typeof _postsUnsub !== 'undefined' && _postsUnsub) _postsUnsub(); } catch(_){}
+  try { if (typeof _permissionsUnsub !== 'undefined' && _permissionsUnsub) _permissionsUnsub(); } catch(_){}
+  try { if (typeof _appQueueUnsub !== 'undefined' && _appQueueUnsub) _appQueueUnsub(); } catch(_){}
+  try { if (typeof pjNotifUnsub !== 'undefined' && pjNotifUnsub) pjNotifUnsub(); } catch(_){}
+  try { if (typeof _bdUnsub !== 'undefined' && _bdUnsub) _bdUnsub(); } catch(_){}
+  try { if (typeof _bdSchemaUnsub !== 'undefined' && _bdSchemaUnsub) _bdSchemaUnsub(); } catch(_){}
+  try { _postsUnsub = null; } catch(_){}
+  try { _permissionsUnsub = null; } catch(_){}
+  try { _appQueueUnsub = null; } catch(_){}
+  try { pjNotifUnsub = null; } catch(_){}
+  try { _bdUnsub = null; } catch(_){}
+  try { _bdSchemaUnsub = null; } catch(_){}
+  if (typeof _appPresenceRefreshTimer !== 'undefined' && _appPresenceRefreshTimer) {
+    try { clearInterval(_appPresenceRefreshTimer); } catch(_){}
+    _appPresenceRefreshTimer = null;
+  }
+  // Reset de state pra permitir re-init na próxima login (evita pjInit virar no-op)
+  try {
+    pjInitialized = false;
+    window._pjLoadedOnce = false;
+    pjSpaces = []; pjFolders = []; pjLists = [];
+    pjMembers = []; pjTasks = {}; pjAllTasks = [];
+  } catch(_){}
 }
 
 function pjSetupRealtime() {
+  // Se já tem listeners ativos (ex: exitDemo→pjInit sem passar por cleanup),
+  // fecha eles primeiro pra não empilhar +5 subscriptions duplicadas.
+  if (Array.isArray(pjUnsubs) && pjUnsubs.length > 0) {
+    try { pjCleanupListeners(); } catch(_){}
+  }
   const myUid = _auth.currentUser?.uid || _currentUser?.uid;
   // Listen for member changes (new members, login completions, role updates)
   const unsubMembers = pjC('pj_members').onSnapshot(snap => {
@@ -25311,9 +25342,17 @@ async function pjCleanupOldAttachments(daysOld) {
 
   try {
     // Busca tarefas com completedAt anterior ao cutoff que ainda não foram limpas.
-    // Usa filtro server-side via timestamp se possível (completedAt pode ser
-    // Firestore Timestamp ou ms — tenta ambos).
-    const snap = await db.collection('pj_tasks').get();
+    // Filtro server-side por attachmentsCleared reduz drasticamente o scan
+    // (tarefas velhas já limpas não voltam). completedAt fica no client-side
+    // por causa de tipo misto (Timestamp vs ms) na coleção legado.
+    let snap;
+    try {
+      snap = await db.collection('pj_tasks').where('attachmentsCleared','==',false).get();
+    } catch(_) {
+      // Fallback: alguns docs antigos podem não ter o campo — Firestore ignora eles no where.
+      // Se o índice não existir por qualquer razão, cai pro get() completo.
+      snap = await db.collection('pj_tasks').get();
+    }
 
     for (const doc of snap.docs) {
       const t = doc.data() || {};
@@ -29383,6 +29422,7 @@ window.bdUploadCustomImage = async function(cid, fid, input) {
 let _pjFcmToken = null;
 let _pjFcmMessaging = null;
 let _pjFcmSwReg = null;
+let _pjFcmWired = false;
 
 async function pjFcmGetVapidKey() {
   // 1) localStorage (cache rápido)
@@ -29423,19 +29463,23 @@ async function pjFcmInit() {
       serviceWorkerRegistration: _pjFcmSwReg
     });
     if (_pjFcmToken) await pjFcmSaveToken(_pjFcmToken);
-    // Foreground messages → fallback pra desktop notif
-    _pjFcmMessaging.onMessage((payload) => {
-      const n = payload.notification || payload.data || {};
-      if (typeof pjFireDesktopNotif === 'function') {
-        pjFireDesktopNotif(n.title || 'Fogo & Gestão', n.body || '', n.taskId);
-      }
-    });
-    // Mensagens da SW (notificationclick → open task)
-    navigator.serviceWorker.addEventListener('message', (ev) => {
-      if (ev.data?.type === 'fg-open-task' && ev.data.taskId && typeof pjOpenTask === 'function') {
-        pjOpenTask(ev.data.taskId);
-      }
-    });
+    // Idempotência: listeners atacham 1x por vida da aba (init roda em auth + pjFcmEnable)
+    if (!_pjFcmWired) {
+      _pjFcmWired = true;
+      // Foreground messages → fallback pra desktop notif
+      _pjFcmMessaging.onMessage((payload) => {
+        const n = payload.notification || payload.data || {};
+        if (typeof pjFireDesktopNotif === 'function') {
+          pjFireDesktopNotif(n.title || 'Fogo & Gestão', n.body || '', n.taskId);
+        }
+      });
+      // Mensagens da SW (notificationclick → open task)
+      navigator.serviceWorker.addEventListener('message', (ev) => {
+        if (ev.data?.type === 'fg-open-task' && ev.data.taskId && typeof pjOpenTask === 'function') {
+          pjOpenTask(ev.data.taskId);
+        }
+      });
+    }
     console.log('[FCM] token registrado');
   } catch(e) {
     console.warn('[FCM] falha:', e?.message || e);
@@ -30270,9 +30314,11 @@ window.appRecorder = (() => {
   }
 
   function setupPreviewListeners() {
-    // size & shape change → re-render preview
-    document.getElementById('recOptSize')?.addEventListener('input', _renderPreviewBubble);
-    document.getElementById('recOptShape')?.addEventListener('change', _renderPreviewBubble);
+    // Idempotência: elementos são estáticos no HTML — só liga listeners 1x
+    const sz = document.getElementById('recOptSize');
+    const sh = document.getElementById('recOptShape');
+    if (sz && !sz._wired) { sz.addEventListener('input', _renderPreviewBubble); sz._wired = true; }
+    if (sh && !sh._wired) { sh.addEventListener('change', _renderPreviewBubble); sh._wired = true; }
     // Drag wiring + initial render
     setTimeout(() => { _attachPreviewDrag(); _renderPreviewBubble(); }, 50);
   }
