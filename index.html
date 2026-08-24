@@ -9319,7 +9319,9 @@ function spAddToQueue(item) {
 }
 
 // ── Auto-publisher para Stories agendados ──
-setInterval(async () => {
+// Só roda quando a aba está visível (economia de rede/CPU em background).
+let _spAutoPublisherTimer = null;
+async function _spAutoPublisherTick() {
   const now = Date.now();
   const pending = spQueue.filter(q => q.pendingStory && q.status === 'pending' && q.scheduledTime && q.scheduledTime <= now);
   for (const item of pending) {
@@ -9341,7 +9343,15 @@ setInterval(async () => {
     localStorage.setItem('spQueue', JSON.stringify(spQueue));
     renderSpQueue();
   }
-}, 30000); // verifica a cada 30 segundos
+}
+function _spAutoPublisherStart() {
+  if (_spAutoPublisherTimer) return;
+  _spAutoPublisherTimer = setInterval(() => {
+    if (document.hidden) return;
+    _spAutoPublisherTick();
+  }, 30000);
+}
+_spAutoPublisherStart();
 
 function spClearQueue() {
   spQueue = [];
@@ -16001,6 +16011,7 @@ async function pjLoadAllTasks() {
 // Badge "viewers" injetado em qualquer card/linha com data-task-id.
 let pjViewersByTask = {}; // { taskId: [{uid,name,photoUrl,lastTouchMs}] }
 let _pjViewersUnsub = null;
+let _pjViewersStaleTimer = null;
 const PJ_VIEWER_THRESHOLD_MS = 30000;
 
 function pjStartViewersListener() {
@@ -16028,7 +16039,8 @@ function pjStartViewersListener() {
       }, () => {});
   } catch(e) {}
   // Limpa stale a cada 15s mesmo sem novo snapshot
-  setInterval(() => {
+  if (_pjViewersStaleTimer) clearInterval(_pjViewersStaleTimer);
+  _pjViewersStaleTimer = setInterval(() => {
     const now = Date.now();
     let changed = false;
     Object.keys(pjViewersByTask).forEach(tid => {
@@ -16073,21 +16085,12 @@ function pjUpdateViewerBadges() {
     });
   });
 }
-// Re-injeta badges após qualquer re-render (kanban/list/dashboard)
+// Re-injeta badges após qualquer re-render (kanban/list/dashboard).
+// Chamado explicitamente por pjScheduleRender/pjScheduleSidebar — sem observer global.
 const _pjViewerRefreshDebounced = (() => {
   let t = null;
   return () => { clearTimeout(t); t = setTimeout(pjUpdateViewerBadges, 80); };
 })();
-new MutationObserver((muts) => {
-  for (const m of muts) {
-    for (const n of m.addedNodes) {
-      if (n.nodeType === 1 && (n.matches?.('[data-task-id]') || n.querySelector?.('[data-task-id]'))) {
-        _pjViewerRefreshDebounced();
-        return;
-      }
-    }
-  }
-}).observe(document.body, { childList: true, subtree: true });
 
 // ── Real-time task notifications ──────────────────────
 let _pjRealtimeUnsub = null;
@@ -16192,6 +16195,8 @@ function pjCleanupListeners() {
   _pjQueueUnsub = null;
   try { _pjViewersUnsub && _pjViewersUnsub(); } catch(_){}
   _pjViewersUnsub = null;
+  if (_pjViewersStaleTimer) { clearInterval(_pjViewersStaleTimer); _pjViewersStaleTimer = null; }
+  pjViewersByTask = {};
 }
 
 function pjSetupRealtime() {
@@ -16231,34 +16236,52 @@ function pjSetupRealtime() {
     pjScheduleSidebar();
   }, ()=>{});
   pjUnsubs.push(unsubLists);
-  // Listen for task changes across all lists
+  // Listen for task changes across all lists (patch incremental via docChanges)
   const unsub = pjC('pj_tasks').onSnapshot(snap => {
-    // Detecta menções/atribuições novas (ignora a primeira carga)
-    if (pjAllTasks.length > 0 && myUid) {
-      snap.docChanges().forEach(ch => {
-        if (ch.type === 'added' || ch.type === 'modified') {
-          const newT = { id: ch.doc.id, ...ch.doc.data() };
-          const prevT = pjAllTasks.find(x => x.id === ch.doc.id);
-          const wasAssigned = prevT && (prevT.assignees||[]).includes(myUid);
-          const isAssigned = (newT.assignees||[]).includes(myUid);
-          const createdByMe = newT.createdBy === myUid && ch.type === 'added';
-          // Toca som apenas se você foi marcado por outra pessoa
-          if (!wasAssigned && isAssigned && !createdByMe) {
-            pjPlayMentionSound();
-            if (typeof showToast === 'function') showToast(`🔔 Você foi marcado em "${newT.title}"`, 'info');
-          }
+    const isFirstLoad = pjAllTasks.length === 0;
+    const changes = snap.docChanges();
+    const affectedListIds = new Set();
+    const byId = new Map(pjAllTasks.map(t => [t.id, t]));
+    changes.forEach(ch => {
+      const id = ch.doc.id;
+      if (ch.type === 'removed') {
+        const prev = byId.get(id);
+        if (prev) {
+          affectedListIds.add(prev.listId);
+          byId.delete(id);
         }
-      });
-    }
-    pjAllTasks = snap.docs.map(d => ({id:d.id,...d.data()}));
+        return;
+      }
+      const newT = { id, ...ch.doc.data() };
+      const prevT = byId.get(id);
+      // Notificação de menção (só depois da primeira carga)
+      if (!isFirstLoad && myUid && (ch.type === 'added' || ch.type === 'modified')) {
+        const wasAssigned = prevT && (prevT.assignees||[]).includes(myUid);
+        const isAssigned = (newT.assignees||[]).includes(myUid);
+        const createdByMe = newT.createdBy === myUid && ch.type === 'added';
+        if (!wasAssigned && isAssigned && !createdByMe) {
+          pjPlayMentionSound();
+          if (typeof showToast === 'function') showToast(`🔔 Você foi marcado em "${newT.title}"`, 'info');
+        }
+      }
+      if (prevT && prevT.listId !== newT.listId) affectedListIds.add(prevT.listId);
+      affectedListIds.add(newT.listId);
+      byId.set(id, newT);
+    });
+    pjAllTasks = Array.from(byId.values());
     pjTasks = {};
     pjAllTasks.forEach(t => {
       if (!pjTasks[t.listId]) pjTasks[t.listId] = [];
       pjTasks[t.listId].push(t);
     });
     pjUpdateInboxCount();
-    if (pjCurrentView.type === 'list' || pjCurrentView.type === 'kanban') pjScheduleRender();
-    if (pjCurrentView.type === 'inbox' || pjCurrentView.type === 'all' || pjCurrentView.type === 'dashboard') pjScheduleRender();
+    // Só re-renderiza se view atual foi afetada
+    const v = pjCurrentView;
+    const viewAffected = isFirstLoad
+      || v.type === 'inbox' || v.type === 'all' || v.type === 'dashboard'
+      || v.type === 'workload' || v.type === 'byclient' || v.type === 'timeline'
+      || ((v.type === 'list' || v.type === 'kanban') && affectedListIds.has(v.id));
+    if (viewAffected) pjScheduleRender();
   }, ()=>{});
   pjUnsubs.push(unsub);
 }
@@ -16583,14 +16606,20 @@ function pjScheduleRender() {
   if (_pjRenderTimer) return;
   _pjRenderTimer = setTimeout(() => {
     _pjRenderTimer = null;
-    requestAnimationFrame(() => { try { pjRenderMain(); } catch(_){} });
-  }, 80);
+    requestAnimationFrame(() => {
+      try { pjRenderMain(); } catch(_){}
+      try { _pjViewerRefreshDebounced(); } catch(_){}
+    });
+  }, 200);
 }
 function pjScheduleSidebar() {
   if (_pjSidebarTimer) return;
   _pjSidebarTimer = setTimeout(() => {
     _pjSidebarTimer = null;
-    requestAnimationFrame(() => { try { pjRenderSidebar(); } catch(_){} });
+    requestAnimationFrame(() => {
+      try { pjRenderSidebar(); } catch(_){}
+      try { _pjViewerRefreshDebounced(); } catch(_){}
+    });
   }, 80);
 }
 
@@ -31103,10 +31132,16 @@ document.addEventListener('input', (e) => {
       }
     });
 
+    // Idempotência: se enhance rodar duas vezes no mesmo select, só instala 1 observer
+    if (select._fxObserver) { try { select._fxObserver.disconnect(); } catch(_){} }
     const mo = new MutationObserver(() => {
+      // Auto-disconnect quando o select some do DOM (evita observers zumbis
+      // acumulados quando o kanban/list re-renderiza via innerHTML)
+      if (!document.contains(select)) { try { mo.disconnect(); } catch(_){} select._fxObserver = null; return; }
       updateButton(wrap);
       if (openState && openState.wrap === wrap) openMenuFor(wrap);
     });
+    select._fxObserver = mo;
     mo.observe(select, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['disabled', 'value'] });
   }
 
