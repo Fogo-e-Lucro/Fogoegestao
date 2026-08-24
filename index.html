@@ -75,17 +75,14 @@
 </head>
 <body>
 <script>
-  // Remove a barra global de Cliente em runtime (caso HTML antigo venha do cache)
+  // Remove a barra global de Cliente em runtime (caso HTML antigo venha do cache).
+  // Preserva o stub oficial #restBar (aria-hidden) que outros scripts consultam.
   (function killRestBar(){
     const tryKill = () => {
-      const el = document.getElementById('restBar');
-      if (el) el.remove();
-      document.querySelectorAll('.rest-bar').forEach(n => n.remove());
+      document.querySelectorAll('.rest-bar:not([aria-hidden])').forEach(n => n.remove());
     };
     tryKill();
-    document.addEventListener('DOMContentLoaded', tryKill);
-    // observa caso algum script tente reinjetar
-    new MutationObserver(tryKill).observe(document.documentElement, {childList:true, subtree:true});
+    document.addEventListener('DOMContentLoaded', tryKill, {once:true});
   })();
 </script>
 
@@ -3919,6 +3916,8 @@ const APP_PRESENCE_THRESHOLD_MS = 35 * 1000;  // offline se heartbeat há > 35s 
 let _appPresenceIdToken = null;
 let _appPresenceTokenExp = 0;
 let _appPresenceHeartbeatTimer = null;
+let _appPresenceRefreshTokenTimer = null;
+let _appPresenceWired = false;
 let _appPresenceUnsub = null;
 let _appPresenceUsers = []; // [{uid,name,email,photoUrl,lastSeenMs}]
 let _appPresencePopoverOpen = false;
@@ -3998,14 +3997,16 @@ function appPresenceStartHeartbeat() {
   _appPresenceHeartbeatTimer = setInterval(appPresenceWriteHeartbeat, APP_PRESENCE_HEARTBEAT_MS);
   // Mantém ID token cacheado pra usar em beforeunload (fetch keepalive)
   _appPresenceRefreshToken();
-  setInterval(_appPresenceRefreshToken, 30 * 60 * 1000); // renova a cada 30min
+  if (_appPresenceRefreshTokenTimer) clearInterval(_appPresenceRefreshTokenTimer);
+  _appPresenceRefreshTokenTimer = setInterval(_appPresenceRefreshToken, 30 * 60 * 1000);
+  // Listeners globais atacham uma vez por vida da aba, mesmo com múltiplos sign-in
+  if (_appPresenceWired) return;
+  _appPresenceWired = true;
   // Atualiza ao voltar pra aba; quando esconde, marca offline (poupando writes)
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      // Aba escondida — marca offline (mas mantém lastSeen pra histórico)
       appPresenceMarkOffline();
     } else {
-      // Voltou pra aba — heartbeat imediato com online=true
       appPresenceWriteHeartbeat();
     }
   });
@@ -5413,6 +5414,14 @@ function schedulePush() {
 
 let _postsUnsub = null;
 let _clientsUnsub = null;
+let _renderAllTimer = null;
+function scheduleRenderAll() {
+  if (_renderAllTimer) return;
+  _renderAllTimer = setTimeout(() => {
+    _renderAllTimer = null;
+    requestAnimationFrame(() => { try { renderAll(); } catch(_){} });
+  }, 100);
+}
 async function loadFromCloud() {
   setSyncStatus('syncing');
   try {
@@ -5442,7 +5451,7 @@ async function loadFromCloud() {
       posts = merged;
       try { localStorage.setItem('roteiros_posts', JSON.stringify(posts)); } catch(e) { console.warn('[posts] localStorage cheio, seguindo em memória:', e?.message); }
       setSyncStatus('ok');
-      try { renderAll(); } catch(_) {}
+      scheduleRenderAll();
     }, e => { console.warn('Posts listener error:', e); setSyncStatus('err'); });
     // Coleção legacy `clients` foi descontinuada — fonte única é `clientes_base`.
     // O hook onClientesBaseChanged reconstrói a variável local `clients` a partir do BD.
@@ -16177,10 +16186,12 @@ function pjCleanupListeners() {
     pjUnsubs.forEach(u => { try { u && u(); } catch(_){} });
     pjUnsubs = [];
   }
-  try { window._pjRealtimeUnsub && window._pjRealtimeUnsub(); } catch(_){}
-  window._pjRealtimeUnsub = null;
-  try { window._pjQueueUnsub && window._pjQueueUnsub(); } catch(_){}
-  window._pjQueueUnsub = null;
+  try { _pjRealtimeUnsub && _pjRealtimeUnsub(); } catch(_){}
+  _pjRealtimeUnsub = null;
+  try { _pjQueueUnsub && _pjQueueUnsub(); } catch(_){}
+  _pjQueueUnsub = null;
+  try { _pjViewersUnsub && _pjViewersUnsub(); } catch(_){}
+  _pjViewersUnsub = null;
 }
 
 function pjSetupRealtime() {
