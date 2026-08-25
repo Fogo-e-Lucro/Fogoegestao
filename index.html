@@ -19178,6 +19178,7 @@ function pjBuildKanban(listId, statuses, tasks) {
         ? `<span class="pj-card-prio ${t.priority}" title="${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}"></span>`
         : '';
       const recur = t.recurrence?.pattern ? `<span class="pj-card-recur" title="${pjRecurrenceLabel(t.recurrence)}">🔁</span>` : '';
+      const healthDot = pjHealthDotHtml(t, {size:10});
       // Removido em 2026-08-03: pill de cronometro (piscava a tela).
       const trackingHtml = '';
       h += `<div class="pj-card ${done?'done':''}" draggable="true" data-priority="${t.priority||'low'}"
@@ -19186,6 +19187,7 @@ function pjBuildKanban(listId, statuses, tasks) {
                onclick="pjOpenTask('${t.id}')">
           <div class="pj-card-top">
             ${prio}
+            ${healthDot}
             <div class="pj-card-title">${escHtml(t.title||'(sem título)')}</div>
             ${recur}
           </div>
@@ -19442,7 +19444,7 @@ function pjTaskRowHtml(t) {
       ${done?'✓':''}
     </div>
     <div class="pj-task-title-cell">
-      <div class="pj-task-title-text ${done?'done':''}">${escHtml(t.title||'(sem título)')} ${recurBadge}</div>
+      <div class="pj-task-title-text ${done?'done':''}" style="display:flex;align-items:center;gap:6px;">${pjHealthDotHtml(t,{size:9})}<span>${escHtml(t.title||'(sem título)')}</span> ${recurBadge}</div>
     </div>
     <div class="pj-task-row-meta">
       ${clientPill}
@@ -24000,6 +24002,35 @@ function pjRecurrenceLabel(r) {
   const labels = { daily:'Diária', weekly:'Semanal', monthly:'Mensal', yearly:'Anual' };
   return labels[r.pattern] || 'Recorrente';
 }
+const PJ_HEALTH_COLORS = {
+  green:  { hex:'#22c55e', label:'Verde — ok'          },
+  yellow: { hex:'#f59e0b', label:'Amarelo — atenção'   },
+  red:    { hex:'#ef4444', label:'Vermelho — crítico'  },
+};
+function pjHealthDotHtml(t, { size = 10 } = {}) {
+  const hc = t?.healthColor;
+  if (!hc || !PJ_HEALTH_COLORS[hc]) return '';
+  const meta = PJ_HEALTH_COLORS[hc];
+  return `<span class="pj-health-dot" title="${meta.label}" style="display:inline-block;width:${size}px;height:${size}px;border-radius:50%;background:${meta.hex};box-shadow:0 0 0 2px rgba(0,0,0,.06);vertical-align:middle;flex-shrink:0"></span>`;
+}
+async function pjSetHealthColor(taskId, color) {
+  await pjUpdateTask(taskId, { healthColor: color || null });
+  const t2 = pjAllTasks.find(x => x.id === taskId);
+  if (t2 && pjCurrentTaskId === taskId) pjRenderTaskModal({ ...t2 });
+  pjClosePopups();
+}
+function pjOpenHealthMenu(ev, taskId) {
+  const t = pjAllTasks.find(x => x.id === taskId);
+  const cur = t?.healthColor || null;
+  const items = [
+    { header:true, label:'Semáforo de saúde' },
+    { id:'green',  label:`🟢 Verde — ok`         , active: cur==='green'  },
+    { id:'yellow', label:`🟡 Amarelo — atenção`  , active: cur==='yellow' },
+    { id:'red',    label:`🔴 Vermelho — crítico` , active: cur==='red'    },
+    { id:null,     label:`⚪ Sem semáforo`        , active: !cur           },
+  ];
+  pjShowPopupMenu(ev, items, cur, id => pjSetHealthColor(taskId, id));
+}
 async function pjSetRecurrence(taskId, pattern) {
   await pjUpdateTask(taskId, { recurrence: pattern ? { pattern, interval:1 } : null });
   const t2 = pjAllTasks.find(x => x.id === taskId);
@@ -24791,6 +24822,10 @@ function pjRenderTaskModal(task) {
     </div>
     <div class="pj-meta-item" onclick="pjOpenRecurrenceMenu(event,'${task.id}')" title="Repete ao concluir">
       🔁 ${task.recurrence?.pattern ? pjRecurrenceLabel(task.recurrence) : 'Recorrência'}
+    </div>
+    <div class="pj-meta-item" onclick="pjOpenHealthMenu(event,'${task.id}')" title="Semáforo de saúde (verde/amarelo/vermelho)">
+      ${task.healthColor ? pjHealthDotHtml(task,{size:12}) : '🚦'}
+      <span>${task.healthColor ? PJ_HEALTH_COLORS[task.healthColor]?.label?.split(' — ')[0] || 'Semáforo' : 'Semáforo'}</span>
     </div>
     <div class="pj-meta-item" onclick="pjPomoOpen('${task.id}')" title="Iniciar sessão Pomodoro nesta tarefa">
       🍅 Pomodoro
