@@ -2517,6 +2517,10 @@ ufw allow 3000/tcp</pre>
               <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"/></svg></span>
               Por Cliente
             </button>
+            <button class="pj-nav-btn" id="pjBtnCsHealth" onclick="pjNavigate('cshealth')" title="Saúde da carteira — só em Sucesso do Cliente">
+              <span class="pj-nav-ic">🚦</span>
+              Saúde da carteira
+            </button>
             <button class="pj-nav-btn" id="pjBtnTimeline" onclick="pjNavigate('timeline')">
               <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></span>
               Timeline
@@ -16199,6 +16203,9 @@ function pjCleanupListeners() {
   _pjViewersUnsub = null;
   if (_pjViewersStaleTimer) { clearInterval(_pjViewersStaleTimer); _pjViewersStaleTimer = null; }
   pjViewersByTask = {};
+  try { _pjCsHealthUnsub && _pjCsHealthUnsub(); } catch(_){}
+  _pjCsHealthUnsub = null;
+  pjCsHealth = {};
   // Cleanup dos outros listeners de módulos (posts, permissions, notif, BD, presence refresh)
   try { if (typeof _postsUnsub !== 'undefined' && _postsUnsub) _postsUnsub(); } catch(_){}
   try { if (typeof _permissionsUnsub !== 'undefined' && _permissionsUnsub) _permissionsUnsub(); } catch(_){}
@@ -16231,6 +16238,7 @@ function pjSetupRealtime() {
   if (Array.isArray(pjUnsubs) && pjUnsubs.length > 0) {
     try { pjCleanupListeners(); } catch(_){}
   }
+  try { pjStartCsHealthListener(); } catch(_){}
   const myUid = _auth.currentUser?.uid || _currentUser?.uid;
   // Listen for member changes (new members, login completions, role updates)
   const unsubMembers = pjC('pj_members').onSnapshot(snap => {
@@ -16588,6 +16596,7 @@ function pjNavigate(type, id = null) {
   if (type === 'all')   document.getElementById('pjBtnAll')?.classList.add('active');
   if (type === 'workload') document.getElementById('pjBtnWorkload')?.classList.add('active');
   if (type === 'byclient') document.getElementById('pjBtnByClient')?.classList.add('active');
+  if (type === 'cshealth') document.getElementById('pjBtnCsHealth')?.classList.add('active');
   if (type === 'timeline') document.getElementById('pjBtnTimeline')?.classList.add('active');
   if (type === 'gantt')    document.getElementById('pjBtnGantt')?.classList.add('active');
   if (type === 'archived') document.getElementById('pjBtnArchived')?.classList.add('active');
@@ -16666,6 +16675,7 @@ function pjRenderMain() {
   if (type === 'kanban'){ el.innerHTML = pjBuildKanbanPage(id); done(); return; }
   if (type === 'workload') { el.innerHTML = pjBuildWorkload(); done(); return; }
   if (type === 'byclient') { el.innerHTML = pjBuildByClient(); done(); return; }
+  if (type === 'cshealth') { el.innerHTML = pjBuildCsHealth(); done(); return; }
   if (type === 'timeline') { el.innerHTML = pjBuildTimeline(); done(); return; }
   if (type === 'archived') { el.innerHTML = pjBuildArchived(); done(); return; }
   if (type === 'timemetrics') { el.innerHTML = pjBuildTimeMetrics(); done(); return; }
@@ -18860,6 +18870,126 @@ function pjByClientResetFilter() {
   try { localStorage.setItem('pj_byclient_filter', JSON.stringify(_pjByClientFilter)); } catch(_){}
   pjRenderMain();
 }
+// ── Saúde da Carteira (CS Health) ──────────────────────
+// Radar por cliente com 4 fatores. Soma vira semáforo automático.
+// Só considera clientes da Base de Dados que aparecem em tarefas dentro
+// do space "Sucesso do Cliente" — carteira ativa de CS.
+function pjBuildCsHealth() {
+  // Espaço Sucesso do Cliente (heurística por nome). Ajusta se renomear.
+  const csSpace = (pjSpaces || []).find(s => /sucesso.*cliente/i.test(s.name || ''));
+  const csListIds = new Set((pjLists || []).filter(l => l.spaceId === csSpace?.id).map(l => l.id));
+
+  // Clientes na carteira: quem tem tarefa em Sucesso do Cliente
+  const clientIdsInCs = new Set();
+  (pjAllTasks || []).forEach(t => {
+    if (!csListIds.has(t.listId)) return;
+    const cid = t.clientId || t.client;
+    if (cid) clientIdsInCs.add(cid);
+  });
+  // Também inclui todos os clientes que JÁ têm um doc pj_cs_health (não perde histórico)
+  Object.keys(pjCsHealth).forEach(id => clientIdsInCs.add(id));
+
+  // Se BD tem clientes e ainda não populou carteira, mostra todos (fallback)
+  const bd = (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes)) ? _bdClientes : [];
+  const bdById = new Map(bd.map(c => [c.id, c]));
+  // Aceita ID direto do doc BD ou o nome (legacy)
+  const bdByName = new Map(bd.map(c => [(c.nome||'').trim().toLowerCase(), c]));
+
+  let rows = [...clientIdsInCs].map(cid => {
+    const bdRow = bdById.get(cid) || bdByName.get(String(cid).trim().toLowerCase()) || null;
+    const name = bdRow?.nome || cid;
+    const logo = bdRow?.logo || null;
+    const scores = pjCsHealth[cid]?.scores || {};
+    const color = pjCsHealthColorFromScores(scores);
+    return { cid, name, logo, scores, color };
+  }).sort((a,b) => (a.name||'').localeCompare(b.name||''));
+
+  // Contadores
+  const counts = { green:0, yellow:0, red:0, none:0 };
+  rows.forEach(r => { counts[r.color || 'none']++; });
+
+  const legend = `
+    <div style="display:flex;gap:14px;align-items:center;color:var(--text2);font-size:13px;flex-wrap:wrap">
+      <span style="display:flex;gap:6px;align-items:center">${pjHealthDotHtml('green',{size:10})}${counts.green} verde</span>
+      <span style="display:flex;gap:6px;align-items:center">${pjHealthDotHtml('yellow',{size:10})}${counts.yellow} amarelo</span>
+      <span style="display:flex;gap:6px;align-items:center">${pjHealthDotHtml('red',{size:10})}${counts.red} vermelho</span>
+      <span style="opacity:.6">${counts.none} sem nota</span>
+    </div>`;
+
+  if (!csSpace) {
+    return `<div class="pj-view">
+      <div class="pj-view-title">🚦 Saúde da carteira</div>
+      <div class="pj-empty" style="padding:32px;color:var(--text2)">
+        Não achei o espaço "Sucesso do Cliente". Crie um espaço com esse nome e a view começa a mostrar os clientes com tarefa lá dentro.
+      </div>
+    </div>`;
+  }
+
+  if (!rows.length) {
+    return `<div class="pj-view">
+      <div class="pj-view-title">🚦 Saúde da carteira</div>
+      <div style="margin:6px 0 18px">${legend}</div>
+      <div class="pj-empty" style="padding:32px;color:var(--text2)">
+        Nenhum cliente na carteira ainda. Assim que uma tarefa em "Sucesso do Cliente" for vinculada a um cliente, ele aparece aqui.
+      </div>
+    </div>`;
+  }
+
+  const factorHeaders = PJ_CS_FACTORS.map(f => `<th title="${escHtml(f.hint)}" style="text-align:center;padding:8px;font-weight:500;font-size:12px;color:var(--text2)">${escHtml(f.label)}</th>`).join('');
+
+  const bodyRows = rows.map(r => {
+    const cellsFactors = PJ_CS_FACTORS.map(f => {
+      const v = r.scores?.[f.key];
+      const colorForVal = v === 3 ? 'green' : v === 2 ? 'yellow' : v === 1 ? 'red' : null;
+      const dot = colorForVal ? pjHealthDotHtml(colorForVal, {size:14}) : '<span style="display:inline-block;width:14px;height:14px;border-radius:50%;border:1.5px dashed var(--border);vertical-align:middle"></span>';
+      return `<td style="text-align:center;padding:6px 4px" onclick="event.stopPropagation();pjOpenCsScoreMenu(event,'${r.cid}','${f.key}')">
+        <button class="pj-cs-cell" type="button" title="${escHtml(f.label)}: ${v ? f.key + '=' + v : 'sem nota'}"
+          style="background:none;border:0;padding:4px;cursor:pointer;border-radius:6px">${dot}</button>
+      </td>`;
+    }).join('');
+    const finalDot = r.color ? pjHealthDotHtml(r.color, {size:16, title:PJ_HEALTH_COLORS[r.color].label}) : '<span style="color:var(--text3);font-size:12px">—</span>';
+    const logoHtml = r.logo
+      ? `<img src="${r.logo}" alt="" style="width:22px;height:22px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:8px">`
+      : `<span style="display:inline-block;width:22px;height:22px;border-radius:5px;background:var(--surface2);vertical-align:middle;margin-right:8px"></span>`;
+    return `<tr style="border-top:1px solid var(--border)">
+      <td style="padding:10px 8px">${logoHtml}<span style="vertical-align:middle;font-weight:500">${escHtml(r.name)}</span></td>
+      ${cellsFactors}
+      <td style="text-align:center;padding:10px 8px">${finalDot}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="pj-view">
+    <div class="pj-view-title">🚦 Saúde da carteira</div>
+    <div style="margin:6px 0 12px;color:var(--text2);font-size:13px">Clique em cada célula pra atualizar o score. A cor da última coluna é calculada pela média.</div>
+    ${legend}
+    <div style="overflow-x:auto;margin-top:16px">
+      <table style="width:100%;border-collapse:collapse;font-size:14px">
+        <thead style="background:var(--surface2)">
+          <tr>
+            <th style="text-align:left;padding:8px;font-weight:500;font-size:12px;color:var(--text2)">Cliente</th>
+            ${factorHeaders}
+            <th style="text-align:center;padding:8px;font-weight:500;font-size:12px;color:var(--text2)">Semáforo</th>
+          </tr>
+        </thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function pjOpenCsScoreMenu(ev, clientId, factor) {
+  const cur = pjCsHealth[clientId]?.scores?.[factor] || null;
+  const fLabel = PJ_CS_FACTORS.find(f => f.key === factor)?.label || factor;
+  const items = [
+    { header:true, label:`${fLabel} — ${clientId}` },
+    { id:3, label:'🟢 Verde (ok)',           active: cur===3 },
+    { id:2, label:'🟡 Amarelo (atenção)',    active: cur===2 },
+    { id:1, label:'🔴 Vermelho (crítico)',   active: cur===1 },
+    { id:null, label:'⚪ Sem nota',           active: !cur    },
+  ];
+  pjShowPopupMenu(ev, items, cur, val => pjSetCsHealthScore(clientId, factor, val));
+}
+
 function pjBuildByClient() {
   // Mapa de clientes canônicos da Base de Dados (com logo, cidade etc.)
   const bdMap = {};
@@ -19178,7 +19308,6 @@ function pjBuildKanban(listId, statuses, tasks) {
         ? `<span class="pj-card-prio ${t.priority}" title="${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}"></span>`
         : '';
       const recur = t.recurrence?.pattern ? `<span class="pj-card-recur" title="${pjRecurrenceLabel(t.recurrence)}">🔁</span>` : '';
-      const healthDot = pjHealthDotHtml(t, {size:10});
       // Removido em 2026-08-03: pill de cronometro (piscava a tela).
       const trackingHtml = '';
       h += `<div class="pj-card ${done?'done':''}" draggable="true" data-priority="${t.priority||'low'}"
@@ -19187,7 +19316,6 @@ function pjBuildKanban(listId, statuses, tasks) {
                onclick="pjOpenTask('${t.id}')">
           <div class="pj-card-top">
             ${prio}
-            ${healthDot}
             <div class="pj-card-title">${escHtml(t.title||'(sem título)')}</div>
             ${recur}
           </div>
@@ -19444,7 +19572,7 @@ function pjTaskRowHtml(t) {
       ${done?'✓':''}
     </div>
     <div class="pj-task-title-cell">
-      <div class="pj-task-title-text ${done?'done':''}" style="display:flex;align-items:center;gap:6px;">${pjHealthDotHtml(t,{size:9})}<span>${escHtml(t.title||'(sem título)')}</span> ${recurBadge}</div>
+      <div class="pj-task-title-text ${done?'done':''}">${escHtml(t.title||'(sem título)')} ${recurBadge}</div>
     </div>
     <div class="pj-task-row-meta">
       ${clientPill}
@@ -24007,29 +24135,61 @@ const PJ_HEALTH_COLORS = {
   yellow: { hex:'#f59e0b', label:'Amarelo — atenção'   },
   red:    { hex:'#ef4444', label:'Vermelho — crítico'  },
 };
-function pjHealthDotHtml(t, { size = 10 } = {}) {
-  const hc = t?.healthColor;
-  if (!hc || !PJ_HEALTH_COLORS[hc]) return '';
-  const meta = PJ_HEALTH_COLORS[hc];
-  return `<span class="pj-health-dot" title="${meta.label}" style="display:inline-block;width:${size}px;height:${size}px;border-radius:50%;background:${meta.hex};box-shadow:0 0 0 2px rgba(0,0,0,.06);vertical-align:middle;flex-shrink:0"></span>`;
+function pjHealthDotHtml(color, { size = 10, title = '' } = {}) {
+  if (!color || !PJ_HEALTH_COLORS[color]) return '';
+  const meta = PJ_HEALTH_COLORS[color];
+  return `<span class="pj-health-dot" title="${title || meta.label}" style="display:inline-block;width:${size}px;height:${size}px;border-radius:50%;background:${meta.hex};box-shadow:0 0 0 2px rgba(0,0,0,.06);vertical-align:middle;flex-shrink:0"></span>`;
 }
-async function pjSetHealthColor(taskId, color) {
-  await pjUpdateTask(taskId, { healthColor: color || null });
-  const t2 = pjAllTasks.find(x => x.id === taskId);
-  if (t2 && pjCurrentTaskId === taskId) pjRenderTaskModal({ ...t2 });
-  pjClosePopups();
+
+// ── CS Health (Saúde da Carteira) ─────────────────────
+// Um doc por cliente em pj_cs_health: { clientId, scores:{resultado,relacionamento,comprometimento,ritmo}, note, updatedAt, updatedBy }
+// Cada score = 1 (vermelho) | 2 (amarelo) | 3 (verde). Média decide o semáforo final.
+const PJ_CS_FACTORS = [
+  { key:'resultado',      label:'Resultado',      hint:'Entrega bate a meta / promessa'         },
+  { key:'relacionamento', label:'Relacionamento', hint:'Confiança e química com o cliente'      },
+  { key:'comprometimento',label:'Comprometimento',hint:'Cliente responde e engaja com o time'   },
+  { key:'ritmo',          label:'Ritmo',          hint:'Frequência de contato/atividade recente'},
+];
+let pjCsHealth = {}; // { clientId: {scores:{...}, note, updatedAt, updatedBy} }
+let _pjCsHealthUnsub = null;
+
+function pjCsHealthColorFromScores(scores) {
+  if (!scores) return null;
+  const vals = PJ_CS_FACTORS.map(f => scores[f.key]).filter(v => typeof v === 'number');
+  if (!vals.length) return null;
+  const avg = vals.reduce((a,b)=>a+b,0) / vals.length;
+  if (avg >= 2.5) return 'green';
+  if (avg >= 1.5) return 'yellow';
+  return 'red';
 }
-function pjOpenHealthMenu(ev, taskId) {
-  const t = pjAllTasks.find(x => x.id === taskId);
-  const cur = t?.healthColor || null;
-  const items = [
-    { header:true, label:'Semáforo de saúde' },
-    { id:'green',  label:`🟢 Verde — ok`         , active: cur==='green'  },
-    { id:'yellow', label:`🟡 Amarelo — atenção`  , active: cur==='yellow' },
-    { id:'red',    label:`🔴 Vermelho — crítico` , active: cur==='red'    },
-    { id:null,     label:`⚪ Sem semáforo`        , active: !cur           },
-  ];
-  pjShowPopupMenu(ev, items, cur, id => pjSetHealthColor(taskId, id));
+function pjCsHealthColorFor(clientId) {
+  return pjCsHealthColorFromScores(pjCsHealth[clientId]?.scores);
+}
+async function pjSetCsHealthScore(clientId, factor, value) {
+  if (!clientId) return;
+  const uid = _auth?.currentUser?.uid || _currentUser?.uid;
+  const now = pjNow();
+  const cur = pjCsHealth[clientId] || {};
+  const scores = { ...(cur.scores || {}), [factor]: value };
+  // Otimista
+  pjCsHealth[clientId] = { ...cur, scores, updatedAt: { toMillis: () => Date.now() } };
+  try {
+    await pjC('pj_cs_health').doc(clientId).set({
+      clientId, scores, updatedAt: now, updatedBy: uid || null,
+    }, { merge: true });
+  } catch(e) { console.warn('[cs-health] falha ao salvar:', e); }
+  if (pjCurrentView?.type === 'cshealth') pjScheduleRender();
+}
+function pjStartCsHealthListener() {
+  if (_pjCsHealthUnsub) return;
+  try {
+    _pjCsHealthUnsub = pjC('pj_cs_health').onSnapshot(snap => {
+      const next = {};
+      snap.forEach(d => { const data = d.data() || {}; next[d.id] = { ...data, clientId: d.id }; });
+      pjCsHealth = next;
+      if (pjCurrentView?.type === 'cshealth') pjScheduleRender();
+    }, () => {});
+  } catch(_){}
 }
 async function pjSetRecurrence(taskId, pattern) {
   await pjUpdateTask(taskId, { recurrence: pattern ? { pattern, interval:1 } : null });
@@ -24822,10 +24982,6 @@ function pjRenderTaskModal(task) {
     </div>
     <div class="pj-meta-item" onclick="pjOpenRecurrenceMenu(event,'${task.id}')" title="Repete ao concluir">
       🔁 ${task.recurrence?.pattern ? pjRecurrenceLabel(task.recurrence) : 'Recorrência'}
-    </div>
-    <div class="pj-meta-item" onclick="pjOpenHealthMenu(event,'${task.id}')" title="Semáforo de saúde (verde/amarelo/vermelho)">
-      ${task.healthColor ? pjHealthDotHtml(task,{size:12}) : '🚦'}
-      <span>${task.healthColor ? PJ_HEALTH_COLORS[task.healthColor]?.label?.split(' — ')[0] || 'Semáforo' : 'Semáforo'}</span>
     </div>
     <div class="pj-meta-item" onclick="pjPomoOpen('${task.id}')" title="Iniciar sessão Pomodoro nesta tarefa">
       🍅 Pomodoro
