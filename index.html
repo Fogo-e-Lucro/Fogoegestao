@@ -18899,9 +18899,12 @@ function pjBuildCsHealth() {
     const bdRow = bdById.get(cid) || bdByName.get(String(cid).trim().toLowerCase()) || null;
     const name = bdRow?.nome || cid;
     const logo = bdRow?.logo || null;
-    const scores = pjCsHealth[cid]?.scores || {};
+    const manualScores = pjCsHealth[cid]?.scores || {};
+    const ritmoAuto = pjCsRitmoFor(cid, csListIds);
+    // Ritmo é sempre automático — sobrescreve qualquer valor manual salvo
+    const scores = { ...manualScores, ritmo: ritmoAuto.score };
     const color = pjCsHealthColorFromScores(scores);
-    return { cid, name, logo, scores, color };
+    return { cid, name, logo, scores, color, ritmoDays: ritmoAuto.days };
   }).sort((a,b) => (a.name||'').localeCompare(b.name||''));
 
   // Contadores
@@ -18935,16 +18938,21 @@ function pjBuildCsHealth() {
     </div>`;
   }
 
-  const factorHeaders = PJ_CS_FACTORS.map(f => `<th title="${escHtml(f.hint)}" style="text-align:center;padding:8px;font-weight:500;font-size:12px;color:var(--text2)">${escHtml(f.label)}</th>`).join('');
-
+  const factorHeaders = PJ_CS_FACTORS.map(f => `<th title="${escHtml(f.hint)}" style="text-align:center;padding:8px;font-weight:500;font-size:12px;color:var(--text2)">${escHtml(f.label)}${f.manual?'':' <span style="opacity:.6" title="Calculado automático">🔒</span>'}</th>`).join('');
   const bodyRows = rows.map(r => {
-    const cellsFactors = PJ_CS_FACTORS.map(f => {
+    const cellsFactorsRow = PJ_CS_FACTORS.map(f => {
       const v = r.scores?.[f.key];
       const colorForVal = v === 3 ? 'green' : v === 2 ? 'yellow' : v === 1 ? 'red' : null;
       const dot = colorForVal ? pjHealthDotHtml(colorForVal, {size:14}) : '<span style="display:inline-block;width:14px;height:14px;border-radius:50%;border:1.5px dashed var(--border);vertical-align:middle"></span>';
-      return `<td style="text-align:center;padding:6px 4px" onclick="event.stopPropagation();pjOpenCsScoreMenu(event,'${r.cid}','${f.key}')">
-        <button class="pj-cs-cell" type="button" title="${escHtml(f.label)}: ${v ? f.key + '=' + v : 'sem nota'}"
-          style="background:none;border:0;padding:4px;cursor:pointer;border-radius:6px">${dot}</button>
+      const isRitmo = f.key === 'ritmo';
+      const daysLabel = isRitmo && r.ritmoDays != null ? `<div style="font-size:10px;color:var(--text3);margin-top:2px">${r.ritmoDays}d</div>` : '';
+      const clickHandler = f.manual ? `onclick="event.stopPropagation();pjOpenCsScoreMenu(event,'${r.cid}','${f.key}')"` : '';
+      const cursorStyle = f.manual ? 'cursor:pointer' : 'cursor:default;opacity:.9';
+      const titleText = isRitmo
+        ? `Ritmo automático: ${r.ritmoDays != null ? r.ritmoDays + ' dias sem atividade' : 'sem atividade'}`
+        : `${f.label}: ${v ? 'score=' + v : 'sem nota'}`;
+      return `<td style="text-align:center;padding:6px 4px" ${clickHandler}>
+        <div style="${cursorStyle};padding:4px;border-radius:6px" title="${escHtml(titleText)}">${dot}${daysLabel}</div>
       </td>`;
     }).join('');
     const finalDot = r.color ? pjHealthDotHtml(r.color, {size:16, title:PJ_HEALTH_COLORS[r.color].label}) : '<span style="color:var(--text3);font-size:12px">—</span>';
@@ -18953,7 +18961,7 @@ function pjBuildCsHealth() {
       : `<span style="display:inline-block;width:22px;height:22px;border-radius:5px;background:var(--surface2);vertical-align:middle;margin-right:8px"></span>`;
     return `<tr style="border-top:1px solid var(--border)">
       <td style="padding:10px 8px">${logoHtml}<span style="vertical-align:middle;font-weight:500">${escHtml(r.name)}</span></td>
-      ${cellsFactors}
+      ${cellsFactorsRow}
       <td style="text-align:center;padding:10px 8px">${finalDot}</td>
     </tr>`;
   }).join('');
@@ -24145,11 +24153,27 @@ function pjHealthDotHtml(color, { size = 10, title = '' } = {}) {
 // Um doc por cliente em pj_cs_health: { clientId, scores:{resultado,relacionamento,comprometimento,ritmo}, note, updatedAt, updatedBy }
 // Cada score = 1 (vermelho) | 2 (amarelo) | 3 (verde). Média decide o semáforo final.
 const PJ_CS_FACTORS = [
-  { key:'resultado',      label:'Resultado',      hint:'Entrega bate a meta / promessa'         },
-  { key:'relacionamento', label:'Relacionamento', hint:'Confiança e química com o cliente'      },
-  { key:'comprometimento',label:'Comprometimento',hint:'Cliente responde e engaja com o time'   },
-  { key:'ritmo',          label:'Ritmo',          hint:'Frequência de contato/atividade recente'},
+  { key:'resultado',      label:'Resultado',      hint:'Entrega bate a meta / promessa',                    manual:true  },
+  { key:'relacionamento', label:'Relacionamento', hint:'Confiança e química com o cliente',                 manual:true  },
+  { key:'comprometimento',label:'Comprometimento',hint:'Cliente responde e engaja com o time',              manual:true  },
+  { key:'ritmo',          label:'Ritmo',          hint:'Última atividade em tarefa do cliente (automático)',manual:false },
 ];
+// Ritmo = quantos dias desde a última mudança em tarefa do cliente em CS.
+// <7d verde, <21d amarelo, >21d vermelho.
+function pjCsRitmoFor(clientId, csListIds) {
+  let mostRecent = 0;
+  (pjAllTasks || []).forEach(t => {
+    if (!csListIds.has(t.listId)) return;
+    const cid = t.clientId || t.client;
+    if (cid !== clientId) return;
+    const ts = t.updatedAt?.toMillis?.() || t.updatedAt || t.createdAt?.toMillis?.() || t.createdAt || 0;
+    if (ts > mostRecent) mostRecent = ts;
+  });
+  if (!mostRecent) return { score: null, days: null };
+  const days = Math.floor((Date.now() - mostRecent) / 86400000);
+  const score = days <= 7 ? 3 : days <= 21 ? 2 : 1;
+  return { score, days };
+}
 let pjCsHealth = {}; // { clientId: {scores:{...}, note, updatedAt, updatedBy} }
 let _pjCsHealthUnsub = null;
 
@@ -24167,6 +24191,11 @@ function pjCsHealthColorFor(clientId) {
 }
 async function pjSetCsHealthScore(clientId, factor, value) {
   if (!clientId) return;
+  const fMeta = PJ_CS_FACTORS.find(f => f.key === factor);
+  if (fMeta && fMeta.manual === false) {
+    if (typeof showToast === 'function') showToast('warn','⚠️','Esse fator é calculado automático (última atividade). Não dá pra editar na mão.');
+    return;
+  }
   const uid = _auth?.currentUser?.uid || _currentUser?.uid;
   const now = pjNow();
   const cur = pjCsHealth[clientId] || {};
