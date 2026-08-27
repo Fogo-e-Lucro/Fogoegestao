@@ -29208,10 +29208,7 @@ async function _cwFillVendas(clienteId, elId) {
   if (!db) { el.innerHTML = '<div style="font-size:12px;color:var(--text3);">Sem conexão.</div>'; return; }
 
   try {
-    const [resumoSnap, alertaSnap] = await Promise.all([
-      db.collection('cw_resumo').doc(clienteId).get(),
-      db.collection('cw_alertas').where('clienteId', '==', clienteId).limit(20).get(),
-    ]);
+    const resumoSnap = await db.collection('cw_resumo').doc(clienteId).get();
 
     if (!resumoSnap.exists) {
       el.innerHTML = `<div style="font-size:12px;color:var(--text2);line-height:1.6;">
@@ -29224,9 +29221,9 @@ async function _cwFillVendas(clienteId, elId) {
     const r = resumoSnap.data();
     const serie = r.serie || [];
 
-    // O alerta mais recente, e só se for dos últimos 3 dias.
-    const alertas = alertaSnap.docs.map(d => d.data()).sort((a, b) => (a.dia < b.dia ? 1 : -1));
-    const recente = alertas[0];
+    // O alerta vem dentro do próprio resumo, gravado pelo sync. Só mostra se
+    // for dos últimos 3 dias, pra não deixar aviso velho pendurado na ficha.
+    const recente = r.alerta;
     const limite = new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10);
     const alertaHtml = (recente && recente.dia >= limite)
       ? `<div style="margin-bottom:12px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.3);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text1);line-height:1.5;">
@@ -29277,10 +29274,13 @@ async function cwIntegLoad() {
   if (!box) return;
   box.innerHTML = '<span class="app-settings-hint">Carregando…</span>';
 
+  const db = _bdDb();
+  if (!db) { box.innerHTML = '<span class="app-settings-hint">Sem conexão com o Firestore.</span>'; return; }
+
   try {
     const [dados, clientesSnap] = await Promise.all([
       _cwFetch('cw-lojas'),
-      _bdDb().collection('clientes_base').get(),
+      db.collection('clientes_base').get(),
     ]);
 
     const clientes = clientesSnap.docs
