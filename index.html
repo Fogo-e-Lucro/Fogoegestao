@@ -360,6 +360,13 @@
           <span class="app-settings-test-result" id="cfgFcmResult"></span>
         </div>
       </div>
+      <div class="app-settings-section">
+        <div class="app-settings-row-label">🍽️ Cardápio Web <span class="app-settings-hint">faturamento diário de cada loja, vinculado ao cliente</span></div>
+        <div id="cwIntegBody"><span class="app-settings-hint">Abra a aba pra carregar.</span></div>
+        <div class="app-settings-action-row">
+          <span class="app-settings-hint">Uma autorização só cobre todas as lojas em que você tem acesso no Cardápio Web. O sync roda sozinho todo dia às 8h.</span>
+        </div>
+      </div>
     </div>
 
     <div class="app-settings-pane" data-pane="rec" style="display:none;">
@@ -6715,6 +6722,9 @@ function appSettingsTab(tab) {
   document.querySelectorAll('.app-settings-pane').forEach(p => { p.style.display = (p.dataset.pane === tab) ? 'block' : 'none'; });
   if (tab === 'equipe') {
     if (typeof loadAcessoList === 'function') loadAcessoList();
+  }
+  if (tab === 'integ') {
+    if (typeof cwIntegLoad === 'function') cwIntegLoad();
   }
 }
 function appSettingsToggleVisible(inputId, btn) {
@@ -28504,6 +28514,7 @@ function bdRenderDetail(id) {
       ${_bdSectionPromocoes(c)}
       ${_bdSectionCardapio(c)}
       ${_bdSectionReputacao(c)}
+      ${_bdSectionVendas(c)}
       ${_bdSectionInspiracoes(c)}
       ${_bdSectionAprendizados(c)}
       ${_bdSectionAvisos(c)}
@@ -29130,6 +29141,233 @@ function _bdPickColor(clientId, color) {
   bdSaveField(clientId, 'cor', color);
 }
 window._bdPickColor = _bdPickColor;
+
+// ═════════════ Cardápio Web — vendas do cliente ═════════════
+// Lê cw_resumo/{clienteId}, que o cron do fogo-gestao-cron consolida todo dia
+// às 8h. Um doc só por cliente, já somando as unidades, pra ficha abrir rápido
+// mesmo em cliente com 4 lojas.
+
+const CW_API = 'https://fogo-gestao-cron.vercel.app/api';
+
+async function _cwToken() {
+  const u = firebase.auth?.()?.currentUser;
+  if (!u) throw new Error('Você precisa estar logado.');
+  return u.getIdToken(false);
+}
+
+async function _cwFetch(path, opts = {}) {
+  const token = await _cwToken();
+  const r = await fetch(`${CW_API}/${path}`, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', 'x-firebase-id-token': token, ...(opts.headers || {}) },
+  });
+  const json = await r.json().catch(() => ({}));
+  if (!r.ok || json.ok === false) throw new Error(json.mensagem || json.error || `Erro ${r.status}`);
+  return json;
+}
+
+function _cwBRL(n) {
+  return (Number(n) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function _cwDiaCurto(ymd) {
+  const [, m, d] = String(ymd).split('-');
+  return `${d}/${m}`;
+}
+
+function _cwKpi(rotulo, valor, sub) {
+  return `<div style="flex:1;min-width:120px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">
+    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">${rotulo}</div>
+    <div style="font-size:18px;font-weight:700;color:var(--text1);line-height:1.2;">${valor}</div>
+    ${sub ? `<div style="font-size:11px;color:var(--text2);margin-top:3px;">${sub}</div>` : ''}
+  </div>`;
+}
+
+// Barrinhas em CSS puro. Chart.js já está na página, mas pra 30 pontos numa
+// seção que abre e fecha o canvas dá mais trabalho que valor.
+function _cwBarras(serie) {
+  if (!serie.length) return '';
+  const max = Math.max(...serie.map(d => d.faturamento), 1);
+  const barras = serie.map(d => {
+    const h = Math.max(2, Math.round((d.faturamento / max) * 56));
+    const titulo = `${_cwDiaCurto(d.dia)}: ${_cwBRL(d.faturamento)} em ${d.pedidos} pedido${d.pedidos === 1 ? '' : 's'}`;
+    return `<div title="${titulo}" style="flex:1;min-width:4px;height:${h}px;background:var(--accent);opacity:.75;border-radius:3px 3px 0 0;"></div>`;
+  }).join('');
+  return `<div style="margin-top:14px;">
+    <div style="display:flex;align-items:flex-end;gap:2px;height:60px;">${barras}</div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:5px;">
+      <span>${_cwDiaCurto(serie[0].dia)}</span><span>${_cwDiaCurto(serie[serie.length - 1].dia)}</span>
+    </div>
+  </div>`;
+}
+
+async function _cwFillVendas(clienteId, elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const db = _bdDb();
+  if (!db) { el.innerHTML = '<div style="font-size:12px;color:var(--text3);">Sem conexão.</div>'; return; }
+
+  try {
+    const [resumoSnap, alertaSnap] = await Promise.all([
+      db.collection('cw_resumo').doc(clienteId).get(),
+      db.collection('cw_alertas').where('clienteId', '==', clienteId).limit(20).get(),
+    ]);
+
+    if (!resumoSnap.exists) {
+      el.innerHTML = `<div style="font-size:12px;color:var(--text2);line-height:1.6;">
+        Nenhuma loja do Cardápio Web vinculada a esse cliente ainda.
+        Vincule em <b>Configurações → Integrações → Cardápio Web</b>.
+      </div>`;
+      return;
+    }
+
+    const r = resumoSnap.data();
+    const serie = r.serie || [];
+
+    // O alerta mais recente, e só se for dos últimos 3 dias.
+    const alertas = alertaSnap.docs.map(d => d.data()).sort((a, b) => (a.dia < b.dia ? 1 : -1));
+    const recente = alertas[0];
+    const limite = new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10);
+    const alertaHtml = (recente && recente.dia >= limite)
+      ? `<div style="margin-bottom:12px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.3);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text1);line-height:1.5;">
+           <b style="color:#dc2626;">Queda detectada.</b> ${recente.texto}
+         </div>`
+      : '';
+
+    const unidades = (r.lojas || []).length > 1
+      ? `<div style="font-size:11px;color:var(--text3);margin-top:10px;">
+           Somando ${r.lojas.length} unidades: ${r.lojas.map(l => l.nome).join(', ')}
+         </div>`
+      : '';
+
+    const quando = r.atualizadoEm
+      ? new Date(r.atualizadoEm).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+      : '';
+
+    el.innerHTML = `
+      ${alertaHtml}
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        ${_cwKpi('Hoje', _cwBRL(r.hoje?.faturamento), `${r.hoje?.pedidos || 0} pedidos`)}
+        ${_cwKpi('7 dias', _cwBRL(r.d7?.faturamento), `ticket ${_cwBRL(r.d7?.ticket)}`)}
+        ${_cwKpi('30 dias', _cwBRL(r.d30?.faturamento), `${r.d30?.pedidos || 0} pedidos`)}
+      </div>
+      ${_cwBarras(serie)}
+      ${unidades}
+      ${quando ? `<div style="font-size:10px;color:var(--text3);margin-top:8px;">Atualizado em ${quando}</div>` : ''}
+    `;
+  } catch (e) {
+    el.innerHTML = `<div style="font-size:12px;color:#dc2626;">Não deu pra carregar as vendas: ${e.message}</div>`;
+  }
+}
+window._cwFillVendas = _cwFillVendas;
+
+function _bdSectionVendas(c) {
+  const elId = `cwVendas_${String(c.id).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+  // A seção começa fechada; carrega assim que o HTML entra no DOM.
+  setTimeout(() => _cwFillVendas(c.id, elId), 0);
+  return _bdSec('💰 Vendas (Cardápio Web)', `
+    <div id="${elId}" style="min-height:40px;font-size:12px;color:var(--text3);">Carregando vendas…</div>
+  `);
+}
+
+// ═════════════ Cardápio Web — painel de integração ═════════════
+
+async function cwIntegLoad() {
+  const box = document.getElementById('cwIntegBody');
+  if (!box) return;
+  box.innerHTML = '<span class="app-settings-hint">Carregando…</span>';
+
+  try {
+    const [dados, clientesSnap] = await Promise.all([
+      _cwFetch('cw-lojas'),
+      _bdDb().collection('clientes_base').get(),
+    ]);
+
+    const clientes = clientesSnap.docs
+      .map(d => ({ id: d.id, nome: d.data().nome || d.data().name || d.id }))
+      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+
+    const status = dados.conectado
+      ? `<span style="color:#16a34a;font-weight:600;">Conectado</span>`
+      : `<span style="color:#dc2626;font-weight:600;">Não conectado</span>`;
+
+    const linhas = (dados.lojas || []).map(l => {
+      const opts = ['<option value="">— sem vínculo —</option>']
+        .concat(clientes.map(c =>
+          `<option value="${c.id}" ${c.id === l.clienteId ? 'selected' : ''}>${c.nome}</option>`))
+        .join('');
+      const marca = l.vinculoAuto && l.clienteId
+        ? `<span title="Vinculado automaticamente pelo nome" style="font-size:10px;color:var(--text3);">auto</span>`
+        : '';
+      return `<tr>
+        <td style="padding:7px 8px;font-size:12px;color:var(--text1);">${l.nome} ${marca}</td>
+        <td style="padding:7px 8px;">
+          <select class="app-settings-input" style="min-width:180px;font-size:12px;padding:5px 8px;"
+                  onchange="cwIntegLink('${l.id}', this.value)">${opts}</select>
+        </td>
+      </tr>`;
+    }).join('');
+
+    box.innerHTML = `
+      <div class="app-settings-action-row">
+        <span class="app-settings-hint">Status: ${status}${dados.lojas?.length ? ` · ${dados.lojas.length} lojas` : ''}</span>
+      </div>
+      <div class="app-settings-action-row">
+        <button class="app-settings-btn" onclick="cwIntegConnect()">${dados.conectado ? 'Reconectar' : 'Conectar Cardápio Web'}</button>
+        <button class="app-settings-btn-test" onclick="cwIntegSync()">↻ Sincronizar agora</button>
+        <span class="app-settings-test-result" id="cwIntegResult"></span>
+      </div>
+      ${linhas ? `<table style="width:100%;border-collapse:collapse;margin-top:10px;">
+        <thead><tr>
+          <th style="text-align:left;padding:6px 8px;font-size:11px;color:var(--text3);text-transform:uppercase;">Loja no Cardápio Web</th>
+          <th style="text-align:left;padding:6px 8px;font-size:11px;color:var(--text3);text-transform:uppercase;">Cliente no Fogo &amp; Gestão</th>
+        </tr></thead><tbody>${linhas}</tbody></table>`
+      : '<div class="app-settings-action-row"><span class="app-settings-hint">Nenhuma loja ainda. Conecte e sincronize.</span></div>'}
+    `;
+  } catch (e) {
+    box.innerHTML = `<span class="app-settings-hint" style="color:#dc2626;">${e.message}</span>`;
+  }
+}
+window.cwIntegLoad = cwIntegLoad;
+
+async function cwIntegConnect() {
+  const out = document.getElementById('cwIntegResult');
+  if (out) out.textContent = 'Abrindo autorização…';
+  try {
+    const { authorizeUrl } = await _cwFetch('cw-oauth-start', { method: 'POST', body: '{}' });
+    window.location.href = authorizeUrl;
+  } catch (e) {
+    if (out) out.textContent = e.message;
+  }
+}
+window.cwIntegConnect = cwIntegConnect;
+
+async function cwIntegSync() {
+  const out = document.getElementById('cwIntegResult');
+  if (out) out.textContent = 'Sincronizando…';
+  try {
+    const r = await _cwFetch('cw-sync', { method: 'POST' });
+    const partes = [`${r.lojas?.length || 0} lojas`, `${r.diasGravados || 0} dias`];
+    if (r.naoVinculadas?.length) partes.push(`${r.naoVinculadas.length} sem vínculo`);
+    if (r.alertas?.length) partes.push(`${r.alertas.length} alerta(s)`);
+    if (out) out.textContent = partes.join(' · ');
+    cwIntegLoad();
+  } catch (e) {
+    if (out) out.textContent = e.message;
+  }
+}
+window.cwIntegSync = cwIntegSync;
+
+async function cwIntegLink(lojaId, clienteId) {
+  const out = document.getElementById('cwIntegResult');
+  try {
+    await _cwFetch('cw-lojas', { method: 'POST', body: JSON.stringify({ lojaId, clienteId: clienteId || null }) });
+    if (out) out.textContent = 'Vínculo salvo. Sincronize pra atualizar o painel.';
+  } catch (e) {
+    if (out) out.textContent = e.message;
+  }
+}
+window.cwIntegLink = cwIntegLink;
 
 function _bdSectionVisual(c) {
   const safeId = c.id.replace(/[^a-zA-Z0-9_-]/g, '_');
