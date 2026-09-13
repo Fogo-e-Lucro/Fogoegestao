@@ -193,75 +193,108 @@
     </button>
     <div class="app-logo-text">Fogo &amp; Gestão</div>
   </div>
-  <div style="display:flex;align-items:center;gap:10px;">
+  <div class="app-header-right">
     <div class="sync-dot syncing" id="syncStatus" title="Conectando..."></div>
-    <div class="main-tabs">
-      <button class="main-tab" id="tabProjetos" onclick="switchTab('projetos',this)">
-        <svg class="main-tab-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
-        <span class="main-tab-label">Gestão Central</span>
-      </button>
-      <!-- Ferramentas dropdown (todas as outras abas) -->
-      <div class="main-tab-more" id="tabMoreWrap">
-        <button class="main-tab" id="tabMoreBtn" onclick="toggleTabMoreMenu(event)">
-          <svg class="main-tab-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-          <span class="main-tab-label">Ferramentas</span>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.6;margin-left:-2px;"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="main-tab-more-menu" id="tabMoreMenu">
-          <button class="main-tab-more-item" id="tabEntrada" onclick="switchTab('entrada',this);closeTabMoreMenu()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            <span>Criar Post</span>
-          </button>
-          <button class="main-tab-more-item" id="tabVisualizar" onclick="switchTab('visualizar',this);closeTabMoreMenu()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span>Calendário</span>
-          </button>
-          <button class="main-tab-more-item" id="tabSocial" onclick="switchTab('social',this);closeTabMoreMenu()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
-            <span>Publipost</span>
-          </button>
-          <button class="main-tab-more-item" id="tabLives" onclick="switchTab('lives',this);closeTabMoreMenu()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 16.1 2 19"/><path d="m2 5 2.9 2.9"/><path d="M7.8 13.2 5 16"/><path d="M8 8 5.2 5.2"/><circle cx="12" cy="12" r="3"/><path d="M16.2 7.8 19 5"/><path d="m19 19-2.8-2.8"/></svg>
-            <span>Ao Vivo</span>
-          </button>
-          <button class="main-tab-more-item" id="tabPop" onclick="switchTab('pop',this);closeTabMoreMenu()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
-            <span>POPs</span>
-          </button>
-          <button class="main-tab-more-item" id="tabGmb" onclick="switchTab('gmb',this);closeTabMoreMenu()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span>Google</span>
-          </button>
-          <button class="main-tab-more-item" id="tabMetricas" onclick="switchTab('metricas',this);closeTabMoreMenu()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
-            <span>Métricas</span>
-          </button>
-        </div>
-      </div>
+    <div id="pjOfflineBadge" class="pj-offline-badge" title="Sem conexão — alterações ficam em fila e sobem quando voltar" style="display:none;">
+      <span class="pj-offline-dot"></span>
+      <span class="pj-offline-label">offline</span>
     </div>
-    <button class="theme-picker-btn" id="bdIconBtn" onclick="switchTab('base',document.getElementById('bdIconBtn'))" title="Base de Clientes" style="position:relative;">
-      🏢
+    <!-- Elementos legados: mantidos por scripts que ainda referenciam esses IDs -->
+    <button id="tabProjetos" style="display:none" aria-hidden="true"></button>
+    <button id="tabEntrada" style="display:none" aria-hidden="true"></button>
+    <button id="tabVisualizar" style="display:none" aria-hidden="true"></button>
+    <button id="tabSocial" style="display:none" aria-hidden="true"></button>
+    <button id="tabLives" style="display:none" aria-hidden="true"></button>
+    <button id="tabPop" style="display:none" aria-hidden="true"></button>
+    <button id="tabGmb" style="display:none" aria-hidden="true"></button>
+    <button id="tabMetricas" style="display:none" aria-hidden="true"></button>
+    <button id="bdIconBtn" style="display:none" aria-hidden="true"></button>
+    <div id="appPresence" style="display:none;"></div>
+    <div id="userChip" style="display:none;"><div id="userAvatar">?</div><span id="userName"></span></div>
+    <div id="tabMoreMenu" style="display:none"></div>
+    <button id="themePickerBtn" style="display:none" aria-hidden="true"></button>
+    <button id="appUazapiStatusBtn" style="display:none" aria-hidden="true"><span id="appUazapiDot"></span></button>
+    <button id="appSettingsBtn" style="display:none" aria-hidden="true"></button>
+    <!-- Fim dos elementos legados -->
+    <button class="app-menu-trigger" id="appMenuTrigger" onclick="appMenuToggle(event)" title="Menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
-    <div class="app-presence" id="appPresence" style="display:none;" title="Quem está online"></div>
-    <div class="user-chip" id="userChip" style="display:none" onclick="signOutUser()" title="Sair">
-      <div class="user-avatar-placeholder" id="userAvatar">?</div>
-      <span class="user-name" id="userName">Usuário</span>
+  </div>
+
+  <!-- Painel completo do app (abre pelo botão hambúrguer da topbar).
+       Reúne: usuário logado, troca de módulo, base de clientes, tema,
+       WhatsApp, configurações e sair. Substitui o antigo header cheio. -->
+  <div class="app-menu-panel" id="appMenuPanel" role="dialog" aria-hidden="true">
+    <div class="app-menu-user" id="appMenuUser">
+      <div class="app-menu-user-avatar" id="appMenuUserAvatar">?</div>
+      <div class="app-menu-user-info">
+        <div class="app-menu-user-name" id="appMenuUserName">Usuário</div>
+        <div class="app-menu-user-email" id="appMenuUserEmail"></div>
+      </div>
+      <button class="app-menu-icon-btn" onclick="signOutUser()" title="Sair">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
     </div>
-    <button class="theme-picker-btn" id="themePickerBtn" onclick="toggleNightMode()" title="Modo noturno">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-  </button>
-  <button class="theme-picker-btn app-uazapi-status" id="appUazapiStatusBtn" onclick="openAppSettings(); setTimeout(()=>appSettingsTab('integ'),50);" title="Status WhatsApp (uazapi)" style="display:none;">
-    <span class="app-uazapi-dot" id="appUazapiDot"></span>
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413"/></svg>
-  </button>
-  <div id="pjOfflineBadge" class="pj-offline-badge" title="Sem conexão — alterações ficam em fila e sobem quando voltar" style="display:none;">
-    <span class="pj-offline-dot"></span>
-    <span class="pj-offline-label">offline</span>
+
+    <div class="app-menu-presence" id="appMenuPresence" style="display:none"></div>
+
+    <div class="app-menu-section-label">Módulos</div>
+    <div class="app-menu-grid">
+      <button class="app-menu-tile" data-tab="projetos" onclick="appMenuGo('projetos')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+        <span>Gestão Central</span>
+      </button>
+      <button class="app-menu-tile" data-tab="entrada" onclick="appMenuGo('entrada')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <span>Criar Post</span>
+      </button>
+      <button class="app-menu-tile" data-tab="visualizar" onclick="appMenuGo('visualizar')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Calendário</span>
+      </button>
+      <button class="app-menu-tile" data-tab="social" onclick="appMenuGo('social')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+        <span>Publipost</span>
+      </button>
+      <button class="app-menu-tile" data-tab="lives" onclick="appMenuGo('lives')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M4.9 16.1 2 19M2 5l2.9 2.9M7.8 13.2 5 16M8 8 5.2 5.2M16.2 7.8 19 5M19 19l-2.8-2.8"/></svg>
+        <span>Ao Vivo</span>
+      </button>
+      <button class="app-menu-tile" data-tab="pop" onclick="appMenuGo('pop')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+        <span>POPs</span>
+      </button>
+      <button class="app-menu-tile" data-tab="gmb" onclick="appMenuGo('gmb')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>Google</span>
+      </button>
+      <button class="app-menu-tile" data-tab="metricas" onclick="appMenuGo('metricas')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
+        <span>Métricas</span>
+      </button>
+      <button class="app-menu-tile" data-tab="base" onclick="appMenuGo('base')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/></svg>
+        <span>Base de Clientes</span>
+      </button>
+    </div>
+
+    <div class="app-menu-section-label">Preferências</div>
+    <div class="app-menu-actions">
+      <button class="app-menu-action" onclick="toggleNightMode();appMenuClose()" title="Trocar tema">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <span>Tema</span>
+      </button>
+      <button class="app-menu-action app-menu-adminonly" id="appMenuUazapi" onclick="openAppSettings();setTimeout(()=>appSettingsTab('integ'),50);appMenuClose()" style="display:none">
+        <span class="app-menu-action-dot" id="appMenuUazapiDot"></span>
+        <span>WhatsApp</span>
+      </button>
+      <button class="app-menu-action app-menu-adminonly" id="appMenuSettings" onclick="openAppSettings();appMenuClose()" style="display:none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Configurações</span>
+      </button>
+    </div>
   </div>
-  <button class="theme-picker-btn" id="appSettingsBtn" onclick="openAppSettings()" title="Configurações" style="display:none;">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-  </button>
-  </div>
+  <div class="app-menu-backdrop" id="appMenuBackdrop" onclick="appMenuClose()"></div>
 </header>
 
 <!-- MODAL: Configurações globais do app (admin) -->
@@ -6348,16 +6381,90 @@ function observeCards(grid) {
    TABS
 ═══════════════════════════════════════════════════════ */
 /* ── Dropdown "Ferramentas" ── */
-function toggleTabMoreMenu(e) {
-  e.stopPropagation();
-  document.getElementById('tabMoreMenu').classList.toggle('open');
+function toggleTabMoreMenu() { /* legado — substituído por appMenuToggle */ }
+function closeTabMoreMenu() { /* legado */ }
+
+// ─── App Menu Panel ─────────────────────────────────────
+// Painel completo que reúne troca de módulo, usuário, tema,
+// configurações e sair. Substitui a topbar cheia por um botão
+// hambúrguer discreto e um painel que funciona em qualquer módulo.
+let _appMenuOpen = false;
+function appMenuToggle(e) {
+  if (e) e.stopPropagation();
+  _appMenuOpen ? appMenuClose() : appMenuOpen();
 }
-function closeTabMoreMenu() {
-  document.getElementById('tabMoreMenu')?.classList.remove('open');
+function appMenuOpen() {
+  const panel = document.getElementById('appMenuPanel');
+  const backdrop = document.getElementById('appMenuBackdrop');
+  if (!panel) return;
+  appMenuSync();
+  panel.classList.add('open');
+  panel.setAttribute('aria-hidden', 'false');
+  backdrop?.classList.add('open');
+  _appMenuOpen = true;
+}
+function appMenuClose() {
+  const panel = document.getElementById('appMenuPanel');
+  const backdrop = document.getElementById('appMenuBackdrop');
+  panel?.classList.remove('open');
+  panel?.setAttribute('aria-hidden', 'true');
+  backdrop?.classList.remove('open');
+  _appMenuOpen = false;
+}
+function appMenuGo(tab) {
+  const btn = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)) || document.getElementById('bdIconBtn');
+  try { switchTab(tab, btn); } catch(_){}
+  appMenuClose();
+}
+// Sincroniza estado do painel com o app: usuário logado, admin flags,
+// presença, indicador de módulo ativo, dot uazapi.
+function appMenuSync() {
+  const u = firebase.auth?.()?.currentUser;
+  if (u) {
+    const av = document.getElementById('appMenuUserAvatar');
+    if (av) {
+      if (u.photoURL) { av.style.backgroundImage = `url('${u.photoURL}')`; av.textContent = ''; av.classList.add('has-photo'); }
+      else { av.textContent = (u.displayName?.[0] || u.email?.[0] || '?').toUpperCase(); }
+    }
+    document.getElementById('appMenuUserName').textContent = u.displayName || u.email?.split('@')[0] || 'Usuário';
+    document.getElementById('appMenuUserEmail').textContent = u.email || '';
+  }
+  // Marca o tile do módulo ativo
+  const activeTab = document.querySelector('.app-tab.active')?.id?.replace(/^tab/, '').toLowerCase()
+                 || (document.getElementById('tab-projetos')?.classList.contains('active') ? 'projetos' : null);
+  document.querySelectorAll('.app-menu-tile').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === activeTab);
+  });
+  // Admin-only visibility
+  const isAdmin = (typeof userIsAdmin === 'function') ? userIsAdmin() : false;
+  document.querySelectorAll('.app-menu-adminonly').forEach(el => {
+    el.style.display = isAdmin ? '' : 'none';
+  });
+  // Filtra módulos por permissão do usuário
+  document.querySelectorAll('.app-menu-tile[data-tab]').forEach(t => {
+    const tab = t.dataset.tab;
+    const ok = (typeof userCanSeeTab === 'function') ? userCanSeeTab(tab) : true;
+    t.style.display = ok ? '' : 'none';
+  });
+  // Espelha dot uazapi
+  const legacyDot = document.getElementById('appUazapiDot');
+  const dotOut = document.getElementById('appMenuUazapiDot');
+  if (legacyDot && dotOut) dotOut.className = 'app-menu-action-dot ' + (legacyDot.className.replace('app-uazapi-dot','').trim());
+  // Presença: espelha o HTML do container antigo
+  const oldPres = document.getElementById('appPresence');
+  const newPres = document.getElementById('appMenuPresence');
+  if (oldPres && newPres) {
+    newPres.innerHTML = oldPres.innerHTML || '';
+    newPres.style.display = oldPres.innerHTML && isAdmin ? '' : 'none';
+  }
 }
 document.addEventListener('click', function(e) {
-  if (!document.getElementById('tabMoreWrap')?.contains(e.target)) closeTabMoreMenu();
+  if (!_appMenuOpen) return;
+  const panel = document.getElementById('appMenuPanel');
+  const trigger = document.getElementById('appMenuTrigger');
+  if (!panel?.contains(e.target) && !trigger?.contains(e.target)) appMenuClose();
 });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && _appMenuOpen) appMenuClose(); });
 
 function switchTab(tab, btn) {
   closeTabMoreMenu();
