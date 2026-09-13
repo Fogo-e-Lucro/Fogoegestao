@@ -15381,20 +15381,28 @@ body:has(#tab-projetos.active) #appMenuTrigger { display: none !important; }
    badge de Caixa de Entrada etc. Vira uma paleta única do módulo. */
 @media (min-width: 901px) {
   body.at-projetos {
-    --accent: #fb923c;
-    --accent2: #f97316;
+    --accent: #1e293b;
+    --accent2: #0f172a;
   }
   body.at-projetos .pj-btn-primary {
-    box-shadow: 0 4px 14px rgba(249,115,22,.32);
+    background: linear-gradient(168deg, #1e293b 0%, #0f172a 100%);
+    color: #f1f5f9;
+    border: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 4px 14px rgba(15,23,42,.55);
   }
   body.at-projetos .pj-btn-primary:hover {
-    box-shadow: 0 6px 20px rgba(249,115,22,.48);
+    box-shadow: 0 6px 20px rgba(15,23,42,.7);
+    border-color: rgba(255,255,255,.14);
   }
   body.at-projetos .pj-fab {
-    box-shadow: 0 10px 28px rgba(249,115,22,.42), 0 4px 10px rgba(0,0,0,.25);
+    background: linear-gradient(168deg, #1e293b 0%, #0f172a 100%);
+    color: #f1f5f9;
+    border: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 10px 28px rgba(15,23,42,.55), 0 4px 10px rgba(0,0,0,.35);
   }
   body.at-projetos .pj-fab:hover {
-    box-shadow: 0 14px 36px rgba(249,115,22,.55), 0 6px 14px rgba(0,0,0,.3);
+    box-shadow: 0 14px 36px rgba(15,23,42,.7), 0 6px 14px rgba(0,0,0,.4);
+    border-color: rgba(255,255,255,.14);
   }
 }
 
