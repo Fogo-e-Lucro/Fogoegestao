@@ -113,6 +113,7 @@
     <div class="portal-error-title">Painel não encontrado</div>
     <div class="portal-error-sub">Confere o link ou pede um novo pro time da Fogo &amp; Lucro no WhatsApp.</div>
   </div>
+  <script>document.body.classList.add('at-projetos');</script>
   <div class="portal-app" id="portalApp" style="display:none">
     <header class="portal-header" id="portalHeader">
       <div class="portal-header-tag">Seu calendário de conteúdos</div>
@@ -6508,6 +6509,9 @@ function switchTab(tab, btn) {
   document.querySelectorAll('.main-tab,.main-tab-more-item').forEach(t => t.classList.remove('active'));
   const panel = document.getElementById('tab-' + tab);
   panel.classList.add('active');
+  // Marca no body qual módulo está ativo pra CSS reagir sem depender de :has
+  document.body.className = document.body.className.replace(/\bat-[a-z]+\b/g, '').trim();
+  document.body.classList.add('at-' + tab);
   // Abas no dropdown: marca o item E destaca o botão "Ferramentas"
   const inMore = ['entrada','gmb','metricas','visualizar','social','lives','pop'].includes(tab);
   if (inMore) {

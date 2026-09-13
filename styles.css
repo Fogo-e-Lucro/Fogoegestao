@@ -3159,10 +3159,13 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
 /* Gestão Central cola no topo/bordas da viewport: sidebar sobe até o teto,
    conteúdo principal aproveita 100% da largura útil sem padding herdado. */
 @media (min-width: 901px) {
+  body.at-projetos .app-content,
   .app-content:has(#tab-projetos.active) {
-    padding: 0;
+    padding: 0 !important;
     max-width: none;
+    margin: 0;
   }
+  body.at-projetos { background: #0f172a; }
 }
 
 /* ── Sidebar ── */
