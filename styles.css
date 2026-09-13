@@ -15038,6 +15038,15 @@ body:has(.modal-overlay.open, .pj-modal-overlay.open, .pj-fab-modal-overlay.open
   box-shadow: none;
 }
 
+/* Nome do espaço (Marketing, Performance, Sucesso do Cliente) */
+.pj-sidebar .pj-space-name {
+  color: rgba(241, 245, 249, .95);
+}
+/* Nome da pasta (Social media, Tráfego pago, Alinhamento de expectativa) */
+.pj-sidebar .pj-folder-name {
+  color: rgba(203, 213, 225, .8);
+}
+
 /* Rows de espaços/folders/listas */
 .pj-sidebar .pj-space-row:hover,
 .pj-sidebar .pj-folder-row:hover,
