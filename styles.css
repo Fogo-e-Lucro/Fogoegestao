@@ -15354,18 +15354,22 @@ body:has(.modal-overlay.open, .pj-modal-overlay.open, .pj-fab-modal-overlay.open
 
 /* Botão hambúrguer dentro do bell row da sidebar (só Gestão Central) */
 .pj-sidebar-menu-btn {
-  width: 28px; height: 28px; padding: 0;
+  width: 36px; height: 36px; padding: 0;
   display: inline-flex; align-items: center; justify-content: center;
-  background: transparent; border: 0; border-radius: 7px;
-  color: rgba(203, 213, 225, .82);
-  cursor: pointer;
-  transition: background .15s, color .15s;
-  flex-shrink: 0;
-  margin-right: 8px;
-}
-.pj-sidebar-menu-btn:hover {
-  background: rgba(255, 255, 255, .07);
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid rgba(255, 255, 255, .06);
+  border-radius: 9px;
   color: #f1f5f9;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+.pj-sidebar-menu-btn svg { width: 19px; height: 19px; stroke-width: 2; }
+.pj-sidebar-menu-btn:hover {
+  background: rgba(255, 255, 255, .10);
+  color: #fff;
+  border-color: rgba(255, 255, 255, .14);
 }
 /* Quando Gestão Central está ativa, o hambúrguer flutuante some
    (o da sidebar já cumpre a função). Nos outros módulos, o flutuante
