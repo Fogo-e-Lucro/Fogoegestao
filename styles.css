@@ -15371,3 +15371,25 @@ body:has(.modal-overlay.open, .pj-modal-overlay.open, .pj-fab-modal-overlay.open
    (o da sidebar já cumpre a função). Nos outros módulos, o flutuante
    volta a aparecer no canto superior direito. */
 body:has(#tab-projetos.active) #appMenuTrigger { display: none !important; }
+
+/* Gestão Central adota o accent laranja Fogo em tudo que usa var(--accent):
+   botão + Tarefa, view toggle (Lista/Kanban) ativo, FAB flutuante,
+   badge de Caixa de Entrada etc. Vira uma paleta única do módulo. */
+@media (min-width: 901px) {
+  body.at-projetos {
+    --accent: #fb923c;
+    --accent2: #f97316;
+  }
+  body.at-projetos .pj-btn-primary {
+    box-shadow: 0 4px 14px rgba(249,115,22,.32);
+  }
+  body.at-projetos .pj-btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(249,115,22,.48);
+  }
+  body.at-projetos .pj-fab {
+    box-shadow: 0 10px 28px rgba(249,115,22,.42), 0 4px 10px rgba(0,0,0,.25);
+  }
+  body.at-projetos .pj-fab:hover {
+    box-shadow: 0 14px 36px rgba(249,115,22,.55), 0 6px 14px rgba(0,0,0,.3);
+  }
+}
