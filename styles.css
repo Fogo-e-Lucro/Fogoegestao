@@ -15409,3 +15409,14 @@ body:has(#tab-projetos.active) #appMenuTrigger { display: none !important; }
 /* Bolinha de sync no canto superior direito — some junto com a topbar */
 body.at-projetos #syncStatus,
 body.at-projetos .app-header-right { display: none !important; }
+
+/* Botão de trocar tema ao lado do "+ Tarefa" */
+.pj-theme-toggle {
+  font-size: 15px;
+  filter: grayscale(.2);
+  transition: filter .15s, transform .15s;
+}
+.pj-theme-toggle:hover {
+  filter: grayscale(0);
+  transform: rotate(-12deg);
+}

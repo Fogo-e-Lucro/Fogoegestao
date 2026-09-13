@@ -17864,6 +17864,7 @@ function pjBuildListPage(listId) {
     <button class="pj-icon-btn pj-icon-btn-lg" title="Campos personalizados" onclick="pjOpenFieldsEditor('${listId}')">📋</button>
     <button class="pj-icon-btn pj-icon-btn-lg" title="Automações" onclick="pjOpenAutomationsEditor('${listId}')">⚡</button>
     <button class="pj-icon-btn pj-icon-btn-lg" title="Mais opções (renomear, excluir...)" onclick="pjOpenListMenu(event,'${listId}')">⋯</button>` : ''}
+    <button class="pj-icon-btn pj-icon-btn-lg pj-theme-toggle" title="Trocar tema (claro/escuro)" onclick="toggleNightMode()">🌗</button>
     <button class="pj-btn pj-btn-primary" style="font-size:14px;padding:10px 22px;font-weight:600;" onclick="pjQuickCreateTask('${listId}')">＋ Tarefa</button>
   </div>` + pjBuildFilterBar(list) + pjBuildBulkBar() + `<div class="pj-view-body" style="padding-top:8px;">`;
 
