@@ -4174,7 +4174,10 @@ function appPresenceTogglePopover() {
     pop.className = 'app-presence-popover';
     document.body.appendChild(pop);
     document.addEventListener('click', e => {
-      if (!pop.contains(e.target) && !document.getElementById('appPresence')?.contains(e.target)) {
+      const inAny = pop.contains(e.target)
+        || document.getElementById('appPresence')?.contains(e.target)
+        || document.getElementById('appMenuPresence')?.contains(e.target);
+      if (!inAny) {
         pop.classList.remove('open');
         _appPresencePopoverOpen = false;
       }
@@ -4185,6 +4188,18 @@ function appPresenceTogglePopover() {
     _appPresencePopoverOpen = false;
   } else {
     appPresenceRenderPopover();
+    // Ancora do popover: sempre no container visível de avatares.
+    // Preferimos o dentro do painel; se estiver fechado, cai pro antigo.
+    const anchor = document.getElementById('appMenuPresence')?.offsetParent
+      ? document.getElementById('appMenuPresence')
+      : document.getElementById('appPresence');
+    if (anchor) {
+      const rect = anchor.getBoundingClientRect();
+      const popW = 260;
+      pop.style.top = Math.max(8, rect.bottom + 8) + 'px';
+      pop.style.right = Math.max(8, window.innerWidth - rect.right) + 'px';
+      pop.style.left = 'auto';
+    }
     pop.classList.add('open');
     _appPresencePopoverOpen = true;
   }
@@ -6450,18 +6465,28 @@ function appMenuSync() {
   const legacyDot = document.getElementById('appUazapiDot');
   const dotOut = document.getElementById('appMenuUazapiDot');
   if (legacyDot && dotOut) dotOut.className = 'app-menu-action-dot ' + (legacyDot.className.replace('app-uazapi-dot','').trim());
-  // Presença: espelha o HTML do container antigo
+  // Presença: espelha o HTML do container antigo e mantém click pra abrir
+  // o popover "Online agora / Visto por último" que existia na topbar antiga.
   const oldPres = document.getElementById('appPresence');
   const newPres = document.getElementById('appMenuPresence');
   if (oldPres && newPres) {
     newPres.innerHTML = oldPres.innerHTML || '';
     newPres.style.display = oldPres.innerHTML && isAdmin ? '' : 'none';
+    newPres.style.cursor = 'pointer';
+    newPres.title = 'Quem está online — clique pra ver horários';
+    newPres.onclick = (ev) => {
+      ev.stopPropagation();
+      if (typeof appPresenceTogglePopover === 'function') appPresenceTogglePopover();
+    };
   }
 }
 document.addEventListener('click', function(e) {
   if (!_appMenuOpen) return;
   const panel = document.getElementById('appMenuPanel');
   const trigger = document.getElementById('appMenuTrigger');
+  const pop = document.getElementById('appPresencePopover');
+  // Não fecha o menu quando o popover de presença é clicado (é filho de body)
+  if (pop?.contains(e.target)) return;
   if (!panel?.contains(e.target) && !trigger?.contains(e.target)) appMenuClose();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && _appMenuOpen) appMenuClose(); });
