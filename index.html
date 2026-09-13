@@ -17771,7 +17771,7 @@ function pjBuildListPage(listId) {
     const collapsedKey = `pjStatusCollapsed:${listId}:${st.id}`;
     const stored = localStorage.getItem(collapsedKey);
     const collapsed = stored === null ? isDoneStatus : (stored === '1');
-    h += `<div class="pj-status-group-header pj-status-droptarget ${collapsed?'collapsed':''}" style="margin-top:8px;"
+    h += `<div class="pj-status-group-header pj-status-droptarget ${collapsed?'collapsed':''}" style="margin-top:8px;--c:${st.color};"
          data-list-id="${listId}" data-status-id="${st.id}"
          onclick="pjToggleStatusCollapse('${listId}','${st.id}',event)"
          ondragover="pjListDragOver(event)" ondragleave="pjListDragLeave(event)" ondrop="pjListDrop(event,'${listId}','${st.id}')">
