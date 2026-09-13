@@ -15348,3 +15348,23 @@ body:has(.modal-overlay.open, .pj-modal-overlay.open, .pj-fab-modal-overlay.open
     padding: 10px 8px 12px;
   }
 }
+
+/* Botão hambúrguer dentro do bell row da sidebar (só Gestão Central) */
+.pj-sidebar-menu-btn {
+  width: 28px; height: 28px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; border-radius: 7px;
+  color: rgba(203, 213, 225, .82);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+.pj-sidebar-menu-btn:hover {
+  background: rgba(255, 255, 255, .07);
+  color: #f1f5f9;
+}
+/* Quando Gestão Central está ativa, o hambúrguer flutuante some
+   (o da sidebar já cumpre a função). Nos outros módulos, o flutuante
+   volta a aparecer no canto superior direito. */
+body:has(#tab-projetos.active) #appMenuTrigger { display: none !important; }
