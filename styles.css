@@ -15095,9 +15095,19 @@ body:has(.modal-overlay.open, .pj-modal-overlay.open, .pj-fab-modal-overlay.open
   color: rgba(148, 163, 184, .8);
 }
 
-/* Footer da sidebar */
+/* Footer da sidebar — barra fixa embaixo, tipo BDN */
 .pj-sidebar .pj-sidebar-footer {
-  border-top: 1px solid rgba(255, 255, 255, .06);
+  border-top: 1px solid rgba(255, 255, 255, .10);
+  background: linear-gradient(180deg, rgba(11,18,32,.55) 0%, rgba(11,18,32,.85) 100%);
+  padding: 12px 10px 14px;
+  box-shadow: 0 -6px 20px -8px rgba(0, 0, 0, .55);
+  position: relative;
+  z-index: 2;
+}
+/* Fade sutil no topo do scroll pra indicar que existe algo além dos itens */
+.pj-sidebar .pj-sidebar-scroll {
+  mask-image: linear-gradient(180deg, transparent 0, #000 8px, #000 calc(100% - 12px), transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 8px, #000 calc(100% - 12px), transparent 100%);
 }
 .pj-sidebar .pj-sidebar-user-row {
   background: rgba(255, 255, 255, .04);
