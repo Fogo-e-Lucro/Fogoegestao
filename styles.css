@@ -4105,8 +4105,19 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
   display:inline-flex; align-items:center; gap:4px;
   transition:transform .15s;
 }
-.pj-task-due.overdue { background:rgba(239,68,68,.12); color:#ef4444; }
-.pj-task-due.overdue::before { content:'⚠'; font-size:10px; }
+.pj-task-due.overdue {
+  background: linear-gradient(135deg, #ff5b5b 0%, #dc2626 45%, #991b1b 100%);
+  color:#fff;
+  border:0;
+  box-shadow: 0 2px 8px rgba(220,38,38,.35), inset 0 1px 0 rgba(255,255,255,.15);
+  text-shadow: 0 1px 1px rgba(0,0,0,.15);
+  animation: pjPulseOverdue 2.4s ease-in-out infinite;
+}
+.pj-task-due.overdue::before { content:'⚠'; font-size:10px; color:#fff; }
+@keyframes pjPulseOverdue {
+  0%,100% { box-shadow: 0 2px 8px rgba(220,38,38,.35), inset 0 1px 0 rgba(255,255,255,.15); }
+  50%     { box-shadow: 0 2px 14px rgba(239,68,68,.55), inset 0 1px 0 rgba(255,255,255,.15); }
+}
 .pj-task-due.today {
   background:linear-gradient(90deg,rgba(249,115,22,.18),rgba(245,158,11,.18));
   color:#f97316;
