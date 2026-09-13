@@ -4051,11 +4051,18 @@ function appPresenceStartListener() {
   if (_appPresenceUnsub || typeof _db === 'undefined') return;
   try {
     _appPresenceUnsub = _db.collection('app_presence').onSnapshot(snap => {
+      // Cruza com pjMembers pra esconder quem já foi removido da equipe.
+      // Se pjMembers ainda não carregou (primeira sync), deixa passar sem filtrar
+      // pra não sumir com todo mundo no boot.
+      const memberUids = Array.isArray(pjMembers) && pjMembers.length
+        ? new Set(pjMembers.map(m => m.uid).filter(Boolean))
+        : null;
       _appPresenceUsers = [];
       snap.forEach(doc => {
         const d = doc.data();
         const ts = d.lastSeen?.toMillis ? d.lastSeen.toMillis() : (d.lastSeen?.seconds ? d.lastSeen.seconds*1000 : 0);
         if (!ts) return;
+        if (memberUids && !memberUids.has(d.uid)) return; // ex-membro: pula
         // Preserva flag 'online' (explicit false significa saiu da página)
         _appPresenceUsers.push({ ...d, lastSeenMs: ts, isOnline: false, online: d.online });
       });
@@ -4083,6 +4090,14 @@ function _appAvatarHtml(u, cls='') {
   return `<div class="app-presence-avatar ${cls}">${initial}</div>`;
 }
 
+// Retorna presenceUsers filtrados pra esconder ex-membros (uid não está em pjMembers).
+// Se pjMembers ainda não carregou (primeira sync), retorna a lista bruta pra não sumir
+// com todo mundo no boot.
+function _appPresenceActiveOnly() {
+  if (!Array.isArray(pjMembers) || !pjMembers.length) return _appPresenceUsers;
+  const memberUids = new Set(pjMembers.map(m => m.uid).filter(Boolean));
+  return _appPresenceUsers.filter(u => memberUids.has(u.uid));
+}
 function appPresenceRender() {
   const wrap = document.getElementById('appPresence');
   if (!wrap) return;
@@ -4094,7 +4109,8 @@ function appPresenceRender() {
     return;
   }
   const me = firebase.auth?.()?.currentUser?.uid;
-  const others = _appPresenceUsers.filter(u => u.uid !== me);
+  const activeOnly = _appPresenceActiveOnly();
+  const others = activeOnly.filter(u => u.uid !== me);
   const onlineOthers = others.filter(u => u.isOnline);
   if (others.length === 0) {
     wrap.style.display = 'none';
@@ -4145,7 +4161,7 @@ function appPresenceRenderPopover() {
   const pop = document.getElementById('appPresencePopover');
   if (!pop) return;
   const me = firebase.auth?.()?.currentUser?.uid;
-  const others = _appPresenceUsers.filter(u => u.uid !== me);
+  const others = _appPresenceActiveOnly().filter(u => u.uid !== me);
   const online = others.filter(u => u.isOnline);
   const offline = others.filter(u => !u.isOnline);
   const fmtAgo = ms => {
@@ -16255,6 +16271,8 @@ function pjSetupRealtime() {
     pjMembers = snap.docs.map(d => ({id:d.id,...d.data()}));
     // hidrata fotos do app_members (em paralelo, não bloqueia)
     _pjHydratePhotos();
+    // Re-renderiza presença pra sumir com ex-membro assim que sair de pj_members
+    try { if (typeof appPresenceRender === 'function') appPresenceRender(); } catch(_){}
     // Refresh team list in settings if open
     const eqPane = document.querySelector('.app-settings-pane[data-pane="equipe"]');
     if (eqPane && eqPane.style.display !== 'none' && typeof loadAcessoList === 'function') {
