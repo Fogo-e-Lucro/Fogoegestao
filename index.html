@@ -5315,6 +5315,50 @@ if (_DEV_BYPASS) {
   }, 0);
 }
 
+// Sincroniza photoURL/displayName do Google pra Firestore.
+// Roda em login: se user.photoURL existir e for diferente do que já ta salvo,
+// atualiza app_members/{docId} e todos os pj_members com esse uid.
+async function syncGoogleProfileToFirestore(user) {
+  if (!user || typeof _db === 'undefined') return;
+  const photoURL = user.photoURL || '';
+  const displayName = user.displayName || '';
+  const email = user.email || '';
+  if (!photoURL && !displayName) return; // nada pra sincronizar
+  try {
+    const docId = btoa(email).replace(/[^a-zA-Z0-9]/g, '_');
+    const ref = _db.collection('app_members').doc(docId);
+    const cur = await ref.get();
+    const data = cur.exists ? (cur.data() || {}) : {};
+    const patch = {};
+    // Foto: só sobrescreve se ainda não tem OU se veio diferente (Google
+    // mudou avatar). Preserva foto customizada subida via acessoUploadAvatar
+    // se ela não é URL do Google.
+    const curPhoto = data.photoUrl || '';
+    const isCustomPhoto = curPhoto && !/googleusercontent\.com|lh\d\.googleusercontent/i.test(curPhoto);
+    if (photoURL && !isCustomPhoto && curPhoto !== photoURL) patch.photoUrl = photoURL;
+    if (displayName && !data.name) patch.name = displayName;
+    if (email && !data.email) patch.email = email;
+    if (user.uid && data.uid !== user.uid) patch.uid = user.uid;
+    if (Object.keys(patch).length === 0) return;
+    await ref.set(patch, { merge: true });
+    // Espelha em pj_members (docs com esse uid) pra o resto do app pegar rapido
+    try {
+      const snap = await _db.collection('pj_members').where('uid', '==', user.uid).get();
+      const writes = [];
+      snap.forEach(d => {
+        const cur2 = d.data() || {};
+        const pjPatch = {};
+        if (patch.photoUrl && cur2.photoUrl !== patch.photoUrl) pjPatch.photoUrl = patch.photoUrl;
+        if (patch.name && !cur2.name) pjPatch.name = patch.name;
+        if (Object.keys(pjPatch).length) writes.push(d.ref.update(pjPatch));
+      });
+      await Promise.all(writes);
+    } catch(_){}
+  } catch(e) {
+    console.warn('[syncGoogleProfile] falhou:', e?.message);
+  }
+}
+
 _auth.onAuthStateChanged(async user => {
   if (_DEV_BYPASS) return; // Ignora estado real do Firebase em dev bypass
   if (!user) {
@@ -5332,6 +5376,10 @@ _auth.onAuthStateChanged(async user => {
     return;
   }
   _currentUser = user;
+  // Sincroniza foto/nome do Google pra Firestore (uma vez por sessão se mudou)
+  // Assim quem entra pelo Gmail já aparece com foto na Equipe, presença e
+  // avatar de tarefa sem precisar subir manualmente.
+  try { syncGoogleProfileToFirestore(user); } catch(_){}
   // Hide login
   document.getElementById('loginScreen').classList.add('hidden');
   // Show user chip
