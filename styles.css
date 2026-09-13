@@ -3154,7 +3154,16 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
    PROJETOS — Project Management
 ══════════════════════════════════════════════════════ */
 #tab-projetos { overflow:hidden; }
-.pj-wrap { display:flex; min-height:calc(100vh - 120px); overflow:hidden; font-family:var(--font); }
+.pj-wrap { display:flex; min-height:100vh; overflow:hidden; font-family:var(--font); }
+
+/* Gestão Central cola no topo/bordas da viewport: sidebar sobe até o teto,
+   conteúdo principal aproveita 100% da largura útil sem padding herdado. */
+@media (min-width: 901px) {
+  .app-content:has(#tab-projetos.active) {
+    padding: 0;
+    max-width: none;
+  }
+}
 
 /* ── Sidebar ── */
 .pj-sidebar {
@@ -15306,3 +15315,36 @@ body:has(.modal-overlay.open, .pj-modal-overlay.open, .pj-fab-modal-overlay.open
 .app-header-right #tabPop,
 .app-header-right #tabGmb,
 .app-header-right #tabMetricas { display: none !important; }
+
+/* Sidebar Gestão Central — polish com topbar removida */
+@media (min-width: 901px) {
+  .pj-sidebar {
+    padding-top: 6px;
+  }
+  .pj-sidebar-bell-row {
+    padding: 14px 12px 12px;
+    margin-bottom: 4px;
+  }
+  .pj-sidebar-bell-label {
+    font-size: 11.5px;
+    letter-spacing: .12em;
+    color: rgba(148,163,184,.85);
+  }
+  /* Nav items com mais respiro na leitura */
+  .pj-sidebar .pj-nav-btn {
+    padding: 9px 12px;
+    gap: 11px;
+    font-size: 13.5px;
+  }
+  /* Section label ADMIN com mais espaço acima */
+  .pj-sidebar .pj-section-label {
+    margin-top: 8px;
+    padding: 10px 14px 4px;
+    font-size: 10.5px;
+    letter-spacing: .14em;
+  }
+  /* Rodapé (usuário + botões adicionar espaço) mais discreto */
+  .pj-sidebar-footer {
+    padding: 10px 8px 12px;
+  }
+}
