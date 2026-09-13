@@ -16306,11 +16306,31 @@ function pjCleanupListeners() {
   } catch(_){}
 }
 
+// Limpeza mínima só dos listeners de pj_* — usado ANTES de setup realtime
+// pra evitar duplicar sem quebrar listeners de outros módulos (BD, posts, etc)
+// que já foram criados por loadFromCloud logo antes.
+function _pjCleanupRealtimeOnly() {
+  if (Array.isArray(pjUnsubs)) {
+    pjUnsubs.forEach(u => { try { u && u(); } catch(_){} });
+    pjUnsubs = [];
+  }
+  try { _pjRealtimeUnsub && _pjRealtimeUnsub(); } catch(_){}
+  _pjRealtimeUnsub = null;
+  _pjRealtimeReady = false;
+  try { _pjQueueUnsub && _pjQueueUnsub(); } catch(_){}
+  _pjQueueUnsub = null;
+  try { _pjViewersUnsub && _pjViewersUnsub(); } catch(_){}
+  _pjViewersUnsub = null;
+  if (_pjViewersStaleTimer) { clearInterval(_pjViewersStaleTimer); _pjViewersStaleTimer = null; }
+  pjViewersByTask = {};
+}
+
 function pjSetupRealtime() {
   // Se já tem listeners ativos (ex: exitDemo→pjInit sem passar por cleanup),
-  // fecha eles primeiro pra não empilhar +5 subscriptions duplicadas.
+  // fecha só os de pj_* — NÃO tocar em BD/posts/permissions/notif que
+  // pertencem ao boot geral e não são responsabilidade deste setup.
   if (Array.isArray(pjUnsubs) && pjUnsubs.length > 0) {
-    try { pjCleanupListeners(); } catch(_){}
+    try { _pjCleanupRealtimeOnly(); } catch(_){}
   }
   try { pjStartCsHealthListener(); } catch(_){}
   const myUid = _auth.currentUser?.uid || _currentUser?.uid;
