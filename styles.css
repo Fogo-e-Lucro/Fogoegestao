@@ -15393,3 +15393,7 @@ body:has(#tab-projetos.active) #appMenuTrigger { display: none !important; }
     box-shadow: 0 14px 36px rgba(249,115,22,.55), 0 6px 14px rgba(0,0,0,.3);
   }
 }
+
+/* Bolinha de sync no canto superior direito — some junto com a topbar */
+body.at-projetos #syncStatus,
+body.at-projetos .app-header-right { display: none !important; }
