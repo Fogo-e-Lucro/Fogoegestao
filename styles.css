@@ -15278,3 +15278,23 @@ body:has(.modal-overlay.open, .pj-modal-overlay.open, .pj-fab-modal-overlay.open
 }
 .app-menu-action-dot.on { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,.55); }
 .app-menu-action-dot.off { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,.5); }
+
+/* Elementos legados da topbar antiga que outros scripts ainda referenciam
+   por ID — precisam ficar no DOM (senão o auth handler / status handler
+   quebra), mas nunca são visíveis. O painel novo (appMenuPanel) mostra
+   essas informações onde precisa. */
+.app-header-right #userChip,
+.app-header-right #appPresence,
+.app-header-right #bdIconBtn,
+.app-header-right #themePickerBtn,
+.app-header-right #appUazapiStatusBtn,
+.app-header-right #appSettingsBtn,
+.app-header-right #tabMoreMenu,
+.app-header-right #tabProjetos,
+.app-header-right #tabEntrada,
+.app-header-right #tabVisualizar,
+.app-header-right #tabSocial,
+.app-header-right #tabLives,
+.app-header-right #tabPop,
+.app-header-right #tabGmb,
+.app-header-right #tabMetricas { display: none !important; }
