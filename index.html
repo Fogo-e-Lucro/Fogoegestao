@@ -2567,9 +2567,7 @@ ufw allow 3000/tcp</pre>
                 <span class="pj-me-hero-glow"></span>
                 <span class="pj-me-hero-avatar-wrap">
                   <span class="pj-me-hero-avatar-ring"></span>
-                  <span class="pj-me-hero-avatar" id="pjSidebarMeAvatar">
-                    <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.42 0-8 2.46-8 5.5V22h16v-2.5c0-3.04-3.58-5.5-8-5.5z"/></svg>
-                  </span>
+                  <span class="pj-me-hero-avatar" id="pjSidebarMeAvatar"></span>
                   <span class="pj-me-hero-status"></span>
                 </span>
                 <span class="pj-me-hero-info">
@@ -17123,11 +17121,12 @@ function pjNavigate(type, id = null) {
 // Renderiza foto + nome + status "online" com efeito motion.
 function pjRenderSidebarMe(user) {
   user = user || firebase.auth?.()?.currentUser;
-  if (!user) return;
+  if (!user) { console.log('[hero] sem user'); return; }
   const av = document.getElementById('pjSidebarMeAvatar');
   const nm = document.getElementById('pjSidebarMeName');
   const roleTxt = document.getElementById('pjSidebarMeRoleText');
-  if (!av || !nm) return;
+  if (!av || !nm) { console.log('[hero] av/nm null', !!av, !!nm); return; }
+  console.log('[hero] render pra', user.email, 'authPhoto=', !!user.photoURL);
   const full = user.displayName || user.email?.split('@')[0] || 'Você';
   const parts = full.split(/\s+/).filter(Boolean).slice(0, 2);
   nm.textContent = parts.join(' ');
@@ -17152,9 +17151,11 @@ function pjRenderSidebarMe(user) {
   // avatar se a URL do Google retornar 403/timeout)
   const trySwap = (url) => {
     if (!url || url === fallbackUrl) return;
+    // Data URLs são inline: aplica direto sem esperar onload (já é síncrono)
+    if (url.startsWith('data:')) { console.log('[hero] aplicando foto data URL'); applyBg(url); return; }
     const img = new Image();
-    img.onload = () => applyBg(url);
-    img.onerror = () => {}; // mantém o SVG local
+    img.onload = () => { console.log('[hero] foto remota carregou'); applyBg(url); };
+    img.onerror = () => { console.log('[hero] foto remota falhou, mantém SVG'); };
     img.src = url;
   };
   (async () => {
