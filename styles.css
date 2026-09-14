@@ -15544,10 +15544,13 @@ body.at-projetos .app-header-right { display: none !important; }
   z-index: 1;
   overflow: hidden;
 }
-.pj-me-hero-avatar.has-photo { background-color: transparent; }
+.pj-me-hero-avatar.has-photo,
+.pj-me-hero-avatar.has-initial {
+  background-color: transparent !important;
+}
 .pj-me-hero-avatar svg { opacity: .55; }
 .pj-me-hero-avatar.has-photo svg,
-.pj-me-hero-avatar.has-initial svg { display: none; }
+.pj-me-hero-avatar.has-initial svg { display: none !important; }
 
 /* Status dot online (canto inferior direito do avatar) */
 .pj-me-hero-status {
