@@ -5493,7 +5493,11 @@ _auth.onAuthStateChanged(async user => {
   // Sincroniza foto/nome do Google pra Firestore (uma vez por sessão se mudou)
   // Assim quem entra pelo Gmail já aparece com foto na Equipe, presença e
   // avatar de tarefa sem precisar subir manualmente.
-  try { syncGoogleProfileToFirestore(user); } catch(_){}
+  try {
+    syncGoogleProfileToFirestore(user).then(() => {
+      try { pjRenderSidebarMe(user); } catch(_){}
+    });
+  } catch(_){}
   // Hide login
   document.getElementById('loginScreen').classList.add('hidden');
   // Show user chip
@@ -16514,6 +16518,8 @@ function pjSetupRealtime() {
     _pjHydratePhotos();
     // Re-renderiza presença pra sumir com ex-membro assim que sair de pj_members
     try { if (typeof appPresenceRender === 'function') appPresenceRender(); } catch(_){}
+    // Re-renderiza o hero card da sidebar (pode ter pegado foto agora)
+    try { if (typeof pjRenderSidebarMe === 'function') pjRenderSidebarMe(); } catch(_){}
     // Refresh team list in settings if open
     const eqPane = document.querySelector('.app-settings-pane[data-pane="equipe"]');
     if (eqPane && eqPane.style.display !== 'none' && typeof loadAcessoList === 'function') {
@@ -16901,32 +16907,55 @@ function pjRenderSidebarMe(user) {
   const nm = document.getElementById('pjSidebarMeName');
   const roleTxt = document.getElementById('pjSidebarMeRoleText');
   if (!av || !nm) return;
-  // Avatar: foto do Google, ou inicial em gradient
-  if (user.photoURL) {
-    av.style.backgroundImage = `url('${user.photoURL}')`;
-    av.textContent = '';
-    av.classList.add('has-photo');
-    av.classList.remove('has-initial');
-  } else {
-    av.style.backgroundImage = '';
-    av.textContent = (user.displayName?.[0] || user.email?.[0] || '?').toUpperCase();
-    av.classList.remove('has-photo');
-    av.classList.add('has-initial');
-  }
-  // Nome: dois primeiros (ex.: "David Lima"). Se só um, usa email antes do @.
+  // Nome primeiro (não depende de foto)
   const full = user.displayName || user.email?.split('@')[0] || 'Você';
   const parts = full.split(/\s+/).filter(Boolean).slice(0, 2);
   nm.textContent = parts.join(' ');
-  // Role
   if (roleTxt) {
     const isAdmin = (typeof userIsAdmin === 'function') ? userIsAdmin() : false;
     roleTxt.textContent = isAdmin ? 'admin · online agora' : 'online agora';
   }
-  // Re-dispara motion se estiver sendo populado depois do primeiro paint
+  // Descobre a foto — várias fontes por prioridade
+  const setInitial = () => {
+    av.style.backgroundImage = '';
+    av.textContent = (full[0] || user.email?.[0] || '?').toUpperCase();
+    av.classList.remove('has-photo');
+    av.classList.add('has-initial');
+  };
+  const setPhoto = (url) => {
+    // Pré-carrega pra garantir que a URL responde antes de aplicar
+    const img = new Image();
+    img.onload = () => {
+      av.style.backgroundImage = `url('${url}')`;
+      av.textContent = '';
+      av.classList.add('has-photo');
+      av.classList.remove('has-initial');
+    };
+    img.onerror = setInitial;
+    img.src = url;
+  };
+  const findPhoto = async () => {
+    // 1) Firebase Auth (Google sign-in traz photoURL)
+    if (user.photoURL) return user.photoURL;
+    // 2) pj_members em memória pelo uid
+    if (Array.isArray(window.pjMembers)) {
+      const m = pjMembers.find(x => x.uid === user.uid);
+      if (m?.photoUrl) return m.photoUrl;
+    }
+    // 3) app_members (fonte da foto customizada + Google sincronizado)
+    try {
+      const docId = btoa(user.email || '').replace(/[^a-zA-Z0-9]/g, '_');
+      const snap = await _db.collection('app_members').doc(docId).get();
+      const url = snap.exists ? (snap.data()?.photoUrl || '') : '';
+      if (url) return url;
+    } catch(_){}
+    return null;
+  };
+  // Aplica inicial imediato pra não deixar buraco, foto sobrescreve quando chegar
+  setInitial();
+  findPhoto().then(url => { if (url) setPhoto(url); });
   const hero = document.getElementById('pjMeHero');
-  if (hero && hero.dataset.filled !== '1') {
-    hero.dataset.filled = '1';
-  }
+  if (hero) hero.dataset.filled = '1';
 }
 
 // ── Sidebar user row (rodapé) ──────────────────────────
