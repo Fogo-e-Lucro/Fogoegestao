@@ -15461,3 +15461,117 @@ body.at-projetos .app-header-right { display: none !important; }
   color: rgba(203,213,225,.85);
   border: 1px solid rgba(255,255,255,.08);
 }
+
+/* ============================================================
+   Sidebar user badge — foto + nome do usuário logado
+   Entra com motion no boot, hover pulsa avatar.
+   ============================================================ */
+.pj-sidebar-me {
+  flex: 1;
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 8px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+  opacity: 0;
+  transform: translateY(-6px);
+  animation: pjMeEntrance .55s cubic-bezier(.2,.9,.3,1.2) .1s forwards;
+  min-width: 0;
+}
+.pj-sidebar-me:hover {
+  background: rgba(255,255,255,.07);
+  border-color: rgba(255,255,255,.14);
+  transform: translateY(-1px);
+}
+.pj-sidebar-me:active { transform: translateY(0); }
+
+.pj-sidebar-me-avatar {
+  position: relative;
+  width: 34px; height: 34px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  color: #fff; font-weight: 700; font-size: 14px;
+  background-size: cover; background-position: center;
+  flex-shrink: 0;
+  box-shadow:
+    0 0 0 2px rgba(59,130,246,.35),
+    0 4px 12px rgba(0,0,0,.35);
+  animation: pjMeAvatarBreathe 3.6s ease-in-out infinite;
+}
+.pj-sidebar-me-avatar.has-photo { background-color: transparent; }
+.pj-sidebar-me-avatar::after {
+  content: '';
+  position: absolute;
+  right: -1px; bottom: -1px;
+  width: 10px; height: 10px;
+  background: #22c55e;
+  border: 2px solid #0f172a;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(34,197,94,.65);
+  animation: pjMeStatusPulse 2.2s ease-out infinite;
+}
+
+.pj-sidebar-me-info {
+  display: flex; flex-direction: column; min-width: 0; flex: 1;
+  gap: 2px;
+}
+.pj-sidebar-me-name {
+  font-size: 13.5px; font-weight: 600;
+  color: #f1f5f9;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-4px);
+  animation: pjMeSlideIn .5s ease .35s forwards;
+}
+.pj-sidebar-me-role {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10.5px; font-weight: 500;
+  color: rgba(148,163,184,.85);
+  text-transform: uppercase; letter-spacing: .08em;
+  opacity: 0;
+  animation: pjMeSlideIn .5s ease .48s forwards;
+}
+.pj-sidebar-me-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34,197,94,.65);
+}
+
+/* GESTÃO CENTRAL label some quando o badge está lá — não faz sentido os dois
+   competirem por espaço na mesma linha */
+.pj-sidebar-bell-row .pj-sidebar-bell-label { display: none; }
+
+@keyframes pjMeEntrance {
+  0%   { opacity: 0; transform: translateY(-6px) scale(.96); }
+  70%  { opacity: 1; transform: translateY(1px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes pjMeSlideIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pjMeAvatarBreathe {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(59,130,246,.35), 0 4px 12px rgba(0,0,0,.35); }
+  50%      { box-shadow: 0 0 0 3px rgba(96,165,250,.55), 0 6px 18px rgba(59,130,246,.35); }
+}
+@keyframes pjMeStatusPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(34,197,94,.65); }
+  70%  { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+
+/* Respeita reduced-motion — sem animação, só as cores */
+@media (prefers-reduced-motion: reduce) {
+  .pj-sidebar-me,
+  .pj-sidebar-me-name,
+  .pj-sidebar-me-role,
+  .pj-sidebar-me-avatar,
+  .pj-sidebar-me-avatar::after { animation: none !important; opacity: 1 !important; transform: none !important; box-shadow: 0 0 0 2px rgba(59,130,246,.35), 0 4px 12px rgba(0,0,0,.35); }
+}
+
+@media (max-width: 720px) {
+  .pj-sidebar-me-info { display: none; }
+}

@@ -2566,7 +2566,16 @@ ufw allow 3000/tcp</pre>
               <button class="pj-sidebar-menu-btn" onclick="appMenuToggle(event)" title="Menu do app" aria-label="Abrir menu">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
               </button>
-              <span class="pj-sidebar-bell-label">Gestão Central</span>
+              <button class="pj-sidebar-me" id="pjSidebarMe" onclick="appMenuToggle(event)" title="Você" aria-label="Quem está logado">
+                <span class="pj-sidebar-me-avatar" id="pjSidebarMeAvatar">?</span>
+                <span class="pj-sidebar-me-info">
+                  <span class="pj-sidebar-me-name" id="pjSidebarMeName">Carregando…</span>
+                  <span class="pj-sidebar-me-role" id="pjSidebarMeRole">
+                    <span class="pj-sidebar-me-dot"></span>
+                    <span id="pjSidebarMeRoleText">online</span>
+                  </span>
+                </span>
+              </button>
               <button class="pj-focus-toggle" id="pjFocusToggle" onclick="pjToggleFocus()" title="Modo foco — esconde tudo menos a tarefa atual (Shift+F)">
                 <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
               </button>
@@ -5487,6 +5496,8 @@ _auth.onAuthStateChanged(async user => {
     avatar.textContent = user.displayName?.[0] || user.email[0].toUpperCase();
   }
   document.getElementById('userName').textContent = user.displayName || user.email.split('@')[0];
+  // Popula o badge do usuário na sidebar (foto + nome + role)
+  try { pjRenderSidebarMe(user); } catch(_){}
   // Always load team list so userIsAdmin() can detect role:'admin' for secondary admins
   await loadAcessoList();
   // Admin tab — only original admin sees the share links card
@@ -8945,7 +8956,9 @@ let spQueue = JSON.parse(localStorage.getItem('spQueue') || '[]');
 
 // ── Config ──
 const SP_APP_ID     = '1972040954188233';
-const SP_APP_SECRET = '0a98879395f65bdce5c62df40dbd5be4';
+// App Secret NÃO mora mais no client. Exchange rodando no VPS (endpoint
+// abaixo) — o secret é env var no servidor, blindado. Audit 2026-09.
+const SP_OAUTH_EXCHANGE_URL = 'https://fg-oauth.89-116-30-126.sslip.io/exchange';
 const SP_SCOPES     = 'instagram_basic,instagram_manage_insights,instagram_content_publish,pages_read_engagement,pages_show_list,ads_read,business_management';
 
 function getSpToken() { return localStorage.getItem('metaAccessToken') || getApiKey('meta_token') || ''; }
@@ -8971,10 +8984,15 @@ function spUpdateTokenStatus() {
 }
 
 async function spExchangeForLongLived(shortToken) {
-  const r = await fetch(`https://graph.facebook.com/v25.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${SP_APP_ID}&client_secret=${SP_APP_SECRET}&fb_exchange_token=${encodeURIComponent(shortToken)}`);
+  // Client não faz mais o exchange direto — chama o VPS que guarda o secret.
+  const r = await fetch(SP_OAUTH_EXCHANGE_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ shortToken }),
+  });
   const d = await r.json();
-  if (d.error) throw new Error(d.error.message);
-  return { token: d.access_token, expiresIn: d.expires_in || 5184000 };
+  if (!r.ok || d.error) throw new Error(d.error || 'Falha no exchange');
+  return { token: d.token, expiresIn: d.expiresIn || 5184000 };
 }
 
 async function spSaveAndActivateToken(rawToken) {
@@ -16864,7 +16882,47 @@ function pjNavigate(type, id = null) {
   pjRenderMain();
 }
 
-// ── Sidebar user row ────────────────────────────────────
+// ── Sidebar user badge (topo, no bell row) ─────────────
+// Renderiza foto + nome + status "online" com efeito motion.
+function pjRenderSidebarMe(user) {
+  user = user || firebase.auth?.()?.currentUser;
+  if (!user) return;
+  const av = document.getElementById('pjSidebarMeAvatar');
+  const nm = document.getElementById('pjSidebarMeName');
+  const roleTxt = document.getElementById('pjSidebarMeRoleText');
+  if (!av || !nm) return;
+  // Avatar
+  if (user.photoURL) {
+    av.style.backgroundImage = `url('${user.photoURL}')`;
+    av.textContent = '';
+    av.classList.add('has-photo');
+  } else {
+    av.style.backgroundImage = '';
+    av.textContent = (user.displayName?.[0] || user.email?.[0] || '?').toUpperCase();
+    av.classList.remove('has-photo');
+  }
+  // Nome
+  const first = (user.displayName || user.email?.split('@')[0] || 'Você').split(' ')[0];
+  nm.textContent = first;
+  // Role
+  if (roleTxt) {
+    const isAdmin = (typeof userIsAdmin === 'function') ? userIsAdmin() : false;
+    roleTxt.textContent = isAdmin ? 'admin · online' : 'online';
+  }
+  // Re-dispara a animação de entrada se o badge está sendo populado depois
+  // do primeiro render (troca de conta na mesma aba, hidratação atrasada).
+  const box = document.getElementById('pjSidebarMe');
+  if (box && box.dataset.filled !== '1') {
+    box.dataset.filled = '1';
+  } else if (box) {
+    box.style.animation = 'none';
+    // eslint-disable-next-line no-unused-expressions
+    box.offsetHeight;
+    box.style.animation = '';
+  }
+}
+
+// ── Sidebar user row (rodapé) ──────────────────────────
 function pjRenderSidebarUser() {
   const el = document.getElementById('pjSidebarUserRow');
   if (!el) return;

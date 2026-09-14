@@ -1,0 +1,131 @@
+// Firestore Security Rules — Fogo & Gestão
+// Projeto: calendario-cd198
+// Última revisão: audit 2026-09
+//
+// Modelo:
+// - root admin: assessoria@fogoelucro.com.br (email hardcoded)
+// - admins delegados: docs em /admins/{uid}, escritos SÓ pelo root admin
+// - membro comum: qualquer usuário autenticado (checkAccess do client filtra
+//   quem consegue logar via app_members)
+// - Coleções de configuração/estrutura exigem admin
+// - Coleções operacionais (tarefas, comentários, posts) exigem apenas
+//   isSignedIn() — proteção fina de RBAC fica no client
+// - app_members SÓ admin escreve (impede auto-promoção)
+// - Presence/editing SÓ o próprio uid escreve seu doc
+// - Default = negar
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function myUid() {
+      return request.auth.uid;
+    }
+    function myEmail() {
+      return request.auth.token.email;
+    }
+    function isRootAdmin() {
+      return isSignedIn() && myEmail() == 'assessoria@fogoelucro.com.br';
+    }
+    // Admin delegado: root admin cria /admins/{uid}. Ninguém mais escreve.
+    function amIAdmin() {
+      return isRootAdmin() || (isSignedIn() && exists(/databases/$(database)/documents/admins/$(myUid())));
+    }
+    function isOwnDoc(uid) {
+      return isSignedIn() && myUid() == uid;
+    }
+
+    // ── /admins — só root admin gerencia ─────────────────
+    match /admins/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isRootAdmin();
+    }
+
+    // ── /app_members — SÓ admin escreve (anti auto-promoção) ─
+    match /app_members/{docId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if amIAdmin();
+    }
+
+    // ── config global ────────────────────────────────────
+    match /config/{doc} {
+      allow read: if isSignedIn();
+      allow write: if amIAdmin();
+    }
+    match /app_config/{doc} {
+      allow read: if isSignedIn();
+      allow write: if amIAdmin();
+    }
+
+    // ── Presence & editing (próprio uid) ─────────────────
+    match /app_presence/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isOwnDoc(uid);
+    }
+    match /app_editing/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && request.resource.data.uid == myUid();
+      allow delete: if isSignedIn() && resource.data.uid == myUid();
+    }
+
+    // ── Filas & watchers ─────────────────────────────────
+    match /app_queue/{doc} { allow read, write: if isSignedIn(); }
+    match /pj_queue/{doc}  { allow read, write: if isSignedIn(); }
+
+    // ── Módulo Projetos ──────────────────────────────────
+    match /pj_spaces/{doc}   { allow read: if isSignedIn(); allow write: if amIAdmin(); }
+    match /pj_folders/{doc}  { allow read: if isSignedIn(); allow write: if amIAdmin(); }
+    match /pj_lists/{doc}    { allow read: if isSignedIn(); allow write: if amIAdmin(); }
+    match /pj_members/{doc}  { allow read: if isSignedIn(); allow write: if amIAdmin(); }
+
+    match /pj_tasks/{doc} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+    match /pj_comments/{doc} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (request.resource.data.userId == myUid() || request.resource.data.uid == myUid());
+      allow update, delete: if isSignedIn() && ((resource.data.userId == myUid()) || (resource.data.uid == myUid()) || amIAdmin());
+    }
+    match /pj_notifications/{doc} { allow read, write: if isSignedIn(); }
+    match /pj_cs_health/{doc}     { allow read, write: if isSignedIn(); }
+    match /pj_time/{doc}          { allow read, write: if isSignedIn(); }
+    match /pj_uploads/{doc}       { allow read, write: if isSignedIn(); }
+    match /pj_activities/{doc} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if amIAdmin();
+    }
+    match /pj_push_tokens/{uid} {
+      allow read, write: if isOwnDoc(uid);
+    }
+    match /pj_digest_history/{doc} { allow read, write: if isSignedIn(); }
+
+    // ── Base de clientes ─────────────────────────────────
+    match /clientes_base/{doc} {
+      allow read: if isSignedIn();
+      allow write: if amIAdmin();
+    }
+
+    // ── Publipost / Posts / Stories ──────────────────────
+    match /posts/{doc}     { allow read: if isSignedIn(); allow write: if isSignedIn(); }
+    match /stories/{doc}   { allow read: if isSignedIn(); allow write: if isSignedIn(); }
+    match /sp2Queue/{doc}  { allow read: if isSignedIn(); allow write: if isSignedIn(); }
+
+    // ── GMB ──────────────────────────────────────────────
+    match /gmb_locations/{doc} { allow read: if isSignedIn(); allow write: if amIAdmin(); }
+    match /gmb_reviews/{doc}   { allow read: if isSignedIn(); allow write: if isSignedIn(); }
+
+    // ── POPs ─────────────────────────────────────────────
+    match /pop_docs/{doc} { allow read: if isSignedIn(); allow write: if amIAdmin(); }
+
+    // ── Default = negar ──────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
