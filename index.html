@@ -21603,11 +21603,14 @@ function pjAfterStatusChange(task, prevStatusId, newStatusId) {
     try { pjRunAutomations({ event:'status_changed', task, prevStatusId, newStatusId, list }); } catch(e) { console.warn('[automation]', e); }
     // 🔍 Se entrou em Análise/Revisão, avisa no grupo TIME
     try {
-      const nm = (newSt?.name || '').toLowerCase();
       const wasAnalysis = /an[aá]lise|revis[aã]o|review/i.test(prevSt?.name || '');
       const isAnalysis  = /an[aá]lise|revis[aã]o|review/i.test(newSt?.name  || '');
-      if (isAnalysis && !wasAnalysis) fgNotifyWhatsAppTaskAnalysis(task, newSt, list);
-    } catch(_) {}
+      console.log('[wa-analysis] check:', { from: prevSt?.name, to: newSt?.name, wasAnalysis, isAnalysis });
+      if (isAnalysis && !wasAnalysis) {
+        console.log('[wa-analysis] disparando notificação de análise');
+        fgNotifyWhatsAppTaskAnalysis(task, newSt, list);
+      }
+    } catch(e) { console.error('[wa-analysis] erro:', e); }
   }
   return { willClose, wasClosed, extraFields };
 }
@@ -27751,9 +27754,10 @@ async function pjSendTaskWhatsApp(taskId, btn) {
 
 async function fgNotifyWhatsAppTaskAnalysis(task, newSt, list) {
   try {
-    if (!task) return;
+    if (!task) { console.warn('[notifyAnalysis] sem task'); return; }
     const uid = (Array.isArray(task.assignees) && task.assignees[0]) || null;
     const m = uid && Array.isArray(pjMembers) ? pjMembers.find(x => x.uid === uid) : null;
+    console.log('[notifyAnalysis] enviando pra grupo | task:', task.title, '| responsavel:', m?.name || '(sem)', '| status:', newSt?.name);
     const myUid = _auth?.currentUser?.uid || _currentUser?.uid;
     const me = pjMembers.find(x => x.uid === myUid);
     const senderName = me?.name || me?.email?.split('@')[0] || 'Alguém';
