@@ -2790,6 +2790,7 @@ ufw allow 3000/tcp</pre>
           <span style="font-size:11px;color:var(--text3);">Salvo automaticamente</span>
           <button class="pj-icon-btn" title="Duplicar tarefa" onclick="pjDuplicateTask(pjCurrentTaskId)" style="font-size:14px;">⧉</button>
           <button class="pj-icon-btn" title="Excluir tarefa" onclick="pjDeleteTaskModal(pjCurrentTaskId)" style="font-size:14px;color:var(--danger);">🗑</button>
+          <button class="pj-btn pj-btn-wa" onclick="pjSendTaskWhatsApp(pjCurrentTaskId, this)" title="Avisar responsável + grupo no WhatsApp" style="padding:6px 12px;font-size:12px;">📤 WhatsApp</button>
           <button class="pj-btn pj-btn-primary" onclick="pjCloseTaskModal()" style="padding:6px 14px;font-size:12px;">✓ Salvar e fechar</button>
         </div>
       </div>
@@ -27718,6 +27719,34 @@ async function fgNotifyWhatsAppTaskAssigned(uid, task) {
       }),
     }).catch(e => console.warn('[notifyWA] fetch falhou:', e.message));
   } catch(e) { console.warn('[notifyWA]', e); }
+}
+
+// Botão manual "📤 WhatsApp" no header do modal — dispara DM + grupo agora.
+async function pjSendTaskWhatsApp(taskId, btn) {
+  if (!taskId) return;
+  const task = pjAllTasks.find(t => t.id === taskId);
+  if (!task) { showToast('warn','⚠️','Tarefa não encontrada'); return; }
+  const uid = (Array.isArray(task.assignees) && task.assignees[0]) || null;
+  if (!uid) { showToast('warn','⚠️','Atribua um responsável antes de mandar'); return; }
+  const m = pjMembers.find(x => x.uid === uid);
+  if (!m?.email) { showToast('warn','⚠️','Responsável sem e-mail cadastrado'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando…'; }
+  try {
+    await fgNotifyWhatsAppTaskAssigned(uid, task);
+    // Se estiver em status análise/revisão, avisa no grupo com o formato de análise
+    const list = pjLists.find(l => l.id === task.listId);
+    const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
+    const st = statuses.find(s => s.id === task.statusId);
+    if (st && /an[aá]lise|revis[aã]o|review/i.test(st.name || '')) {
+      await fgNotifyWhatsAppTaskAnalysis(task, st, list);
+    }
+    showToast('success','📤','Mensagem enviada no WhatsApp');
+  } catch(e) {
+    console.warn('[pjSendTaskWhatsApp]', e);
+    showToast('error','❌','Falha ao enviar: '+(e?.message||'erro'));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📤 WhatsApp'; }
+  }
 }
 
 async function fgNotifyWhatsAppTaskAnalysis(task, newSt, list) {

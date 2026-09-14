@@ -7345,6 +7345,14 @@ body.pj-task-open .pj-modal-body { touch-action:pan-y; }
 }
 .pj-btn-primary:hover { box-shadow:0 6px 20px rgba(124,58,237,.45); }
 .pj-btn-secondary { background:var(--bg2); color:var(--text2); border:1px solid var(--border); }
+.pj-btn-wa {
+  background: linear-gradient(135deg, #25d366, #128c7e);
+  color:#fff; border:0; font-weight:600;
+  box-shadow: 0 3px 10px rgba(37,211,102,.28);
+  transition: transform .12s, box-shadow .15s, opacity .15s;
+}
+.pj-btn-wa:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(37,211,102,.4); }
+.pj-btn-wa:disabled { opacity:.6; cursor:wait; transform:none; }
 .pj-btn-sm { font-size:11px !important; padding:4px 10px !important; }
 /* Status editor */
 .pj-status-list { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
