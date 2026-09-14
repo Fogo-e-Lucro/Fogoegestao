@@ -19982,8 +19982,12 @@ function pjTaskRowHtml(t) {
 // Gera SVG dataURL com iniciais + gradient bonito quando não existe
 // foto real. Cor determinística por hash do email/uid pra a pessoa
 // ter sempre o mesmo tom.
-const _fgAvatarCache = new Map();
 function fgAvatarDataUrl(name, seed) {
+  // Cache como property da função, garante disponibilidade mesmo se
+  // a função for chamada antes do bloco de const/let ser executado
+  // (hoisting da declaração function é OK, mas const não é).
+  if (!fgAvatarDataUrl._cache) fgAvatarDataUrl._cache = new Map();
+  const _fgAvatarCache = fgAvatarDataUrl._cache;
   const key = (seed || name || '?').toString();
   if (_fgAvatarCache.has(key)) return _fgAvatarCache.get(key);
   let h = 0;
