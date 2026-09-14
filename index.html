@@ -27480,6 +27480,8 @@ async function pjUpdateTask(taskId, data) {
           senderUid: myUid,
           senderName,
         });
+        // Manda WhatsApp pro celular cadastrado (se tiver)
+        try { fgNotifyWhatsAppTaskAssigned(targetUid, t); } catch(_) {}
       });
     }
   } catch(_) {}
@@ -27674,6 +27676,43 @@ function pjOpenAssignModal(taskId) {
     <div class="pj-form-actions"><button class="pj-btn pj-btn-secondary" onclick="pjCloseFormModal()">Fechar</button></div>`;
   pjOpenFormModal(html);
 }
+// Notifica no WhatsApp que um responsável foi atribuído a uma tarefa.
+// Fire-and-forget: não bloqueia a UI, não estoura se falhar.
+async function fgNotifyWhatsAppTaskAssigned(uid, task) {
+  try {
+    if (!uid || !task) return;
+    const m = (Array.isArray(pjMembers) ? pjMembers.find(x => x.uid === uid) : null);
+    const email = m?.email;
+    if (!email) return;
+    const myUid = _auth?.currentUser?.uid || _currentUser?.uid;
+    const me = pjMembers.find(x => x.uid === myUid);
+    const senderName = me?.name || me?.email?.split('@')[0] || 'Alguém';
+    const listName = pjLists.find(l => l.id === task.listId)?.name || '';
+    // Formata a data pra pt-BR
+    let dueDate = task.dueDate || '';
+    if (dueDate && /^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
+      const [y,mo,d] = dueDate.split('-');
+      dueDate = `${d}/${mo}/${y}`;
+    }
+    const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
+    const apiUrl = (cfg.url || 'https://89-116-30-126.sslip.io').replace(/\/+$/,'');
+    const apiTok = cfg.token || '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
+    await fetch(apiUrl + '/notify/task-assigned', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiTok },
+      body: JSON.stringify({
+        assigneeEmail: email,
+        title: task.title || '(sem título)',
+        client: task.client || (typeof pjResolveTaskClient === 'function' ? pjResolveTaskClient(task) : ''),
+        dueDate,
+        dueTime: task.dueTime || '',
+        senderName,
+        listName,
+      }),
+    }).catch(e => console.warn('[notifyWA] fetch falhou:', e.message));
+  } catch(e) { console.warn('[notifyWA]', e); }
+}
+
 async function pjToggleAssignee(taskId, uid, add) {
   const task = pjAllTasks.find(t=>t.id===taskId); if (!task) return;
   let arr = [...(task.assignees||[])];
