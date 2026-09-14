@@ -5515,6 +5515,20 @@ _auth.onAuthStateChanged(async user => {
   }
   // Marca este login como válido (depois de todos os checks)
   localStorage.setItem('fg_last_login', String(Date.now()));
+  // Listener em tempo real: se admin subir forceLogout DEPOIS do usuário
+  // já estar logado, desloga na hora sem precisar recarregar.
+  try {
+    if (!window._forceLogoutUnsub) {
+      window._forceLogoutUnsub = _db.collection('config').doc('auth').onSnapshot(snap => {
+        const ts = Number(snap.data()?.forceLogout || 0);
+        const last = Number(localStorage.getItem('fg_last_login') || '0');
+        if (ts && ts > last) {
+          try { if (typeof showToast === 'function') showToast('info', '🔄', 'Sessão renovada pelo administrador. Fazendo login de novo…'); } catch(_){}
+          setTimeout(() => { try { _auth.signOut(); } catch(_){} }, 1200);
+        }
+      }, () => {});
+    }
+  } catch(_){}
   _currentUser = user;
   // Sincroniza foto/nome do Google pra Firestore (uma vez por sessão se mudou)
   // Assim quem entra pelo Gmail já aparece com foto na Equipe, presença e
