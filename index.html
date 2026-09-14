@@ -5366,8 +5366,10 @@ function renderMemberList() {
     const avatarStyle = `background-image:url('${photo}');background-size:cover;background-position:center;background-color:${color};`;
     const avatarContent = '';
     // Admin pode editar foto de qualquer membro; usuário comum só a própria
-    const meRow = _acessoMembers.find(x => x.email === myEmail);
-    const iAmAdmin = meRow && meRow.role === 'admin';
+    // Root admin (_ADMIN hardcoded) sempre pode editar. Mais robusto que só checar
+    // role em _acessoMembers, que às vezes não tem o próprio doc do root.
+    const iAmAdmin = (typeof userIsAdmin === 'function' && userIsAdmin())
+      || (_acessoMembers.find(x => x.email === myEmail)?.role === 'admin');
     const canEditPhoto = isMe || iAmAdmin;
     const editableCls = canEditPhoto ? ' editable' : '';
     const onclickAttr = canEditPhoto
