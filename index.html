@@ -5207,6 +5207,130 @@ async function acessoRemoveAvatar(targetEmail) {
   }
 }
 
+// Modal de crop circular: usuário arrasta e dá zoom pra centralizar a foto
+// dentro do círculo antes do upload. Devolve um File JPEG quadrado (512x512)
+// pronto pra ser subido. Cancelar retorna null.
+function fgPhotoCropperOpen(file) {
+  return new Promise((resolve) => {
+    const objectUrl = URL.createObjectURL(file);
+    const overlay = document.createElement('div');
+    overlay.className = 'fg-cropper-overlay';
+    overlay.innerHTML = `
+      <div class="fg-cropper-card" role="dialog" aria-modal="true">
+        <div class="fg-cropper-title">Ajuste a foto</div>
+        <div class="fg-cropper-hint">Arraste pra centralizar. Use o zoom pra chegar mais perto.</div>
+        <div class="fg-cropper-stage" id="fgCropperStage">
+          <img id="fgCropperImg" alt="preview" draggable="false" />
+          <div class="fg-cropper-ring"></div>
+        </div>
+        <div class="fg-cropper-controls">
+          <span class="fg-cropper-icon" aria-hidden="true">−</span>
+          <input type="range" id="fgCropperZoom" min="1" max="4" step="0.01" value="1" aria-label="Zoom">
+          <span class="fg-cropper-icon" aria-hidden="true">+</span>
+        </div>
+        <div class="fg-cropper-actions">
+          <button class="fg-cropper-btn cancel" id="fgCropperCancel" type="button">Cancelar</button>
+          <button class="fg-cropper-btn save" id="fgCropperSave" type="button">Salvar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const stage = overlay.querySelector('#fgCropperStage');
+    const img   = overlay.querySelector('#fgCropperImg');
+    const zoom  = overlay.querySelector('#fgCropperZoom');
+    const STAGE = 280;
+    let imgW = 0, imgH = 0, baseScale = 1, zoomScale = 1, tx = 0, ty = 0;
+
+    const applyTransform = () => {
+      const totalScale = baseScale * zoomScale;
+      const w = imgW * totalScale, h = imgH * totalScale;
+      const maxX = Math.max(0, (w - STAGE) / 2);
+      const maxY = Math.max(0, (h - STAGE) / 2);
+      tx = Math.max(-maxX, Math.min(maxX, tx));
+      ty = Math.max(-maxY, Math.min(maxY, ty));
+      img.style.width = w + 'px';
+      img.style.height = h + 'px';
+      img.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px))`;
+    };
+
+    img.onload = () => {
+      imgW = img.naturalWidth;
+      imgH = img.naturalHeight;
+      // Cover-fit inicial: lado menor cobre o palco
+      baseScale = Math.max(STAGE / imgW, STAGE / imgH);
+      zoomScale = 1;
+      tx = 0; ty = 0;
+      zoom.value = 1;
+      applyTransform();
+    };
+    img.src = objectUrl;
+
+    zoom.addEventListener('input', () => { zoomScale = +zoom.value; applyTransform(); });
+
+    let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
+    const startDrag = (x, y) => { dragging = true; sx = x; sy = y; ox = tx; oy = ty; stage.classList.add('dragging'); };
+    const moveDrag  = (x, y) => { if (!dragging) return; tx = ox + (x - sx); ty = oy + (y - sy); applyTransform(); };
+    const endDrag   = () => { dragging = false; stage.classList.remove('dragging'); };
+
+    const onMouseDown = (e) => { e.preventDefault(); startDrag(e.clientX, e.clientY); };
+    const onMouseMove = (e) => moveDrag(e.clientX, e.clientY);
+    const onMouseUp   = () => endDrag();
+    const onTouchStart = (e) => { const t = e.touches[0]; if (t) startDrag(t.clientX, t.clientY); };
+    const onTouchMove  = (e) => { const t = e.touches[0]; if (t) { moveDrag(t.clientX, t.clientY); e.preventDefault(); } };
+    const onTouchEnd   = () => endDrag();
+    const onWheel = (e) => {
+      e.preventDefault();
+      const delta = -Math.sign(e.deltaY) * 0.08;
+      zoomScale = Math.max(1, Math.min(4, zoomScale + delta));
+      zoom.value = zoomScale;
+      applyTransform();
+    };
+
+    stage.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    stage.addEventListener('touchstart', onTouchStart, { passive: true });
+    stage.addEventListener('touchmove', onTouchMove, { passive: false });
+    stage.addEventListener('touchend', onTouchEnd);
+    stage.addEventListener('wheel', onWheel, { passive: false });
+
+    const cleanup = (result) => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      try { URL.revokeObjectURL(objectUrl); } catch(_) {}
+      overlay.remove();
+      resolve(result);
+    };
+
+    overlay.querySelector('#fgCropperCancel').onclick = () => cleanup(null);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) cleanup(null); });
+
+    overlay.querySelector('#fgCropperSave').onclick = () => {
+      // Recorta pro tamanho de saída via canvas quadrado
+      const OUT = 512;
+      const canvas = document.createElement('canvas');
+      canvas.width = OUT; canvas.height = OUT;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      const totalScale = baseScale * zoomScale;
+      const drawW = imgW * totalScale, drawH = imgH * totalScale;
+      const drawX = (STAGE - drawW) / 2 + tx;
+      const drawY = (STAGE - drawH) / 2 + ty;
+      const k = OUT / STAGE;
+      // Fundo preto pra evitar transparência caindo em JPEG
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, OUT, OUT);
+      ctx.drawImage(img, drawX * k, drawY * k, drawW * k, drawH * k);
+      canvas.toBlob((blob) => {
+        if (!blob) return cleanup(null);
+        const cropped = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+        cleanup(cropped);
+      }, 'image/jpeg', 0.9);
+    };
+  });
+}
+
 async function acessoUploadAvatar(el, targetEmail) {
   // targetEmail: opcional. Se omitido, sobe foto do próprio usuário.
   // Se passado, admin sobe foto de outro membro.
@@ -5216,11 +5340,16 @@ async function acessoUploadAvatar(el, targetEmail) {
   // Verifica permissão: usuário comum só pode editar a própria foto;
   // admin pode editar qualquer uma.
   if (email !== myEmail) {
-    const me = _acessoMembers.find(x => x.email === myEmail);
-    if (!me || me.role !== 'admin') {
+    const iAmAdmin = (typeof userIsAdmin === 'function' && userIsAdmin())
+      || (_acessoMembers.find(x => x.email === myEmail)?.role === 'admin');
+    if (!iAmAdmin) {
       showToast('warn','⚠️','Apenas admin pode trocar a foto de outros membros.');
       return;
     }
+  }
+  if (typeof getSpImgbbKey !== 'function' || !getSpImgbbKey()) {
+    showToast('warn','⚠️','Configure a chave ImgBB em Social → APIs para subir foto.');
+    return;
   }
   const input = document.createElement('input');
   input.type = 'file';
@@ -5228,19 +5357,17 @@ async function acessoUploadAvatar(el, targetEmail) {
   input.onchange = async () => {
     const file = input.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      showToast('warn','⚠️','Imagem muito grande. Use até 2MB.');
+    if (file.size > 8 * 1024 * 1024) {
+      showToast('warn','⚠️','Imagem muito grande. Use até 8MB.');
       return;
     }
-    // Avatar via ImgBB (URL leve, evita bloat do Firestore)
-    if (typeof getSpImgbbKey !== 'function' || !getSpImgbbKey()) {
-      showToast('warn','⚠️','Configure a chave ImgBB em Social → APIs para subir foto.');
-      return;
-    }
+    const cropped = await fgPhotoCropperOpen(file);
+    if (!cropped) return; // usuário cancelou
     let photoUrl;
     try {
-      photoUrl = await uploadImage(file);
+      photoUrl = await uploadImage(cropped);
     } catch(e) {
+      console.error('[acessoUploadAvatar] upload falhou:', e);
       showToast('error','❌','Falha no upload: ' + (e?.message||'erro'));
       return;
     }
@@ -5263,7 +5390,10 @@ async function acessoUploadAvatar(el, targetEmail) {
       } catch(_) {}
       renderMemberList();
       showToast('success','📷','Foto atualizada');
-    } catch(e) { showToast('error','❌','Erro ao salvar foto'); }
+    } catch(e) {
+      console.error('[acessoUploadAvatar] salvar falhou:', e);
+      showToast('error','❌','Erro ao salvar foto: ' + (e?.message||''));
+    }
   };
   input.click();
 }

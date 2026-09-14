@@ -1643,9 +1643,9 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 /* Member row */
 .acesso-member-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
 .acesso-member-row:last-child { border-bottom:none; }
-.acesso-member-avatar { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:#fff; flex-shrink:0; background:var(--accent); background-size:cover; background-position:center; position:relative; }
+.acesso-member-avatar { width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:21px; font-weight:700; color:#fff; flex-shrink:0; background:var(--accent); background-size:cover; background-position:center; position:relative; box-shadow: 0 2px 8px rgba(0,0,0,.28); }
 .acesso-member-avatar.editable { cursor:pointer; }
-.acesso-member-avatar.editable:hover::after { content:'📷'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.5); border-radius:50%; font-size:14px; }
+.acesso-member-avatar.editable:hover::after { content:'📷'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.5); border-radius:50%; font-size:18px; }
 /* Botão de trocar foto — sempre visível pra admin, funciona em mobile */
 .acesso-member-avatar-wrap {
   position: relative;
@@ -1655,10 +1655,10 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .acesso-photo-edit,
 .acesso-photo-remove {
   position: absolute;
-  width: 22px; height: 22px;
+  width: 26px; height: 26px;
   border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
-  font-size: 11px;
+  font-size: 13px;
   border: 2px solid var(--bg2, #14161e);
   cursor: pointer;
   transition: transform .12s, background .15s;
@@ -1678,6 +1678,108 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
   box-shadow: 0 2px 6px rgba(0,0,0,.35);
 }
 .acesso-photo-remove:hover { transform: scale(1.1); background: #dc2626; }
+
+/* Modal de crop circular pra avatar (arraste + zoom antes de subir) */
+.fg-cropper-overlay {
+  position: fixed; inset: 0;
+  background: rgba(6, 10, 18, .82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 999999;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  animation: fgCropFade .18s ease-out;
+}
+@keyframes fgCropFade { from { opacity: 0 } to { opacity: 1 } }
+.fg-cropper-card {
+  background: var(--bg2, #14161e);
+  border: 1px solid var(--border, rgba(255,255,255,.08));
+  border-radius: 22px;
+  padding: 22px 22px 20px;
+  width: min(360px, 100%);
+  box-shadow: 0 30px 80px rgba(0,0,0,.55);
+}
+.fg-cropper-title {
+  font-size: 17px; font-weight: 700;
+  color: var(--text, #fff);
+  margin-bottom: 4px;
+  letter-spacing: .1px;
+}
+.fg-cropper-hint {
+  font-size: 12.5px;
+  color: var(--text3, #8a94a6);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+.fg-cropper-stage {
+  position: relative;
+  width: 280px; height: 280px;
+  margin: 0 auto 16px;
+  background: #0a0d14;
+  border-radius: 50%;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+.fg-cropper-stage.dragging { cursor: grabbing; }
+.fg-cropper-stage img {
+  position: absolute; left: 50%; top: 50%;
+  max-width: none;
+  pointer-events: none;
+  will-change: transform;
+}
+.fg-cropper-ring {
+  position: absolute; inset: 0;
+  border: 2px dashed rgba(255,255,255,.28);
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow: inset 0 0 40px rgba(0,0,0,.35);
+}
+.fg-cropper-controls {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+  padding: 0 4px;
+}
+.fg-cropper-icon {
+  font-size: 18px; font-weight: 700;
+  color: var(--text2, #ccd1d9);
+  width: 16px; text-align: center;
+  user-select: none;
+}
+#fgCropperZoom {
+  flex: 1;
+  accent-color: #3b82f6;
+  height: 4px;
+}
+.fg-cropper-actions {
+  display: flex; gap: 10px; justify-content: flex-end;
+}
+.fg-cropper-btn {
+  padding: 11px 22px;
+  border-radius: 12px;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform .12s, background .15s, box-shadow .15s;
+}
+.fg-cropper-btn.cancel {
+  background: rgba(255,255,255,.06);
+  color: var(--text, #fff);
+}
+.fg-cropper-btn.cancel:hover { background: rgba(255,255,255,.12); }
+.fg-cropper-btn.save {
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(59,130,246,.35);
+}
+.fg-cropper-btn.save:hover {
+  background: linear-gradient(135deg, #60a5fa, #2563eb);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(59,130,246,.45);
+}
 .acesso-member-info { flex:1; min-width:0; }
 .acesso-member-name { font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .acesso-member-email { font-size:11px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
