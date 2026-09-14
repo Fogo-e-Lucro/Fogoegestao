@@ -3858,6 +3858,17 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
   display:flex; align-items:center; gap:6px; min-width:0;
 }
 .pj-list-cell.title { color:var(--text); font-weight:500; }
+/* Coluna Responsável: centraliza header e célula, aumenta o avatar */
+.pj-list-th-cell.assignee { justify-content:center; text-align:center; padding-left:4px; padding-right:4px; }
+.pj-list-th-cell.assignee .pj-th-grip { display:none; }
+.pj-list-cell.assignee { justify-content:center; gap:4px; padding:0 4px; }
+.pj-list-cell.assignee .pj-avatar {
+  width:38px; height:38px;
+  border-radius:50%;
+  font-size:14px;
+  border:2px solid var(--card);
+  box-shadow:0 2px 6px rgba(0,0,0,.15);
+}
 .pj-list-title-text { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .pj-list-title-text.done { text-decoration:line-through; color:var(--text3); font-weight:400; }
 .pj-cell-empty { color:var(--text3); opacity:.45; font-size:12px; }

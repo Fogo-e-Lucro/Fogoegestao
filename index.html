@@ -18246,7 +18246,7 @@ function pjBuildListPage(listId) {
          ondragover="pjColHeadDragOver(event)"
          ondrop="pjColHeadDrop(event,'${listId}')">
       <div></div>
-      ${cols.map(c => `<div class="pj-list-th-cell" data-col-id="${c.id}" draggable="true"
+      ${cols.map(c => `<div class="pj-list-th-cell ${c.id==='assignee'?'assignee':''}" data-col-id="${c.id}" draggable="true"
         ondragstart="pjColHeadDragStart(event,'${c.id}')"
         ondragend="pjColHeadDragEnd()"
         title="Arraste pra reordenar — use a barra direita pra redimensionar">
@@ -18324,7 +18324,7 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
       ${(Array.isArray(t.tags) && t.tags.length) ? `<span class="pj-list-tags">${pjTaskTagsHtml(t,{small:true})}</span>` : ''}
       ${pjStalePillHtml(t)}
     </div>`,
-    assignee: `<div class="pj-list-cell">${assigneeHtml}</div>`,
+    assignee: `<div class="pj-list-cell assignee">${assigneeHtml}</div>`,
     due:      `<div class="pj-list-cell">${dueLabel?`<span class="pj-task-due ${due.cls}">${dueLabel}</span>`:`<span class="pj-cell-empty">—</span>`}</div>`,
     priority: `<div class="pj-list-cell">${prio}</div>`,
     client:   `<div class="pj-list-cell">${clientCellInner}</div>`,
