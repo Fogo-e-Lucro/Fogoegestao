@@ -4182,10 +4182,11 @@ function appPresenceStartListener() {
 }
 
 function _appAvatarHtml(u, cls='') {
+  const url = u.photoUrl || (typeof fgAvatarDataUrl === 'function'
+    ? fgAvatarDataUrl(u.name || u.email, u.uid || u.email)
+    : '');
+  if (url) return `<div class="app-presence-avatar ${cls}" style="background-image:url('${url}');background-size:cover;background-position:center;"></div>`;
   const initial = (u.name || u.email || '?').charAt(0).toUpperCase();
-  if (u.photoUrl) {
-    return `<div class="app-presence-avatar ${cls}" style="background-image:url('${u.photoUrl}');"></div>`;
-  }
   return `<div class="app-presence-avatar ${cls}">${initial}</div>`;
 }
 
@@ -16951,9 +16952,11 @@ function pjRenderSidebarMe(user) {
     } catch(_){}
     return null;
   };
-  // Aplica inicial imediato pra não deixar buraco, foto sobrescreve quando chegar
-  setInitial();
-  findPhoto().then(url => { if (url) setPhoto(url); });
+  // Aplica avatar SVG gerado imediato (todos têm foto sempre).
+  // Se a foto real do Google ou base rolar depois, sobrescreve.
+  const fallbackUrl = fgAvatarDataUrl(full, user.email || user.uid);
+  setPhoto(fallbackUrl);
+  findPhoto().then(url => { if (url && url !== fallbackUrl) setPhoto(url); });
   const hero = document.getElementById('pjMeHero');
   if (hero) hero.dataset.filled = '1';
 }
@@ -16965,12 +16968,9 @@ function pjRenderSidebarUser() {
   const u = _currentUser;
   if (!u) { el.innerHTML = ''; return; }
   const name = u.displayName || u.email || 'Usuário';
-  const initial = name.charAt(0).toUpperCase();
-  const photoUrl = u.photoURL;
-  const avatarStyle = photoUrl
-    ? `background-image:url('${photoUrl}');background-size:cover;background-position:center;`
-    : `background:linear-gradient(135deg,var(--accent),var(--accent2));`;
-  const avatarContent = photoUrl ? '' : `<span style="color:#fff;font-weight:700;font-size:13px;">${initial}</span>`;
+  const photoUrl = u.photoURL || fgAvatarDataUrl(name, u.email || u.uid);
+  const avatarStyle = `background-image:url('${photoUrl}');background-size:cover;background-position:center;`;
+  const avatarContent = '';
   // Find member role
   const member = pjMembers.find(m => m.uid === u.uid);
   const role = member?.role === 'admin' ? '🔑 Admin' : member?.role === 'viewer' ? '👁 Viewer' : '✏️ Membro';
@@ -17097,7 +17097,8 @@ function pjBuildDashboard() {
     const mDone    = pjVisibleTasks(false).filter(t => pjIsDone(t) && (t.assignees||[]).includes(m.uid) && t.completedAt?.toMillis && (now - new Date(t.completedAt.toMillis())) < 86400000);
     const barW     = mTasks.length ? Math.round((mDone.length / (mTasks.length + mDone.length)) * 100) : 0;
     const initial  = (m.name || m.email || '?')[0].toUpperCase();
-    const avatarStyle = m.photoUrl ? `background-image:url('${m.photoUrl}');background-size:cover;` : `background:linear-gradient(135deg,var(--accent),var(--accent2));`;
+    const _mAvUrl = m.photoUrl || fgAvatarDataUrl(m.name || m.email, m.uid || m.email);
+    const avatarStyle = `background-image:url('${_mAvUrl}');background-size:cover;background-position:center;`;
     return `
       <div class="pj-dash-member">
         <div class="pj-dash-member-head">
@@ -19945,6 +19946,47 @@ function pjTaskRowHtml(t) {
   </div>`;
 }
 
+// ── Avatar generator — todos os usuários têm foto ──────
+// Gera SVG dataURL com iniciais + gradient bonito quando não existe
+// foto real. Cor determinística por hash do email/uid pra a pessoa
+// ter sempre o mesmo tom.
+const _fgAvatarCache = new Map();
+function fgAvatarDataUrl(name, seed) {
+  const key = (seed || name || '?').toString();
+  if (_fgAvatarCache.has(key)) return _fgAvatarCache.get(key);
+  // Hash simples pra escolher paleta
+  let h = 0;
+  for (let i = 0; i < key.length; i++) h = ((h << 5) - h) + key.charCodeAt(i) | 0;
+  const palettes = [
+    ['#1e40af', '#3b82f6'], // azul (fica na família da sidebar)
+    ['#0f766e', '#14b8a6'], // teal
+    ['#7c2d12', '#f97316'], // laranja fogo
+    ['#831843', '#ec4899'], // pink
+    ['#4c1d95', '#8b5cf6'], // roxo
+    ['#166534', '#22c55e'], // verde
+    ['#7f1d1d', '#ef4444'], // vermelho
+    ['#3f3f46', '#71717a'], // slate
+  ];
+  const [a, b] = palettes[Math.abs(h) % palettes.length];
+  const parts = String(name || '?').trim().split(/\s+/).filter(Boolean);
+  const initials = (parts[0]?.[0] || '?').toUpperCase() +
+                   (parts.length > 1 ? (parts[parts.length - 1]?.[0] || '').toUpperCase() : '');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="${b}"/>
+        <stop offset="1" stop-color="${a}"/>
+      </linearGradient>
+    </defs>
+    <rect width="128" height="128" fill="url(#g)"/>
+    <text x="64" y="82" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" font-weight="700" font-size="54" fill="rgba(255,255,255,.96)" letter-spacing="-1">${initials}</text>
+  </svg>`;
+  const url = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  _fgAvatarCache.set(key, url);
+  return url;
+}
+window.fgAvatarDataUrl = fgAvatarDataUrl;
+
 function pjAvatarHtml(key) {
   const k = key || '';
   const colors = ['#6366f1','#8b5cf6','#ec4899','#f97316','#22c55e','#3b82f6'];
@@ -19980,12 +20022,13 @@ function pjAvatarHtml(key) {
   }
 
   const title = m?.name || m?.email || k || '?';
-  const initials = (m?.name || m?.email || String(k) || '?').trim().charAt(0).toUpperCase() || '?';
-
   if (m?.photoUrl) {
     return `<div class="pj-avatar" style="background:${color};background-image:url('${String(m.photoUrl).replace(/'/g,"\\'")}');background-size:cover;background-position:center;" title="${escHtml(title)}"></div>`;
   }
-  return `<div class="pj-avatar" style="background:${color}" title="${escHtml(title)}">${initials}</div>`;
+  // Sem foto real: gera avatar SVG com iniciais + gradient (todos têm foto sempre)
+  const seed = m?.email || m?.uid || m?.id || String(k) || title;
+  const url = fgAvatarDataUrl(m?.name || m?.email || String(k), seed);
+  return `<div class="pj-avatar" style="background-image:url('${url}');background-size:cover;background-position:center;" title="${escHtml(title)}"></div>`;
 }
 
 // ── Task Quick Create ───────────────────────────────────
