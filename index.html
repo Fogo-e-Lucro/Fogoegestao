@@ -5173,6 +5173,40 @@ function acessoOpenWhatsAppInvite() {
   window.open(url, '_blank');
 }
 
+async function acessoRemoveAvatar(targetEmail) {
+  const myEmail = getCurrentEmail();
+  if (!myEmail) return;
+  const email = targetEmail || myEmail;
+  if (email !== myEmail) {
+    const me = _acessoMembers.find(x => x.email === myEmail);
+    if (!me || me.role !== 'admin') {
+      showToast('warn','⚠️','Apenas admin pode remover foto de outros membros.');
+      return;
+    }
+  }
+  if (!confirm('Remover a foto? O avatar volta pro gerado com iniciais.')) return;
+  try {
+    const docId = btoa(email).replace(/[^a-zA-Z0-9]/g,'_');
+    await _db.collection('app_members').doc(docId).set({ photoUrl: firebase.firestore.FieldValue.delete() }, { merge: true });
+    try {
+      const pjSnap = await _db.collection('pj_members').where('email','==',email).get();
+      for (const d of pjSnap.docs) {
+        try { await d.ref.update({ photoUrl: firebase.firestore.FieldValue.delete() }); } catch(_) {}
+      }
+    } catch(_){}
+    const m = _acessoMembers.find(x => x.email === email);
+    if (m) m.photoUrl = null;
+    if (Array.isArray(pjMembers)) {
+      const pm = pjMembers.find(x => x.email === email);
+      if (pm) pm.photoUrl = null;
+    }
+    if (typeof loadAcessoList === 'function') loadAcessoList();
+    showToast('success','✅','Foto removida.');
+  } catch(e) {
+    showToast('error','❌','Falha ao remover: ' + (e?.message||'erro'));
+  }
+}
+
 async function acessoUploadAvatar(el, targetEmail) {
   // targetEmail: opcional. Se omitido, sobe foto do próprio usuário.
   // Se passado, admin sobe foto de outro membro.
@@ -5340,8 +5374,19 @@ function renderMemberList() {
       ? (isMe ? `onclick="acessoUploadAvatar(this)"` : `onclick="acessoUploadAvatar(this,'${safeEmail}')"`)
       : '';
     const photoTitle = isMe ? 'Clique para mudar a sua foto' : (iAmAdmin ? `Clique para definir foto de ${m.name||m.email}` : '');
+    // Botão de trocar foto sempre visível pra admin (não depende de hover)
+    const photoBtn = canEditPhoto
+      ? `<button class="acesso-photo-edit" onclick="acessoUploadAvatar(this.parentElement.querySelector('.acesso-member-avatar')${isMe?'':`,'${safeEmail}'`})" title="${isMe?'Trocar sua foto':'Trocar foto de '+(m.name||m.email)}">📷</button>`
+      : '';
+    const photoRemoveBtn = (canEditPhoto && m.photoUrl)
+      ? `<button class="acesso-photo-remove" onclick="acessoRemoveAvatar('${safeEmail}')" title="Remover foto (volta pro avatar gerado)">✕</button>`
+      : '';
     return `<div class="acesso-member-row">
-      <div class="acesso-member-avatar${editableCls}" style="${avatarStyle}" ${onclickAttr} title="${photoTitle}">${avatarContent}</div>
+      <div class="acesso-member-avatar-wrap">
+        <div class="acesso-member-avatar${editableCls}" style="${avatarStyle}" ${onclickAttr} title="${photoTitle}">${avatarContent}</div>
+        ${photoBtn}
+        ${photoRemoveBtn}
+      </div>
       <div class="acesso-member-info">
         <div class="acesso-member-name">${escHtml(m.name||m.email)}</div>
         <div class="acesso-member-email">${escHtml(m.email)}${permSummary ? ' · '+permSummary : ''}</div>

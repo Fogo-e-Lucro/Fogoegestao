@@ -1646,6 +1646,38 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .acesso-member-avatar { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:#fff; flex-shrink:0; background:var(--accent); background-size:cover; background-position:center; position:relative; }
 .acesso-member-avatar.editable { cursor:pointer; }
 .acesso-member-avatar.editable:hover::after { content:'📷'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.5); border-radius:50%; font-size:14px; }
+/* Botão de trocar foto — sempre visível pra admin, funciona em mobile */
+.acesso-member-avatar-wrap {
+  position: relative;
+  display: inline-flex; align-items: center;
+  flex-shrink: 0;
+}
+.acesso-photo-edit,
+.acesso-photo-remove {
+  position: absolute;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  border: 2px solid var(--bg2, #14161e);
+  cursor: pointer;
+  transition: transform .12s, background .15s;
+  padding: 0; line-height: 1;
+}
+.acesso-photo-edit {
+  bottom: -2px; right: -2px;
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,.35);
+}
+.acesso-photo-edit:hover { transform: scale(1.1); background: linear-gradient(135deg, #60a5fa, #2563eb); }
+.acesso-photo-remove {
+  top: -2px; right: -2px;
+  background: #ef4444;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,.35);
+}
+.acesso-photo-remove:hover { transform: scale(1.1); background: #dc2626; }
 .acesso-member-info { flex:1; min-width:0; }
 .acesso-member-name { font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .acesso-member-email { font-size:11px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
