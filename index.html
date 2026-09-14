@@ -5327,12 +5327,10 @@ function renderMemberList() {
     const safeName  = (m.name||'').replace(/'/g,"\\'");
     const perms = isAdmin ? null : getUserPerms(m.email);
     const permSummary = perms ? `${perms.tabs.length} aba${perms.tabs.length!==1?'s':''}` : '';
-    const photo = m.photoUrl || '';
+    const photo = m.photoUrl || fgAvatarDataUrl(m.name || m.email, m.uid || m.email);
     const isMe = m.email === myEmail;
-    const avatarStyle = photo
-      ? `background-image:url('${photo}');background-color:${color};`
-      : `background:${color};`;
-    const avatarContent = photo ? '' : initial;
+    const avatarStyle = `background-image:url('${photo}');background-size:cover;background-position:center;background-color:${color};`;
+    const avatarContent = '';
     // Admin pode editar foto de qualquer membro; usuário comum só a própria
     const meRow = _acessoMembers.find(x => x.email === myEmail);
     const iAmAdmin = meRow && meRow.role === 'admin';
@@ -17134,7 +17132,7 @@ function pjBuildDashboard() {
     return `
       <div class="pj-dash-member">
         <div class="pj-dash-member-head">
-          <div class="pj-avatar" style="${avatarStyle}width:36px;height:36px;border-radius:10px;font-size:14px;flex-shrink:0;">${m.photoUrl?'':initial}</div>
+          <div class="pj-avatar" style="${avatarStyle}width:36px;height:36px;border-radius:10px;font-size:14px;flex-shrink:0;"></div>
           <div class="pj-dash-member-info">
             <div class="pj-dash-member-name">${escHtml(m.name || m.email || '?')}</div>
             <div class="pj-dash-member-role">${m.role === 'admin' ? '🔑 Admin' : '✏️ Membro'}</div>
