@@ -18,15 +18,18 @@
 <meta name="apple-mobile-web-app-title" content="Fogo & Gestão">
 <meta name="mobile-web-app-capable" content="yes">
 <script src="mobile.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-  <script>window.fbAsyncInit = function() {
+<script>
+  // ── Lazy loaders (audit 2026-09) ───────────────────────
+  // Chart.js, FB SDK, firebase-messaging e firebase-storage são carregados
+  // sob demanda em vez de bloquear o parse do <head>. Ganho tipico: 400-500KB
+  // de JS render-blocking eliminado do first paint em quem não abre Métricas
+  // nem usa Publipost/anexos/push.
+  window.fbAsyncInit = function() {
+    if (!window.FB) return;
     FB.init({ appId: '1972040954188233', cookie: true, xfbml: false, version: 'v25.0' });
-    // Suprime erros de console do FB SDK quando rodando em HTTP (não HTTPS)
     if (location.protocol !== 'https:') {
       const origError = console.error.bind(console);
       console.error = (...args) => {
@@ -35,8 +38,42 @@
         origError(...args);
       };
     }
-  };</script>
-  <script async defer src="https://connect.facebook.net/pt_BR/sdk.js"></script>
+  };
+  const _fgLoadCache = new Map();
+  function fgLoadScript(src) {
+    if (_fgLoadCache.has(src)) return _fgLoadCache.get(src);
+    const p = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src; s.async = true;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Falha ao carregar ' + src));
+      document.head.appendChild(s);
+    });
+    _fgLoadCache.set(src, p);
+    return p;
+  }
+  window.ensureChartJs = () => window.Chart
+    ? Promise.resolve()
+    : fgLoadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js');
+  window.ensureFbSdk = () => window.FB
+    ? Promise.resolve()
+    : fgLoadScript('https://connect.facebook.net/pt_BR/sdk.js').then(() => new Promise(r => {
+        // FB.init roda via window.fbAsyncInit — espera até estar pronto
+        const t0 = Date.now();
+        const chk = () => {
+          if (window.FB) return r();
+          if (Date.now() - t0 > 5000) return r(); // timeout suave
+          setTimeout(chk, 50);
+        };
+        chk();
+      }));
+  window.ensureFirebaseMessaging = () => firebase?.messaging
+    ? Promise.resolve()
+    : fgLoadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
+  window.ensureFirebaseStorage = () => firebase?.storage
+    ? Promise.resolve()
+    : fgLoadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js');
+</script>
 <script>
   /* Auto-heal SW v2: checa por marcador ÚNICO do CSS mais recente.
      Ex-marcador L1: '.liv-header' padding — insuficiente pra pegar
@@ -6518,6 +6555,8 @@ function switchTab(tab, btn) {
   // Marca no body qual módulo está ativo pra CSS reagir sem depender de :has
   document.body.className = document.body.className.replace(/\bat-[a-z]+\b/g, '').trim();
   document.body.classList.add('at-' + tab);
+  // Enhance selects do panel recém-ativado (substitui MO global do fx-select)
+  try { setTimeout(() => window.fxEnhanceSelects?.(panel), 60); } catch(_){}
   // Abas no dropdown: marca o item E destaca o botão "Ferramentas"
   const inMore = ['entrada','gmb','metricas','visualizar','social','lives','pop'].includes(tab);
   if (inMore) {
@@ -8956,9 +8995,10 @@ async function spSaveAndActivateToken(rawToken) {
   }
 }
 
-function spFbLogin() {
+async function spFbLogin() {
   const btn = document.getElementById('spFbLoginBtn');
   if (btn) btn.textContent = 'Conectando...';
+  await ensureFbSdk();
   const doLogin = () => {
     FB.login(function(response) {
       if (btn) btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073c0 6.019 4.388 11.003 10.125 11.927v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.931-1.956 1.886v2.267h3.328l-.532 3.49h-2.796v8.437C19.612 23.076 24 18.092 24 12.073z"/></svg> Conectar com Facebook';
@@ -15424,7 +15464,8 @@ function gmbGetHistory() {
   return JSON.parse(localStorage.getItem(key)||'[]');
 }
 
-function gmbRenderCharts() {
+async function gmbRenderCharts() {
+  await ensureChartJs();
   const history = gmbGetHistory();
   const labels = history.map(h => h.date.slice(5)); // MM-DD
   const ratings = history.map(h => h.rating);
@@ -16217,16 +16258,12 @@ async function pjLoadAll() {
 }
 
 async function pjLoadAllTasks() {
-  const snap = await pjC('pj_tasks').get();
-  pjAllTasks = snap.docs.map(d => ({id:d.id,...d.data()}));
-  // Group by listId
+  // Não faz mais .get() aqui — o onSnapshot de pj_tasks montado por
+  // pjSetupRealtime entrega o snapshot inicial completo e popula
+  // pjAllTasks/pjTasks. Economiza 1 full-collection read por sessão.
+  pjAllTasks = [];
   pjTasks = {};
-  pjAllTasks.forEach(t => {
-    if (!pjTasks[t.listId]) pjTasks[t.listId] = [];
-    pjTasks[t.listId].push(t);
-  });
   window._pjLoadedOnce = true;
-  pjStartRealtime();
   pjStartViewersListener();
 }
 
@@ -16316,41 +16353,10 @@ const _pjViewerRefreshDebounced = (() => {
   return () => { clearTimeout(t); t = setTimeout(pjUpdateViewerBadges, 80); };
 })();
 
-// ── Real-time task notifications ──────────────────────
-let _pjRealtimeUnsub = null;
-let _pjRealtimeReady = false;
-
-function pjStartRealtime() {
-  const uid = _auth?.currentUser?.uid || _currentUser?.uid;
-  if (!uid || _pjRealtimeUnsub) return;
-  // Espera 3s após load pra não notificar o carregamento inicial
-  setTimeout(() => { _pjRealtimeReady = true; }, 3000);
-
-  _pjRealtimeUnsub = pjC('pj_tasks').onSnapshot(snapshot => {
-    if (!_pjRealtimeReady) return;
-    snapshot.docChanges().forEach(change => {
-      const task = { id: change.doc.id, ...change.doc.data() };
-      const byOther = task.updatedBy && task.updatedBy !== uid;
-      if (change.type === 'modified' && byOther) {
-        const updater = pjMembers.find(m => m.uid === task.updatedBy);
-        const name = updater?.name || 'Alguém';
-        // Atualiza localmente sem re-render completo
-        const idx = pjAllTasks.findIndex(t => t.id === task.id);
-        if (idx >= 0) pjAllTasks[idx] = { ...pjAllTasks[idx], ...task };
-        if (typeof showToast === 'function') showToast('info', '🔔', `${name} atualizou "${task.title || 'uma tarefa'}"`);
-      }
-      if (change.type === 'added' && byOther) {
-        const updater = pjMembers.find(m => m.uid === task.updatedBy || m.uid === task.createdBy);
-        const name = updater?.name || 'Alguém';
-        if (!pjAllTasks.find(t => t.id === task.id)) {
-          pjAllTasks.push(task);
-          if (pjTasks[task.listId]) pjTasks[task.listId].push(task);
-        }
-        if (typeof showToast === 'function') showToast('info', '➕', `${name} criou "${task.title || 'uma tarefa'}"`);
-      }
-    });
-  });
-}
+// Real-time task notifications — a listener antiga (pjStartRealtime) foi
+// consolidada em pjSetupRealtime pra evitar o triplo read do pj_tasks.
+// O toast "Fulano criou/atualizou" agora é emitido no loop de docChanges
+// do listener único (audit 2026-09).
 
 // Hidrata pjMembers com photoUrl vindo de app_members (fonte da foto)
 async function _pjHydratePhotos() {
@@ -16413,9 +16419,6 @@ function pjCleanupListeners() {
     pjUnsubs.forEach(u => { try { u && u(); } catch(_){} });
     pjUnsubs = [];
   }
-  try { _pjRealtimeUnsub && _pjRealtimeUnsub(); } catch(_){}
-  _pjRealtimeUnsub = null;
-  _pjRealtimeReady = false;
   try { _pjQueueUnsub && _pjQueueUnsub(); } catch(_){}
   _pjQueueUnsub = null;
   try { _pjViewersUnsub && _pjViewersUnsub(); } catch(_){}
@@ -16459,9 +16462,6 @@ function _pjCleanupRealtimeOnly() {
     pjUnsubs.forEach(u => { try { u && u(); } catch(_){} });
     pjUnsubs = [];
   }
-  try { _pjRealtimeUnsub && _pjRealtimeUnsub(); } catch(_){}
-  _pjRealtimeUnsub = null;
-  _pjRealtimeReady = false;
   try { _pjQueueUnsub && _pjQueueUnsub(); } catch(_){}
   _pjQueueUnsub = null;
   try { _pjViewersUnsub && _pjViewersUnsub(); } catch(_){}
@@ -16534,7 +16534,7 @@ function pjSetupRealtime() {
       }
       const newT = { id, ...ch.doc.data() };
       const prevT = byId.get(id);
-      // Notificação de menção (só depois da primeira carga)
+      // Notificações (só depois da primeira carga)
       if (!isFirstLoad && myUid && (ch.type === 'added' || ch.type === 'modified')) {
         const wasAssigned = prevT && (prevT.assignees||[]).includes(myUid);
         const isAssigned = (newT.assignees||[]).includes(myUid);
@@ -16542,6 +16542,17 @@ function pjSetupRealtime() {
         if (!wasAssigned && isAssigned && !createdByMe) {
           pjPlayMentionSound();
           if (typeof showToast === 'function') showToast(`🔔 Você foi marcado em "${newT.title}"`, 'info');
+        }
+        // Toast "criou/atualizou por outra pessoa" (herdado do antigo pjStartRealtime)
+        const byOther = newT.updatedBy && newT.updatedBy !== myUid;
+        if (byOther && typeof showToast === 'function') {
+          const updater = pjMembers.find(m => m.uid === newT.updatedBy || m.uid === newT.createdBy);
+          const name = updater?.name || 'Alguém';
+          if (ch.type === 'added' && !createdByMe) {
+            showToast('info', '➕', `${name} criou "${newT.title || 'uma tarefa'}"`);
+          } else if (ch.type === 'modified') {
+            showToast('info', '🔔', `${name} atualizou "${newT.title || 'uma tarefa'}"`);
+          }
         }
       }
       if (prevT && prevT.listId !== newT.listId) affectedListIds.add(prevT.listId);
@@ -16890,6 +16901,8 @@ function pjScheduleRender() {
     requestAnimationFrame(() => {
       try { pjRenderMain(); } catch(_){}
       try { _pjViewerRefreshDebounced(); } catch(_){}
+      // Enhance de <select> substituindo o MO global (audit 2026-09)
+      try { window.fxEnhanceSelects?.(document.getElementById('pjMain')); } catch(_){}
     });
   }, 200);
 }
@@ -16900,6 +16913,7 @@ function pjScheduleSidebar() {
     requestAnimationFrame(() => {
       try { pjRenderSidebar(); } catch(_){}
       try { _pjViewerRefreshDebounced(); } catch(_){}
+      try { window.fxEnhanceSelects?.(document.getElementById('pjSidebar')); } catch(_){}
     });
   }, 80);
 }
@@ -25138,6 +25152,8 @@ async function pjOpenTask(taskId) {
   if (typeof appCoEditStart === 'function') appCoEditStart('task:'+taskId);
   const overlay = document.getElementById('pjTaskOverlay');
   overlay.classList.add('open');
+  // Enhance selects do modal (substitui MO global — audit 2026-09)
+  setTimeout(() => { try { window.fxEnhanceSelects?.(overlay); } catch(_){} }, 80);
   // Trava scroll do body — evita URL bar do iOS aparecer/sumir e empurrar a bottombar pra fora
   document.body.classList.add('pj-task-open');
   document.getElementById('pjModalLeft').style.opacity = '0.5';
@@ -25754,6 +25770,7 @@ function _pjIsImgbbCompatible(file) {
 // Sobe arquivo pro Firebase Storage e devolve URL pública.
 // Sem limite de tamanho aplicado (free tier de 5GB total no plano Spark).
 async function pjUploadToStorage(file, pathPrefix) {
+  await ensureFirebaseStorage();
   if (typeof firebase === 'undefined' || !firebase.storage) {
     throw new Error('Firebase Storage não inicializado');
   }
@@ -25799,6 +25816,7 @@ async function pjCleanupOldAttachments(daysOld) {
   // Só admin executa pra evitar deletes acidentais por colaborador
   if (typeof userIsAdmin === 'function' && !userIsAdmin()) return { cleaned:0, sizeMB:'0', errors:0, scanned:0, skipped:'not-admin' };
 
+  await ensureFirebaseStorage();
   const cutoffMs = Date.now() - daysOld * 86400 * 1000;
   const db = firebase.firestore();
   const storage = (firebase.storage) ? firebase.storage() : null;
@@ -28213,9 +28231,14 @@ function pjMoveStatusRow(btn, dir) {
 
 // ── Form Modal ───────────────────────────────────────────
 function pjOpenFormModal(html) {
-  document.getElementById('pjFormCard').innerHTML = html;
+  const card = document.getElementById('pjFormCard');
+  card.innerHTML = html;
   document.getElementById('pjFormModal').classList.add('open');
-  setTimeout(()=>document.getElementById('pjFName')?.focus(),50);
+  setTimeout(() => {
+    document.getElementById('pjFName')?.focus();
+    // Substitui o antigo MO global do fx-select
+    try { window.fxEnhanceSelects?.(card); } catch(_){}
+  }, 50);
 }
 function pjCloseFormModal() {
   const modal = document.getElementById('pjFormModal');
@@ -30133,6 +30156,7 @@ async function pjFcmGetVapidKey() {
 
 async function pjFcmInit() {
   if (!('serviceWorker' in navigator) || !('Notification' in window)) return;
+  await ensureFirebaseMessaging();
   if (!firebase?.messaging?.isSupported || !firebase.messaging.isSupported()) {
     console.log('[FCM] não suportado neste browser');
     return;
@@ -31870,17 +31894,31 @@ document.addEventListener('input', (e) => {
       }
     });
 
-    // Idempotência: se enhance rodar duas vezes no mesmo select, só instala 1 observer
-    if (select._fxObserver) { try { select._fxObserver.disconnect(); } catch(_){} }
-    const mo = new MutationObserver(() => {
-      // Auto-disconnect quando o select some do DOM (evita observers zumbis
-      // acumulados quando o kanban/list re-renderiza via innerHTML)
-      if (!document.contains(select)) { try { mo.disconnect(); } catch(_){} select._fxObserver = null; return; }
+    // Idempotência sem observer: hook direto via 'change' + reflection quando
+    // o valor é setado via property (não gera mutação DOM, precisa hook).
+    // Antes tinha um MutationObserver por select — foi removido no audit
+    // 2026-09 por ser custoso e desnecessário. Usa change + hook de .value.
+    if (select._fxWired) return;
+    select._fxWired = true;
+    const applyState = () => {
+      if (!document.contains(select)) return;
       updateButton(wrap);
       if (openState && openState.wrap === wrap) openMenuFor(wrap);
-    });
-    select._fxObserver = mo;
-    mo.observe(select, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['disabled', 'value'] });
+    };
+    select.addEventListener('change', applyState);
+    // Hook set de .value pra pegar quem seta programaticamente sem disparar 'change'
+    try {
+      const proto = Object.getPrototypeOf(select);
+      const desc = Object.getOwnPropertyDescriptor(proto, 'value') || Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+      if (desc && desc.set && !select._fxValHooked) {
+        Object.defineProperty(select, 'value', {
+          get() { return desc.get.call(this); },
+          set(v) { desc.set.call(this, v); applyState(); },
+          configurable: true,
+        });
+        select._fxValHooked = true;
+      }
+    } catch(_){}
   }
 
   function enhanceAll(root) {
@@ -31915,19 +31953,10 @@ document.addEventListener('input', (e) => {
     }
   });
 
-  // Novos <select> adicionados via JS ganham enhance automaticamente
-  const globalMo = new MutationObserver(muts => {
-    muts.forEach(m => {
-      m.addedNodes.forEach(n => {
-        if (n.nodeType !== 1) return;
-        if (n.tagName === 'SELECT') enhance(n);
-        else n.querySelectorAll?.('select').forEach(enhance);
-      });
-    });
-  });
-  if (document.body) {
-    globalMo.observe(document.body, { childList: true, subtree: true });
-  }
+  // Descoberta de novos <select>: em vez de MutationObserver global (custoso
+  // porque dispara em toda mutação do body), quem re-renderiza um container
+  // chama window.fxEnhanceSelects(container) explicitamente após o innerHTML.
+  // Audit 2026-09 — reduziu drasticamente o custo por mutação do app.
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => enhanceAll());
