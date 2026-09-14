@@ -21600,6 +21600,13 @@ function pjAfterStatusChange(task, prevStatusId, newStatusId) {
     } catch(_) {}
     // ⚡ AUTOMAÇÕES da lista — dispara regras quando status muda
     try { pjRunAutomations({ event:'status_changed', task, prevStatusId, newStatusId, list }); } catch(e) { console.warn('[automation]', e); }
+    // 🔍 Se entrou em Análise/Revisão, avisa no grupo TIME
+    try {
+      const nm = (newSt?.name || '').toLowerCase();
+      const wasAnalysis = /an[aá]lise|revis[aã]o|review/i.test(prevSt?.name || '');
+      const isAnalysis  = /an[aá]lise|revis[aã]o|review/i.test(newSt?.name  || '');
+      if (isAnalysis && !wasAnalysis) fgNotifyWhatsAppTaskAnalysis(task, newSt, list);
+    } catch(_) {}
   }
   return { willClose, wasClosed, extraFields };
 }
@@ -27711,6 +27718,33 @@ async function fgNotifyWhatsAppTaskAssigned(uid, task) {
       }),
     }).catch(e => console.warn('[notifyWA] fetch falhou:', e.message));
   } catch(e) { console.warn('[notifyWA]', e); }
+}
+
+async function fgNotifyWhatsAppTaskAnalysis(task, newSt, list) {
+  try {
+    if (!task) return;
+    const uid = (Array.isArray(task.assignees) && task.assignees[0]) || null;
+    const m = uid && Array.isArray(pjMembers) ? pjMembers.find(x => x.uid === uid) : null;
+    const myUid = _auth?.currentUser?.uid || _currentUser?.uid;
+    const me = pjMembers.find(x => x.uid === myUid);
+    const senderName = me?.name || me?.email?.split('@')[0] || 'Alguém';
+    const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
+    const apiUrl = (cfg.url || 'https://89-116-30-126.sslip.io').replace(/\/+$/,'');
+    const apiTok = cfg.token || '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
+    await fetch(apiUrl + '/notify/task-analysis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiTok },
+      body: JSON.stringify({
+        title: task.title || '(sem título)',
+        client: task.client || (typeof pjResolveTaskClient === 'function' ? pjResolveTaskClient(task) : ''),
+        listName: list?.name || pjLists.find(l => l.id === task.listId)?.name || '',
+        assigneeName: m?.name || (m?.email ? m.email.split('@')[0] : ''),
+        assigneeEmail: m?.email || '',
+        senderName,
+        statusName: newSt?.name || 'Análise',
+      }),
+    }).catch(e => console.warn('[notifyAnalysis] fetch falhou:', e.message));
+  } catch(e) { console.warn('[notifyAnalysis]', e); }
 }
 
 async function pjToggleAssignee(taskId, uid, add) {
