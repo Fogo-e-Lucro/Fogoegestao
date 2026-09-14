@@ -5474,6 +5474,27 @@ async function syncGoogleProfileToFirestore(user) {
   }
 }
 
+// Force-logout global: admin sobe `config/auth.forceLogout = ms` no Firestore.
+// Se maior que fg_last_login local, desloga o usuário na hora. Uma vez por
+// sessão pra não ficar em loop, e não persegue: quem já logou depois do
+// timestamp fica em paz.
+async function _checkForceLogout(user) {
+  try {
+    const snap = await _db.collection('config').doc('auth').get();
+    const forceLogoutTs = snap.exists ? Number(snap.data()?.forceLogout || 0) : 0;
+    if (!forceLogoutTs) return false;
+    const lastLoginLocal = Number(localStorage.getItem('fg_last_login') || '0');
+    if (forceLogoutTs > lastLoginLocal) {
+      // Desloga e força reload pra pegar código novo também
+      try { await _auth.signOut(); } catch(_){}
+      localStorage.setItem('fg_last_login', String(Date.now()));
+      // Não recarrega — deixa o loginScreen aparecer normalmente
+      return true;
+    }
+  } catch(_){}
+  return false;
+}
+
 _auth.onAuthStateChanged(async user => {
   if (_DEV_BYPASS) return; // Ignora estado real do Firebase em dev bypass
   if (!user) {
@@ -5484,12 +5505,16 @@ _auth.onAuthStateChanged(async user => {
     document.getElementById('userChip').style.display = 'none';
     return;
   }
+  // Force-logout check: se admin subiu forceLogout depois do último login local
+  if (await _checkForceLogout(user)) return;
   const allowed = await checkAccess(user.email);
   if (!allowed) {
     document.getElementById('loginError').textContent = `${user.email} não tem acesso. Fale com o administrador.`;
     _auth.signOut();
     return;
   }
+  // Marca este login como válido (depois de todos os checks)
+  localStorage.setItem('fg_last_login', String(Date.now()));
   _currentUser = user;
   // Sincroniza foto/nome do Google pra Firestore (uma vez por sessão se mudou)
   // Assim quem entra pelo Gmail já aparece com foto na Equipe, presença e
