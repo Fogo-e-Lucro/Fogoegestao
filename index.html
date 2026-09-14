@@ -19507,16 +19507,35 @@ function pjBuildCsHealth() {
   // Aceita ID direto do doc BD ou o nome (legacy)
   const bdByName = new Map(bd.map(c => [(c.nome||'').trim().toLowerCase(), c]));
 
-  let rows = [...clientIdsInCs].map(cid => {
+  // Dedup por nome canônico: mesmo cliente pode aparecer com id-doc E com
+  // nome-string em tarefas diferentes; agrupa pelo nome pra não repetir linha.
+  const byName = new Map();
+  [...clientIdsInCs].forEach(cid => {
     const bdRow = bdById.get(cid) || bdByName.get(String(cid).trim().toLowerCase()) || null;
-    const name = bdRow?.nome || cid;
-    const logo = bdRow?.logo || null;
-    const manualScores = pjCsHealth[cid]?.scores || {};
-    const ritmoAuto = pjCsRitmoFor(cid, csListIds);
-    // Ritmo é sempre automático — sobrescreve qualquer valor manual salvo
+    const name = (bdRow?.nome || cid || '').toString().trim();
+    if (!name) return;
+    const key = name.toLowerCase();
+    if (!byName.has(key)) byName.set(key, { name, cids: [], bdRow });
+    byName.get(key).cids.push(cid);
+    if (!byName.get(key).bdRow && bdRow) byName.get(key).bdRow = bdRow;
+  });
+  let rows = [...byName.values()].map(({ name, cids, bdRow }) => {
+    // Score manual: usa o cid canônico (bdRow.id) se tiver, senão o primeiro
+    const canonCid = bdRow?.id || cids[0];
+    const manualScores = pjCsHealth[canonCid]?.scores
+      || cids.map(c => pjCsHealth[c]?.scores).find(Boolean)
+      || {};
+    // Ritmo agrega tudo: pega o MAIS RECENTE entre os cids (menos dias sem atividade)
+    const ritmos = cids.map(c => pjCsRitmoFor(c, csListIds));
+    const ritmoAuto = ritmos.reduce((best, r) => {
+      if (r.days == null) return best;
+      if (best.days == null) return r;
+      return r.days < best.days ? r : best;
+    }, { score: null, days: null });
     const scores = { ...manualScores, ritmo: ritmoAuto.score };
     const color = pjCsHealthColorFromScores(scores);
-    return { cid, name, logo, scores, color, ritmoDays: ritmoAuto.days };
+    const logo = bdRow?.logoDataUrl || bdRow?.logoUrl || bdRow?.fotoUrl || bdRow?.logo || null;
+    return { cid: canonCid, name, logo, scores, color, ritmoDays: ritmoAuto.days };
   }).sort((a,b) => (a.name||'').localeCompare(b.name||''));
 
   // Contadores
@@ -19550,45 +19569,47 @@ function pjBuildCsHealth() {
     </div>`;
   }
 
-  const factorHeaders = PJ_CS_FACTORS.map(f => `<th title="${escHtml(f.hint)}" style="text-align:center;padding:8px;font-weight:500;font-size:12px;color:var(--text2)">${escHtml(f.label)}${f.manual?'':' <span style="opacity:.6" title="Calculado automático">🔒</span>'}</th>`).join('');
+  const factorHeaders = PJ_CS_FACTORS.map(f => `<th class="pj-cs-th ${f.key==='ritmo'?'pj-cs-th-ritmo':''}" title="${escHtml(f.hint)}">${escHtml(f.label)}${f.manual?'':' <span class="pj-cs-lock" title="Automático">🔒</span>'}</th>`).join('');
   const bodyRows = rows.map(r => {
     const cellsFactorsRow = PJ_CS_FACTORS.map(f => {
       const v = r.scores?.[f.key];
       const colorForVal = v === 3 ? 'green' : v === 2 ? 'yellow' : v === 1 ? 'red' : null;
-      const dot = colorForVal ? pjHealthDotHtml(colorForVal, {size:14}) : '<span style="display:inline-block;width:14px;height:14px;border-radius:50%;border:1.5px dashed var(--border);vertical-align:middle"></span>';
+      const dot = colorForVal ? pjHealthDotHtml(colorForVal, {size:16}) : '<span class="pj-cs-empty-dot"></span>';
       const isRitmo = f.key === 'ritmo';
-      const daysLabel = isRitmo && r.ritmoDays != null ? `<div style="font-size:10px;color:var(--text3);margin-top:2px">${r.ritmoDays}d</div>` : '';
+      const daysBadge = isRitmo && r.ritmoDays != null
+        ? `<span class="pj-cs-days-badge ${r.ritmoDays >= 30 ? 'red' : r.ritmoDays >= 14 ? 'yellow' : 'green'}">${r.ritmoDays}d</span>`
+        : '';
       const clickHandler = f.manual ? `onclick="event.stopPropagation();pjOpenCsScoreMenu(event,'${r.cid}','${f.key}')"` : '';
-      const cursorStyle = f.manual ? 'cursor:pointer' : 'cursor:default;opacity:.9';
+      const cellCls = f.manual ? 'pj-cs-cell manual' : 'pj-cs-cell auto';
       const titleText = isRitmo
         ? `Ritmo automático: ${r.ritmoDays != null ? r.ritmoDays + ' dias sem atividade' : 'sem atividade'}`
-        : `${f.label}: ${v ? 'score=' + v : 'sem nota'}`;
-      return `<td style="text-align:center;padding:6px 4px" ${clickHandler}>
-        <div style="${cursorStyle};padding:4px;border-radius:6px" title="${escHtml(titleText)}">${dot}${daysLabel}</div>
+        : `${f.label}: ${v ? 'score=' + v : 'sem nota — clique pra definir'}`;
+      return `<td class="${cellCls}" ${clickHandler} title="${escHtml(titleText)}">
+        <div class="pj-cs-cell-inner">${dot}${daysBadge}</div>
       </td>`;
     }).join('');
-    const finalDot = r.color ? pjHealthDotHtml(r.color, {size:16, title:PJ_HEALTH_COLORS[r.color].label}) : '<span style="color:var(--text3);font-size:12px">—</span>';
+    const finalDot = r.color ? pjHealthDotHtml(r.color, {size:22, title:PJ_HEALTH_COLORS[r.color].label}) : '<span class="pj-cs-empty-final">—</span>';
     const logoHtml = r.logo
-      ? `<img src="${r.logo}" alt="" style="width:22px;height:22px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:8px">`
-      : `<span style="display:inline-block;width:22px;height:22px;border-radius:5px;background:var(--surface2);vertical-align:middle;margin-right:8px"></span>`;
-    return `<tr style="border-top:1px solid var(--border)">
-      <td style="padding:10px 8px">${logoHtml}<span style="vertical-align:middle;font-weight:500">${escHtml(r.name)}</span></td>
+      ? `<img src="${r.logo}" alt="" class="pj-cs-logo">`
+      : `<span class="pj-cs-logo pj-cs-logo-empty">${escHtml((r.name || '?').charAt(0).toUpperCase())}</span>`;
+    return `<tr class="pj-cs-row">
+      <td class="pj-cs-td-name">${logoHtml}<span class="pj-cs-name">${escHtml(r.name)}</span></td>
       ${cellsFactorsRow}
-      <td style="text-align:center;padding:10px 8px">${finalDot}</td>
+      <td class="pj-cs-td-final">${finalDot}</td>
     </tr>`;
   }).join('');
 
-  return `<div class="pj-view">
+  return `<div class="pj-view pj-cs-view">
     <div class="pj-view-title">🚦 Saúde da carteira</div>
-    <div style="margin:6px 0 12px;color:var(--text2);font-size:13px">Clique em cada célula pra atualizar o score. A cor da última coluna é calculada pela média.</div>
+    <div class="pj-cs-hint">Clique em cada célula pra atualizar o score. A cor da última coluna é calculada pela média.</div>
     ${legend}
-    <div style="overflow-x:auto;margin-top:16px">
-      <table style="width:100%;border-collapse:collapse;font-size:14px">
-        <thead style="background:var(--surface2)">
+    <div class="pj-cs-table-wrap">
+      <table class="pj-cs-table">
+        <thead>
           <tr>
-            <th style="text-align:left;padding:8px;font-weight:500;font-size:12px;color:var(--text2)">Cliente</th>
+            <th class="pj-cs-th pj-cs-th-name">Cliente</th>
             ${factorHeaders}
-            <th style="text-align:center;padding:8px;font-weight:500;font-size:12px;color:var(--text2)">Semáforo</th>
+            <th class="pj-cs-th pj-cs-th-final">Semáforo</th>
           </tr>
         </thead>
         <tbody>${bodyRows}</tbody>

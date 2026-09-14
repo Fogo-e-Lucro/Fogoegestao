@@ -3442,6 +3442,115 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
   font-size:16px; font-weight:700; color:var(--text); flex:1;
   display:flex; align-items:center; gap:6px;
 }
+
+/* ── Saúde da carteira ────────────────────────────── */
+.pj-cs-view { padding-bottom: 40px; }
+.pj-cs-hint {
+  color: var(--text2); font-size: 13px;
+  margin: 6px 0 14px;
+}
+.pj-cs-table-wrap {
+  margin-top: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,.04);
+}
+.pj-cs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.pj-cs-table thead {
+  background: linear-gradient(180deg, var(--bg2), var(--card));
+}
+.pj-cs-table thead tr { border-bottom: 1px solid var(--border); }
+.pj-cs-th {
+  text-align: center;
+  padding: 14px 10px 12px;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  white-space: nowrap;
+}
+.pj-cs-th-name { text-align: left; padding-left: 20px; }
+.pj-cs-th-final { padding-right: 20px; }
+.pj-cs-lock { opacity: .5; margin-left: 3px; font-size: 10px; }
+.pj-cs-row { border-top: 1px solid var(--border); transition: background .12s; }
+.pj-cs-row:hover { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+.pj-cs-td-name {
+  padding: 12px 20px;
+  display: flex; align-items: center; gap: 12px;
+  min-width: 240px;
+}
+.pj-cs-logo {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+}
+.pj-cs-logo-empty {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+}
+.pj-cs-name {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 14px;
+}
+.pj-cs-cell {
+  text-align: center;
+  padding: 12px 8px;
+  vertical-align: middle;
+}
+.pj-cs-cell.manual { cursor: pointer; }
+.pj-cs-cell.manual:hover .pj-cs-cell-inner {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.pj-cs-cell.auto { opacity: .95; }
+.pj-cs-cell-inner {
+  display: inline-flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: background .12s;
+}
+.pj-cs-empty-dot {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--border);
+}
+.pj-cs-days-badge {
+  display: inline-block;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: .3px;
+}
+.pj-cs-days-badge.green  { background: rgba(34,197,94,.14);  color: #16a34a; }
+.pj-cs-days-badge.yellow { background: rgba(249,115,22,.14); color: #ea580c; }
+.pj-cs-days-badge.red    { background: rgba(239,68,68,.14);  color: #dc2626; }
+.pj-cs-td-final {
+  text-align: center;
+  padding: 12px 20px;
+  vertical-align: middle;
+}
+.pj-cs-empty-final { color: var(--text3); font-size: 12px; }
+@media (max-width: 720px) {
+  .pj-cs-table-wrap { overflow-x: auto; }
+  .pj-cs-th-name, .pj-cs-td-name { padding-left: 12px; }
+  .pj-cs-td-name { min-width: 180px; }
+  .pj-cs-th { padding: 10px 6px 8px; }
+  .pj-cs-cell { padding: 10px 4px; }
+}
 .pj-view-title .breadcrumb-sep { color:var(--text3); font-weight:300; font-size:18px; margin:0 2px; }
 .pj-view-title .breadcrumb-parent { font-size:12px; color:var(--text3); font-weight:500; }
 .pj-view-toggle {
