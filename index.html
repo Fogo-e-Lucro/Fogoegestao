@@ -4037,11 +4037,13 @@ async function appPresenceWriteHeartbeat() {
   // o status offline mais rápido quando user fica em outra aba/app
   if (typeof document !== 'undefined' && document.hidden) return;
   try {
+    // Prefere foto customizada (data URL) sobre Google URL
+    const myPhoto = window._fgMyPhoto || u.photoURL || '';
     await _db.collection('app_presence').doc(u.uid).set({
       uid: u.uid,
       name: u.displayName || (u.email||'').split('@')[0],
       email: u.email || '',
-      photoUrl: u.photoURL || '',
+      photoUrl: myPhoto,
       lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
       online: true, // flag explícita — vira false no beforeunload
     }, { merge: true });
@@ -4180,9 +4182,18 @@ function appPresenceStartListener() {
 }
 
 function _appAvatarHtml(u, cls='') {
-  const url = u.photoUrl || (typeof fgAvatarDataUrl === 'function'
-    ? fgAvatarDataUrl(u.name || u.email, u.uid || u.email)
-    : '');
+  // Prioridade: foto customizada (data URL) em pjMembers > u.photoUrl (Google) > SVG
+  let url = '';
+  try {
+    if (Array.isArray(window.pjMembers)) {
+      const m = pjMembers.find(x => (u.uid && x.uid === u.uid) || (u.email && x.email === u.email));
+      if (m?.photoUrl && String(m.photoUrl).startsWith('data:')) url = m.photoUrl;
+    }
+  } catch(_) {}
+  if (!url) url = u.photoUrl || '';
+  if (!url && typeof fgAvatarDataUrl === 'function') {
+    url = fgAvatarDataUrl(u.name || u.email, u.uid || u.email);
+  }
   if (url) return `<div class="app-presence-avatar ${cls}" style="background-image:url('${url}');background-size:cover;background-position:center;"></div>`;
   const initial = (u.name || u.email || '?').charAt(0).toUpperCase();
   return `<div class="app-presence-avatar ${cls}">${initial}</div>`;
@@ -4419,7 +4430,7 @@ async function _appCoEditWriteHeartbeat() {
       uid: u.uid,
       name: u.displayName || (u.email||'').split('@')[0],
       email: u.email || '',
-      photoUrl: u.photoURL || '',
+      photoUrl: window._fgMyPhoto || u.photoURL || '',
       lastTouch: firebase.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
   } catch(e) {}
