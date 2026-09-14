@@ -5307,7 +5307,7 @@ function fgPhotoCropperOpen(file) {
 
     overlay.querySelector('#fgCropperSave').onclick = () => {
       // Recorta pro tamanho de saída via canvas quadrado
-      const OUT = 512;
+      const OUT = 384;
       const canvas = document.createElement('canvas');
       canvas.width = OUT; canvas.height = OUT;
       const ctx = canvas.getContext('2d');
@@ -5322,11 +5322,10 @@ function fgPhotoCropperOpen(file) {
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, OUT, OUT);
       ctx.drawImage(img, drawX * k, drawY * k, drawW * k, drawH * k);
-      canvas.toBlob((blob) => {
-        if (!blob) return cleanup(null);
-        const cropped = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
-        cleanup(cropped);
-      }, 'image/jpeg', 0.9);
+      // Data URL direto — não depende de host externo
+      let dataUrl = '';
+      try { dataUrl = canvas.toDataURL('image/jpeg', 0.82); } catch(e) { console.error('[cropper] toDataURL falhou', e); }
+      cleanup(dataUrl || null);
     };
   });
 }
@@ -5347,10 +5346,6 @@ async function acessoUploadAvatar(el, targetEmail) {
       return;
     }
   }
-  if (typeof getSpImgbbKey !== 'function' || !getSpImgbbKey()) {
-    showToast('warn','⚠️','Configure a chave ImgBB em Social → APIs para subir foto.');
-    return;
-  }
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/jpeg,image/jpg,image/png,.jpg,.jpeg,.png';
@@ -5367,25 +5362,22 @@ async function acessoUploadAvatar(el, targetEmail) {
       showToast('warn','⚠️','Imagem muito grande. Use até 8MB.');
       return;
     }
-    const cropped = await fgPhotoCropperOpen(file);
-    if (!cropped) return; // usuário cancelou
-    let photoUrl;
-    try {
-      photoUrl = await uploadImage(cropped);
-    } catch(e) {
-      console.error('[acessoUploadAvatar] upload falhou:', e);
-      showToast('error','❌','Falha no upload: ' + (e?.message||'erro'));
-      return;
-    }
+    console.log('[avatar] cropando', file.name, file.size, 'bytes');
+    const photoUrl = await fgPhotoCropperOpen(file);
+    if (!photoUrl) return; // usuário cancelou
+    console.log('[avatar] cropado — data URL', Math.round(photoUrl.length/1024)+'KB');
     try {
       const docId = btoa(email).replace(/[^a-zA-Z0-9]/g,'_');
+      console.log('[avatar] salvando em app_members/'+docId);
       await _db.collection('app_members').doc(docId).set({ photoUrl }, { merge: true });
+      console.log('[avatar] app_members OK');
       try {
         const pjSnap = await _db.collection('pj_members').where('email','==',email).get();
+        console.log('[avatar] pj_members achou', pjSnap.size, 'docs');
         for (const d of pjSnap.docs) {
-          try { await d.ref.update({ photoUrl }); } catch(_) {}
+          try { await d.ref.update({ photoUrl }); } catch(err){ console.warn('[avatar] pj_members update falhou', d.id, err); }
         }
-      } catch(_) {}
+      } catch(err){ console.warn('[avatar] pj_members query falhou', err); }
       const m = _acessoMembers.find(x => x.email === email);
       if (m) m.photoUrl = photoUrl;
       try {
@@ -5394,11 +5386,19 @@ async function acessoUploadAvatar(el, targetEmail) {
           if (pm) pm.photoUrl = photoUrl;
         }
       } catch(_) {}
+      // Se for o próprio usuário, refresh sidebar hero + user row
+      try {
+        const cur = firebase.auth?.()?.currentUser;
+        if (cur && cur.email === email) {
+          if (typeof pjRenderSidebarMe === 'function') pjRenderSidebarMe(cur);
+          if (typeof pjRenderSidebarUser === 'function') pjRenderSidebarUser();
+        }
+      } catch(_) {}
       renderMemberList();
       showToast('success','📷','Foto atualizada');
     } catch(e) {
-      console.error('[acessoUploadAvatar] salvar falhou:', e);
-      showToast('error','❌','Erro ao salvar foto: ' + (e?.message||''));
+      console.error('[avatar] salvar falhou:', e);
+      showToast('error','❌','Erro ao salvar: ' + (e?.message||'sem mensagem'));
     }
   };
   input.click();
@@ -17138,11 +17138,11 @@ function pjRenderSidebarMe(user) {
   // Aplica avatar direto sem esperar onload (foto SVG dataURL renderiza imediato).
   // A silhueta genérica do HTML inicial é apagada aqui.
   const applyBg = (url) => {
-    av.innerHTML = '';
-    av.textContent = '';
+    while (av.firstChild) av.removeChild(av.firstChild);
     av.style.backgroundImage = `url("${url}")`;
     av.style.backgroundSize = 'cover';
     av.style.backgroundPosition = 'center';
+    av.style.backgroundColor = 'transparent';
     av.classList.add('has-photo');
     av.classList.remove('has-initial');
   };
