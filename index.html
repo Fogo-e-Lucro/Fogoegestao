@@ -21601,16 +21601,9 @@ function pjAfterStatusChange(task, prevStatusId, newStatusId) {
     } catch(_) {}
     // ⚡ AUTOMAÇÕES da lista — dispara regras quando status muda
     try { pjRunAutomations({ event:'status_changed', task, prevStatusId, newStatusId, list }); } catch(e) { console.warn('[automation]', e); }
-    // 🔍 Se entrou em Análise/Revisão, avisa no grupo TIME
-    try {
-      const wasAnalysis = /an[aá]lise|revis[aã]o|review/i.test(prevSt?.name || '');
-      const isAnalysis  = /an[aá]lise|revis[aã]o|review/i.test(newSt?.name  || '');
-      console.log('[wa-analysis] check:', { from: prevSt?.name, to: newSt?.name, wasAnalysis, isAnalysis });
-      if (isAnalysis && !wasAnalysis) {
-        console.log('[wa-analysis] disparando notificação de análise');
-        fgNotifyWhatsAppTaskAnalysis(task, newSt, list);
-      }
-    } catch(e) { console.error('[wa-analysis] erro:', e); }
+    // Análise/Revisão: NÃO dispara daqui — quem cuida é o pj-auto-watcher
+    // server-side (regra "Avisar grupo TIME quando for pra Análise").
+    // Manter esse gatilho no client duplicaria mensagem.
   }
   return { willClose, wasClosed, extraFields };
 }
