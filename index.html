@@ -239,6 +239,12 @@
 
     <div class="app-menu-presence" id="appMenuPresence" style="display:none"></div>
 
+    <button class="app-menu-search" onclick="pjOpenSearch();appMenuClose()" title="Buscar tarefas em qualquer módulo (⌘K)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="app-menu-search-label">Buscar tarefas...</span>
+      <span class="app-menu-search-kbd">⌘K</span>
+    </button>
+
     <div class="app-menu-section-label">Módulos</div>
     <div class="app-menu-grid">
       <button class="app-menu-tile" data-tab="projetos" onclick="appMenuGo('projetos')">
@@ -22170,8 +22176,10 @@ function pjSearchKey(e) {
 // Global keyboard handler (lives in the projects tab)
 document.addEventListener('keydown', function(e) {
   if ((e.ctrlKey||e.metaKey) && e.key === 'k') {
-    const projTab = document.getElementById('tab-projetos');
-    if (!projTab || projTab.style.display === 'none') return; // só na aba projetos
+    // Ignora se já está digitando em um input/textarea (ex: modal aberto)
+    const target = e.target;
+    const inField = target?.matches?.('input, textarea, [contenteditable]') && !target?.classList?.contains('app-menu-search-input');
+    if (inField) return;
     e.preventDefault();
     pjOpenSearch();
   }
