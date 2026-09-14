@@ -5384,12 +5384,22 @@ async function acessoUploadAvatar(el, targetEmail) {
           if (pm) pm.photoUrl = photoUrl;
         }
       } catch(_) {}
-      // Se for o próprio usuário, refresh sidebar hero + user row
+      // Se for o próprio usuário, atualiza cache + refresh todas as UIs
       try {
         const cur = firebase.auth?.()?.currentUser;
         if (cur && cur.email === email) {
+          window._fgMyPhoto = photoUrl;
           if (typeof pjRenderSidebarMe === 'function') pjRenderSidebarMe(cur);
           if (typeof pjRenderSidebarUser === 'function') pjRenderSidebarUser();
+          if (typeof appMenuSync === 'function') appMenuSync();
+          // userChip (topo direito)
+          try {
+            const av = document.getElementById('userAvatar');
+            if (av) {
+              if (av.tagName === 'IMG') av.src = photoUrl;
+              else av.outerHTML = `<img class="user-avatar" id="userAvatar" src="${photoUrl}" alt="">`;
+            }
+          } catch(_) {}
         }
       } catch(_) {}
       renderMemberList();
@@ -5612,6 +5622,11 @@ if (_DEV_BYPASS) {
 // Sincroniza photoURL/displayName do Google pra Firestore.
 // Roda em login: se user.photoURL existir e for diferente do que já ta salvo,
 // atualiza app_members/{docId} e todos os pj_members com esse uid.
+// Foto efetiva do próprio usuário: prioriza foto customizada (data URL)
+// em app_members > Google photoURL. Populada em syncGoogleProfileToFirestore
+// e após upload, consumida por userChip/appMenuSync/pjRenderSidebarUser.
+window._fgMyPhoto = window._fgMyPhoto || '';
+
 async function syncGoogleProfileToFirestore(user) {
   if (!user || typeof _db === 'undefined') return;
   const photoURL = user.photoURL || '';
@@ -5629,6 +5644,8 @@ async function syncGoogleProfileToFirestore(user) {
     // se ela não é URL do Google.
     const curPhoto = data.photoUrl || '';
     const isCustomPhoto = curPhoto && !/googleusercontent\.com|lh\d\.googleusercontent/i.test(curPhoto);
+    // Cache da foto efetiva
+    window._fgMyPhoto = isCustomPhoto ? curPhoto : photoURL;
     if (photoURL && !isCustomPhoto && curPhoto !== photoURL) patch.photoUrl = photoURL;
     if (displayName && !data.name) patch.name = displayName;
     if (email && !data.email) patch.email = email;
@@ -5723,8 +5740,9 @@ _auth.onAuthStateChanged(async user => {
   const chip = document.getElementById('userChip');
   const avatar = document.getElementById('userAvatar');
   chip.style.display = 'flex';
-  if (user.photoURL) {
-    avatar.outerHTML = `<img class="user-avatar" id="userAvatar" src="${user.photoURL}" alt="">`;
+  const effectiveTop = window._fgMyPhoto || user.photoURL || '';
+  if (effectiveTop) {
+    avatar.outerHTML = `<img class="user-avatar" id="userAvatar" src="${effectiveTop}" alt="">`;
   } else {
     avatar.textContent = user.displayName?.[0] || user.email[0].toUpperCase();
   }
@@ -6729,7 +6747,8 @@ function appMenuSync() {
   if (u) {
     const av = document.getElementById('appMenuUserAvatar');
     if (av) {
-      if (u.photoURL) { av.style.backgroundImage = `url('${u.photoURL}')`; av.textContent = ''; av.classList.add('has-photo'); }
+      const effectivePhoto = window._fgMyPhoto || u.photoURL || '';
+      if (effectivePhoto) { av.style.backgroundImage = `url('${effectivePhoto}')`; av.textContent = ''; av.classList.add('has-photo'); }
       else { av.textContent = (u.displayName?.[0] || u.email?.[0] || '?').toUpperCase(); }
     }
     document.getElementById('appMenuUserName').textContent = u.displayName || u.email?.split('@')[0] || 'Usuário';
@@ -17152,24 +17171,30 @@ function pjRenderSidebarMe(user) {
   const trySwap = (url) => {
     if (!url || url === fallbackUrl) return;
     // Data URLs são inline: aplica direto sem esperar onload (já é síncrono)
-    if (url.startsWith('data:')) { console.log('[hero] aplicando foto data URL'); applyBg(url); return; }
+    if (url.startsWith('data:')) { console.log('[hero] aplicando foto customizada'); applyBg(url); return; }
     const img = new Image();
     img.onload = () => { console.log('[hero] foto remota carregou'); applyBg(url); };
     img.onerror = () => { console.log('[hero] foto remota falhou, mantém SVG'); };
     img.src = url;
   };
   (async () => {
-    if (user.photoURL) return trySwap(user.photoURL);
-    if (Array.isArray(window.pjMembers)) {
-      const m = pjMembers.find(x => x.uid === user.uid);
-      if (m?.photoUrl) return trySwap(m.photoUrl);
-    }
+    // Prioridade: foto customizada (data URL) > pj_members > user.photoURL (Google)
+    // O motivo: se o usuário SUBIU uma foto (data URL em app_members),
+    // ele quer ver ESSA, não a do Google.
     try {
       const docId = btoa(user.email || '').replace(/[^a-zA-Z0-9]/g, '_');
       const snap = await _db.collection('app_members').doc(docId).get();
       const url = snap.exists ? (snap.data()?.photoUrl || '') : '';
-      if (url) trySwap(url);
-    } catch(_){}
+      if (url && url.startsWith('data:')) return trySwap(url);
+      if (Array.isArray(window.pjMembers)) {
+        const m = pjMembers.find(x => x.uid === user.uid);
+        if (m?.photoUrl && m.photoUrl.startsWith('data:')) return trySwap(m.photoUrl);
+      }
+      if (user.photoURL) return trySwap(user.photoURL);
+      if (url) return trySwap(url); // URL remota salva (Google via app_members)
+    } catch(_) {
+      if (user.photoURL) trySwap(user.photoURL);
+    }
   })();
   const hero = document.getElementById('pjMeHero');
   if (hero) hero.dataset.filled = '1';
@@ -17182,7 +17207,7 @@ function pjRenderSidebarUser() {
   const u = _currentUser;
   if (!u) { el.innerHTML = ''; return; }
   const name = u.displayName || u.email || 'Usuário';
-  const photoUrl = u.photoURL || fgAvatarDataUrl(name, u.email || u.uid);
+  const photoUrl = window._fgMyPhoto || u.photoURL || fgAvatarDataUrl(name, u.email || u.uid);
   const avatarStyle = `background-image:url('${photoUrl}');background-size:cover;background-position:center;`;
   const avatarContent = '';
   // Find member role
