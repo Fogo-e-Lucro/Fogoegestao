@@ -5915,9 +5915,11 @@ function getClientColor(name) {
 function getClientLogo(name) {
   if (!name) return null;
   // Fonte primária: Base de Dados (clientes_base)
+  // Prioridade: logoDataUrl (funciona offline, sem CDN) > logoUrl > fotoUrl
   try {
     if (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes)) {
       const bd = _bdClientes.find(c => c.nome === name);
+      if (bd?.logoDataUrl && bd.logoDataUrl.startsWith('data:')) return bd.logoDataUrl;
       if (bd?.logoUrl) return bd.logoUrl;
       if (bd?.fotoUrl) return bd.fotoUrl;
     }
@@ -18263,8 +18265,16 @@ function pjBuildListPage(listId) {
     const stTasks = tasks.filter(t => (t.statusId||statuses[0].id) === st.id);
     const isDoneStatus = st.id === 'done';
     const collapsedKey = `pjStatusCollapsed:${listId}:${st.id}`;
-    const stored = localStorage.getItem(collapsedKey);
-    const collapsed = stored === null ? isDoneStatus : (stored === '1');
+    // Concluído SEMPRE começa fechado na sessão (David quer, se precisar abre).
+    // Estado só persiste durante a sessão via sessionStorage; recarregou, fecha.
+    let collapsed;
+    if (isDoneStatus) {
+      const sess = sessionStorage.getItem(collapsedKey);
+      collapsed = sess === null ? true : (sess === '1');
+    } else {
+      const stored = localStorage.getItem(collapsedKey);
+      collapsed = stored === null ? false : (stored === '1');
+    }
     h += `<div class="pj-status-group-header pj-status-droptarget ${collapsed?'collapsed':''}" style="margin-top:8px;--c:${st.color};"
          data-list-id="${listId}" data-status-id="${st.id}"
          onclick="pjToggleStatusCollapse('${listId}','${st.id}',event)"
@@ -20054,7 +20064,13 @@ function pjToggleStatusCollapse(listId, statusId, ev) {
   const willCollapse = !header.classList.contains('collapsed');
   header.classList.toggle('collapsed', willCollapse);
   zone.classList.toggle('collapsed', willCollapse);
-  try { localStorage.setItem(`pjStatusCollapsed:${listId}:${statusId}`, willCollapse ? '1' : '0'); } catch(e) {}
+  const key = `pjStatusCollapsed:${listId}:${statusId}`;
+  const isDone = statusId === 'done';
+  try {
+    // Done: sessionStorage (reset a cada reload). Outros: localStorage (persiste).
+    if (isDone) sessionStorage.setItem(key, willCollapse ? '1' : '0');
+    else localStorage.setItem(key, willCollapse ? '1' : '0');
+  } catch(e) {}
 }
 function pjListDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
 async function pjListDrop(e, listId, statusId) {
