@@ -5353,10 +5353,16 @@ async function acessoUploadAvatar(el, targetEmail) {
   }
   const input = document.createElement('input');
   input.type = 'file';
-  input.accept = 'image/*';
+  input.accept = 'image/jpeg,image/jpg,image/png,.jpg,.jpeg,.png';
   input.onchange = async () => {
     const file = input.files?.[0];
     if (!file) return;
+    const okType = /^image\/(jpe?g|png)$/i.test(file.type || '')
+      || /\.(jpe?g|png)$/i.test(file.name || '');
+    if (!okType) {
+      showToast('warn','⚠️','Só aceita JPG, JPEG ou PNG.');
+      return;
+    }
     if (file.size > 8 * 1024 * 1024) {
       showToast('warn','⚠️','Imagem muito grande. Use até 8MB.');
       return;
