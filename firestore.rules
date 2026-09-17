@@ -123,6 +123,15 @@ service cloud.firestore {
     // ── POPs ─────────────────────────────────────────────
     match /pop_docs/{doc} { allow read: if isSignedIn(); allow write: if amIAdmin(); }
 
+    // ── iFood (poller escreve via admin SDK; client só lê) ─
+    match /ifood_merchants/{doc}         { allow read: if isSignedIn(); allow write: if false; }
+    match /ifood_merchant_status/{doc}   { allow read: if isSignedIn(); allow write: if false; }
+    match /ifood_reviews/{doc}           { allow read: if isSignedIn(); allow write: if false; }
+    match /ifood_orders/{doc}            { allow read: if isSignedIn(); allow write: if false; }
+    match /ifood_events/{doc}            { allow read: if isSignedIn(); allow write: if false; }
+    match /ifood_financial/{doc}         { allow read: if isSignedIn(); allow write: if false; }
+    match /ifood_catalogs/{doc}          { allow read: if isSignedIn(); allow write: if false; }
+
     // ── Default = negar ──────────────────────────────────
     match /{document=**} {
       allow read, write: if false;
