@@ -12265,6 +12265,167 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
   .live-card, .drawer__panel, .drawer__backdrop, .toast { animation: none; }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   STUDIO PRO — Polish v3 (2026-09-17)
+   Refinamento visual pra alinhar com padrão do resto do app
+   ═══════════════════════════════════════════════════════════ */
+
+/* Container geral: mais respiro */
+#tab-lives.tab-panel.liv { padding: 24px 28px 60px; max-width: 1400px; margin: 0 auto; }
+
+/* Header: título mais forte, chips com melhor contraste */
+.studio-header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.studio-title { font-size: 22px; letter-spacing: -.02em; }
+.studio-meta__chip { background: var(--bg2); padding: 6px 12px; font-weight: 500; }
+.studio-meta__chip #studio-count { font-size: 13px; }
+
+/* Filtros: mais discretos */
+.studio-filters { border-radius: 12px; padding: 4px; }
+.studio-filters .pill { padding: 7px 14px; font-weight: 600; letter-spacing: .01em; }
+.studio-filters .pill.is-active { background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+
+/* Botão Nova live: azul do app (não roxo puro) */
+#tab-lives .btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(59,130,246,.32);
+}
+#tab-lives .btn-primary:hover {
+  background: linear-gradient(135deg, #60a5fa, #2563eb);
+  box-shadow: 0 6px 20px rgba(59,130,246,.42);
+}
+
+/* Empty state: mais elegante */
+.studio-empty {
+  background: linear-gradient(180deg, var(--card), color-mix(in srgb, var(--card) 60%, var(--bg2)));
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 56px 32px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.04);
+}
+.studio-empty svg { width: 60px; height: 60px; opacity: .35; }
+.studio-empty h3 { font-size: 17px; font-weight: 700; }
+.studio-empty p { max-width: 340px; line-height: 1.5; }
+
+/* Grid: cards com espaçamento maior */
+.studio-grid { gap: 22px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+
+/* Card: sombra polida, radius maior, transição suave */
+.live-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+  transition: transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s ease, border-color .2s ease;
+}
+.live-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.1), 0 2px 6px rgba(0,0,0,.06);
+  border-color: color-mix(in srgb, #3b82f6 30%, var(--border));
+}
+
+/* Thumb: gradient mais vibrante */
+.live-card__thumb {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%);
+  aspect-ratio: 16 / 9;
+}
+.live-card__thumb-fallback svg { width: 44px; height: 44px; opacity: .3; }
+.live-card__fallback-label { font-size: 11px; opacity: .5; font-weight: 500; letter-spacing: .3px; text-transform: uppercase; }
+
+/* Badge AO VIVO: mais forte */
+.live-badge {
+  background: rgba(220,38,38,.95);
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 9px;
+  letter-spacing: .12em;
+  box-shadow: 0 2px 8px rgba(220,38,38,.35);
+}
+.live-badge__dot { width: 5px; height: 5px; background: #fff; }
+
+/* Timer: mais destacado */
+.live-timer {
+  background: rgba(0,0,0,.7);
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+/* Chip do destino (bottom-right) */
+.live-dest-chip {
+  background: rgba(0,0,0,.65);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  backdrop-filter: blur(6px);
+}
+
+/* Body do card: mais respiro */
+.live-card__body { padding: 16px 18px 18px; gap: 12px; }
+
+/* Título mais forte */
+.live-card__title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--text);
+}
+.live-card__title span[data-label] { max-width: 100%; }
+
+/* Botão 3-dots menor e mais elegante */
+.live-card__menu-btn { width: 32px; height: 32px; border-radius: 10px; }
+
+/* Meta row: bitrate/tipo/autostop com melhor espaço */
+.live-card__meta {
+  font-size: 12px;
+  color: var(--text2);
+  padding: 10px 12px;
+  background: var(--bg2);
+  border-radius: 10px;
+  gap: 10px;
+}
+.live-card__meta-item { font-weight: 500; }
+.live-card__meta-item[data-bitrate-value]:before { content: ''; }
+.live-card__meta-sep { opacity: .3; }
+
+/* Health dot: cores fortes */
+.health-dot { width: 7px; height: 7px; }
+.health-dot[data-health="ok"] { background: #22c55e; box-shadow: 0 0 0 2px rgba(34,197,94,.15); }
+.health-dot[data-health="reconnecting"] { background: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,.15); }
+.health-dot[data-health="failed"] { background: #ef4444; box-shadow: 0 0 0 2px rgba(239,68,68,.15); }
+
+/* Actions: botões destacados */
+.live-card__actions { gap: 10px; margin-top: 4px; }
+.live-card__btn {
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: -.005em;
+  flex: 1;
+  justify-content: center;
+}
+.live-card__btn--danger {
+  background: rgba(239,68,68,.08);
+  border-color: rgba(239,68,68,.28);
+  color: #dc2626;
+}
+.live-card__btn--danger:hover {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+  box-shadow: 0 4px 12px rgba(220,38,38,.32);
+}
+
 /* ============================================================
    STUDIO PRO — Drawer refinado (2026-08-03 pm)
    Cards visuais pra tipo, dropzones custom, toggles bonitos.
