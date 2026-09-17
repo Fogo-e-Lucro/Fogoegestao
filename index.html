@@ -2625,6 +2625,10 @@ ufw allow 3000/tcp</pre>
               <span class="pj-nav-ic">🚦</span>
               Saúde da carteira
             </button>
+            <button class="pj-nav-btn" id="pjBtnIfood" onclick="pjNavigate('ifood')" title="Dashboard dos clientes no iFood">
+              <span class="pj-nav-ic">🛵</span>
+              iFood
+            </button>
             <button class="pj-nav-btn" id="pjBtnTimeline" onclick="pjNavigate('timeline')">
               <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></span>
               Timeline
@@ -17135,6 +17139,7 @@ function pjNavigate(type, id = null) {
   if (type === 'workload') document.getElementById('pjBtnWorkload')?.classList.add('active');
   if (type === 'byclient') document.getElementById('pjBtnByClient')?.classList.add('active');
   if (type === 'cshealth') document.getElementById('pjBtnCsHealth')?.classList.add('active');
+  if (type === 'ifood') document.getElementById('pjBtnIfood')?.classList.add('active');
   if (type === 'timeline') document.getElementById('pjBtnTimeline')?.classList.add('active');
   if (type === 'gantt')    document.getElementById('pjBtnGantt')?.classList.add('active');
   if (type === 'archived') document.getElementById('pjBtnArchived')?.classList.add('active');
@@ -17278,6 +17283,7 @@ function pjRenderMain() {
   if (type === 'workload') { el.innerHTML = pjBuildWorkload(); done(); return; }
   if (type === 'byclient') { el.innerHTML = pjBuildByClient(); done(); return; }
   if (type === 'cshealth') { el.innerHTML = pjBuildCsHealth(); done(); return; }
+  if (type === 'ifood')    { pjIfoodEnsureInit(); el.innerHTML = pjBuildIfood(); done(); return; }
   if (type === 'timeline') { el.innerHTML = pjBuildTimeline(); done(); return; }
   if (type === 'archived') { el.innerHTML = pjBuildArchived(); done(); return; }
   if (type === 'timemetrics') { el.innerHTML = pjBuildTimeMetrics(); done(); return; }
@@ -24861,6 +24867,194 @@ function pjCsRitmoFor(clientId, csListIds) {
 }
 let pjCsHealth = {}; // { clientId: {scores:{...}, note, updatedAt, updatedBy} }
 let _pjCsHealthUnsub = null;
+
+// ── iFood — dashboard read-only ───────────────────────
+// Alimentado pelo poller /root/ifood-poller no VPS que sincroniza os módulos
+// da API iFood pro Firestore. Aqui só lê e renderiza.
+let _ifoodMerchants = [];    // [{id, name, corporateName, address, ...}]
+let _ifoodStatus = {};       // { merchantId: {channels, available, _checkedAt} }
+let _ifoodReviews = [];      // [{id, merchantId, rating, comment, createdAt, ...}]
+let _ifoodOrders = [];       // [{id, merchant, createdAt, total, ...}]
+let _ifoodFinancial = {};    // { merchantId_competence: { data, competence } }
+let _ifoodCatalogs = {};     // { merchantId: { catalogs } }
+let _ifoodInitialized = false;
+let _ifoodUnsubs = [];
+
+function pjIfoodEnsureInit() {
+  if (_ifoodInitialized || typeof _db === 'undefined') return;
+  _ifoodInitialized = true;
+  const rerender = () => {
+    try {
+      const cur = document.querySelector('.pj-nav-btn#pjBtnIfood.active');
+      if (cur && typeof pjRenderMain === 'function') {
+        const el = document.getElementById('pjMainRender');
+        if (el) el.innerHTML = pjBuildIfood();
+      }
+    } catch(_){}
+  };
+  _ifoodUnsubs.push(_db.collection('ifood_merchants').onSnapshot(s => {
+    _ifoodMerchants = s.docs.map(d => ({ id: d.id, ...d.data() }));
+    rerender();
+  }, e => console.warn('[ifood] merchants sub:', e.message)));
+  _ifoodUnsubs.push(_db.collection('ifood_merchant_status').onSnapshot(s => {
+    _ifoodStatus = {};
+    s.docs.forEach(d => _ifoodStatus[d.id] = d.data());
+    rerender();
+  }, e => console.warn('[ifood] status sub:', e.message)));
+  _ifoodUnsubs.push(_db.collection('ifood_reviews').orderBy('createdAt','desc').limit(500).onSnapshot(s => {
+    _ifoodReviews = s.docs.map(d => ({ id: d.id, ...d.data() }));
+    rerender();
+  }, e => {
+    // orderBy pode falhar se sem index; fallback
+    _db.collection('ifood_reviews').limit(500).onSnapshot(s2 => {
+      _ifoodReviews = s2.docs.map(d => ({ id: d.id, ...d.data() }));
+      rerender();
+    });
+  }));
+  _ifoodUnsubs.push(_db.collection('ifood_orders').limit(500).onSnapshot(s => {
+    _ifoodOrders = s.docs.map(d => ({ id: d.id, ...d.data() }));
+    rerender();
+  }, e => console.warn('[ifood] orders sub:', e.message)));
+  _ifoodUnsubs.push(_db.collection('ifood_financial').onSnapshot(s => {
+    _ifoodFinancial = {};
+    s.docs.forEach(d => _ifoodFinancial[d.id] = d.data());
+    rerender();
+  }, e => console.warn('[ifood] financial sub:', e.message)));
+  _ifoodUnsubs.push(_db.collection('ifood_catalogs').onSnapshot(s => {
+    _ifoodCatalogs = {};
+    s.docs.forEach(d => _ifoodCatalogs[d.id] = d.data());
+    rerender();
+  }, e => console.warn('[ifood] catalog sub:', e.message)));
+}
+
+function _ifoodMatchClient(merchant) {
+  // Tenta match do nome do merchant com um cliente do BD pra pegar logo
+  try {
+    const nm = (merchant.name || merchant.corporateName || '').toLowerCase()
+      .replace(/^teste\s*-\s*/i, '').trim();
+    if (!nm || !Array.isArray(_bdClientes)) return null;
+    return _bdClientes.find(c => {
+      const cn = (c.nome || '').toLowerCase();
+      return cn && (cn.includes(nm) || nm.includes(cn));
+    }) || null;
+  } catch(_) { return null; }
+}
+
+function _ifoodMerchantMetrics(mid) {
+  const reviews = _ifoodReviews.filter(r => r.merchantId === mid);
+  const avg = reviews.length
+    ? (reviews.reduce((a,r) => a + (Number(r.score || r.rating) || 0), 0) / reviews.length)
+    : null;
+  const now = Date.now();
+  const last7d = now - 7 * 86400000;
+  const orders7d = _ifoodOrders.filter(o => {
+    const m = o.merchant?.id || o.merchantId;
+    const ts = o.createdAt ? new Date(o.createdAt).getTime() : 0;
+    return m === mid && ts >= last7d;
+  });
+  const revenue7d = orders7d.reduce((a,o) => a + (Number(o.total?.orderAmount || o.totalPrice || 0)), 0);
+  return {
+    reviewsCount: reviews.length,
+    avgRating: avg,
+    orders7d: orders7d.length,
+    revenue7d,
+    lastReviewAt: reviews[0]?.createdAt || null,
+  };
+}
+
+function _ifoodFmtCurrency(n) {
+  return 'R$ ' + (Number(n) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function pjBuildIfood() {
+  const merchants = _ifoodMerchants;
+  const totalRevenue7d = merchants.reduce((a,m) => a + _ifoodMerchantMetrics(m.id).revenue7d, 0);
+  const online = merchants.filter(m => _ifoodStatus[m.id]?.available === true).length;
+  const offline = merchants.length - online;
+
+  const header = `
+    <div class="pj-ifood-header">
+      <div class="pj-ifood-kpi">
+        <div class="pj-ifood-kpi-label">Vendas últimos 7 dias</div>
+        <div class="pj-ifood-kpi-value">${_ifoodFmtCurrency(totalRevenue7d)}</div>
+      </div>
+      <div class="pj-ifood-kpi">
+        <div class="pj-ifood-kpi-label">Lojas online agora</div>
+        <div class="pj-ifood-kpi-value">${online}<span class="pj-ifood-kpi-sub">/${merchants.length}</span></div>
+      </div>
+      <div class="pj-ifood-kpi">
+        <div class="pj-ifood-kpi-label">Offline</div>
+        <div class="pj-ifood-kpi-value ${offline > 0 ? 'red' : ''}">${offline}</div>
+      </div>
+      <div class="pj-ifood-kpi">
+        <div class="pj-ifood-kpi-label">Avaliações totais</div>
+        <div class="pj-ifood-kpi-value">${_ifoodReviews.length}</div>
+      </div>
+    </div>`;
+
+  if (!merchants.length) {
+    return `<div class="pj-view pj-ifood-view">
+      <div class="pj-view-title">🛵 iFood — Dashboard</div>
+      <div class="pj-ifood-hint">Ainda em sandbox. Assim que os clientes autorizarem a integração após a homologação, cada loja aparece aqui como card.</div>
+      ${header}
+      <div class="pj-empty" style="padding:32px;color:var(--text2)">Nenhuma loja no escopo ainda.</div>
+    </div>`;
+  }
+
+  const cards = merchants.map(m => {
+    const st = _ifoodStatus[m.id];
+    const isOnline = st?.available === true;
+    const isTest = m.test === 'TEST';
+    const metrics = _ifoodMerchantMetrics(m.id);
+    const bdRow = _ifoodMatchClient(m);
+    const logo = bdRow?.logoDataUrl || bdRow?.logoUrl || bdRow?.fotoUrl || null;
+    const displayName = (m.name || '').replace(/^Teste\s*-\s*/i, '') || 'Sem nome';
+    const rating = metrics.avgRating != null ? metrics.avgRating.toFixed(1) : '—';
+    const ratingClass = metrics.avgRating == null ? 'gray'
+      : metrics.avgRating >= 4.5 ? 'green'
+      : metrics.avgRating >= 3.5 ? 'yellow' : 'red';
+
+    const logoHtml = logo
+      ? `<img src="${logo}" alt="" class="pj-ifood-card-logo">`
+      : `<span class="pj-ifood-card-logo pj-ifood-card-logo-empty">${escHtml((displayName || '?').charAt(0).toUpperCase())}</span>`;
+
+    return `<div class="pj-ifood-card" data-merchant-id="${m.id}">
+      <div class="pj-ifood-card-top">
+        ${logoHtml}
+        <div class="pj-ifood-card-name">
+          <div class="pj-ifood-card-title">${escHtml(displayName)}</div>
+          <div class="pj-ifood-card-sub">${escHtml((m.address?.city || '') + (m.address?.state ? ' · ' + m.address.state : ''))}${isTest ? ' <span class="pj-ifood-badge-test">TEST</span>' : ''}</div>
+        </div>
+        <div class="pj-ifood-card-status ${isOnline ? 'online' : 'offline'}" title="${isOnline ? 'Aberta agora' : 'Fechada'}"></div>
+      </div>
+      <div class="pj-ifood-card-metrics">
+        <div class="pj-ifood-metric">
+          <div class="pj-ifood-metric-label">7 dias</div>
+          <div class="pj-ifood-metric-value">${_ifoodFmtCurrency(metrics.revenue7d)}</div>
+        </div>
+        <div class="pj-ifood-metric">
+          <div class="pj-ifood-metric-label">Pedidos</div>
+          <div class="pj-ifood-metric-value">${metrics.orders7d}</div>
+        </div>
+        <div class="pj-ifood-metric">
+          <div class="pj-ifood-metric-label">Nota</div>
+          <div class="pj-ifood-metric-value pj-ifood-rating ${ratingClass}">${rating}${metrics.avgRating != null ? '<span class="pj-ifood-star">★</span>' : ''}</div>
+        </div>
+      </div>
+      <div class="pj-ifood-card-footer">
+        <span class="pj-ifood-footer-item">${metrics.reviewsCount} avaliação${metrics.reviewsCount !== 1 ? 'ões' : ''}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="pj-view pj-ifood-view">
+    <div class="pj-view-title">🛵 iFood — Dashboard</div>
+    <div class="pj-ifood-hint">Poller sincroniza a cada 30s (pedidos), 60s (status), 15min (avaliações), 6h (cardápio), 1x/dia (financeiro).</div>
+    ${header}
+    <div class="pj-ifood-grid">${cards}</div>
+  </div>`;
+}
+
 
 function pjCsHealthColorFromScores(scores) {
   if (!scores) return null;

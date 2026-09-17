@@ -3443,6 +3443,152 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
   display:flex; align-items:center; gap:6px;
 }
 
+/* ── iFood dashboard ───────────────────────────────── */
+.pj-ifood-view { padding-bottom: 40px; }
+.pj-ifood-hint {
+  color: var(--text2); font-size: 13px;
+  margin: 6px 0 16px;
+}
+.pj-ifood-header {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.pj-ifood-kpi {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 18px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.04);
+}
+.pj-ifood-kpi-label {
+  font-size: 11px; font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 8px;
+}
+.pj-ifood-kpi-value {
+  font-size: 22px; font-weight: 700;
+  color: var(--text);
+  display: flex; align-items: baseline; gap: 6px;
+}
+.pj-ifood-kpi-value.red { color: #dc2626; }
+.pj-ifood-kpi-sub {
+  font-size: 14px; font-weight: 500;
+  color: var(--text3);
+}
+.pj-ifood-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.pj-ifood-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+  transition: transform .15s, box-shadow .15s, border-color .15s;
+  cursor: pointer;
+}
+.pj-ifood-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 22px rgba(99,102,241,.15);
+}
+.pj-ifood-card-top {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 14px;
+}
+.pj-ifood-card-logo {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+}
+.pj-ifood-card-logo-empty {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #ea1d2c, #a01923);
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+}
+.pj-ifood-card-name { flex: 1; min-width: 0; }
+.pj-ifood-card-title {
+  font-size: 14px; font-weight: 700;
+  color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pj-ifood-card-sub {
+  font-size: 11px; color: var(--text3);
+  margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pj-ifood-badge-test {
+  display: inline-block;
+  font-size: 8px; font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: rgba(250, 204, 21, .18);
+  color: #a16207;
+  letter-spacing: .5px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+.pj-ifood-card-status {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(0,0,0,.03);
+}
+.pj-ifood-card-status.online {
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34,197,94,.18);
+}
+.pj-ifood-card-status.offline {
+  background: #94a3b8;
+  box-shadow: 0 0 0 3px rgba(148,163,184,.18);
+}
+.pj-ifood-card-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+.pj-ifood-metric-label {
+  font-size: 10px; font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  margin-bottom: 3px;
+}
+.pj-ifood-metric-value {
+  font-size: 13px; font-weight: 700;
+  color: var(--text);
+}
+.pj-ifood-rating { display: inline-flex; align-items: center; gap: 2px; }
+.pj-ifood-rating.green  { color: #16a34a; }
+.pj-ifood-rating.yellow { color: #ea580c; }
+.pj-ifood-rating.red    { color: #dc2626; }
+.pj-ifood-rating.gray   { color: var(--text3); }
+.pj-ifood-star {
+  font-size: 11px;
+  margin-left: 1px;
+}
+.pj-ifood-card-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text3);
+}
+.pj-ifood-footer-item { font-weight: 500; }
+
 /* ── Saúde da carteira ────────────────────────────── */
 .pj-cs-view { padding-bottom: 40px; }
 .pj-cs-hint {
