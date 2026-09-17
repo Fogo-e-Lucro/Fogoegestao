@@ -31263,10 +31263,10 @@ const LIV = (() => {
       const initial = (hy.label[0] || '?').toUpperCase();
       avatar.textContent = initial;
     }
-    // Se tem mídia local (do upload), mostra ela no mockup
+    // Se tem mídia local (do upload), mostra ela COMO INICIAL
     const localMedia = hy?.thumbLocal;
+    const isVideo = state.labels['type:' + id] === 'video';
     if (localMedia) {
-      const isVideo = state.labels['type:' + id] === 'video';
       if (isVideo && video) {
         video.src = localMedia;
         video.hidden = false;
@@ -31280,10 +31280,31 @@ const LIV = (() => {
         if (video) video.hidden = true;
         if (empty) empty.hidden = true;
       }
-      return; // mídia local basta; não precisa polling server
     }
-    // Sem mídia local: mantém empty visual (SVG de câmera)
-    if (empty) empty.hidden = false;
+    // TAMBÉM faz polling no /preview server pra pegar o frame ATUAL da live
+    // (server extrai via ffmpeg a cada 8s). Substitui a mídia local pela
+    // real quando disponível.
+    if (img) {
+      const load = () => {
+        const url = api() + '/preview/' + id + '?t=' + Date.now();
+        const probe = new Image();
+        probe.onload = () => {
+          if (probe.naturalWidth < 10) return; // 204 vazio
+          if (video) { video.hidden = true; try { video.pause(); } catch(_){} }
+          if (empty) empty.hidden = true;
+          img.hidden = false;
+          img.src = url;
+          img.classList.add('is-loaded');
+        };
+        probe.onerror = () => {}; // mantém o que tem
+        probe.src = url;
+      };
+      load();
+      const tId = setInterval(load, PREVIEW_MS);
+      state.previewTimers.set(id, tId);
+    }
+    // Sem mídia nenhuma: mantém empty (SVG câmera)
+    if (!localMedia && empty) empty.hidden = false;
   }
   function stopPreview(id) {
     const t = state.previewTimers.get(id);
