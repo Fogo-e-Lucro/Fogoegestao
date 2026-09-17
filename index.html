@@ -31095,8 +31095,12 @@ const LIV = (() => {
   }
   function reconcile(list) {
     const seen = new Set();
+    // Dedup preventivo: se por qualquer motivo tem card duplicado no DOM
+    // (bug antigo, hot-reload, etc), remove antes de reconciliar
+    try { _liveDedupCards(); } catch(_) {}
     for (const s of list) {
       const hy = hydrateLive(s);
+      if (!hy.id) continue;
       seen.add(hy.id);
       if (state.lives.has(hy.id)) updateCard(hy);
       else addCard(hy);
@@ -31136,6 +31140,10 @@ const LIV = (() => {
   function addCard(hy) {
     const grid = document.getElementById('studio-grid');
     if (!grid) return;
+    if (!hy || !hy.id) return; // sem id, ignora
+    // Guarda defensiva: se já existe card DOM com esse id, só atualiza
+    const existing = grid.querySelector('.live-card[data-live-id="' + hy.id + '"]');
+    if (existing) { updateCard(hy); return; }
     const card = tpl();
     card.dataset.liveId = hy.id;
     grid.prepend(card);
@@ -31143,6 +31151,20 @@ const LIV = (() => {
     updateCard(hy);
     bindCardActions(card, hy.id);
     startPreview(hy.id, card);
+  }
+  // Limpa cards duplicados de sessões anteriores (bug antigo)
+  function _liveDedupCards() {
+    const grid = document.getElementById('studio-grid');
+    if (!grid) return 0;
+    const seen = new Set();
+    let removed = 0;
+    grid.querySelectorAll('.live-card').forEach(c => {
+      const id = c.dataset.liveId;
+      if (!id) { c.remove(); removed++; return; }
+      if (seen.has(id)) { c.remove(); removed++; return; }
+      seen.add(id);
+    });
+    return removed;
   }
   function updateCard(hy) {
     const card = document.querySelector('.live-card[data-live-id="' + hy.id + '"]');
@@ -31474,7 +31496,11 @@ const LIV = (() => {
     e.preventDefault();
     const form = e.currentTarget;
     const btn = document.getElementById('btn-submit-live');
+    // Debounce anti-duplo-click: se botão já está desabilitado, ignora
+    if (btn?.disabled) return;
+    if (btn) btn.disabled = true;
     const lbl = btn.querySelector('[data-submit-label]');
+    if (lbl) lbl.textContent = 'Subindo...';
     const fd = new FormData(form);
     const label = fd.get('label')?.trim();
     const type = fd.get('type');
