@@ -16489,3 +16489,236 @@ body.at-projetos .app-header-right { display: none !important; }
 @media (max-width: 720px) {
   .pj-sidebar-me-info { display: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MOBILE PWA v3 — iOS 26 "Liquid Glass" (2026-09-20)
+   Aplica só em <= 640px (touch/celular). Zero impacto em desktop/tablet.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+
+  /* ── Safe area no topo — evita esconder atrás do notch ── */
+  .app-header {
+    padding-top: calc(10px + env(safe-area-inset-top, 0px)) !important;
+    padding-left: calc(14px + env(safe-area-inset-left, 0px)) !important;
+    padding-right: calc(14px + env(safe-area-inset-right, 0px)) !important;
+    /* Liquid Glass: blur + saturate + reflexo sutil */
+    background: color-mix(in srgb, var(--bg, #0f1117) 72%, transparent) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+    position: sticky !important; top: 0 !important;
+    z-index: 60;
+  }
+
+  /* ── Bottom Tab Bar — Liquid Glass real ── */
+  .fg-mnav {
+    background: color-mix(in srgb, var(--card, #14161e) 72%, transparent) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    backdrop-filter: blur(28px) saturate(200%);
+    border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent) !important;
+    box-shadow: 0 -8px 24px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.06) !important;
+    padding-top: 8px !important;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 22px 22px 0 0;
+  }
+  .fg-mnav__i {
+    min-height: 52px !important;
+    gap: 4px !important;
+    font-size: 10.5px !important;
+    letter-spacing: .01em;
+    transition: color .2s cubic-bezier(.2,.8,.2,1), transform .1s cubic-bezier(.2,.8,.2,1);
+  }
+  .fg-mnav__i.active {
+    color: #3b82f6 !important;
+    position: relative;
+  }
+  .fg-mnav__i.active::before {
+    content: '';
+    position: absolute;
+    top: -8px; left: 50%;
+    transform: translateX(-50%);
+    width: 26px; height: 3px;
+    background: #3b82f6;
+    border-radius: 100px;
+    box-shadow: 0 0 12px rgba(59,130,246,.55);
+  }
+  .fg-mnav__i:active { transform: scale(.9) !important; }
+
+  /* ── Bottom Sheet "Mais" — drag handle e spring ── */
+  .fg-more { position: fixed; inset: 0; z-index: 99999; }
+  .fg-more[hidden] { display: none; }
+  .fg-more__bd {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: fgMoreBdIn .2s ease-out;
+  }
+  .fg-more__pn {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: color-mix(in srgb, var(--card, #14161e) 92%, transparent);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    backdrop-filter: blur(30px) saturate(200%);
+    border-radius: 28px 28px 0 0;
+    padding: 8px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -20px 40px rgba(0,0,0,.4);
+    animation: fgMoreSheetIn .35s cubic-bezier(.32,.72,0,1);
+    max-height: 85vh; overflow-y: auto;
+  }
+  @keyframes fgMoreBdIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fgMoreSheetIn {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .fg-more__gr {
+    width: 38px; height: 5px;
+    background: color-mix(in srgb, var(--text3) 45%, transparent);
+    border-radius: 3px;
+    margin: 6px auto 14px;
+  }
+  .fg-more__pn h3 {
+    font-size: 20px; font-weight: 700;
+    margin: 0 0 16px;
+    letter-spacing: -.01em;
+    color: var(--text);
+  }
+  .fg-more__gd {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .fg-more__b {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 6px;
+    padding: 16px 8px;
+    background: color-mix(in srgb, var(--bg2, #1a1c25) 88%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+    border-radius: 18px;
+    color: var(--text);
+    font-size: 11.5px; font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform .1s, background .15s;
+  }
+  .fg-more__b:active { transform: scale(.94); background: var(--bg2); }
+  .fg-more__b span {
+    font-size: 26px; line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.15));
+  }
+
+  /* ── Cards mais respirados (radius 22+) ── */
+  .pj-card, .live-card, .app-metric-card, .app-settings-section,
+  .pj-cs-table-wrap, .pj-ifood-card, .pj-ifood-kpi,
+  .studio-empty { border-radius: 20px !important; }
+  .pj-task-modal, .pj-form-modal-panel { border-radius: 24px 24px 0 0 !important; }
+
+  /* ── Botões primários mais confortáveis (touch target 44px+) ── */
+  .btn-primary, .pj-btn-primary, #tab-lives .btn-primary {
+    min-height: 46px;
+    border-radius: 14px !important;
+    font-size: 15px;
+    padding-left: 20px; padding-right: 20px;
+  }
+
+  /* ── Task modal em bottom sheet ── */
+  .pj-modal-overlay { align-items: flex-end !important; padding: 0 !important; }
+  .pj-task-modal {
+    max-height: 92vh !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    animation: pjTaskSheetIn .32s cubic-bezier(.32,.72,0,1);
+  }
+  @keyframes pjTaskSheetIn {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .pj-modal-topbar {
+    border-radius: 24px 24px 0 0;
+    background: color-mix(in srgb, var(--card) 92%, transparent);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+  }
+  .pj-modal-topbar::before {
+    content: '';
+    display: block;
+    width: 40px; height: 5px;
+    background: color-mix(in srgb, var(--text3) 40%, transparent);
+    border-radius: 3px;
+    margin: -4px auto 10px;
+  }
+
+  /* ── Popup menu do 3-dots vira bottom sheet ── */
+  .pj-popup-menu.is-sheet {
+    border-radius: 24px 24px 0 0 !important;
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    backdrop-filter: blur(30px) saturate(200%);
+    background: color-mix(in srgb, var(--card) 92%, transparent) !important;
+  }
+  .pj-popup-menu.is-sheet::before {
+    content: '';
+    display: block;
+    width: 38px; height: 5px;
+    background: color-mix(in srgb, var(--text3) 45%, transparent);
+    border-radius: 3px;
+    margin: 8px auto 12px;
+  }
+
+  /* ── Skeleton loader utility ── */
+  .fg-skel {
+    background: linear-gradient(90deg,
+      color-mix(in srgb, var(--bg2) 100%, transparent) 0%,
+      color-mix(in srgb, var(--card) 100%, transparent) 50%,
+      color-mix(in srgb, var(--bg2) 100%, transparent) 100%);
+    background-size: 200% 100%;
+    animation: fgSkelShimmer 1.6s linear infinite;
+    border-radius: 10px;
+    color: transparent !important;
+    user-select: none;
+    pointer-events: none;
+  }
+  @keyframes fgSkelShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ── Toasts subindo do bottom (padrão iOS) ── */
+  .toast-stack, #toastContainer {
+    bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 12px !important; right: 12px !important;
+    align-items: center !important;
+  }
+  .toast {
+    background: color-mix(in srgb, var(--card) 92%, transparent) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
+    backdrop-filter: blur(24px) saturate(200%);
+    border-radius: 16px !important;
+    box-shadow: 0 12px 30px rgba(0,0,0,.3), 0 2px 8px rgba(0,0,0,.15) !important;
+  }
+
+  /* ── FAB mais bonito, com sombra vibrante ── */
+  .fab, .pj-fab {
+    background: linear-gradient(135deg, #3b82f6, #1e40af) !important;
+    box-shadow: 0 8px 24px rgba(59,130,246,.45), 0 2px 6px rgba(0,0,0,.15) !important;
+    border-radius: 20px !important;
+    width: 56px !important; height: 56px !important;
+  }
+  .fab:active, .pj-fab:active { transform: scale(.92) !important; }
+
+  /* ── Inputs mais confortáveis + rounded ── */
+  input[type="text"], input[type="email"], input[type="password"],
+  input[type="search"], input[type="tel"], input[type="number"],
+  textarea, select {
+    min-height: 44px !important;
+    font-size: 16px !important; /* impede zoom-in iOS */
+    border-radius: 12px !important;
+  }
+
+  /* ── Reduce motion respeita user preference ── */
+}
+@media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+  .fg-more__pn, .fg-more__bd, .pj-task-modal, .toast { animation: none !important; }
+  .fg-skel { animation: none !important; }
+}

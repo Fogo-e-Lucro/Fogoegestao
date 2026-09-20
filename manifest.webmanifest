@@ -5,10 +5,12 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "any",
   "background_color": "#0f1117",
   "theme_color": "#0f1117",
   "lang": "pt-BR",
+  "prefer_related_applications": false,
   "categories": ["productivity", "business"],
   "icons": [
     {
