@@ -34049,16 +34049,22 @@ const POP = (() => {
     });
   };
 
-  // ── Criar contrato — wizard 2 passos: upload → destinatário ──
+  // ── Criar contrato — wizard 3 passos: upload → destinatário → sua assinatura ──
   let _ctrPdfData = null; // { name, size, base64 }
+  let _ctrIntSelfieData = null; // selfie do sócio interno
   window.ctrOpenCreate = function(){
     _ctrPdfData = null;
+    _ctrIntSelfieData = null;
+    const u = cur();
+    const meName = (u?.displayName || u?.email || '').split('@')[0];
     const html = `<div class="ctr-modal-panel ctr-wizard">
       <button type="button" class="ctr-modal-close" onclick="ctrCloseModal()" aria-label="Fechar">&times;</button>
       <div class="ctr-wizard-steps">
         <span class="ctr-wizard-dot ctr-wizard-dot--on" data-step="1"><b>1</b> Documento</span>
         <span class="ctr-wizard-sep"></span>
-        <span class="ctr-wizard-dot" data-step="2"><b>2</b> Destinatário</span>
+        <span class="ctr-wizard-dot" data-step="2"><b>2</b> Cliente</span>
+        <span class="ctr-wizard-sep"></span>
+        <span class="ctr-wizard-dot" data-step="3"><b>3</b> Sua assinatura</span>
       </div>
       <div id="ctrWizardBody">
         <div id="ctrStep1">
@@ -34104,14 +34110,104 @@ const POP = (() => {
           </div>
           <div class="ctr-modal-actions">
             <button type="button" class="btn-ghost" onclick="ctrWizardStep(1)">← Voltar</button>
-            <button type="button" class="btn-primary" onclick="ctrSave()">Gerar link de assinatura</button>
+            <button type="button" class="btn-primary" onclick="ctrWizardStep(3)">Próximo →</button>
+          </div>
+        </div>
+        <div id="ctrStep3" hidden>
+          <h2>Sua assinatura como sócio(a)</h2>
+          <p class="ctr-modal-sub">Você assina primeiro. O link vai pro cliente com o contrato já contra-assinado por você.</p>
+          <label class="ctr-field"><span>Nome completo <em>*</em></span>
+            <input id="ctrfIntName" type="text" placeholder="Seu nome completo" value="${escHtml(u?.displayName || meName || '')}" autocomplete="name">
+          </label>
+          <label class="ctr-field"><span>CPF <em>(opcional, reforça a prova)</em></span>
+            <input id="ctrfIntCpf" type="text" placeholder="000.000.000-00" inputmode="numeric" maxlength="14">
+          </label>
+          <div class="ctr-field"><span>Selfie de confirmação <em>*</em></span>
+            <div class="csign-cam" id="ctrIntCamWrap" style="margin-top:8px;">
+              <video id="ctrIntCam" autoplay playsinline muted></video>
+              <canvas id="ctrIntCanvas" hidden></canvas>
+              <img id="ctrIntSelfiePreview" alt="Selfie" hidden>
+              <div class="csign-cam-empty" id="ctrIntCamPlaceholder">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span>Toque pra ligar a câmera</span>
+              </div>
+            </div>
+            <div class="csign-cam-actions" style="margin-top:10px;">
+              <button type="button" class="csign-btn csign-btn--ghost" id="ctrIntCamStartBtn" onclick="ctrIntCamStart()">📷 Ligar câmera</button>
+              <button type="button" class="csign-btn csign-btn--primary" id="ctrIntCamShootBtn" onclick="ctrIntCamCapture()" hidden>Capturar</button>
+              <button type="button" class="csign-btn csign-btn--ghost" id="ctrIntCamRedoBtn" onclick="ctrIntCamStart()" hidden>Tirar outra</button>
+            </div>
+          </div>
+          <div class="ctr-modal-actions">
+            <button type="button" class="btn-ghost" onclick="ctrWizardStep(2)">← Voltar</button>
+            <button type="button" class="btn-primary" id="ctrSaveBtn" onclick="ctrSave()" disabled>Gerar link de assinatura</button>
           </div>
         </div>
       </div>
     </div>`;
     _openCtrModal(html);
     _wireCtrDrop();
+    _wireCtrIntForm();
   };
+  function _wireCtrIntForm(){
+    const name = document.getElementById('ctrfIntName');
+    const cpf = document.getElementById('ctrfIntCpf');
+    if (cpf) cpf.addEventListener('input', () => {
+      let v = cpf.value.replace(/\D/g,'').slice(0,11);
+      v = v.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1-$2');
+      cpf.value = v;
+      cpf.style.borderColor = '';
+      const clean = v.replace(/\D/g,'');
+      if (clean.length === 11 && !_validaCpf(clean)) cpf.style.borderColor = '#dc2626';
+      _updateIntSaveBtn();
+    });
+    if (name) name.addEventListener('input', _updateIntSaveBtn);
+  }
+  function _updateIntSaveBtn(){
+    const btn = document.getElementById('ctrSaveBtn');
+    if (!btn) return;
+    const name = document.getElementById('ctrfIntName')?.value?.trim() || '';
+    const cpfClean = (document.getElementById('ctrfIntCpf')?.value || '').replace(/\D/g,'');
+    const cpfOk = !cpfClean || _validaCpf(cpfClean);
+    btn.disabled = !(name.length >= 3 && !!_ctrIntSelfieData && cpfOk);
+  }
+  window.ctrIntCamStart = async function(){
+    try {
+      if (_ctrIntStream) _ctrIntStream.getTracks().forEach(t => t.stop());
+      _ctrIntStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio: false });
+      const v = document.getElementById('ctrIntCam');
+      v.srcObject = _ctrIntStream; v.hidden = false; v.style.display = '';
+      document.getElementById('ctrIntCamPlaceholder').hidden = true;
+      document.getElementById('ctrIntSelfiePreview').hidden = true;
+      document.getElementById('ctrIntCamStartBtn').hidden = true;
+      document.getElementById('ctrIntCamShootBtn').hidden = false;
+      document.getElementById('ctrIntCamRedoBtn').hidden = true;
+      _ctrIntSelfieData = null;
+      _updateIntSaveBtn();
+    } catch (e) {
+      alert('Não conseguimos acessar a câmera.\n\nPermita o acesso à câmera e tente novamente.\n\nErro: ' + e.message);
+    }
+  };
+  window.ctrIntCamCapture = function(){
+    const v = document.getElementById('ctrIntCam');
+    const c = document.getElementById('ctrIntCanvas');
+    c.width = v.videoWidth || 640; c.height = v.videoHeight || 480;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(v, 0, 0, c.width, c.height);
+    const now = new Date().toLocaleString('pt-BR');
+    ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0, c.height - 34, c.width, 34);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 16px system-ui';
+    ctx.fillText('Fogo & Gestão · ' + now, 8, c.height - 12);
+    _ctrIntSelfieData = c.toDataURL('image/jpeg', 0.7);
+    if (_ctrIntStream) _ctrIntStream.getTracks().forEach(t => t.stop());
+    v.hidden = true; v.style.display = 'none';
+    const img = document.getElementById('ctrIntSelfiePreview');
+    img.src = _ctrIntSelfieData; img.hidden = false;
+    document.getElementById('ctrIntCamShootBtn').hidden = true;
+    document.getElementById('ctrIntCamRedoBtn').hidden = false;
+    _updateIntSaveBtn();
+  };
+  let _ctrIntStream = null;
   function _wireCtrDrop(){
     const drop = document.getElementById('ctrDrop');
     const input = document.getElementById('ctrPdfInput');
@@ -34155,11 +34251,21 @@ const POP = (() => {
     document.getElementById('ctrPdfInput').value = '';
   };
   window.ctrWizardStep = function(n){
+    // Se saindo do step 3, garante câmera desligada
+    if (n !== 3 && _ctrIntStream) { try { _ctrIntStream.getTracks().forEach(t => t.stop()); } catch(_){} }
+    // Validação: pra chegar no 3, tem que ter cliente+título preenchidos
+    if (n === 3) {
+      const t = document.getElementById('ctrfTitle')?.value?.trim();
+      const cn = document.getElementById('ctrfClientName')?.value?.trim();
+      if (!t || !cn) { showToast('warn','⚠️','Preenche título e nome do cliente'); return; }
+    }
     document.getElementById('ctrStep1').hidden = n !== 1;
     document.getElementById('ctrStep2').hidden = n !== 2;
+    const s3 = document.getElementById('ctrStep3'); if (s3) s3.hidden = n !== 3;
     document.querySelectorAll('.ctr-wizard-dot').forEach(d => {
       d.classList.toggle('ctr-wizard-dot--on', Number(d.dataset.step) <= n);
     });
+    if (n === 3) _updateIntSaveBtn();
   };
   window.ctrSave = async function(){
     const u = cur(); if (!u) { showToast('warn','⚠️','Faça login'); return; }
@@ -34168,25 +34274,49 @@ const POP = (() => {
     const clientName = document.getElementById('ctrfClientName').value.trim();
     const clientEmail = document.getElementById('ctrfClientEmail').value.trim();
     const clientWa = document.getElementById('ctrfClientWa').value.trim().replace(/\D/g,'');
-    if (!title || !clientName) { showToast('warn','⚠️','Preenche título e nome'); return; }
-    const pdfDataUrl = 'data:application/pdf;base64,' + _ctrPdfData.base64;
-    const bodyHash = await sha256(_ctrPdfData.base64);
-    const doc = {
-      title, clientName, clientEmail, clientWa,
-      pdfDataUrl, pdfName: _ctrPdfData.name, pdfSize: _ctrPdfData.size,
-      bodyHash,
-      status: 'pending',
-      createdBy: u.email || u.uid,
-      createdByName: u.displayName || '',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      expiresAt: Date.now() + 30 * 86400000,
-    };
-    const ref = await _db.collection('contratos').add(doc);
-    ctrCloseModal();
-    const link = location.origin + location.pathname + '#assinar?id=' + ref.id;
-    try { await navigator.clipboard.writeText(link); showToast('success','✓','Contrato criado. Link copiado.'); }
-    catch(_) { showToast('success','✓','Contrato criado.'); }
-    setTimeout(() => ctrOpenDetail(ref.id), 300);
+    const intName = document.getElementById('ctrfIntName').value.trim();
+    const intCpf = document.getElementById('ctrfIntCpf').value.trim();
+    const intCpfClean = intCpf.replace(/\D/g,'');
+    if (!title || !clientName) { showToast('warn','⚠️','Preenche título e nome do cliente'); return; }
+    if (!intName) { showToast('warn','⚠️','Preenche seu nome'); return; }
+    if (!_ctrIntSelfieData) { showToast('warn','⚠️','Tire sua selfie'); return; }
+    if (intCpfClean && !_validaCpf(intCpfClean)) { showToast('warn','⚠️','CPF inválido'); return; }
+    const btn = document.getElementById('ctrSaveBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Assinando…'; }
+    try {
+      const pdfDataUrl = 'data:application/pdf;base64,' + _ctrPdfData.base64;
+      const bodyHash = await sha256(_ctrPdfData.base64);
+      const ip = await getIp();
+      const doc = {
+        title, clientName, clientEmail, clientWa,
+        pdfDataUrl, pdfName: _ctrPdfData.name, pdfSize: _ctrPdfData.size,
+        bodyHash,
+        status: 'pending', // aguardando o cliente
+        createdBy: u.email || u.uid,
+        createdByName: u.displayName || '',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        expiresAt: Date.now() + 30 * 86400000,
+        internalSig: {
+          name: intName,
+          cpf: intCpf || '',
+          selfieDataUrl: _ctrIntSelfieData,
+          uid: u.uid,
+          email: u.email || '',
+          ip: ip || '',
+          userAgent: navigator.userAgent,
+          signedAt: firebase.firestore.Timestamp.now(),
+        },
+      };
+      const ref = await _db.collection('contratos').add(doc);
+      ctrCloseModal();
+      const link = location.origin + location.pathname + '#assinar?id=' + ref.id;
+      try { await navigator.clipboard.writeText(link); showToast('success','✓','Contrato criado. Link copiado.'); }
+      catch(_) { showToast('success','✓','Contrato criado.'); }
+      setTimeout(() => ctrOpenDetail(ref.id), 300);
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Gerar link de assinatura'; }
+      alert('Erro ao criar: ' + e.message);
+    }
   };
 
   // ── Detalhe / status ──
@@ -34234,14 +34364,28 @@ const POP = (() => {
           </div>
         </div>
       ` : ''}
+      ${c.internalSig ? `
+        <div class="ctr-signed-panel ctr-signed-panel--internal">
+          <div class="ctr-signed-selfie">
+            ${c.internalSig.selfieDataUrl ? `<img src="${c.internalSig.selfieDataUrl}" alt="Selfie do sócio">` : ''}
+            <span class="ctr-signed-badge">✓ Você</span>
+          </div>
+          <div class="ctr-signed-info">
+            <div class="ctr-signed-line"><b>Contratante</b><span>${escHtml(c.internalSig.name||'')}</span></div>
+            <div class="ctr-signed-line"><b>Data/hora</b><span>${fmtDate(c.internalSig.signedAt)}</span></div>
+            <div class="ctr-signed-line"><b>IP</b><span>${escHtml(c.internalSig.ip || '—')}</span></div>
+            ${c.internalSig.cpf ? `<div class="ctr-signed-line"><b>CPF</b><span>${escHtml(c.internalSig.cpf)}</span></div>` : ''}
+          </div>
+        </div>
+      ` : ''}
       ${c.status === 'signed' ? `
         <div class="ctr-signed-panel">
           <div class="ctr-signed-selfie">
             ${c.selfieDataUrl ? `<img src="${c.selfieDataUrl}" alt="Selfie do assinante">` : ''}
-            <span class="ctr-signed-badge">✓ Verificado</span>
+            <span class="ctr-signed-badge">✓ Cliente</span>
           </div>
           <div class="ctr-signed-info">
-            <div class="ctr-signed-line"><b>Assinado por</b><span>${escHtml(c.signatureText || c.clientName)}</span></div>
+            <div class="ctr-signed-line"><b>Contratado</b><span>${escHtml(c.signatureText || c.clientName || '')}</span></div>
             <div class="ctr-signed-line"><b>Data/hora</b><span>${fmtDate(c.signedAt)}</span></div>
             <div class="ctr-signed-line"><b>IP</b><span>${escHtml(c.signIp || '—')}</span></div>
             <div class="ctr-signed-line"><b>Hash</b><code>${escHtml((c.bodyHash||'').slice(0,32))}…</code></div>
@@ -34319,6 +34463,18 @@ const POP = (() => {
             <h1>${escHtml(c.title)}</h1>
             <p>Olá <b>${escHtml((c.clientName||'').split(' ')[0] || 'cliente')}</b>, revise o contrato e assine em 3 passos rápidos.</p>
           </div>
+
+          ${c.internalSig ? `
+          <div class="csign-cosigned">
+            <div class="csign-cosigned-avatar">
+              ${c.internalSig.selfieDataUrl ? `<img src="${c.internalSig.selfieDataUrl}" alt="">` : '👤'}
+            </div>
+            <div class="csign-cosigned-info">
+              <b>Já assinado por ${escHtml(c.internalSig.name || c.createdByName || c.createdBy || '')}</b>
+              <span>Só falta você. Assinatura registrada em ${fmtDate(c.internalSig.signedAt)}.</span>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>` : ''}
 
           <div class="csign-progress" id="csignProgress">
             <div class="csign-progress-fill" style="width:33%"></div>
@@ -34647,34 +34803,56 @@ const POP = (() => {
     }
     const font = await pdf.embedFont(StandardFonts.Helvetica);
     const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
-    // Anexa página de comprovante ao final
+    // Anexa página(s) de comprovante ao final
+    async function drawParty(page, title, party, startY) {
+      let y = startY;
+      page.drawText(title, { x: 40, y, size: 12, font: bold });
+      y -= 20;
+      party.forEach(([k, v]) => {
+        page.drawText(k, { x: 40, y, size: 10, font: bold });
+        String(v || '—').match(/.{1,60}(\s|$)/g)?.forEach(seg => { page.drawText(seg, { x: 160, y, size: 10, font }); y -= 14; });
+      });
+      return y;
+    }
+    async function drawSelfie(page, dataUrl, y) {
+      if (!dataUrl) return y;
+      try {
+        const bytes = Uint8Array.from(atob(dataUrl.split(',')[1]), ch => ch.charCodeAt(0));
+        const img = await pdf.embedJpg(bytes);
+        const dim = img.scale(0.22);
+        page.drawImage(img, { x: 40, y: y - dim.height, width: dim.width, height: dim.height });
+        return y - dim.height - 12;
+      } catch(e) { console.warn('selfie fail', e); return y; }
+    }
     const sig = pdf.addPage([595, 842]);
-    sig.drawText('COMPROVANTE DE ASSINATURA ELETRÔNICA', { x: 40, y: 780, size: 14, font: bold });
-    sig.drawText('Base legal: Lei 14.063/2020 e MP 2.200-2/2001', { x: 40, y: 760, size: 9, font, color: rgb(.3,.3,.3) });
-    let sy = 720;
-    const lines = [
-      ['Assinante:', c.signatureText || c.clientName],
+    sig.drawText('COMPROVANTE DE ASSINATURA ELETRÔNICA', { x: 40, y: 800, size: 14, font: bold });
+    sig.drawText('Base legal: Lei 14.063/2020 e MP 2.200-2/2001', { x: 40, y: 782, size: 9, font, color: rgb(.3,.3,.3) });
+    let sy = 750;
+    // 1) Contratante (interno)
+    if (c.internalSig) {
+      sy = await drawParty(sig, 'CONTRATANTE', [
+        ['Nome:', c.internalSig.name],
+        ['CPF:', c.internalSig.cpf || '—'],
+        ['E-mail:', c.internalSig.email || '—'],
+        ['Data/hora:', fmtDate(c.internalSig.signedAt)],
+        ['Endereço IP:', c.internalSig.ip || '—'],
+      ], sy);
+      sy = await drawSelfie(sig, c.internalSig.selfieDataUrl, sy - 4);
+      sy -= 20;
+    }
+    // 2) Contratado (cliente que assinou pelo link)
+    sy = await drawParty(sig, 'CONTRATADO', [
+      ['Nome:', c.signatureText || c.clientName],
       ['CPF:', c.signCpf || '—'],
       ['E-mail:', c.clientEmail || '—'],
       ['Data/hora:', fmtDate(c.signedAt)],
       ['Endereço IP:', c.signIp || '—'],
       ['User-Agent:', (c.signUserAgent || '').slice(0,80)],
-      ['Hash SHA-256 do texto:', c.bodyHash || ''],
-    ];
-    lines.forEach(([k, v]) => {
-      sig.drawText(k, { x: 40, y: sy, size: 10, font: bold });
-      String(v).match(/.{1,60}(\s|$)/g)?.forEach(seg => { sig.drawText(seg, { x: 160, y: sy, size: 10, font }); sy -= 14; });
-    });
-    // Selfie
-    if (c.selfieDataUrl) {
-      try {
-        const bytes = Uint8Array.from(atob(c.selfieDataUrl.split(',')[1]), ch => ch.charCodeAt(0));
-        const img = await pdf.embedJpg(bytes);
-        const dim = img.scale(0.3);
-        sig.drawText('Selfie do assinante:', { x: 40, y: sy - 20, size: 10, font: bold });
-        sig.drawImage(img, { x: 40, y: sy - 20 - dim.height - 8, width: dim.width, height: dim.height });
-      } catch(e) { console.warn('selfie fail', e); }
-    }
+    ], sy);
+    sy = await drawSelfie(sig, c.selfieDataUrl, sy - 4);
+    sy -= 12;
+    sig.drawText('Hash SHA-256 do documento:', { x: 40, y: sy, size: 10, font: bold }); sy -= 14;
+    sig.drawText((c.bodyHash || '').slice(0, 64), { x: 40, y: sy, size: 9, font });
     const pdfBytes = await pdf.save();
     const blob = new Blob([pdfBytes], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
@@ -34707,7 +34885,8 @@ const POP = (() => {
   // ── Cleanup da câmera: se sair da página ou trocar de aba, corta stream ──
   function _ctrCamStop(){
     try { if (_ctrStream) _ctrStream.getTracks().forEach(t => t.stop()); } catch(_) {}
-    _ctrStream = null;
+    try { if (_ctrIntStream) _ctrIntStream.getTracks().forEach(t => t.stop()); } catch(_) {}
+    _ctrStream = null; _ctrIntStream = null;
   }
   window.addEventListener('pagehide', _ctrCamStop);
   window.addEventListener('beforeunload', _ctrCamStop);
