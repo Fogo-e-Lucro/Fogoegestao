@@ -33916,6 +33916,20 @@ const POP = (() => {
     });
     return _pdfLibReady;
   }
+  function _validaCpf(cpf){
+    // Módulo 11 — retorna true/false pra CPF de 11 dígitos
+    if (!/^\d{11}$/.test(cpf) || /^(\d)\1{10}$/.test(cpf)) return false;
+    let s = 0;
+    for (let i = 0; i < 9; i++) s += Number(cpf[i]) * (10 - i);
+    let d1 = (s * 10) % 11; if (d1 === 10) d1 = 0;
+    if (d1 !== Number(cpf[9])) return false;
+    s = 0;
+    for (let i = 0; i < 10; i++) s += Number(cpf[i]) * (11 - i);
+    let d2 = (s * 10) % 11; if (d2 === 10) d2 = 0;
+    return d2 === Number(cpf[10]);
+  }
+  window._validaCpf = _validaCpf;
+
   async function sha256(str){
     const buf = new TextEncoder().encode(str);
     const h = await crypto.subtle.digest('SHA-256', buf);
@@ -33933,54 +33947,95 @@ const POP = (() => {
 
   // ── Lista de contratos do user logado ──
   let _ctrUnsub = null;
+  let _ctrRows = [];
+  let _ctrFilter = 'all'; // all | pending | signed
+  let _ctrQuery = '';
+  function _ctrRender(){
+    const el = document.getElementById('ctrList');
+    if (!el) return;
+    const rows = _ctrRows;
+    const total = rows.length;
+    const pending = rows.filter(r => r.status === 'pending').length;
+    const signed = rows.filter(r => r.status === 'signed').length;
+    if (!total) {
+      el.innerHTML = `<div class="ctr-empty">
+        <div class="ctr-empty-illust">
+          <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>
+        </div>
+        <h3>Nenhum contrato por aqui</h3>
+        <p>Sobe o PDF, escolhe quem vai assinar e manda o link. Selfie e IP ficam registrados pra ter validade jurídica.</p>
+        <button class="btn-primary" onclick="ctrOpenCreate()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Criar primeiro contrato
+        </button>
+      </div>`;
+      return;
+    }
+    const q = _ctrQuery.trim().toLowerCase();
+    const filtered = rows.filter(r => {
+      if (_ctrFilter === 'pending' && r.status !== 'pending') return false;
+      if (_ctrFilter === 'signed' && r.status !== 'signed') return false;
+      if (q) {
+        const hay = ((r.title||'') + ' ' + (r.clientName||'') + ' ' + (r.clientEmail||'')).toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+    const kpiActive = f => _ctrFilter === f ? ' ctr-kpi--on' : '';
+    const kpisHtml = `
+      <div class="ctr-toolbar">
+        <div class="ctr-kpis">
+          <button type="button" class="ctr-kpi${kpiActive('all')}" onclick="ctrFilterBy('all')"><b>${total}</b><span>Total</span></button>
+          <button type="button" class="ctr-kpi${kpiActive('pending')}" onclick="ctrFilterBy('pending')"><b>${pending}</b><span>Aguardando</span></button>
+          <button type="button" class="ctr-kpi${kpiActive('signed')}" onclick="ctrFilterBy('signed')"><b>${signed}</b><span>Assinados</span></button>
+        </div>
+        <div class="ctr-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="ctrSearch" type="search" placeholder="Buscar por título ou cliente…" value="${escHtml(_ctrQuery)}" oninput="ctrSearchInput(this.value)">
+        </div>
+      </div>`;
+    const list = filtered.length ? '<div class="ctr-grid">' + filtered.map(r => `
+      <div class="ctr-card ctr-card--${r.status||'pending'}" onclick="ctrOpenDetail('${r.id}')">
+        <div class="ctr-card-thumb">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="34" height="34"><path d="M18 3H8a2 2 0 0 0-2 2v22a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V11z"/><polyline points="18 3 18 11 26 11"/><line x1="11" y1="17" x2="21" y2="17"/><line x1="11" y1="21" x2="21" y2="21"/></svg>
+          <span class="ctr-card-badge ctr-card-badge--${r.status||'pending'}">
+            ${r.status==='signed'?'Assinado':r.status==='expired'?'Expirado':'Aguardando'}
+          </span>
+        </div>
+        <div class="ctr-card-body">
+          <div class="ctr-card-title">${escHtml(r.title||'Sem título')}</div>
+          <div class="ctr-card-client">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            ${escHtml(r.clientName||r.clientEmail||'—')}
+          </div>
+          <div class="ctr-card-date">${fmtDate(r.createdAt)}</div>
+        </div>
+      </div>
+    `).join('') + '</div>' : `<div class="ctr-empty ctr-empty--slim"><h3>Nada encontrado</h3><p>Ajuste a busca ou o filtro pra ver os contratos.</p></div>`;
+    // Preserva foco do input de busca durante re-render
+    const focused = document.activeElement && document.activeElement.id === 'ctrSearch';
+    const selStart = focused ? document.activeElement.selectionStart : null;
+    el.innerHTML = kpisHtml + list;
+    if (focused) {
+      const s = document.getElementById('ctrSearch');
+      if (s) { s.focus(); try { s.setSelectionRange(selStart, selStart); } catch(_){} }
+    }
+  }
+  window.ctrFilterBy = function(f){ _ctrFilter = f; _ctrRender(); };
+  let _ctrSearchDeb = null;
+  window.ctrSearchInput = function(v){
+    _ctrQuery = v || '';
+    clearTimeout(_ctrSearchDeb);
+    _ctrSearchDeb = setTimeout(_ctrRender, 120);
+  };
   window.ctrBuildList = function(){
     const el = document.getElementById('ctrList');
     if (!el || !_db) return;
     el.innerHTML = '<div style="padding:24px;color:var(--text3);text-align:center;">Carregando…</div>';
     try { _ctrUnsub && _ctrUnsub(); } catch(_){}
     _ctrUnsub = _db.collection('contratos').orderBy('createdAt','desc').limit(100).onSnapshot(snap => {
-      const rows = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-      const total = rows.length;
-      const pending = rows.filter(r => r.status === 'pending').length;
-      const signed = rows.filter(r => r.status === 'signed').length;
-      const kpisHtml = total ? `
-        <div class="ctr-kpis">
-          <div class="ctr-kpi"><b>${total}</b><span>Total</span></div>
-          <div class="ctr-kpi"><b>${pending}</b><span>Aguardando</span></div>
-          <div class="ctr-kpi"><b>${signed}</b><span>Assinados</span></div>
-        </div>` : '';
-      if (!rows.length) {
-        el.innerHTML = `<div class="ctr-empty">
-          <div class="ctr-empty-illust">
-            <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>
-          </div>
-          <h3>Nenhum contrato por aqui</h3>
-          <p>Sobe o PDF, escolhe quem vai assinar e manda o link. Selfie e IP ficam registrados pra ter validade jurídica.</p>
-          <button class="btn-primary" onclick="ctrOpenCreate()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-            Criar primeiro contrato
-          </button>
-        </div>`;
-        return;
-      }
-      el.innerHTML = kpisHtml + '<div class="ctr-grid">' + rows.map(r => `
-        <div class="ctr-card ctr-card--${r.status||'pending'}" onclick="ctrOpenDetail('${r.id}')">
-          <div class="ctr-card-thumb">
-            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="34" height="34"><path d="M18 3H8a2 2 0 0 0-2 2v22a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V11z"/><polyline points="18 3 18 11 26 11"/><line x1="11" y1="17" x2="21" y2="17"/><line x1="11" y1="21" x2="21" y2="21"/></svg>
-            <span class="ctr-card-badge ctr-card-badge--${r.status||'pending'}">
-              ${r.status==='signed'?'Assinado':r.status==='expired'?'Expirado':'Aguardando'}
-            </span>
-          </div>
-          <div class="ctr-card-body">
-            <div class="ctr-card-title">${escHtml(r.title||'Sem título')}</div>
-            <div class="ctr-card-client">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              ${escHtml(r.clientName||r.clientEmail||'—')}
-            </div>
-            <div class="ctr-card-date">${fmtDate(r.createdAt)}</div>
-          </div>
-        </div>
-      `).join('') + '</div>';
+      _ctrRows = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      _ctrRender();
     }, err => {
       el.innerHTML = `<div style="padding:24px;color:var(--danger);text-align:center;">Erro: ${err.message}</div>`;
     });
@@ -34214,6 +34269,12 @@ const POP = (() => {
       const snap = await _db.collection('contratos').doc(id).get();
       if (!snap.exists) { container.innerHTML = '<div style="padding:40px;text-align:center;color:#c00">Contrato não encontrado ou link expirado.</div>'; return; }
       const c = { id, ...snap.data() };
+      // Log da visualização (view count + first view)
+      if (c.status === 'pending') {
+        const patch = { viewCount: firebase.firestore.FieldValue.increment(1), lastViewedAt: firebase.firestore.FieldValue.serverTimestamp() };
+        if (!c.firstViewedAt) patch.firstViewedAt = firebase.firestore.FieldValue.serverTimestamp();
+        _db.collection('contratos').doc(id).update(patch).catch(() => {});
+      }
       if (c.status === 'signed') { container.innerHTML = '<div style="padding:40px;text-align:center;"><h2>✓ Contrato já assinado</h2><p>Este contrato foi assinado em ' + fmtDate(c.signedAt) + '.</p></div>'; return; }
       if (c.expiresAt && Date.now() > c.expiresAt) {
         await _db.collection('contratos').doc(id).update({ status: 'expired' });
@@ -34366,13 +34427,18 @@ const POP = (() => {
         if (sumNameEl) sumNameEl.textContent = nameEl.value;
         csignUpdateNav();
       });
-      // Máscara de CPF
+      // Máscara + validação de CPF (dígito verificador)
       const cpfEl = document.getElementById('ctrSignCpf');
-      if (cpfEl) cpfEl.addEventListener('input', () => {
-        let v = cpfEl.value.replace(/\D/g,'').slice(0,11);
-        v = v.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1-$2');
-        cpfEl.value = v;
-      });
+      if (cpfEl) {
+        cpfEl.addEventListener('input', () => {
+          let v = cpfEl.value.replace(/\D/g,'').slice(0,11);
+          v = v.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1-$2');
+          cpfEl.value = v;
+          cpfEl.style.borderColor = '';
+          const clean = cpfEl.value.replace(/\D/g,'');
+          if (clean.length === 11 && !_validaCpf(clean)) cpfEl.style.borderColor = '#dc2626';
+        });
+      }
       document.getElementById('csignReadOk').addEventListener('change', csignUpdateNav);
       document.getElementById('ctrSignAgree').addEventListener('change', () => { ctrUpdateSignBtn(); csignUpdateNav(); });
       _csignStep = 1;
@@ -34475,10 +34541,16 @@ const POP = (() => {
   window.ctrSignSubmit = async function(id){
     const btn = document.getElementById('ctrSignBtn');
     if (btn.disabled) return;
+    const signatureText = document.getElementById('ctrSignName').value.trim();
+    const cpf = document.getElementById('ctrSignCpf').value.trim();
+    // Se cliente preencheu CPF, precisa ser válido (senão desregistra a prova)
+    const cpfClean = cpf.replace(/\D/g,'');
+    if (cpfClean && !_validaCpf(cpfClean)) {
+      alert('CPF inválido. Confira os dígitos ou deixe em branco se não quiser informar.');
+      return;
+    }
     btn.disabled = true; btn.textContent = 'Assinando…';
     try {
-      const signatureText = document.getElementById('ctrSignName').value.trim();
-      const cpf = document.getElementById('ctrSignCpf').value.trim();
       const ip = await getIp();
       const patch = {
         status: 'signed',

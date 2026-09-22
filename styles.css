@@ -16879,24 +16879,57 @@ body.ctr-sign-mode .tab-panel { display: none !important; }
    Sobrescreve v1 seletivamente.
    ═══════════════════════════════════════════════════════════ */
 
-/* KPIs no topo */
+/* Toolbar: KPIs + busca */
+.ctr-toolbar {
+  display: grid; grid-template-columns: 1fr minmax(220px, 320px);
+  gap: 12px; align-items: stretch; margin-bottom: 24px;
+}
+@media (max-width: 720px) {
+  .ctr-toolbar { grid-template-columns: 1fr; }
+}
 .ctr-kpis {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-  margin-bottom: 24px;
 }
 .ctr-kpi {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 14px; padding: 16px 18px;
+  border-radius: 14px; padding: 14px 16px;
   display: flex; flex-direction: column; gap: 2px;
+  cursor: pointer; text-align: left; font: inherit; color: inherit;
+  transition: border-color .15s, background .15s, transform .05s;
+}
+.ctr-kpi:hover { border-color: color-mix(in srgb, var(--text) 22%, var(--border)); }
+.ctr-kpi:active { transform: translateY(1px); }
+.ctr-kpi--on {
+  border-color: #3b82f6;
+  background: color-mix(in srgb, #3b82f6 8%, var(--card));
+  box-shadow: 0 0 0 3px color-mix(in srgb, #3b82f6 14%, transparent);
 }
 .ctr-kpi b {
-  font-size: 26px; font-weight: 700; color: var(--text);
+  font-size: 24px; font-weight: 700; color: var(--text);
   letter-spacing: -.02em; line-height: 1.1;
 }
 .ctr-kpi span {
-  font-size: 12px; color: var(--text3); font-weight: 500;
+  font-size: 11px; color: var(--text3); font-weight: 500;
   text-transform: uppercase; letter-spacing: .5px;
 }
+.ctr-search {
+  position: relative; display: flex; align-items: center;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 0 14px;
+}
+.ctr-search svg { color: var(--text3); flex-shrink: 0; }
+.ctr-search input {
+  flex: 1; border: 0; background: transparent; outline: none;
+  font: inherit; color: var(--text); padding: 12px 10px;
+  min-width: 0;
+}
+.ctr-search input::placeholder { color: var(--text3); }
+.ctr-search:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #3b82f6 14%, transparent);
+}
+.ctr-empty--slim { padding: 40px 24px; }
+.ctr-empty--slim .ctr-empty-illust { display: none; }
 
 /* Empty state polido */
 .ctr-empty {
