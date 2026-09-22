@@ -322,6 +322,10 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/></svg>
         <span>Base de Clientes</span>
       </button>
+      <button class="app-menu-tile" data-tab="contratos" onclick="appMenuGo('contratos')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>
+        <span>Contratos</span>
+      </button>
     </div>
 
     <div class="app-menu-section-label">Preferências</div>
@@ -2117,6 +2121,23 @@ ufw allow 3000/tcp</pre>
   </div><!-- /tab-lives -->
 
   <!-- ═══ ABA POPs (Playbook + POPs por cadeira/cargo) ═══ -->
+  <!-- ═══ ABA CONTRATOS (assinatura com selfie) ═══ -->
+  <div class="tab-panel" id="tab-contratos">
+    <div class="ctr-wrap">
+      <header class="ctr-header">
+        <div>
+          <h1 class="ctr-title">📄 Contratos</h1>
+          <p class="ctr-sub">Assinatura eletrônica com validade jurídica (Lei 14.063/2020) — selfie tirada na hora + trilha de auditoria.</p>
+        </div>
+        <button type="button" class="btn-primary" onclick="ctrOpenCreate()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Novo contrato
+        </button>
+      </header>
+      <div id="ctrList" class="ctr-list"></div>
+    </div>
+  </div>
+
   <div class="tab-panel pop" id="tab-pop">
     <div class="pop-shell">
 
@@ -3662,7 +3683,7 @@ let _syncTimer = null;
    marcar nos checkboxes (abas principais + espaços de projetos).
    Persistência: localStorage 'pj_permissions' = { [email]: {tabs:[], spaces:[]} }
    Em produção, sincronizar via Firestore coleção 'pj_permissions'. */
-const ALL_TABS = ['base','entrada','visualizar','acesso','social','lives','gmb','metricas','projetos','pop'];
+const ALL_TABS = ['base','entrada','visualizar','acesso','social','lives','gmb','metricas','projetos','pop','contratos'];
 const TAB_LABELS = {
   base:'📚 Base de Dados',
   entrada:'✏️ Criar Post', visualizar:'📅 Calendário Social Media', acesso:'🔑 Acesso',
@@ -5645,7 +5666,7 @@ if (_DEV_BYPASS) {
     // Restaura a última aba usada (persistida em localStorage); fallback: Projetos
     setTimeout(() => {
       if (typeof switchTab === 'function') {
-        const _VALID_TABS = (typeof ALL_TABS !== 'undefined') ? ALL_TABS : ['base','entrada','visualizar','acesso','social','lives','gmb','metricas','projetos','pop'];
+        const _VALID_TABS = (typeof ALL_TABS !== 'undefined') ? ALL_TABS : ['base','entrada','visualizar','acesso','social','lives','gmb','metricas','projetos','pop','contratos'];
         let _saved = null;
         try { _saved = localStorage.getItem('fg_active_tab'); } catch(_) {}
         const _target = (_saved && _VALID_TABS.includes(_saved)) ? _saved : 'projetos';
@@ -5819,7 +5840,7 @@ _auth.onAuthStateChanged(async user => {
   // Restaura a última aba usada (persistida em localStorage); fallback: Gestão Central (Projetos)
   setTimeout(() => {
     if (typeof switchTab === 'function') {
-      const _VALID_TABS = (typeof ALL_TABS !== 'undefined') ? ALL_TABS : ['base','entrada','visualizar','acesso','social','lives','gmb','metricas','projetos','pop'];
+      const _VALID_TABS = (typeof ALL_TABS !== 'undefined') ? ALL_TABS : ['base','entrada','visualizar','acesso','social','lives','gmb','metricas','projetos','pop','contratos'];
       let _saved = null;
       try { _saved = localStorage.getItem('fg_active_tab'); } catch(_) {}
       const _target = (_saved && _VALID_TABS.includes(_saved) && (typeof userCanSeeTab !== 'function' || userCanSeeTab(_saved))) ? _saved : 'projetos';
@@ -33832,6 +33853,7 @@ const POP = (() => {
   const wrapped = function(tab, btn) {
     const r = orig.apply(this, arguments);
     if (tab === 'pop') setTimeout(() => POP.ensureInit(), 100);
+    if (tab === 'contratos') setTimeout(() => window.ctrBuildList?.(), 100);
     return r;
   };
   wrapped._popWrapped = true;
@@ -33879,6 +33901,423 @@ const POP = (() => {
 </div>
 
 <script>
+// ══════════════════════════════════════════════════════════════════
+// CONTRATOS — assinatura eletrônica c/ selfie (Lei 14.063/2020)
+// ══════════════════════════════════════════════════════════════════
+(function(){
+  const CDN_PDFLIB = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
+  let _pdfLibReady = null;
+  function loadPdfLib(){
+    if (_pdfLibReady) return _pdfLibReady;
+    _pdfLibReady = new Promise((ok, fail) => {
+      const s = document.createElement('script');
+      s.src = CDN_PDFLIB; s.onload = () => ok(window.PDFLib); s.onerror = fail;
+      document.head.appendChild(s);
+    });
+    return _pdfLibReady;
+  }
+  async function sha256(str){
+    const buf = new TextEncoder().encode(str);
+    const h = await crypto.subtle.digest('SHA-256', buf);
+    return [...new Uint8Array(h)].map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+  async function getIp(){
+    try { const r = await fetch('https://api.ipify.org?format=json'); const j = await r.json(); return j.ip; } catch(_){ return ''; }
+  }
+  const fmtDate = (ts) => {
+    if (!ts) return '—';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  };
+  const cur = () => firebase.auth?.()?.currentUser;
+
+  // ── Lista de contratos do user logado ──
+  let _ctrUnsub = null;
+  window.ctrBuildList = function(){
+    const el = document.getElementById('ctrList');
+    if (!el || !_db) return;
+    el.innerHTML = '<div style="padding:24px;color:var(--text3);text-align:center;">Carregando…</div>';
+    try { _ctrUnsub && _ctrUnsub(); } catch(_){}
+    _ctrUnsub = _db.collection('contratos').orderBy('createdAt','desc').limit(100).onSnapshot(snap => {
+      const rows = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      if (!rows.length) {
+        el.innerHTML = `<div class="ctr-empty">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <h3>Nenhum contrato ainda</h3>
+          <p>Cria o primeiro e manda o link pro cliente assinar.</p>
+        </div>`;
+        return;
+      }
+      el.innerHTML = rows.map(r => `
+        <div class="ctr-row" onclick="ctrOpenDetail('${r.id}')">
+          <div class="ctr-row-icon ctr-row-icon--${r.status||'pending'}">
+            ${r.status==='signed' ? '✓' : r.status==='expired' ? '⏱' : '⧗'}
+          </div>
+          <div class="ctr-row-body">
+            <div class="ctr-row-title">${escHtml(r.title||'Sem título')}</div>
+            <div class="ctr-row-sub">${escHtml(r.clientName||r.clientEmail||'—')} · ${fmtDate(r.createdAt)}</div>
+          </div>
+          <div class="ctr-row-status ctr-row-status--${r.status||'pending'}">
+            ${r.status==='signed' ? 'Assinado' : r.status==='expired' ? 'Expirado' : 'Aguardando'}
+          </div>
+        </div>
+      `).join('');
+    }, err => {
+      el.innerHTML = `<div style="padding:24px;color:var(--danger);text-align:center;">Erro: ${err.message}</div>`;
+    });
+  };
+
+  // ── Criar contrato ──
+  window.ctrOpenCreate = function(){
+    const html = `<div class="ctr-modal-panel">
+      <h2>Novo contrato</h2>
+      <label class="ctr-field"><span>Título</span><input id="ctrfTitle" type="text" placeholder="Ex: Prestação de serviços — Palhoça"></label>
+      <label class="ctr-field"><span>Nome do cliente</span><input id="ctrfClientName" type="text" placeholder="Ex: João da Silva"></label>
+      <label class="ctr-field"><span>E-mail do cliente</span><input id="ctrfClientEmail" type="email" placeholder="cliente@exemplo.com"></label>
+      <label class="ctr-field"><span>WhatsApp do cliente (opcional)</span><input id="ctrfClientWa" type="tel" placeholder="5511999999999"></label>
+      <label class="ctr-field"><span>Texto do contrato</span><textarea id="ctrfBody" rows="12" placeholder="Cola aqui o texto completo do contrato…"></textarea></label>
+      <div class="ctr-modal-actions">
+        <button type="button" class="btn-ghost" onclick="ctrCloseModal()">Cancelar</button>
+        <button type="button" class="btn-primary" onclick="ctrSave()">Gerar link de assinatura</button>
+      </div>
+    </div>`;
+    _openCtrModal(html);
+  };
+  window.ctrSave = async function(){
+    const u = cur(); if (!u) { showToast('warn','⚠️','Faça login'); return; }
+    const title = document.getElementById('ctrfTitle').value.trim();
+    const clientName = document.getElementById('ctrfClientName').value.trim();
+    const clientEmail = document.getElementById('ctrfClientEmail').value.trim();
+    const clientWa = document.getElementById('ctrfClientWa').value.trim().replace(/\D/g,'');
+    const body = document.getElementById('ctrfBody').value.trim();
+    if (!title || !body || !clientName) { showToast('warn','⚠️','Preenche título, nome e texto'); return; }
+    const bodyHash = await sha256(body);
+    const doc = {
+      title, clientName, clientEmail, clientWa,
+      body, bodyHash,
+      status: 'pending',
+      createdBy: u.email || u.uid,
+      createdByName: u.displayName || '',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      expiresAt: Date.now() + 30 * 86400000, // 30 dias
+    };
+    const ref = await _db.collection('contratos').add(doc);
+    ctrCloseModal();
+    const link = location.origin + location.pathname + '#assinar?id=' + ref.id;
+    showToast('success','✓','Contrato criado. Link copiado.');
+    try { await navigator.clipboard.writeText(link); } catch(_){}
+    setTimeout(() => ctrOpenDetail(ref.id), 300);
+  };
+
+  // ── Detalhe / status ──
+  window.ctrOpenDetail = async function(id){
+    const snap = await _db.collection('contratos').doc(id).get();
+    if (!snap.exists) { showToast('warn','⚠️','Contrato não encontrado'); return; }
+    const c = { id, ...snap.data() };
+    const link = location.origin + location.pathname + '#assinar?id=' + id;
+    const html = `<div class="ctr-modal-panel">
+      <h2>${escHtml(c.title)}</h2>
+      <div class="ctr-detail-meta">
+        <span class="ctr-badge ctr-badge--${c.status}">${c.status==='signed'?'Assinado':c.status==='expired'?'Expirado':'Aguardando'}</span>
+        <span>Cliente: <b>${escHtml(c.clientName)}</b></span>
+        ${c.clientEmail ? `<span>${escHtml(c.clientEmail)}</span>` : ''}
+        <span>Criado ${fmtDate(c.createdAt)}</span>
+        ${c.signedAt ? `<span>Assinado ${fmtDate(c.signedAt)}</span>` : ''}
+      </div>
+      ${c.status !== 'signed' ? `
+        <label class="ctr-field"><span>Link de assinatura (envia pro cliente)</span>
+          <input type="text" readonly value="${link}" onclick="this.select();document.execCommand('copy');" style="cursor:pointer">
+        </label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          <button type="button" class="btn-ghost" onclick="navigator.clipboard.writeText('${link}');showToast('success','✓','Link copiado')">Copiar link</button>
+          ${c.clientWa ? `<a class="btn-ghost" href="https://wa.me/${c.clientWa}?text=${encodeURIComponent('Segue o contrato pra assinatura: '+link)}" target="_blank">Mandar por WhatsApp</a>` : ''}
+          ${c.clientEmail ? `<a class="btn-ghost" href="mailto:${c.clientEmail}?subject=${encodeURIComponent('Contrato para assinatura')}&body=${encodeURIComponent('Segue o link do contrato: '+link)}">Mandar por e-mail</a>` : ''}
+        </div>
+      ` : ''}
+      ${c.status === 'signed' ? `
+        <div class="ctr-signed-panel">
+          <div class="ctr-signed-selfie">
+            ${c.selfieDataUrl ? `<img src="${c.selfieDataUrl}" alt="Selfie do assinante">` : ''}
+          </div>
+          <div class="ctr-signed-info">
+            <p><b>Assinado por:</b> ${escHtml(c.signatureText || c.clientName)}</p>
+            <p><b>Data/hora:</b> ${fmtDate(c.signedAt)}</p>
+            <p><b>IP:</b> ${escHtml(c.signIp || '—')}</p>
+            <p><b>Hash SHA-256:</b> <code style="font-size:11px;word-break:break-all;">${escHtml(c.bodyHash)}</code></p>
+            <button class="btn-primary" onclick="ctrDownloadPdf('${id}')">Baixar PDF assinado</button>
+          </div>
+        </div>
+      ` : ''}
+      <details style="margin-top:16px;">
+        <summary style="cursor:pointer;color:var(--text2);font-size:13px;">Ver texto do contrato</summary>
+        <pre class="ctr-body-view">${escHtml(c.body)}</pre>
+      </details>
+      <div class="ctr-modal-actions">
+        <button type="button" class="btn-ghost" onclick="ctrCloseModal()">Fechar</button>
+        ${c.status !== 'signed' ? `<button type="button" class="btn-danger" onclick="ctrDelete('${id}')">Excluir</button>` : ''}
+      </div>
+    </div>`;
+    _openCtrModal(html);
+  };
+  window.ctrDelete = async function(id){
+    if (!confirm('Excluir este contrato?')) return;
+    await _db.collection('contratos').doc(id).delete();
+    ctrCloseModal();
+    showToast('success','🗑️','Contrato excluído');
+  };
+
+  // ── Assinatura pública (rota #assinar?id=X) ──
+  window.ctrOpenSignPage = async function(id){
+    // Esconde login/app inteiro; mostra só a página de assinatura
+    const login = document.getElementById('loginScreen'); if (login) login.classList.add('hidden');
+    document.body.classList.add('ctr-sign-mode');
+    let container = document.getElementById('ctrSignPage');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'ctrSignPage';
+      container.className = 'ctr-sign-page';
+      document.body.appendChild(container);
+    }
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:#666">Carregando contrato…</div>';
+    try {
+      const snap = await _db.collection('contratos').doc(id).get();
+      if (!snap.exists) { container.innerHTML = '<div style="padding:40px;text-align:center;color:#c00">Contrato não encontrado ou link expirado.</div>'; return; }
+      const c = { id, ...snap.data() };
+      if (c.status === 'signed') { container.innerHTML = '<div style="padding:40px;text-align:center;"><h2>✓ Contrato já assinado</h2><p>Este contrato foi assinado em ' + fmtDate(c.signedAt) + '.</p></div>'; return; }
+      if (c.expiresAt && Date.now() > c.expiresAt) {
+        await _db.collection('contratos').doc(id).update({ status: 'expired' });
+        container.innerHTML = '<div style="padding:40px;text-align:center;"><h2>⏱ Link expirado</h2><p>Peça um novo link a quem enviou este contrato.</p></div>'; return;
+      }
+      container.innerHTML = `
+        <div class="ctr-sign-header">
+          <div>
+            <h1>📄 ${escHtml(c.title)}</h1>
+            <p>Contrato pra ${escHtml(c.clientName)} · ${escHtml(c.createdByName || c.createdBy)}</p>
+          </div>
+        </div>
+        <div class="ctr-sign-body">
+          <div class="ctr-sign-doc" id="ctrSignDoc"><pre>${escHtml(c.body)}</pre></div>
+          <div class="ctr-sign-steps">
+            <div class="ctr-step">
+              <h3>1. Confirme sua identidade</h3>
+              <label class="ctr-field"><span>Seu nome completo (como consta em documento)</span>
+                <input id="ctrSignName" type="text" value="${escHtml(c.clientName)}">
+              </label>
+              <label class="ctr-field"><span>CPF (opcional, reforça a validade)</span>
+                <input id="ctrSignCpf" type="text" placeholder="000.000.000-00" maxlength="14">
+              </label>
+            </div>
+            <div class="ctr-step">
+              <h3>2. Tire uma selfie AGORA</h3>
+              <p class="ctr-hint">Precisa ser tirada neste momento com a câmera do seu dispositivo. Fica anexada ao PDF final.</p>
+              <div class="ctr-cam-wrap">
+                <video id="ctrCam" autoplay playsinline muted style="display:none;"></video>
+                <canvas id="ctrCanvas" style="display:none;"></canvas>
+                <img id="ctrSelfiePreview" alt="Selfie" style="display:none;">
+                <div id="ctrCamPlaceholder" class="ctr-cam-placeholder">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  <button type="button" class="btn-primary" onclick="ctrCamStart()">📷 Ligar câmera</button>
+                </div>
+              </div>
+              <div id="ctrCamControls" style="display:none;margin-top:10px;">
+                <button type="button" class="btn-primary" onclick="ctrCamCapture()">Capturar selfie</button>
+              </div>
+              <div id="ctrCamRedo" style="display:none;margin-top:10px;">
+                <button type="button" class="btn-ghost" onclick="ctrCamStart()">Tirar outra</button>
+              </div>
+            </div>
+            <div class="ctr-step">
+              <h3>3. Aceite e assine</h3>
+              <label class="ctr-checkbox">
+                <input id="ctrSignAgree" type="checkbox">
+                <span>Li o contrato acima, confirmo que sou <b id="ctrSignConfirmName">${escHtml(c.clientName)}</b> e concordo em assiná-lo eletronicamente. Estou ciente de que a assinatura será registrada com selfie, IP, data/hora e hash do documento.</span>
+              </label>
+              <button type="button" class="btn-primary btn-primary--lg" id="ctrSignBtn" onclick="ctrSignSubmit('${id}')" disabled>
+                Assinar contrato
+              </button>
+              <p class="ctr-hint" style="text-align:center;margin-top:8px;">Base legal: Lei 14.063/2020 e MP 2.200-2/2001</p>
+            </div>
+          </div>
+        </div>`;
+      const nameEl = document.getElementById('ctrSignName');
+      const confirmEl = document.getElementById('ctrSignConfirmName');
+      if (nameEl) nameEl.addEventListener('input', () => { if (confirmEl) confirmEl.textContent = nameEl.value; ctrUpdateSignBtn(); });
+      document.getElementById('ctrSignAgree').addEventListener('change', ctrUpdateSignBtn);
+    } catch (e) {
+      container.innerHTML = '<div style="padding:40px;text-align:center;color:#c00">Erro ao carregar: ' + escHtml(e.message) + '</div>';
+    }
+  };
+  let _ctrStream = null;
+  let _ctrSelfieData = null;
+  window.ctrCamStart = async function(){
+    try {
+      if (_ctrStream) _ctrStream.getTracks().forEach(t => t.stop());
+      _ctrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio: false });
+      const v = document.getElementById('ctrCam');
+      v.srcObject = _ctrStream; v.style.display = 'block';
+      document.getElementById('ctrCamPlaceholder').style.display = 'none';
+      document.getElementById('ctrCamControls').style.display = 'block';
+      document.getElementById('ctrCamRedo').style.display = 'none';
+      document.getElementById('ctrSelfiePreview').style.display = 'none';
+      _ctrSelfieData = null;
+      ctrUpdateSignBtn();
+    } catch (e) {
+      alert('Não consegui acessar sua câmera: ' + e.message + '\n\nPermite o acesso à câmera pra assinar.');
+    }
+  };
+  window.ctrCamCapture = function(){
+    const v = document.getElementById('ctrCam');
+    const c = document.getElementById('ctrCanvas');
+    c.width = v.videoWidth || 640; c.height = v.videoHeight || 480;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(v, 0, 0, c.width, c.height);
+    // Timestamp + linha embaixo
+    const now = new Date().toLocaleString('pt-BR');
+    ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0, c.height - 34, c.width, 34);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 16px system-ui';
+    ctx.fillText('Fogo & Gestão · ' + now, 8, c.height - 12);
+    _ctrSelfieData = c.toDataURL('image/jpeg', 0.7);
+    // Stop cam
+    if (_ctrStream) _ctrStream.getTracks().forEach(t => t.stop());
+    v.style.display = 'none';
+    const img = document.getElementById('ctrSelfiePreview');
+    img.src = _ctrSelfieData; img.style.display = 'block';
+    document.getElementById('ctrCamControls').style.display = 'none';
+    document.getElementById('ctrCamRedo').style.display = 'block';
+    ctrUpdateSignBtn();
+  };
+  window.ctrUpdateSignBtn = function(){
+    const nameEl = document.getElementById('ctrSignName');
+    const agreeEl = document.getElementById('ctrSignAgree');
+    const btn = document.getElementById('ctrSignBtn');
+    if (!btn) return;
+    const ok = _ctrSelfieData && nameEl?.value?.trim() && agreeEl?.checked;
+    btn.disabled = !ok;
+  };
+  window.ctrSignSubmit = async function(id){
+    const btn = document.getElementById('ctrSignBtn');
+    if (btn.disabled) return;
+    btn.disabled = true; btn.textContent = 'Assinando…';
+    try {
+      const signatureText = document.getElementById('ctrSignName').value.trim();
+      const cpf = document.getElementById('ctrSignCpf').value.trim();
+      const ip = await getIp();
+      const patch = {
+        status: 'signed',
+        signatureText, signCpf: cpf,
+        signIp: ip, signUserAgent: navigator.userAgent,
+        selfieDataUrl: _ctrSelfieData,
+        signedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      };
+      await _db.collection('contratos').doc(id).update(patch);
+      const c = document.getElementById('ctrSignPage');
+      c.innerHTML = '<div style="padding:60px 20px;text-align:center;max-width:520px;margin:0 auto;"><div style="font-size:64px">✅</div><h1>Contrato assinado!</h1><p style="color:#666;">Sua assinatura foi registrada com selfie, IP e hash do documento. O contratante já foi notificado. Você pode fechar esta janela.</p></div>';
+    } catch (e) {
+      btn.disabled = false; btn.textContent = 'Assinar contrato';
+      alert('Erro ao assinar: ' + e.message);
+    }
+  };
+
+  // ── PDF final ──
+  window.ctrDownloadPdf = async function(id){
+    const snap = await _db.collection('contratos').doc(id).get();
+    if (!snap.exists) return;
+    const c = snap.data();
+    const { PDFDocument, StandardFonts, rgb } = await loadPdfLib();
+    const pdf = await PDFDocument.create();
+    const font = await pdf.embedFont(StandardFonts.Helvetica);
+    const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+    const page = pdf.addPage([595, 842]); // A4
+    let y = 800;
+    const drawLine = (txt, f=font, size=10) => {
+      page.drawText(String(txt).slice(0, 100), { x: 40, y, size, font: f, color: rgb(0,0,0) });
+      y -= size + 4;
+    };
+    drawLine(c.title, bold, 16); y -= 8;
+    drawLine('Contratante: ' + (c.createdByName || c.createdBy), font, 10);
+    drawLine('Contratado: ' + c.clientName + (c.clientEmail ? ' — ' + c.clientEmail : ''), font, 10);
+    drawLine('Criado em: ' + fmtDate(c.createdAt), font, 10);
+    y -= 8;
+    (c.body || '').split('\n').forEach(line => {
+      if (y < 60) { const p = pdf.addPage([595, 842]); y = 800; }
+      const parts = String(line).match(/.{1,90}(\s|$)/g) || [''];
+      parts.forEach(p => { drawLine(p.trim(), font, 10); });
+    });
+    // Página de assinatura
+    const sig = pdf.addPage([595, 842]);
+    sig.drawText('COMPROVANTE DE ASSINATURA ELETRÔNICA', { x: 40, y: 780, size: 14, font: bold });
+    sig.drawText('Base legal: Lei 14.063/2020 e MP 2.200-2/2001', { x: 40, y: 760, size: 9, font, color: rgb(.3,.3,.3) });
+    let sy = 720;
+    const lines = [
+      ['Assinante:', c.signatureText || c.clientName],
+      ['CPF:', c.signCpf || '—'],
+      ['E-mail:', c.clientEmail || '—'],
+      ['Data/hora:', fmtDate(c.signedAt)],
+      ['Endereço IP:', c.signIp || '—'],
+      ['User-Agent:', (c.signUserAgent || '').slice(0,80)],
+      ['Hash SHA-256 do texto:', c.bodyHash || ''],
+    ];
+    lines.forEach(([k, v]) => {
+      sig.drawText(k, { x: 40, y: sy, size: 10, font: bold });
+      String(v).match(/.{1,60}(\s|$)/g)?.forEach(seg => { sig.drawText(seg, { x: 160, y: sy, size: 10, font }); sy -= 14; });
+    });
+    // Selfie
+    if (c.selfieDataUrl) {
+      try {
+        const bytes = Uint8Array.from(atob(c.selfieDataUrl.split(',')[1]), ch => ch.charCodeAt(0));
+        const img = await pdf.embedJpg(bytes);
+        const dim = img.scale(0.3);
+        sig.drawText('Selfie do assinante:', { x: 40, y: sy - 20, size: 10, font: bold });
+        sig.drawImage(img, { x: 40, y: sy - 20 - dim.height - 8, width: dim.width, height: dim.height });
+      } catch(e) { console.warn('selfie fail', e); }
+    }
+    const pdfBytes = await pdf.save();
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (c.title || 'contrato').replace(/[^a-z0-9]/gi,'_') + '_assinado.pdf';
+    a.click();
+  };
+
+  // ── Modal helper ──
+  function _openCtrModal(html){
+    let o = document.getElementById('ctrModalOverlay');
+    if (!o) {
+      o = document.createElement('div');
+      o.id = 'ctrModalOverlay';
+      o.className = 'ctr-modal-overlay';
+      o.onclick = (e) => { if (e.target === o) ctrCloseModal(); };
+      document.body.appendChild(o);
+    }
+    o.innerHTML = html;
+    o.style.display = 'flex';
+  }
+  window.ctrCloseModal = function(){
+    const o = document.getElementById('ctrModalOverlay');
+    if (o) o.style.display = 'none';
+  };
+
+  // ── Roteamento público #assinar?id=X ──
+  function checkSignRoute(){
+    const m = location.hash.match(/^#assinar[/?]id=([a-zA-Z0-9_-]+)/);
+    if (m) {
+      // Aguarda firebase carregar
+      const wait = () => {
+        if (typeof _db !== 'undefined' && _db) { ctrOpenSignPage(m[1]); }
+        else setTimeout(wait, 100);
+      };
+      wait();
+    }
+  }
+  window.addEventListener('hashchange', checkSignRoute);
+  document.addEventListener('DOMContentLoaded', checkSignRoute);
+  // Também tenta imediatamente caso já esteja carregado
+  if (document.readyState !== 'loading') checkSignRoute();
+})();
+
+// self-check: as globais essenciais existem
+console.assert(typeof window.ctrBuildList === 'function' && typeof window.ctrOpenSignPage === 'function', '[ctr] init falhou');
+
 // ── Haptic feedback (vibra em ações destrutivas / confirmações) ──
 window.fgHaptic = function(kind) {
   try {

@@ -16722,3 +16722,154 @@ body.at-projetos .app-header-right { display: none !important; }
   .fg-more__pn, .fg-more__bd, .pj-task-modal, .toast { animation: none !important; }
   .fg-skel { animation: none !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Contratos — aba + página pública de assinatura
+   ═══════════════════════════════════════════════════════════ */
+.ctr-wrap { max-width: 1000px; margin: 0 auto; padding: 20px 24px 48px; }
+.ctr-header {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+  margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.ctr-title { font-size: 22px; font-weight: 700; margin: 0 0 4px; color: var(--text); }
+.ctr-sub { font-size: 13px; color: var(--text3); margin: 0; max-width: 560px; line-height: 1.5; }
+.ctr-list { display: flex; flex-direction: column; gap: 8px; }
+.ctr-empty {
+  text-align: center; padding: 60px 20px; color: var(--text3);
+  border: 1px dashed var(--border); border-radius: 16px;
+}
+.ctr-empty h3 { font-size: 16px; margin: 12px 0 4px; color: var(--text); font-weight: 600; }
+.ctr-empty p { font-size: 13px; margin: 0; }
+.ctr-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; cursor: pointer; transition: border-color .15s, transform .1s;
+}
+.ctr-row:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
+.ctr-row:active { transform: scale(.99); }
+.ctr-row-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700; flex-shrink: 0;
+}
+.ctr-row-icon--pending { background: rgba(249,115,22,.14); color: #ea580c; }
+.ctr-row-icon--signed { background: rgba(34,197,94,.14); color: #16a34a; }
+.ctr-row-icon--expired { background: rgba(148,163,184,.16); color: #64748b; }
+.ctr-row-body { flex: 1; min-width: 0; }
+.ctr-row-title { font-size: 14px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ctr-row-sub { font-size: 12px; color: var(--text3); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ctr-row-status {
+  font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px;
+  text-transform: uppercase; letter-spacing: .5px; flex-shrink: 0;
+}
+.ctr-row-status--pending { background: rgba(249,115,22,.14); color: #ea580c; }
+.ctr-row-status--signed { background: rgba(34,197,94,.14); color: #16a34a; }
+.ctr-row-status--expired { background: rgba(148,163,184,.16); color: #64748b; }
+
+/* Modal do detalhe/criar */
+.ctr-modal-overlay {
+  position: fixed; inset: 0; z-index: 99999;
+  background: rgba(0,0,0,.6); backdrop-filter: blur(6px);
+  display: none; align-items: center; justify-content: center;
+  padding: 20px; overflow-y: auto;
+}
+.ctr-modal-panel {
+  background: var(--card); border-radius: 20px; padding: 24px;
+  max-width: 640px; width: 100%; max-height: 90vh; overflow-y: auto;
+  border: 1px solid var(--border);
+}
+.ctr-modal-panel h2 { font-size: 20px; font-weight: 700; margin: 0 0 16px; color: var(--text); }
+.ctr-field { display: block; margin-bottom: 12px; }
+.ctr-field span { display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+.ctr-field input, .ctr-field textarea {
+  width: 100%; padding: 10px 12px; font-family: inherit; font-size: 14px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; color: var(--text);
+  box-sizing: border-box;
+}
+.ctr-field input:focus, .ctr-field textarea:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+.ctr-field textarea { resize: vertical; font-family: inherit; line-height: 1.5; }
+.ctr-modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+.ctr-detail-meta {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+  font-size: 12.5px; color: var(--text3); margin-bottom: 16px;
+  padding: 12px; background: var(--bg2); border-radius: 10px;
+}
+.ctr-detail-meta b { color: var(--text); }
+.ctr-badge { padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+.ctr-badge--pending { background: rgba(249,115,22,.14); color: #ea580c; }
+.ctr-badge--signed { background: rgba(34,197,94,.14); color: #16a34a; }
+.ctr-badge--expired { background: rgba(148,163,184,.16); color: #64748b; }
+.ctr-body-view {
+  background: var(--bg2); padding: 12px; border-radius: 10px;
+  font-family: inherit; font-size: 12.5px; white-space: pre-wrap; word-wrap: break-word;
+  max-height: 400px; overflow-y: auto; color: var(--text2); margin-top: 8px;
+}
+.ctr-signed-panel { display: grid; grid-template-columns: 200px 1fr; gap: 16px; margin: 16px 0; }
+.ctr-signed-selfie img { width: 100%; border-radius: 12px; border: 2px solid var(--border); display: block; }
+.ctr-signed-info p { margin: 0 0 6px; font-size: 13px; color: var(--text2); }
+.ctr-signed-info code { background: var(--bg2); padding: 2px 6px; border-radius: 4px; }
+@media (max-width: 600px) { .ctr-signed-panel { grid-template-columns: 1fr; } }
+
+/* Página pública de assinatura */
+body.ctr-sign-mode .app-header,
+body.ctr-sign-mode .fg-mnav,
+body.ctr-sign-mode #userChip,
+body.ctr-sign-mode .app-menu-panel { display: none !important; }
+body.ctr-sign-mode { background: #f8fafc; padding: 0 !important; }
+body.ctr-sign-mode .tab-panel { display: none !important; }
+.ctr-sign-page {
+  max-width: 720px; margin: 0 auto; padding: 24px 16px 48px;
+  color: #1a1d24; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+}
+.ctr-sign-header { padding: 16px 0 24px; border-bottom: 1px solid #e4e4e7; margin-bottom: 24px; }
+.ctr-sign-header h1 { font-size: 24px; margin: 0 0 4px; color: #0f172a; font-weight: 700; }
+.ctr-sign-header p { color: #64748b; margin: 0; font-size: 13px; }
+.ctr-sign-body { display: flex; flex-direction: column; gap: 24px; }
+.ctr-sign-doc {
+  background: #fff; border: 1px solid #e4e4e7; border-radius: 14px;
+  padding: 20px; max-height: 400px; overflow-y: auto;
+}
+.ctr-sign-doc pre {
+  font-family: inherit; font-size: 14px; line-height: 1.6;
+  white-space: pre-wrap; word-wrap: break-word; margin: 0; color: #1a1d24;
+}
+.ctr-sign-steps { display: flex; flex-direction: column; gap: 20px; }
+.ctr-step {
+  background: #fff; border: 1px solid #e4e4e7; border-radius: 14px; padding: 20px;
+}
+.ctr-step h3 { font-size: 15px; font-weight: 600; margin: 0 0 12px; color: #0f172a; }
+.ctr-step .ctr-field span { color: #475569; }
+.ctr-step .ctr-field input, .ctr-step .ctr-field textarea {
+  background: #f8fafc; border-color: #e4e4e7; color: #0f172a;
+}
+.ctr-hint { font-size: 12px; color: #64748b; margin: 6px 0 12px; line-height: 1.5; }
+.ctr-cam-wrap {
+  background: #0f172a; border-radius: 12px; overflow: hidden;
+  aspect-ratio: 4 / 3; display: flex; align-items: center; justify-content: center;
+}
+.ctr-cam-wrap video, .ctr-cam-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.ctr-cam-placeholder {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; color: #94a3b8; padding: 20px;
+}
+.ctr-checkbox {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 12px; background: #f8fafc; border-radius: 10px; margin-bottom: 16px;
+  font-size: 13px; line-height: 1.5; cursor: pointer; color: #334155;
+}
+.ctr-checkbox input { margin-top: 3px; flex-shrink: 0; width: 18px; height: 18px; cursor: pointer; }
+.ctr-checkbox b { color: #0f172a; }
+.ctr-sign-page .btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #1e40af); color: #fff;
+  border: 0; padding: 12px 20px; border-radius: 12px;
+  font-weight: 700; font-size: 14px; font-family: inherit;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.ctr-sign-page .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+.ctr-sign-page .btn-primary--lg { width: 100%; padding: 16px; font-size: 16px; }
+.ctr-sign-page .btn-ghost {
+  background: #f1f5f9; color: #334155; border: 1px solid #e4e4e7;
+  padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 13px;
+  cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px;
+}
