@@ -17315,6 +17315,7 @@ body.ctr-sign-mode > *:not(#ctrSignPage):not(#ctrModalOverlay):not(script):not(s
   background: #eff6ff; color: #3b82f6;
   font-size: 12px; font-weight: 600; text-decoration: none;
   flex-shrink: 0;
+  border: 0; cursor: pointer; font-family: inherit;
 }
 .csign-card-link:hover { background: #dbeafe; }
 

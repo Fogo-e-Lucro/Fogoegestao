@@ -33936,7 +33936,15 @@ const POP = (() => {
     return [...new Uint8Array(h)].map(b => b.toString(16).padStart(2,'0')).join('');
   }
   async function getIp(){
-    try { const r = await fetch('https://api.ipify.org?format=json'); const j = await r.json(); return j.ip; } catch(_){ return ''; }
+    // timeout 3s: se ipify travar, não segura a assinatura
+    try {
+      const ctl = new AbortController();
+      const t = setTimeout(() => ctl.abort(), 3000);
+      const r = await fetch('https://api.ipify.org?format=json', { signal: ctl.signal });
+      clearTimeout(t);
+      const j = await r.json();
+      return j.ip || '';
+    } catch(_){ return ''; }
   }
   const fmtDate = (ts) => {
     if (!ts) return '—';
@@ -34200,7 +34208,7 @@ const POP = (() => {
     const html = `<div class="ctr-modal-panel">
       <h2>${escHtml(c.title)}</h2>
       <div class="ctr-detail-meta">
-        <span class="ctr-badge ctr-badge--${c.status}">${c.status==='signed'?'Assinado':c.status==='expired'?'Expirado':'Aguardando'}</span>
+        <span class="ctr-badge ctr-badge--${c.status||'pending'}">${c.status==='signed'?'Assinado':c.status==='expired'?'Expirado':'Aguardando'}</span>
         <span>Cliente: <b>${escHtml(c.clientName||'—')}</b></span>
         ${c.clientEmail ? `<span>${escHtml(c.clientEmail)}</span>` : ''}
         <span>Criado ${fmtDate(c.createdAt)}</span>
@@ -34329,10 +34337,10 @@ const POP = (() => {
                   <div class="csign-card-eyebrow">Documento</div>
                   <div class="csign-card-title">${escHtml(c.pdfName || 'Contrato.pdf')}</div>
                 </div>
-                ${c.pdfDataUrl ? `<a class="csign-card-link" href="${c.pdfDataUrl}" download="${escHtml(c.pdfName || 'contrato.pdf')}" target="_blank" rel="noopener">
+                ${c.pdfDataUrl ? `<button type="button" class="csign-card-link" onclick="_csignOpenPdf('${id}')">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   Abrir
-                </a>` : ''}
+                </button>` : ''}
               </div>
               ${c.pdfDataUrl
                 ? (/iPad|iPhone|iPod/.test(navigator.userAgent)
@@ -34340,7 +34348,7 @@ const POP = (() => {
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                         <b>${escHtml(c.pdfName || 'Contrato.pdf')}</b>
                         <span>Toque pra abrir o contrato em nova aba, leia com atenção e volte pra assinar.</span>
-                        <a class="csign-btn csign-btn--primary" href="${c.pdfDataUrl}" target="_blank" rel="noopener">Abrir PDF</a>
+                        <button type="button" class="csign-btn csign-btn--primary" onclick="_csignOpenPdf('${id}')">Abrir PDF</button>
                       </div>`
                     : `<iframe src="${c.pdfDataUrl}#toolbar=0&navpanes=0" class="csign-pdf" title="Contrato"></iframe>`)
                 : c.body
@@ -34361,7 +34369,7 @@ const POP = (() => {
               <div class="csign-card-eyebrow">Identidade</div>
               <div class="csign-card-title" style="margin-bottom:16px;">Confirme quem você é</div>
               <label class="csign-field"><span>Nome completo</span>
-                <input id="ctrSignName" type="text" value="${escHtml(c.clientName)}" autocomplete="name">
+                <input id="ctrSignName" type="text" value="${escHtml(c.clientName||'')}" autocomplete="name">
               </label>
               <label class="csign-field"><span>CPF <em>(opcional, reforça a prova)</em></span>
                 <input id="ctrSignCpf" type="text" placeholder="000.000.000-00" inputmode="numeric" maxlength="14">
@@ -34395,16 +34403,16 @@ const POP = (() => {
               <h2>Tudo pronto pra assinar</h2>
               <p>Confirme os dados abaixo e finalize. Após assinar você recebe uma cópia com trilha de auditoria.</p>
               <div class="csign-summary-grid">
-                <div><b>Documento</b><span id="csignSumTitle">${escHtml(c.title)}</span></div>
-                <div><b>Signatário</b><span id="csignSumName">${escHtml(c.clientName)}</span></div>
-                <div><b>Enviado por</b><span>${escHtml(c.createdByName || c.createdBy)}</span></div>
+                <div><b>Documento</b><span id="csignSumTitle">${escHtml(c.title||'')}</span></div>
+                <div><b>Signatário</b><span id="csignSumName">${escHtml(c.clientName||'')}</span></div>
+                <div><b>Enviado por</b><span>${escHtml(c.createdByName || c.createdBy || '—')}</span></div>
                 <div><b>Data/hora</b><span>${new Date().toLocaleString('pt-BR', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</span></div>
               </div>
             </div>
             <div class="csign-card">
               <label class="csign-agree">
                 <input id="ctrSignAgree" type="checkbox">
-                <span>Li o contrato acima, confirmo que sou <b id="ctrSignConfirmName">${escHtml(c.clientName)}</b> e concordo em assiná-lo eletronicamente. Autorizo o registro de <b>selfie, IP, data/hora e hash SHA-256</b> do documento como prova.</span>
+                <span>Li o contrato acima, confirmo que sou <b id="ctrSignConfirmName">${escHtml(c.clientName||'')}</b> e concordo em assiná-lo eletronicamente. Autorizo o registro de <b>selfie, IP, data/hora e hash SHA-256</b> do documento como prova.</span>
               </label>
               <div class="csign-legal">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -34448,6 +34456,7 @@ const POP = (() => {
           cpfEl.style.borderColor = '';
           const clean = cpfEl.value.replace(/\D/g,'');
           if (clean.length === 11 && !_validaCpf(clean)) cpfEl.style.borderColor = '#dc2626';
+          csignUpdateNav();
         });
       }
       document.getElementById('csignReadOk').addEventListener('change', csignUpdateNav);
@@ -34495,13 +34504,31 @@ const POP = (() => {
       const name = document.getElementById('ctrSignName')?.value?.trim();
       const okName = name && name.length >= 3;
       const okSelfie = !!_ctrSelfieData;
-      next.disabled = !(okName && okSelfie);
-      hint.textContent = !okName ? 'Digite seu nome completo' : !okSelfie ? 'Tire uma selfie pra confirmar identidade' : 'Tudo pronto, siga pro final';
+      const cpfRaw = (document.getElementById('ctrSignCpf')?.value || '').replace(/\D/g,'');
+      const cpfOk = !cpfRaw || _validaCpf(cpfRaw);
+      next.disabled = !(okName && okSelfie && cpfOk);
+      hint.textContent = !okName ? 'Digite seu nome completo'
+        : !okSelfie ? 'Tire uma selfie pra confirmar identidade'
+        : !cpfOk ? 'CPF inválido — corrija ou apague'
+        : 'Tudo pronto, siga pro final';
     } else {
       const agree = document.getElementById('ctrSignAgree')?.checked;
       sign.disabled = !agree;
       hint.textContent = agree ? 'Toque em Assinar pra concluir' : 'Marque o aceite pra assinar';
     }
+  };
+  // Abre o PDF do contrato em nova aba via Blob URL (Chrome bloqueia data: em href de download)
+  window._csignOpenPdf = async function(id){
+    try {
+      const snap = await _db.collection('contratos').doc(id).get();
+      const c = snap.data();
+      if (!c || !c.pdfDataUrl) { alert('PDF não encontrado'); return; }
+      const bytes = Uint8Array.from(atob(c.pdfDataUrl.split(',')[1]), ch => ch.charCodeAt(0));
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank', 'noopener');
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (e) { alert('Não consegui abrir: ' + e.message); }
   };
   window.ctrCamStart = async function(){
     try {
@@ -34587,7 +34614,7 @@ const POP = (() => {
             </svg>
           </div>
           <h1>Contrato assinado</h1>
-          <p>Sua assinatura foi registrada e a outra parte foi notificada. Você recebe uma cópia por e-mail se cadastrou.</p>
+          <p>Sua assinatura foi registrada com sucesso. Guarde essa página como comprovante ou peça uma cópia a quem enviou o contrato.</p>
           <div class="csign-done-card">
             <div><b>Documento</b><span>${escHtml(cData.title)}</span></div>
             <div><b>Assinado por</b><span>${escHtml(signatureText)}</span></div>

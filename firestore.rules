@@ -131,8 +131,8 @@ service cloud.firestore {
       allow get: if true;
       allow list: if isSignedIn();
       allow create: if isSignedIn();
-      // Logado: livre. Público: só pending→signed com selfie+nome válidos,
-      // OU incremento de view (mantém status pending, mexe só em viewCount/*ViewedAt).
+      // Logado: livre. Público: pending→signed (com selfie+nome), pending→expired
+      // (o próprio client marca ao detectar expiresAt vencido), OU incremento de view.
       allow update: if isSignedIn()
                     || (
                       resource.data.status == 'pending'
@@ -141,6 +141,12 @@ service cloud.firestore {
                       && request.resource.data.signatureText.size() >= 3
                       && request.resource.data.selfieDataUrl is string
                       && request.resource.data.selfieDataUrl.matches('data:image/.*')
+                    )
+                    || (
+                      resource.data.status == 'pending'
+                      && request.resource.data.status == 'expired'
+                      && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status'])
                     )
                     || (
                       resource.data.status == 'pending'
