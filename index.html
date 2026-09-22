@@ -4231,6 +4231,7 @@ function appPresenceStartListener() {
     // 'online' fica grudado até alguém escrever em app_presence.
     if (_appPresenceRefreshTimer) clearInterval(_appPresenceRefreshTimer);
     _appPresenceRefreshTimer = setInterval(() => {
+      if (document.hidden) return; // perf: só recalcula com aba visível
       _appPresenceRecomputeOnline();
       appPresenceRender();
     }, 30 * 1000);
@@ -6880,6 +6881,17 @@ function switchTab(tab, btn) {
     if (firstAllowed !== tab) return switchTab(firstAllowed);
     return;
   }
+  // Teardown de listeners da aba anterior (perf: evita vazamento de onSnapshot)
+  // Usa cleanup escopado: mata só pj_*/iFood/POP, sem tocar em listeners
+  // compartilhados (clientes_base, posts) que outras abas usam.
+  const _prevTab = document.body.dataset.activeTab;
+  if (_prevTab && _prevTab !== tab) {
+    if (_prevTab === 'projetos') {
+      try { _pjCleanupRealtimeOnly(); } catch(_){}
+      pjInitialized = false; // pra próxima entrada em projetos re-registrar os listeners
+    }
+    if (_prevTab === 'pop') { try { POP.teardown && POP.teardown(); } catch(_){} }
+  }
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.main-tab,.main-tab-more-item').forEach(t => t.classList.remove('active'));
   const panel = document.getElementById('tab-' + tab);
@@ -7489,6 +7501,7 @@ let _fgWaGlobalPollTimer = null;
 function fgWaStartGlobalPoll() {
   if (_fgWaGlobalPollTimer) return;
   const tick = () => {
+    if (document.hidden) return; // perf: não gasta rede/CPU com aba escondida
     if (!(typeof userIsAdmin === 'function') || !userIsAdmin()) return;
     if (typeof fgWaCheckStatus === 'function') fgWaCheckStatus(true);
   };
@@ -16752,12 +16765,13 @@ window.pjDebugAvatares = function() {
   return rows;
 };
 
-// Desmonta todos os listeners de pj_* (chamado em signout/beforeunload)
+// Desmonta todos os listeners de pj_* (chamado em signout/beforeunload/switchTab)
 function pjCleanupListeners() {
   if (Array.isArray(pjUnsubs)) {
     pjUnsubs.forEach(u => { try { u && u(); } catch(_){} });
     pjUnsubs = [];
   }
+  try { pjIfoodTeardown && pjIfoodTeardown(); } catch(_){}
   try { _pjQueueUnsub && _pjQueueUnsub(); } catch(_){}
   _pjQueueUnsub = null;
   try { _pjViewersUnsub && _pjViewersUnsub(); } catch(_){}
@@ -16805,8 +16819,11 @@ function _pjCleanupRealtimeOnly() {
   _pjQueueUnsub = null;
   try { _pjViewersUnsub && _pjViewersUnsub(); } catch(_){}
   _pjViewersUnsub = null;
+  try { _pjCsHealthUnsub && _pjCsHealthUnsub(); } catch(_){}
+  _pjCsHealthUnsub = null;
   if (_pjViewersStaleTimer) { clearInterval(_pjViewersStaleTimer); _pjViewersStaleTimer = null; }
   pjViewersByTask = {};
+  try { pjIfoodTeardown && pjIfoodTeardown(); } catch(_){}
 }
 
 function pjSetupRealtime() {
@@ -24978,6 +24995,14 @@ function pjIfoodEnsureInit() {
   }, e => console.warn('[ifood] catalog sub:', e.message)));
 }
 
+// Desmonta os 6 listeners iFood — chamado quando sai de projetos/iFood
+function pjIfoodTeardown() {
+  if (!_ifoodInitialized) return;
+  _ifoodUnsubs.forEach(u => { try { u && u(); } catch(_){} });
+  _ifoodUnsubs = [];
+  _ifoodInitialized = false;
+}
+
 function _ifoodMatchClient(merchant) {
   // Tenta match do nome do merchant com um cliente do BD pra pegar logo
   try {
@@ -30814,7 +30839,7 @@ window.bdUploadCustomImage = async function(cid, fid, input) {
           // Poll de update a cada 2min — força o browser a rebuscar sw.js
           // mesmo com aba aberta o dia todo. Sem isso, updates ficam presos
           // até o usuário fechar tudo (comum: PWA no iPad, tab pinada).
-          setInterval(() => { reg.update().catch(()=>{}); }, 120_000);
+          setInterval(() => { if (document.hidden) return; reg.update().catch(()=>{}); }, 120_000);
           // Update também quando volta o foco (usuário ativo agora)
           window.addEventListener('focus', () => { reg.update().catch(()=>{}); });
         })
@@ -33841,8 +33866,13 @@ const POP = (() => {
     setTimeout(loadFromHash, 300);
   }
   function ensureInit() { init(); }
+  function teardown() {
+    try { state.unsubCadeiras && state.unsubCadeiras(); } catch(_){}
+    try { state.unsubDocs && state.unsubDocs(); } catch(_){}
+    state.unsubCadeiras = null; state.unsubDocs = null;
+  }
 
-  return { init, ensureInit, selectPlaybook, selectPop };
+  return { init, ensureInit, selectPlaybook, selectPop, teardown };
 })();
 
 // Wire tab switching pro POP

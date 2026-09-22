@@ -245,7 +245,12 @@ body {
   overflow: hidden;
   visibility: hidden;
   transition: opacity var(--t2) var(--ease-out), transform var(--t2) var(--ease-out);
+  /* Perf: navegador pode pular render/style/layout de subtree escondida.
+     Grande ganho no boot pra abas nunca visitadas na sessão. */
+  content-visibility: auto;
+  contain-intrinsic-size: 800px;
 }
+.tab-panel.active { content-visibility: visible; }
 .tab-panel.active {
   opacity: 1;
   transform: translateY(0);
