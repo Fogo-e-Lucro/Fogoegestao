@@ -17245,6 +17245,20 @@ body.ctr-sign-mode .tab-panel { display: none !important; }
   position: relative; overflow: auto; padding: 16px;
   background: #f1f5f9; flex: 1;
 }
+.ctr-pos-scroll {
+  display: flex; flex-direction: column; gap: 24px;
+  align-items: center;
+}
+.ctr-pos-page-wrap {
+  display: flex; flex-direction: column; gap: 6px;
+  align-items: center;
+}
+.ctr-pos-page-label {
+  font-size: 11px; font-weight: 600; color: #64748b;
+  text-transform: uppercase; letter-spacing: .5px;
+  padding: 4px 10px; background: rgba(15,23,42,.06);
+  border-radius: 999px;
+}
 .ctr-pos-hint {
   position: sticky; top: 0; z-index: 3;
   display: block; margin: -8px auto 12px; max-width: fit-content;

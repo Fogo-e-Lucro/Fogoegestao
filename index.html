@@ -34736,17 +34736,10 @@ const POP = (() => {
           <span class="ctr-pos-chip-txt"><b>Contratante</b><em>Cliente</em></span>
         </button>
       </div>
-      <div class="ctr-pos-pager">
-        <button type="button" class="ctr-pos-nav" onclick="_ctrPosGoto(_posPage-1)" aria-label="Anterior">←</button>
-        <span id="ctrPosPageLbl">Página 1</span>
-        <button type="button" class="ctr-pos-nav" onclick="_ctrPosGoto(_posPage+1)" aria-label="Próxima">→</button>
-        <button type="button" class="ctr-pos-nav ctr-pos-nav--last" onclick="_ctrPosGotoLast()" aria-label="Última página" title="Última página">⤓</button>
-      </div>
       <div class="ctr-pos-canvas-wrap" id="ctrPosCanvasWrap">
         <div class="ctr-pos-hint" id="ctrPosHint">Toque em Contratado ou Contratante e depois no lugar do PDF.</div>
-        <div class="ctr-pos-stage" id="ctrPosStage">
-          <canvas id="ctrPosCanvas"></canvas>
-          <div class="ctr-pos-overlay" id="ctrPosOverlay"></div>
+        <div class="ctr-pos-scroll" id="ctrPosScroll">
+          <div style="padding:40px;text-align:center;color:#64748b;">Carregando páginas…</div>
         </div>
       </div>
       <div class="ctr-pos-actions">
@@ -34768,9 +34761,8 @@ const POP = (() => {
       const pdfjs = await loadPdfJs();
       const bytes = Uint8Array.from(atob(_ctrPdfData.base64), c => c.charCodeAt(0));
       _pdfDocForPos = await pdfjs.getDocument({ data: bytes }).promise;
-      _posPage = 1;
-      await _ctrPosRender();
-      _ctrPosWireStage();
+      await _ctrPosRenderAll();
+      _ctrPosWireScroll();
     } catch (e) { alert('Erro ao carregar preview: ' + e.message); _ctrPosClose(); }
   };
   window._ctrPosSetMode = function(m){
@@ -34784,71 +34776,80 @@ const POP = (() => {
       ? (_posMode === 'internal' ? '👆 Toque no PDF onde vai sua assinatura' : '👆 Toque no PDF onde vai a assinatura do Contratante')
       : 'Toque em Contratado ou Contratante e depois no lugar do PDF.';
   };
-  window._ctrPosGoto = async function(p){
-    if (!_pdfDocForPos) return;
-    if (p < 1 || p > _pdfDocForPos.numPages) return;
-    _posPage = p;
-    await _ctrPosRender();
-  };
-  window._ctrPosGotoLast = function(){ if (_pdfDocForPos) _ctrPosGoto(_pdfDocForPos.numPages); };
-  async function _ctrPosRender(){
-    const canvas = document.getElementById('ctrPosCanvas');
-    if (!canvas) return;
-    const page = await _pdfDocForPos.getPage(_posPage);
+  async function _ctrPosRenderAll(){
+    const scroll = document.getElementById('ctrPosScroll');
+    if (!scroll || !_pdfDocForPos) return;
+    scroll.innerHTML = '';
     const maxW = Math.min(720, window.innerWidth - 60);
-    const baseVp = page.getViewport({ scale: 1 });
-    const scale = maxW / baseVp.width;
-    const viewport = page.getViewport({ scale });
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    canvas.style.width = viewport.width + 'px';
-    canvas.style.height = viewport.height + 'px';
-    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-    document.getElementById('ctrPosPageLbl').textContent = `Página ${_posPage} de ${_pdfDocForPos.numPages}`;
+    for (let p = 1; p <= _pdfDocForPos.numPages; p++) {
+      const wrap = document.createElement('div');
+      wrap.className = 'ctr-pos-page-wrap';
+      wrap.innerHTML = `
+        <div class="ctr-pos-page-label">Página ${p} de ${_pdfDocForPos.numPages}</div>
+        <div class="ctr-pos-stage" data-page="${p}">
+          <canvas></canvas>
+          <div class="ctr-pos-overlay"></div>
+        </div>`;
+      scroll.appendChild(wrap);
+      const page = await _pdfDocForPos.getPage(p);
+      const baseVp = page.getViewport({ scale: 1 });
+      const scale = maxW / baseVp.width;
+      const viewport = page.getViewport({ scale });
+      const canvas = wrap.querySelector('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      canvas.style.width = viewport.width + 'px';
+      canvas.style.height = viewport.height + 'px';
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+    }
     _ctrPosRedrawOverlay();
   }
   function _ctrPosRedrawOverlay(){
-    const overlay = document.getElementById('ctrPosOverlay');
-    const canvas = document.getElementById('ctrPosCanvas');
-    if (!overlay || !canvas) return;
-    overlay.style.width = canvas.width + 'px';
-    overlay.style.height = canvas.height + 'px';
-    overlay.innerHTML = _ctrSigFields
-      .filter(f => f.page === _posPage)
-      .map((f) => {
-        const idx = _ctrSigFields.indexOf(f);
-        const px = f.x * canvas.width;
-        const py = f.y * canvas.height;
-        const pw = f.w * canvas.width;
-        const ph = f.h * canvas.height;
-        const label = f.party === 'internal' ? 'Contratado' : 'Contratante';
-        return `<div class="ctr-pos-field pos-${f.party}" data-idx="${idx}" style="left:${px}px;top:${py}px;width:${pw}px;height:${ph}px;">
-          <span class="ctr-pos-field-label">${label}</span>
-          <span class="ctr-pos-field-hint">arraste pra mover</span>
-          <button type="button" class="ctr-pos-field-remove" onclick="event.stopPropagation();_ctrPosRemove(${idx})" aria-label="Remover">×</button>
-        </div>`;
-      }).join('');
+    document.querySelectorAll('#ctrPosScroll .ctr-pos-stage').forEach(stage => {
+      const page = Number(stage.dataset.page);
+      const canvas = stage.querySelector('canvas');
+      const overlay = stage.querySelector('.ctr-pos-overlay');
+      if (!overlay || !canvas) return;
+      overlay.innerHTML = _ctrSigFields
+        .filter(f => f.page === page)
+        .map((f) => {
+          const idx = _ctrSigFields.indexOf(f);
+          const px = f.x * canvas.width;
+          const py = f.y * canvas.height;
+          const pw = f.w * canvas.width;
+          const ph = f.h * canvas.height;
+          const label = f.party === 'internal' ? 'Contratado' : 'Contratante';
+          return `<div class="ctr-pos-field pos-${f.party}" data-idx="${idx}" style="left:${px}px;top:${py}px;width:${pw}px;height:${ph}px;">
+            <span class="ctr-pos-field-label">${label}</span>
+            <span class="ctr-pos-field-hint">arraste pra mover</span>
+            <button type="button" class="ctr-pos-field-remove" onclick="event.stopPropagation();_ctrPosRemove(${idx})" aria-label="Remover">×</button>
+          </div>`;
+        }).join('');
+    });
   }
-  // Pointer events unificados (mouse + touch) no stage do canvas
-  let _posDrag = null; // { idx, offsetX, offsetY }
-  function _ctrPosWireStage(){
-    const stage = document.getElementById('ctrPosStage');
-    const canvas = document.getElementById('ctrPosCanvas');
-    if (!stage || !canvas) return;
-    stage.addEventListener('pointerdown', (e) => {
-      // Clique num field existente → começa drag pra mover
+  // Pointer events unificados (mouse + touch) delegados no scroll
+  let _posDrag = null; // { idx, dx, dy, stage }
+  function _ctrPosWireScroll(){
+    const scroll = document.getElementById('ctrPosScroll');
+    if (!scroll) return;
+    scroll.addEventListener('pointerdown', (e) => {
+      const stage = e.target.closest('.ctr-pos-stage');
+      if (!stage) return;
+      const canvas = stage.querySelector('canvas');
+      const page = Number(stage.dataset.page);
+      // Clique num field existente → começa drag
       const fld = e.target.closest('.ctr-pos-field');
       if (fld && !e.target.classList.contains('ctr-pos-field-remove')) {
         e.preventDefault();
         const idx = Number(fld.dataset.idx);
         const fldRect = fld.getBoundingClientRect();
-        _posDrag = { idx, dx: e.clientX - fldRect.left, dy: e.clientY - fldRect.top };
+        _posDrag = { idx, dx: e.clientX - fldRect.left, dy: e.clientY - fldRect.top, stage };
         try { stage.setPointerCapture(e.pointerId); } catch(_){}
         fld.classList.add('is-dragging');
         return;
       }
-      // Se _posMode ativo e clique no canvas → cria field novo
-      if (_posMode && (e.target === canvas || e.target.id === 'ctrPosOverlay')) {
+      // Modo posicionar ativo → cria field novo nessa página
+      if (_posMode && (e.target === canvas || e.target.classList.contains('ctr-pos-overlay'))) {
         e.preventDefault();
         const rect = canvas.getBoundingClientRect();
         const x = (e.clientX - rect.left) / rect.width;
@@ -34856,7 +34857,7 @@ const POP = (() => {
         const w = 0.32, h = 0.08;
         _ctrSigFields = _ctrSigFields.filter(f => f.party !== _posMode);
         _ctrSigFields.push({
-          party: _posMode, page: _posPage,
+          party: _posMode, page,
           x: Math.max(0, Math.min(1 - w, x - w/2)),
           y: Math.max(0, Math.min(1 - h, y - h/2)),
           w, h,
@@ -34865,14 +34866,20 @@ const POP = (() => {
         document.getElementById('ctrPosBtnInt')?.classList.remove('is-on');
         document.getElementById('ctrPosBtnCli')?.classList.remove('is-on');
         document.getElementById('ctrPosCanvasWrap')?.classList.remove('is-placing');
-        const other = _ctrSigFields.length === 1 ? ' Falta a outra parte.' : '';
-        document.getElementById('ctrPosHint').textContent = 'Assinatura posicionada.' + other + ' Arraste pra ajustar.';
+        const parts = new Set(_ctrSigFields.map(f => f.party));
+        const missing = ['internal','client'].filter(p => !parts.has(p));
+        const msg = missing.length
+          ? `Assinatura posicionada. Falta ${missing[0]==='internal'?'Contratado (você)':'Contratante (cliente)'}.`
+          : 'Tudo posicionado. Arraste pra ajustar ou salve.';
+        document.getElementById('ctrPosHint').textContent = msg;
         _ctrPosRedrawOverlay();
       }
     });
-    stage.addEventListener('pointermove', (e) => {
+    scroll.addEventListener('pointermove', (e) => {
       if (!_posDrag) return;
       e.preventDefault();
+      const stage = _posDrag.stage;
+      const canvas = stage.querySelector('canvas');
       const rect = canvas.getBoundingClientRect();
       const nx = (e.clientX - _posDrag.dx - rect.left) / rect.width;
       const ny = (e.clientY - _posDrag.dy - rect.top) / rect.height;
@@ -34886,14 +34893,14 @@ const POP = (() => {
         el.style.top = (f.y * canvas.height) + 'px';
       }
     });
-    stage.addEventListener('pointerup', (e) => {
+    scroll.addEventListener('pointerup', (e) => {
       if (!_posDrag) return;
-      const el = stage.querySelector(`.ctr-pos-field[data-idx="${_posDrag.idx}"]`);
+      const el = _posDrag.stage.querySelector(`.ctr-pos-field[data-idx="${_posDrag.idx}"]`);
       if (el) el.classList.remove('is-dragging');
-      try { stage.releasePointerCapture(e.pointerId); } catch(_){}
+      try { _posDrag.stage.releasePointerCapture(e.pointerId); } catch(_){}
       _posDrag = null;
     });
-    stage.addEventListener('pointercancel', () => { _posDrag = null; });
+    scroll.addEventListener('pointercancel', () => { _posDrag = null; });
   }
   window._ctrPosRemove = function(idx){ _ctrSigFields.splice(idx, 1); _ctrPosRedrawOverlay(); };
   window._ctrPosClearAll = function(){ _ctrSigFields = []; _ctrPosRedrawOverlay(); };
