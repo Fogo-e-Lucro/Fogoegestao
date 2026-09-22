@@ -34722,30 +34722,36 @@ const POP = (() => {
   window.ctrOpenPositionModal = async function(){
     if (!_ctrPdfData) return;
     const html = `<div class="ctr-pos-modal" id="ctrPosRoot">
-      <div class="ctr-pos-toolbar">
-        <div class="ctr-pos-tools">
-          <button type="button" class="ctr-pos-tool ctr-pos-tool--internal" id="ctrPosBtnInt" onclick="_ctrPosSetMode('internal')">
-            <span class="dot"></span>Assinatura do Contratado (você)
-          </button>
-          <button type="button" class="ctr-pos-tool ctr-pos-tool--client" id="ctrPosBtnCli" onclick="_ctrPosSetMode('client')">
-            <span class="dot"></span>Assinatura do Contratante
-          </button>
-        </div>
-        <div class="ctr-pos-pager">
-          <button type="button" class="ctr-pos-nav" onclick="_ctrPosGoto(_posPage-1)">←</button>
-          <span id="ctrPosPageLbl">Página 1</span>
-          <button type="button" class="ctr-pos-nav" onclick="_ctrPosGoto(_posPage+1)">→</button>
-        </div>
+      <header class="ctr-pos-head">
+        <h3>Posicionar assinaturas</h3>
+        <button type="button" class="ctr-pos-x" onclick="_ctrPosClose()" aria-label="Fechar">×</button>
+      </header>
+      <div class="ctr-pos-chips">
+        <button type="button" class="ctr-pos-chip ctr-pos-chip--internal" id="ctrPosBtnInt" onclick="_ctrPosSetMode('internal')">
+          <span class="ctr-pos-chip-dot"></span>
+          <span class="ctr-pos-chip-txt"><b>Contratado</b><em>Você</em></span>
+        </button>
+        <button type="button" class="ctr-pos-chip ctr-pos-chip--client" id="ctrPosBtnCli" onclick="_ctrPosSetMode('client')">
+          <span class="ctr-pos-chip-dot"></span>
+          <span class="ctr-pos-chip-txt"><b>Contratante</b><em>Cliente</em></span>
+        </button>
+      </div>
+      <div class="ctr-pos-pager">
+        <button type="button" class="ctr-pos-nav" onclick="_ctrPosGoto(_posPage-1)" aria-label="Anterior">←</button>
+        <span id="ctrPosPageLbl">Página 1</span>
+        <button type="button" class="ctr-pos-nav" onclick="_ctrPosGoto(_posPage+1)" aria-label="Próxima">→</button>
+        <button type="button" class="ctr-pos-nav ctr-pos-nav--last" onclick="_ctrPosGotoLast()" aria-label="Última página" title="Última página">⤓</button>
       </div>
       <div class="ctr-pos-canvas-wrap" id="ctrPosCanvasWrap">
-        <div class="ctr-pos-hint" id="ctrPosHint">Escolha uma assinatura acima e clique no lugar do PDF onde ela vai aparecer.</div>
-        <canvas id="ctrPosCanvas"></canvas>
-        <div class="ctr-pos-overlay" id="ctrPosOverlay"></div>
+        <div class="ctr-pos-hint" id="ctrPosHint">Toque em Contratado ou Contratante e depois no lugar do PDF.</div>
+        <div class="ctr-pos-stage" id="ctrPosStage">
+          <canvas id="ctrPosCanvas"></canvas>
+          <div class="ctr-pos-overlay" id="ctrPosOverlay"></div>
+        </div>
       </div>
       <div class="ctr-pos-actions">
-        <button type="button" class="btn-ghost" onclick="_ctrPosClose()">Cancelar</button>
-        <button type="button" class="btn-ghost" onclick="_ctrPosClearAll()">Limpar tudo</button>
-        <button type="button" class="btn-primary" onclick="_ctrPosSave()">Salvar posições</button>
+        <button type="button" class="btn-ghost" onclick="_ctrPosClearAll()">Limpar</button>
+        <button type="button" class="btn-primary" onclick="_ctrPosSave()">Salvar</button>
       </div>
     </div>`;
     // usa um overlay separado (não o do modal principal, pra não fechar o wizard)
@@ -34764,6 +34770,7 @@ const POP = (() => {
       _pdfDocForPos = await pdfjs.getDocument({ data: bytes }).promise;
       _posPage = 1;
       await _ctrPosRender();
+      _ctrPosWireStage();
     } catch (e) { alert('Erro ao carregar preview: ' + e.message); _ctrPosClose(); }
   };
   window._ctrPosSetMode = function(m){
@@ -34774,8 +34781,8 @@ const POP = (() => {
     if (wrap) wrap.classList.toggle('is-placing', !!_posMode);
     const hint = document.getElementById('ctrPosHint');
     if (hint) hint.textContent = _posMode
-      ? (_posMode === 'internal' ? 'Toque no PDF onde vai sua assinatura (Contratado)' : 'Toque no PDF onde vai a assinatura do Contratante')
-      : 'Escolha uma assinatura acima e clique no lugar do PDF onde ela vai aparecer.';
+      ? (_posMode === 'internal' ? '👆 Toque no PDF onde vai sua assinatura' : '👆 Toque no PDF onde vai a assinatura do Contratante')
+      : 'Toque em Contratado ou Contratante e depois no lugar do PDF.';
   };
   window._ctrPosGoto = async function(p){
     if (!_pdfDocForPos) return;
@@ -34783,6 +34790,7 @@ const POP = (() => {
     _posPage = p;
     await _ctrPosRender();
   };
+  window._ctrPosGotoLast = function(){ if (_pdfDocForPos) _ctrPosGoto(_pdfDocForPos.numPages); };
   async function _ctrPosRender(){
     const canvas = document.getElementById('ctrPosCanvas');
     if (!canvas) return;
@@ -34800,7 +34808,6 @@ const POP = (() => {
     _ctrPosRedrawOverlay();
   }
   function _ctrPosRedrawOverlay(){
-    const wrap = document.getElementById('ctrPosCanvasWrap');
     const overlay = document.getElementById('ctrPosOverlay');
     const canvas = document.getElementById('ctrPosCanvas');
     if (!overlay || !canvas) return;
@@ -34808,48 +34815,86 @@ const POP = (() => {
     overlay.style.height = canvas.height + 'px';
     overlay.innerHTML = _ctrSigFields
       .filter(f => f.page === _posPage)
-      .map((f, i) => {
+      .map((f) => {
         const idx = _ctrSigFields.indexOf(f);
         const px = f.x * canvas.width;
         const py = f.y * canvas.height;
         const pw = f.w * canvas.width;
         const ph = f.h * canvas.height;
         const label = f.party === 'internal' ? 'Contratado' : 'Contratante';
-        return `<div class="ctr-pos-field pos-${f.party}" style="left:${px}px;top:${py}px;width:${pw}px;height:${ph}px;">
+        return `<div class="ctr-pos-field pos-${f.party}" data-idx="${idx}" style="left:${px}px;top:${py}px;width:${pw}px;height:${ph}px;">
           <span class="ctr-pos-field-label">${label}</span>
-          <button type="button" class="ctr-pos-field-remove" onclick="_ctrPosRemove(${idx})" aria-label="Remover">×</button>
+          <span class="ctr-pos-field-hint">arraste pra mover</span>
+          <button type="button" class="ctr-pos-field-remove" onclick="event.stopPropagation();_ctrPosRemove(${idx})" aria-label="Remover">×</button>
         </div>`;
       }).join('');
   }
-  // Click-to-place: se _posMode ativo, cria field na posição do clique
-  document.addEventListener('click', function(e){
-    if (!_posMode) return;
+  // Pointer events unificados (mouse + touch) no stage do canvas
+  let _posDrag = null; // { idx, offsetX, offsetY }
+  function _ctrPosWireStage(){
+    const stage = document.getElementById('ctrPosStage');
     const canvas = document.getElementById('ctrPosCanvas');
-    if (!canvas || !canvas.contains(e.target) && e.target !== canvas) {
-      // clique fora do canvas do posicionador; ignora
-      // (mas se clicou no overlay, o event.target pode ser o overlay/field, também ignora)
-      return;
-    }
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
-    // Remove qualquer field existente do mesmo party (só um por parte)
-    _ctrSigFields = _ctrSigFields.filter(f => f.party !== _posMode);
-    // Tamanho padrão: 32% x 8% da página, centralizado no clique
-    const w = 0.32, h = 0.08;
-    _ctrSigFields.push({
-      party: _posMode, page: _posPage,
-      x: Math.max(0, Math.min(1 - w, x - w/2)),
-      y: Math.max(0, Math.min(1 - h, y - h/2)),
-      w, h,
+    if (!stage || !canvas) return;
+    stage.addEventListener('pointerdown', (e) => {
+      // Clique num field existente → começa drag pra mover
+      const fld = e.target.closest('.ctr-pos-field');
+      if (fld && !e.target.classList.contains('ctr-pos-field-remove')) {
+        e.preventDefault();
+        const idx = Number(fld.dataset.idx);
+        const fldRect = fld.getBoundingClientRect();
+        _posDrag = { idx, dx: e.clientX - fldRect.left, dy: e.clientY - fldRect.top };
+        try { stage.setPointerCapture(e.pointerId); } catch(_){}
+        fld.classList.add('is-dragging');
+        return;
+      }
+      // Se _posMode ativo e clique no canvas → cria field novo
+      if (_posMode && (e.target === canvas || e.target.id === 'ctrPosOverlay')) {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        const w = 0.32, h = 0.08;
+        _ctrSigFields = _ctrSigFields.filter(f => f.party !== _posMode);
+        _ctrSigFields.push({
+          party: _posMode, page: _posPage,
+          x: Math.max(0, Math.min(1 - w, x - w/2)),
+          y: Math.max(0, Math.min(1 - h, y - h/2)),
+          w, h,
+        });
+        _posMode = null;
+        document.getElementById('ctrPosBtnInt')?.classList.remove('is-on');
+        document.getElementById('ctrPosBtnCli')?.classList.remove('is-on');
+        document.getElementById('ctrPosCanvasWrap')?.classList.remove('is-placing');
+        const other = _ctrSigFields.length === 1 ? ' Falta a outra parte.' : '';
+        document.getElementById('ctrPosHint').textContent = 'Assinatura posicionada.' + other + ' Arraste pra ajustar.';
+        _ctrPosRedrawOverlay();
+      }
     });
-    _posMode = null;
-    document.getElementById('ctrPosBtnInt')?.classList.remove('is-on');
-    document.getElementById('ctrPosBtnCli')?.classList.remove('is-on');
-    document.getElementById('ctrPosCanvasWrap')?.classList.remove('is-placing');
-    document.getElementById('ctrPosHint').textContent = 'Escolha outra assinatura acima ou salve.';
-    _ctrPosRedrawOverlay();
-  });
+    stage.addEventListener('pointermove', (e) => {
+      if (!_posDrag) return;
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const nx = (e.clientX - _posDrag.dx - rect.left) / rect.width;
+      const ny = (e.clientY - _posDrag.dy - rect.top) / rect.height;
+      const f = _ctrSigFields[_posDrag.idx];
+      if (!f) return;
+      f.x = Math.max(0, Math.min(1 - f.w, nx));
+      f.y = Math.max(0, Math.min(1 - f.h, ny));
+      const el = stage.querySelector(`.ctr-pos-field[data-idx="${_posDrag.idx}"]`);
+      if (el) {
+        el.style.left = (f.x * canvas.width) + 'px';
+        el.style.top = (f.y * canvas.height) + 'px';
+      }
+    });
+    stage.addEventListener('pointerup', (e) => {
+      if (!_posDrag) return;
+      const el = stage.querySelector(`.ctr-pos-field[data-idx="${_posDrag.idx}"]`);
+      if (el) el.classList.remove('is-dragging');
+      try { stage.releasePointerCapture(e.pointerId); } catch(_){}
+      _posDrag = null;
+    });
+    stage.addEventListener('pointercancel', () => { _posDrag = null; });
+  }
   window._ctrPosRemove = function(idx){ _ctrSigFields.splice(idx, 1); _ctrPosRedrawOverlay(); };
   window._ctrPosClearAll = function(){ _ctrSigFields = []; _ctrPosRedrawOverlay(); };
   window._ctrPosClose = function(){
