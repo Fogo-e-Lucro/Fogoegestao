@@ -34055,9 +34055,20 @@ const POP = (() => {
     if (!drop || !input) return;
     const handle = async (file) => {
       if (!file || file.type !== 'application/pdf') { showToast('warn','⚠️','Só PDF'); return; }
-      if (file.size > 5 * 1024 * 1024) { showToast('warn','⚠️','Máximo 5MB'); return; }
-      const buf = await file.arrayBuffer();
-      const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+      // Firestore doc limit é 1MB; base64 expande 33% e ainda cabe selfie ~80KB.
+      // 700KB cru → ~940KB base64+selfie. Acima disso vai pra Storage (backlog).
+      if (file.size > 700 * 1024) {
+        showToast('warn','⚠️','PDF máximo 700KB por enquanto. Comprime em ilovepdf.com/pt/comprimir_pdf');
+        return;
+      }
+      // FileReader lida com arquivos grandes sem estourar call stack (btoa+String.fromCharCode explode acima ~1MB)
+      const dataUrl = await new Promise((ok, fail) => {
+        const r = new FileReader();
+        r.onload = () => ok(r.result);
+        r.onerror = fail;
+        r.readAsDataURL(file);
+      });
+      const b64 = dataUrl.split(',')[1];
       _ctrPdfData = { name: file.name, size: file.size, base64: b64 };
       document.getElementById('ctrDropName').textContent = file.name;
       document.getElementById('ctrDropSize').textContent = (file.size / 1024).toFixed(0) + ' KB';
@@ -34166,7 +34177,11 @@ const POP = (() => {
       ` : ''}
       <div class="ctr-preview-wrap">
         <div class="ctr-preview-label">Documento</div>
-        <embed src="${c.pdfDataUrl}" type="application/pdf" class="ctr-preview-embed">
+        ${c.pdfDataUrl
+          ? `<embed src="${c.pdfDataUrl}" type="application/pdf" class="ctr-preview-embed">`
+          : c.body
+            ? `<pre class="ctr-body-view">${escHtml(c.body)}</pre>`
+            : `<div style="padding:24px;color:var(--text3);text-align:center;">Sem documento anexado.</div>`}
       </div>
       <div class="ctr-modal-actions">
         <button type="button" class="btn-ghost" onclick="ctrCloseModal()">Fechar</button>
@@ -34242,12 +34257,23 @@ const POP = (() => {
                   <div class="csign-card-eyebrow">Documento</div>
                   <div class="csign-card-title">${escHtml(c.pdfName || 'Contrato.pdf')}</div>
                 </div>
-                <a class="csign-card-link" href="${c.pdfDataUrl}" download="${escHtml(c.pdfName || 'contrato.pdf')}">
+                ${c.pdfDataUrl ? `<a class="csign-card-link" href="${c.pdfDataUrl}" download="${escHtml(c.pdfName || 'contrato.pdf')}" target="_blank" rel="noopener">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  Baixar
-                </a>
+                  Abrir
+                </a>` : ''}
               </div>
-              <iframe src="${c.pdfDataUrl}#toolbar=0&navpanes=0" class="csign-pdf" title="Contrato"></iframe>
+              ${c.pdfDataUrl
+                ? (/iPad|iPhone|iPod/.test(navigator.userAgent)
+                    ? `<div class="csign-pdf-ios">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <b>${escHtml(c.pdfName || 'Contrato.pdf')}</b>
+                        <span>Toque pra abrir o contrato em nova aba, leia com atenção e volte pra assinar.</span>
+                        <a class="csign-btn csign-btn--primary" href="${c.pdfDataUrl}" target="_blank" rel="noopener">Abrir PDF</a>
+                      </div>`
+                    : `<iframe src="${c.pdfDataUrl}#toolbar=0&navpanes=0" class="csign-pdf" title="Contrato"></iframe>`)
+                : c.body
+                  ? `<pre class="csign-legacy-body">${escHtml(c.body)}</pre>`
+                  : `<div class="csign-pdf-ios"><b>Sem documento anexado</b><span>O contratante enviou um contrato sem PDF nem texto. Peça pra reenviar.</span></div>`}
               <div class="csign-read">
                 <label class="csign-read-lbl">
                   <input type="checkbox" id="csignReadOk">
@@ -34564,6 +34590,16 @@ const POP = (() => {
     const o = document.getElementById('ctrModalOverlay');
     if (o) o.style.display = 'none';
   };
+
+  // ── Cleanup da câmera: se sair da página ou trocar de aba, corta stream ──
+  function _ctrCamStop(){
+    try { if (_ctrStream) _ctrStream.getTracks().forEach(t => t.stop()); } catch(_) {}
+    _ctrStream = null;
+  }
+  window.addEventListener('pagehide', _ctrCamStop);
+  window.addEventListener('beforeunload', _ctrCamStop);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) _ctrCamStop(); });
+  window.addEventListener('hashchange', () => { if (!location.hash.startsWith('#assinar')) _ctrCamStop(); });
 
   // ── Roteamento público #assinar?id=X ──
   function checkSignRoute(){
