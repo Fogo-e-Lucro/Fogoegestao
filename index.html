@@ -33940,72 +33940,178 @@ const POP = (() => {
     try { _ctrUnsub && _ctrUnsub(); } catch(_){}
     _ctrUnsub = _db.collection('contratos').orderBy('createdAt','desc').limit(100).onSnapshot(snap => {
       const rows = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      const total = rows.length;
+      const pending = rows.filter(r => r.status === 'pending').length;
+      const signed = rows.filter(r => r.status === 'signed').length;
+      const kpisHtml = total ? `
+        <div class="ctr-kpis">
+          <div class="ctr-kpi"><b>${total}</b><span>Total</span></div>
+          <div class="ctr-kpi"><b>${pending}</b><span>Aguardando</span></div>
+          <div class="ctr-kpi"><b>${signed}</b><span>Assinados</span></div>
+        </div>` : '';
       if (!rows.length) {
         el.innerHTML = `<div class="ctr-empty">
-          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <h3>Nenhum contrato ainda</h3>
-          <p>Cria o primeiro e manda o link pro cliente assinar.</p>
+          <div class="ctr-empty-illust">
+            <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>
+          </div>
+          <h3>Nenhum contrato por aqui</h3>
+          <p>Sobe o PDF, escolhe quem vai assinar e manda o link. Selfie e IP ficam registrados pra ter validade jurídica.</p>
+          <button class="btn-primary" onclick="ctrOpenCreate()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Criar primeiro contrato
+          </button>
         </div>`;
         return;
       }
-      el.innerHTML = rows.map(r => `
-        <div class="ctr-row" onclick="ctrOpenDetail('${r.id}')">
-          <div class="ctr-row-icon ctr-row-icon--${r.status||'pending'}">
-            ${r.status==='signed' ? '✓' : r.status==='expired' ? '⏱' : '⧗'}
+      el.innerHTML = kpisHtml + '<div class="ctr-grid">' + rows.map(r => `
+        <div class="ctr-card ctr-card--${r.status||'pending'}" onclick="ctrOpenDetail('${r.id}')">
+          <div class="ctr-card-thumb">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="34" height="34"><path d="M18 3H8a2 2 0 0 0-2 2v22a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V11z"/><polyline points="18 3 18 11 26 11"/><line x1="11" y1="17" x2="21" y2="17"/><line x1="11" y1="21" x2="21" y2="21"/></svg>
+            <span class="ctr-card-badge ctr-card-badge--${r.status||'pending'}">
+              ${r.status==='signed'?'Assinado':r.status==='expired'?'Expirado':'Aguardando'}
+            </span>
           </div>
-          <div class="ctr-row-body">
-            <div class="ctr-row-title">${escHtml(r.title||'Sem título')}</div>
-            <div class="ctr-row-sub">${escHtml(r.clientName||r.clientEmail||'—')} · ${fmtDate(r.createdAt)}</div>
-          </div>
-          <div class="ctr-row-status ctr-row-status--${r.status||'pending'}">
-            ${r.status==='signed' ? 'Assinado' : r.status==='expired' ? 'Expirado' : 'Aguardando'}
+          <div class="ctr-card-body">
+            <div class="ctr-card-title">${escHtml(r.title||'Sem título')}</div>
+            <div class="ctr-card-client">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              ${escHtml(r.clientName||r.clientEmail||'—')}
+            </div>
+            <div class="ctr-card-date">${fmtDate(r.createdAt)}</div>
           </div>
         </div>
-      `).join('');
+      `).join('') + '</div>';
     }, err => {
       el.innerHTML = `<div style="padding:24px;color:var(--danger);text-align:center;">Erro: ${err.message}</div>`;
     });
   };
 
-  // ── Criar contrato ──
+  // ── Criar contrato — wizard 2 passos: upload → destinatário ──
+  let _ctrPdfData = null; // { name, size, base64 }
   window.ctrOpenCreate = function(){
-    const html = `<div class="ctr-modal-panel">
-      <h2>Novo contrato</h2>
-      <label class="ctr-field"><span>Título</span><input id="ctrfTitle" type="text" placeholder="Ex: Prestação de serviços — Palhoça"></label>
-      <label class="ctr-field"><span>Nome do cliente</span><input id="ctrfClientName" type="text" placeholder="Ex: João da Silva"></label>
-      <label class="ctr-field"><span>E-mail do cliente</span><input id="ctrfClientEmail" type="email" placeholder="cliente@exemplo.com"></label>
-      <label class="ctr-field"><span>WhatsApp do cliente (opcional)</span><input id="ctrfClientWa" type="tel" placeholder="5511999999999"></label>
-      <label class="ctr-field"><span>Texto do contrato</span><textarea id="ctrfBody" rows="12" placeholder="Cola aqui o texto completo do contrato…"></textarea></label>
-      <div class="ctr-modal-actions">
-        <button type="button" class="btn-ghost" onclick="ctrCloseModal()">Cancelar</button>
-        <button type="button" class="btn-primary" onclick="ctrSave()">Gerar link de assinatura</button>
+    _ctrPdfData = null;
+    const html = `<div class="ctr-modal-panel ctr-wizard">
+      <button type="button" class="ctr-modal-close" onclick="ctrCloseModal()" aria-label="Fechar">&times;</button>
+      <div class="ctr-wizard-steps">
+        <span class="ctr-wizard-dot ctr-wizard-dot--on" data-step="1"><b>1</b> Documento</span>
+        <span class="ctr-wizard-sep"></span>
+        <span class="ctr-wizard-dot" data-step="2"><b>2</b> Destinatário</span>
+      </div>
+      <div id="ctrWizardBody">
+        <div id="ctrStep1">
+          <h2>Envie o PDF do contrato</h2>
+          <p class="ctr-modal-sub">Arraste o arquivo aqui ou clique pra selecionar. Só PDF, até 5MB.</p>
+          <label class="ctr-drop" id="ctrDrop">
+            <input type="file" id="ctrPdfInput" accept="application/pdf" hidden>
+            <div class="ctr-drop-empty">
+              <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <b>Clique ou arraste o PDF</b>
+              <span>até 5 MB</span>
+            </div>
+            <div class="ctr-drop-file" id="ctrDropFile" hidden>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:#dc2626"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <div class="ctr-drop-info">
+                <b id="ctrDropName">arquivo.pdf</b>
+                <span id="ctrDropSize">0 KB</span>
+              </div>
+              <button type="button" class="ctr-drop-remove" onclick="event.preventDefault();ctrClearPdf()">Trocar</button>
+            </div>
+          </label>
+          <div class="ctr-modal-actions">
+            <button type="button" class="btn-ghost" onclick="ctrCloseModal()">Cancelar</button>
+            <button type="button" class="btn-primary" id="ctrNext1" disabled onclick="ctrWizardStep(2)">Próximo →</button>
+          </div>
+        </div>
+        <div id="ctrStep2" hidden>
+          <h2>Quem vai assinar?</h2>
+          <p class="ctr-modal-sub">Enviamos o link único pra essa pessoa.</p>
+          <label class="ctr-field"><span>Título do contrato <em>*</em></span>
+            <input id="ctrfTitle" type="text" placeholder="Ex: Prestação de serviços — Palhoça">
+          </label>
+          <label class="ctr-field"><span>Nome completo do cliente <em>*</em></span>
+            <input id="ctrfClientName" type="text" placeholder="Ex: João da Silva">
+          </label>
+          <div class="ctr-field-row">
+            <label class="ctr-field"><span>E-mail</span>
+              <input id="ctrfClientEmail" type="email" placeholder="cliente@exemplo.com">
+            </label>
+            <label class="ctr-field"><span>WhatsApp</span>
+              <input id="ctrfClientWa" type="tel" placeholder="5511999999999">
+            </label>
+          </div>
+          <div class="ctr-modal-actions">
+            <button type="button" class="btn-ghost" onclick="ctrWizardStep(1)">← Voltar</button>
+            <button type="button" class="btn-primary" onclick="ctrSave()">Gerar link de assinatura</button>
+          </div>
+        </div>
       </div>
     </div>`;
     _openCtrModal(html);
+    _wireCtrDrop();
+  };
+  function _wireCtrDrop(){
+    const drop = document.getElementById('ctrDrop');
+    const input = document.getElementById('ctrPdfInput');
+    if (!drop || !input) return;
+    const handle = async (file) => {
+      if (!file || file.type !== 'application/pdf') { showToast('warn','⚠️','Só PDF'); return; }
+      if (file.size > 5 * 1024 * 1024) { showToast('warn','⚠️','Máximo 5MB'); return; }
+      const buf = await file.arrayBuffer();
+      const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+      _ctrPdfData = { name: file.name, size: file.size, base64: b64 };
+      document.getElementById('ctrDropName').textContent = file.name;
+      document.getElementById('ctrDropSize').textContent = (file.size / 1024).toFixed(0) + ' KB';
+      document.querySelector('.ctr-drop-empty').hidden = true;
+      document.getElementById('ctrDropFile').hidden = false;
+      document.getElementById('ctrNext1').disabled = false;
+    };
+    input.addEventListener('change', () => handle(input.files[0]));
+    drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('is-drag'); });
+    drop.addEventListener('dragleave', () => drop.classList.remove('is-drag'));
+    drop.addEventListener('drop', e => {
+      e.preventDefault(); drop.classList.remove('is-drag');
+      handle(e.dataTransfer.files[0]);
+    });
+  }
+  window.ctrClearPdf = function(){
+    _ctrPdfData = null;
+    document.querySelector('.ctr-drop-empty').hidden = false;
+    document.getElementById('ctrDropFile').hidden = true;
+    document.getElementById('ctrNext1').disabled = true;
+    document.getElementById('ctrPdfInput').value = '';
+  };
+  window.ctrWizardStep = function(n){
+    document.getElementById('ctrStep1').hidden = n !== 1;
+    document.getElementById('ctrStep2').hidden = n !== 2;
+    document.querySelectorAll('.ctr-wizard-dot').forEach(d => {
+      d.classList.toggle('ctr-wizard-dot--on', Number(d.dataset.step) <= n);
+    });
   };
   window.ctrSave = async function(){
     const u = cur(); if (!u) { showToast('warn','⚠️','Faça login'); return; }
+    if (!_ctrPdfData) { showToast('warn','⚠️','Sobe o PDF primeiro'); return; }
     const title = document.getElementById('ctrfTitle').value.trim();
     const clientName = document.getElementById('ctrfClientName').value.trim();
     const clientEmail = document.getElementById('ctrfClientEmail').value.trim();
     const clientWa = document.getElementById('ctrfClientWa').value.trim().replace(/\D/g,'');
-    const body = document.getElementById('ctrfBody').value.trim();
-    if (!title || !body || !clientName) { showToast('warn','⚠️','Preenche título, nome e texto'); return; }
-    const bodyHash = await sha256(body);
+    if (!title || !clientName) { showToast('warn','⚠️','Preenche título e nome'); return; }
+    const pdfDataUrl = 'data:application/pdf;base64,' + _ctrPdfData.base64;
+    const bodyHash = await sha256(_ctrPdfData.base64);
     const doc = {
       title, clientName, clientEmail, clientWa,
-      body, bodyHash,
+      pdfDataUrl, pdfName: _ctrPdfData.name, pdfSize: _ctrPdfData.size,
+      bodyHash,
       status: 'pending',
       createdBy: u.email || u.uid,
       createdByName: u.displayName || '',
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      expiresAt: Date.now() + 30 * 86400000, // 30 dias
+      expiresAt: Date.now() + 30 * 86400000,
     };
     const ref = await _db.collection('contratos').add(doc);
     ctrCloseModal();
     const link = location.origin + location.pathname + '#assinar?id=' + ref.id;
-    showToast('success','✓','Contrato criado. Link copiado.');
-    try { await navigator.clipboard.writeText(link); } catch(_){}
+    try { await navigator.clipboard.writeText(link); showToast('success','✓','Contrato criado. Link copiado.'); }
+    catch(_) { showToast('success','✓','Contrato criado.'); }
     setTimeout(() => ctrOpenDetail(ref.id), 300);
   };
 
@@ -34025,33 +34131,43 @@ const POP = (() => {
         ${c.signedAt ? `<span>Assinado ${fmtDate(c.signedAt)}</span>` : ''}
       </div>
       ${c.status !== 'signed' ? `
-        <label class="ctr-field"><span>Link de assinatura (envia pro cliente)</span>
-          <input type="text" readonly value="${link}" onclick="this.select();document.execCommand('copy');" style="cursor:pointer">
-        </label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-          <button type="button" class="btn-ghost" onclick="navigator.clipboard.writeText('${link}');showToast('success','✓','Link copiado')">Copiar link</button>
-          ${c.clientWa ? `<a class="btn-ghost" href="https://wa.me/${c.clientWa}?text=${encodeURIComponent('Segue o contrato pra assinatura: '+link)}" target="_blank">Mandar por WhatsApp</a>` : ''}
-          ${c.clientEmail ? `<a class="btn-ghost" href="mailto:${c.clientEmail}?subject=${encodeURIComponent('Contrato para assinatura')}&body=${encodeURIComponent('Segue o link do contrato: '+link)}">Mandar por e-mail</a>` : ''}
+        <div class="ctr-link-box">
+          <label>Link único (o cliente assina abrindo aqui)</label>
+          <div class="ctr-link-row">
+            <input type="text" readonly value="${link}" onclick="this.select()">
+            <button type="button" class="btn-primary btn-primary--sm" onclick="navigator.clipboard.writeText('${link}');showToast('success','✓','Copiado')">Copiar</button>
+          </div>
+          <div class="ctr-send-actions">
+            ${c.clientWa ? `<a class="ctr-send-btn ctr-send-btn--wa" href="https://wa.me/${c.clientWa}?text=${encodeURIComponent('Olá '+c.clientName+', segue o contrato pra assinatura: '+link)}" target="_blank">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              WhatsApp
+            </a>` : ''}
+            ${c.clientEmail ? `<a class="ctr-send-btn ctr-send-btn--email" href="mailto:${c.clientEmail}?subject=${encodeURIComponent('Contrato para assinatura — '+c.title)}&body=${encodeURIComponent('Olá '+c.clientName+',\n\nSegue o link do contrato para assinatura:\n'+link+'\n\nQualquer dúvida estou à disposição.')}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              E-mail
+            </a>` : ''}
+          </div>
         </div>
       ` : ''}
       ${c.status === 'signed' ? `
         <div class="ctr-signed-panel">
           <div class="ctr-signed-selfie">
             ${c.selfieDataUrl ? `<img src="${c.selfieDataUrl}" alt="Selfie do assinante">` : ''}
+            <span class="ctr-signed-badge">✓ Verificado</span>
           </div>
           <div class="ctr-signed-info">
-            <p><b>Assinado por:</b> ${escHtml(c.signatureText || c.clientName)}</p>
-            <p><b>Data/hora:</b> ${fmtDate(c.signedAt)}</p>
-            <p><b>IP:</b> ${escHtml(c.signIp || '—')}</p>
-            <p><b>Hash SHA-256:</b> <code style="font-size:11px;word-break:break-all;">${escHtml(c.bodyHash)}</code></p>
-            <button class="btn-primary" onclick="ctrDownloadPdf('${id}')">Baixar PDF assinado</button>
+            <div class="ctr-signed-line"><b>Assinado por</b><span>${escHtml(c.signatureText || c.clientName)}</span></div>
+            <div class="ctr-signed-line"><b>Data/hora</b><span>${fmtDate(c.signedAt)}</span></div>
+            <div class="ctr-signed-line"><b>IP</b><span>${escHtml(c.signIp || '—')}</span></div>
+            <div class="ctr-signed-line"><b>Hash</b><code>${escHtml((c.bodyHash||'').slice(0,32))}…</code></div>
           </div>
         </div>
+        <button class="btn-primary btn-primary--lg" onclick="ctrDownloadPdf('${id}')" style="width:100%;margin-top:12px;">📄 Baixar PDF assinado</button>
       ` : ''}
-      <details style="margin-top:16px;">
-        <summary style="cursor:pointer;color:var(--text2);font-size:13px;">Ver texto do contrato</summary>
-        <pre class="ctr-body-view">${escHtml(c.body)}</pre>
-      </details>
+      <div class="ctr-preview-wrap">
+        <div class="ctr-preview-label">Documento</div>
+        <embed src="${c.pdfDataUrl}" type="application/pdf" class="ctr-preview-embed">
+      </div>
       <div class="ctr-modal-actions">
         <button type="button" class="btn-ghost" onclick="ctrCloseModal()">Fechar</button>
         ${c.status !== 'signed' ? `<button type="button" class="btn-danger" onclick="ctrDelete('${id}')">Excluir</button>` : ''}
@@ -34090,13 +34206,24 @@ const POP = (() => {
       }
       container.innerHTML = `
         <div class="ctr-sign-header">
-          <div>
-            <h1>📄 ${escHtml(c.title)}</h1>
-            <p>Contrato pra ${escHtml(c.clientName)} · ${escHtml(c.createdByName || c.createdBy)}</p>
+          <div class="ctr-sign-brand">
+            <div class="ctr-sign-logo">🔥</div>
+            <div>
+              <h1>${escHtml(c.title)}</h1>
+              <p>Enviado por ${escHtml(c.createdByName || c.createdBy)}</p>
+            </div>
+          </div>
+          <div class="ctr-sign-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+            Assinatura segura
           </div>
         </div>
         <div class="ctr-sign-body">
-          <div class="ctr-sign-doc" id="ctrSignDoc"><pre>${escHtml(c.body)}</pre></div>
+          <div class="ctr-sign-doc-wrap">
+            <div class="ctr-sign-doc-label">📄 Contrato</div>
+            <embed src="${c.pdfDataUrl}" type="application/pdf" class="ctr-sign-doc-embed">
+            <a href="${c.pdfDataUrl}" download="${escHtml(c.pdfName || 'contrato.pdf')}" class="ctr-sign-doc-dl">Baixar PDF</a>
+          </div>
           <div class="ctr-sign-steps">
             <div class="ctr-step">
               <h3>1. Confirme sua identidade</h3>
@@ -34224,26 +34351,17 @@ const POP = (() => {
     if (!snap.exists) return;
     const c = snap.data();
     const { PDFDocument, StandardFonts, rgb } = await loadPdfLib();
-    const pdf = await PDFDocument.create();
+    // Carrega o PDF original (fallback pra doc vazio se algum contrato antigo estiver como texto)
+    let pdf;
+    if (c.pdfDataUrl) {
+      const bytes = Uint8Array.from(atob(c.pdfDataUrl.split(',')[1]), ch => ch.charCodeAt(0));
+      pdf = await PDFDocument.load(bytes);
+    } else {
+      pdf = await PDFDocument.create();
+    }
     const font = await pdf.embedFont(StandardFonts.Helvetica);
     const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
-    const page = pdf.addPage([595, 842]); // A4
-    let y = 800;
-    const drawLine = (txt, f=font, size=10) => {
-      page.drawText(String(txt).slice(0, 100), { x: 40, y, size, font: f, color: rgb(0,0,0) });
-      y -= size + 4;
-    };
-    drawLine(c.title, bold, 16); y -= 8;
-    drawLine('Contratante: ' + (c.createdByName || c.createdBy), font, 10);
-    drawLine('Contratado: ' + c.clientName + (c.clientEmail ? ' — ' + c.clientEmail : ''), font, 10);
-    drawLine('Criado em: ' + fmtDate(c.createdAt), font, 10);
-    y -= 8;
-    (c.body || '').split('\n').forEach(line => {
-      if (y < 60) { const p = pdf.addPage([595, 842]); y = 800; }
-      const parts = String(line).match(/.{1,90}(\s|$)/g) || [''];
-      parts.forEach(p => { drawLine(p.trim(), font, 10); });
-    });
-    // Página de assinatura
+    // Anexa página de comprovante ao final
     const sig = pdf.addPage([595, 842]);
     sig.drawText('COMPROVANTE DE ASSINATURA ELETRÔNICA', { x: 40, y: 780, size: 14, font: bold });
     sig.drawText('Base legal: Lei 14.063/2020 e MP 2.200-2/2001', { x: 40, y: 760, size: 9, font, color: rgb(.3,.3,.3) });
