@@ -34650,10 +34650,13 @@ const POP = (() => {
     }
     const pdfBytes = await pdf.save();
     const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
+    a.href = url;
     a.download = (c.title || 'contrato').replace(/[^a-z0-9]/gi,'_') + '_assinado.pdf';
     a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    try { showToast('success','📄','PDF baixado'); } catch(_){}
   };
 
   // ── Modal helper ──
