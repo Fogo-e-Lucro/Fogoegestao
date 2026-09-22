@@ -34062,9 +34062,9 @@ const POP = (() => {
       <div class="ctr-wizard-steps">
         <span class="ctr-wizard-dot ctr-wizard-dot--on" data-step="1"><b>1</b> Documento</span>
         <span class="ctr-wizard-sep"></span>
-        <span class="ctr-wizard-dot" data-step="2"><b>2</b> Cliente</span>
+        <span class="ctr-wizard-dot" data-step="2"><b>2</b> Contratante</span>
         <span class="ctr-wizard-sep"></span>
-        <span class="ctr-wizard-dot" data-step="3"><b>3</b> Contratante</span>
+        <span class="ctr-wizard-dot" data-step="3"><b>3</b> Contratado</span>
       </div>
       <div id="ctrWizardBody">
         <div id="ctrStep1">
@@ -34092,12 +34092,12 @@ const POP = (() => {
           </div>
         </div>
         <div id="ctrStep2" hidden>
-          <h2>Quem vai assinar?</h2>
-          <p class="ctr-modal-sub">Enviamos o link único pra essa pessoa.</p>
+          <h2>Quem é o Contratante?</h2>
+          <p class="ctr-modal-sub">A pessoa/empresa que está contratando seu serviço. O link único vai pra ela assinar.</p>
           <label class="ctr-field"><span>Título do contrato <em>*</em></span>
             <input id="ctrfTitle" type="text" placeholder="Ex: Prestação de serviços — Palhoça">
           </label>
-          <label class="ctr-field"><span>Nome completo do cliente <em>*</em></span>
+          <label class="ctr-field"><span>Nome completo do Contratante <em>*</em></span>
             <input id="ctrfClientName" type="text" placeholder="Ex: João da Silva">
           </label>
           <div class="ctr-field-row">
@@ -34114,8 +34114,8 @@ const POP = (() => {
           </div>
         </div>
         <div id="ctrStep3" hidden>
-          <h2>Assine como Contratante</h2>
-          <p class="ctr-modal-sub">Você assina primeiro. O link vai pro Contratado com o documento já assinado pela sua parte.</p>
+          <h2>Assine como Contratado</h2>
+          <p class="ctr-modal-sub">Você é quem presta o serviço. Assina primeiro e o link vai pro Contratante com o documento já assinado pela sua parte.</p>
           <label class="ctr-field"><span>Nome completo <em>*</em></span>
             <input id="ctrfIntName" type="text" placeholder="Seu nome completo" value="${escHtml(u?.displayName || meName || '')}" autocomplete="name">
           </label>
@@ -34367,11 +34367,11 @@ const POP = (() => {
       ${c.internalSig ? `
         <div class="ctr-signed-panel ctr-signed-panel--internal">
           <div class="ctr-signed-selfie">
-            ${c.internalSig.selfieDataUrl ? `<img src="${c.internalSig.selfieDataUrl}" alt="Selfie do sócio">` : ''}
+            ${c.internalSig.selfieDataUrl ? `<img src="${c.internalSig.selfieDataUrl}" alt="Selfie do Contratado">` : ''}
             <span class="ctr-signed-badge">✓ Você</span>
           </div>
           <div class="ctr-signed-info">
-            <div class="ctr-signed-line"><b>Contratante</b><span>${escHtml(c.internalSig.name||'')}</span></div>
+            <div class="ctr-signed-line"><b>Contratado</b><span>${escHtml(c.internalSig.name||'')}</span></div>
             <div class="ctr-signed-line"><b>Data/hora</b><span>${fmtDate(c.internalSig.signedAt)}</span></div>
             <div class="ctr-signed-line"><b>IP</b><span>${escHtml(c.internalSig.ip || '—')}</span></div>
             ${c.internalSig.cpf ? `<div class="ctr-signed-line"><b>CPF</b><span>${escHtml(c.internalSig.cpf)}</span></div>` : ''}
@@ -34381,11 +34381,11 @@ const POP = (() => {
       ${c.status === 'signed' ? `
         <div class="ctr-signed-panel">
           <div class="ctr-signed-selfie">
-            ${c.selfieDataUrl ? `<img src="${c.selfieDataUrl}" alt="Selfie do assinante">` : ''}
-            <span class="ctr-signed-badge">✓ Cliente</span>
+            ${c.selfieDataUrl ? `<img src="${c.selfieDataUrl}" alt="Selfie do Contratante">` : ''}
+            <span class="ctr-signed-badge">✓ Contratante</span>
           </div>
           <div class="ctr-signed-info">
-            <div class="ctr-signed-line"><b>Contratado</b><span>${escHtml(c.signatureText || c.clientName || '')}</span></div>
+            <div class="ctr-signed-line"><b>Contratante</b><span>${escHtml(c.signatureText || c.clientName || '')}</span></div>
             <div class="ctr-signed-line"><b>Data/hora</b><span>${fmtDate(c.signedAt)}</span></div>
             <div class="ctr-signed-line"><b>IP</b><span>${escHtml(c.signIp || '—')}</span></div>
             <div class="ctr-signed-line"><b>Hash</b><code>${escHtml((c.bodyHash||'').slice(0,32))}…</code></div>
@@ -34828,9 +34828,9 @@ const POP = (() => {
     sig.drawText('COMPROVANTE DE ASSINATURA ELETRÔNICA', { x: 40, y: 800, size: 14, font: bold });
     sig.drawText('Base legal: Lei 14.063/2020 e MP 2.200-2/2001', { x: 40, y: 782, size: 9, font, color: rgb(.3,.3,.3) });
     let sy = 750;
-    // 1) Contratante (interno)
+    // 1) Contratado (você, sócio que enviou — presta o serviço)
     if (c.internalSig) {
-      sy = await drawParty(sig, 'CONTRATANTE', [
+      sy = await drawParty(sig, 'CONTRATADO', [
         ['Nome:', c.internalSig.name],
         ['CPF:', c.internalSig.cpf || '—'],
         ['E-mail:', c.internalSig.email || '—'],
@@ -34840,8 +34840,8 @@ const POP = (() => {
       sy = await drawSelfie(sig, c.internalSig.selfieDataUrl, sy - 4);
       sy -= 20;
     }
-    // 2) Contratado (cliente que assinou pelo link)
-    sy = await drawParty(sig, 'CONTRATADO', [
+    // 2) Contratante (cliente que assinou pelo link — recebe o serviço)
+    sy = await drawParty(sig, 'CONTRATANTE', [
       ['Nome:', c.signatureText || c.clientName],
       ['CPF:', c.signCpf || '—'],
       ['E-mail:', c.clientEmail || '—'],
