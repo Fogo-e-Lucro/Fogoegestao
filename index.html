@@ -33906,6 +33906,8 @@ const POP = (() => {
 // ══════════════════════════════════════════════════════════════════
 (function(){
   const CDN_PDFLIB = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
+  const CDN_PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+  const CDN_PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   let _pdfLibReady = null;
   function loadPdfLib(){
     if (_pdfLibReady) return _pdfLibReady;
@@ -33915,6 +33917,21 @@ const POP = (() => {
       document.head.appendChild(s);
     });
     return _pdfLibReady;
+  }
+  let _pdfJsReady = null;
+  function loadPdfJs(){
+    if (_pdfJsReady) return _pdfJsReady;
+    _pdfJsReady = new Promise((ok, fail) => {
+      const s = document.createElement('script');
+      s.src = CDN_PDFJS;
+      s.onload = () => {
+        try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = CDN_PDFJS_WORKER; } catch(_){}
+        ok(window.pdfjsLib);
+      };
+      s.onerror = fail;
+      document.head.appendChild(s);
+    });
+    return _pdfJsReady;
   }
   function _validaCpf(cpf){
     // Módulo 11 — retorna true/false pra CPF de 11 dígitos
@@ -34052,9 +34069,11 @@ const POP = (() => {
   // ── Criar contrato — wizard 3 passos: upload → destinatário → sua assinatura ──
   let _ctrPdfData = null; // { name, size, base64 }
   let _ctrIntSelfieData = null; // selfie do sócio interno
+  let _ctrSigFields = []; // [{party:'internal'|'client', page:1, x:0-1, y:0-1, w:0-1, h:0-1}]
   window.ctrOpenCreate = function(){
     _ctrPdfData = null;
     _ctrIntSelfieData = null;
+    _ctrSigFields = [];
     const u = cur();
     const meName = (u?.displayName || u?.email || '').split('@')[0];
     const html = `<div class="ctr-modal-panel ctr-wizard">
@@ -34086,6 +34105,13 @@ const POP = (() => {
               <button type="button" class="ctr-drop-remove" onclick="event.preventDefault();ctrClearPdf()">Trocar</button>
             </div>
           </label>
+          <div class="ctr-pos-cta" id="ctrPosCta" hidden>
+            <button type="button" class="btn-ghost btn-ghost--full" onclick="ctrOpenPositionModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M14 10l7-7M9 21H3v-6M10 14l-7 7"/></svg>
+              <span id="ctrPosCtaLabel">Posicionar assinaturas no PDF (opcional)</span>
+            </button>
+            <p class="ctr-pos-cta-hint">Sem posicionar, as assinaturas ficam só na página de comprovante no fim.</p>
+          </div>
           <div class="ctr-modal-actions">
             <button type="button" class="btn-ghost" onclick="ctrCloseModal()">Cancelar</button>
             <button type="button" class="btn-primary" id="ctrNext1" disabled onclick="ctrWizardStep(2)">Próximo →</button>
@@ -34229,11 +34255,15 @@ const POP = (() => {
       });
       const b64 = dataUrl.split(',')[1];
       _ctrPdfData = { name: file.name, size: file.size, base64: b64 };
+      _ctrSigFields = [];
       document.getElementById('ctrDropName').textContent = file.name;
       document.getElementById('ctrDropSize').textContent = (file.size / 1024).toFixed(0) + ' KB';
       document.querySelector('.ctr-drop-empty').hidden = true;
       document.getElementById('ctrDropFile').hidden = false;
       document.getElementById('ctrNext1').disabled = false;
+      const pos = document.getElementById('ctrPosCta');
+      if (pos) pos.hidden = false;
+      _ctrUpdatePosLabel();
     };
     input.addEventListener('change', () => handle(input.files[0]));
     drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('is-drag'); });
@@ -34245,11 +34275,22 @@ const POP = (() => {
   }
   window.ctrClearPdf = function(){
     _ctrPdfData = null;
+    _ctrSigFields = [];
     document.querySelector('.ctr-drop-empty').hidden = false;
     document.getElementById('ctrDropFile').hidden = true;
     document.getElementById('ctrNext1').disabled = true;
     document.getElementById('ctrPdfInput').value = '';
+    const pos = document.getElementById('ctrPosCta');
+    if (pos) pos.hidden = true;
   };
+  function _ctrUpdatePosLabel(){
+    const lbl = document.getElementById('ctrPosCtaLabel');
+    if (!lbl) return;
+    const n = _ctrSigFields.length;
+    lbl.textContent = n === 0 ? 'Posicionar assinaturas no PDF (opcional)'
+      : n === 1 ? '1 assinatura posicionada — editar'
+      : `${n} assinaturas posicionadas — editar`;
+  }
   window.ctrWizardStep = function(n){
     // Se saindo do step 3, garante câmera desligada
     if (n !== 3 && _ctrIntStream) { try { _ctrIntStream.getTracks().forEach(t => t.stop()); } catch(_){} }
@@ -34306,6 +34347,7 @@ const POP = (() => {
           userAgent: navigator.userAgent,
           signedAt: firebase.firestore.Timestamp.now(),
         },
+        sigFields: _ctrSigFields.slice(),
       };
       const ref = await _db.collection('contratos').add(doc);
       ctrCloseModal();
@@ -34673,6 +34715,154 @@ const POP = (() => {
       hint.textContent = agree ? 'Toque em Assinar pra concluir' : 'Marque o aceite pra assinar';
     }
   };
+  // ── Modal de posicionamento das assinaturas no PDF ──
+  let _pdfDocForPos = null;
+  let _posPage = 1;
+  let _posMode = null; // 'internal' | 'client' | null
+  window.ctrOpenPositionModal = async function(){
+    if (!_ctrPdfData) return;
+    const html = `<div class="ctr-pos-modal" id="ctrPosRoot">
+      <div class="ctr-pos-toolbar">
+        <div class="ctr-pos-tools">
+          <button type="button" class="ctr-pos-tool ctr-pos-tool--internal" id="ctrPosBtnInt" onclick="_ctrPosSetMode('internal')">
+            <span class="dot"></span>Assinatura do Contratado (você)
+          </button>
+          <button type="button" class="ctr-pos-tool ctr-pos-tool--client" id="ctrPosBtnCli" onclick="_ctrPosSetMode('client')">
+            <span class="dot"></span>Assinatura do Contratante
+          </button>
+        </div>
+        <div class="ctr-pos-pager">
+          <button type="button" class="ctr-pos-nav" onclick="_ctrPosGoto(_posPage-1)">←</button>
+          <span id="ctrPosPageLbl">Página 1</span>
+          <button type="button" class="ctr-pos-nav" onclick="_ctrPosGoto(_posPage+1)">→</button>
+        </div>
+      </div>
+      <div class="ctr-pos-canvas-wrap" id="ctrPosCanvasWrap">
+        <div class="ctr-pos-hint" id="ctrPosHint">Escolha uma assinatura acima e clique no lugar do PDF onde ela vai aparecer.</div>
+        <canvas id="ctrPosCanvas"></canvas>
+        <div class="ctr-pos-overlay" id="ctrPosOverlay"></div>
+      </div>
+      <div class="ctr-pos-actions">
+        <button type="button" class="btn-ghost" onclick="_ctrPosClose()">Cancelar</button>
+        <button type="button" class="btn-ghost" onclick="_ctrPosClearAll()">Limpar tudo</button>
+        <button type="button" class="btn-primary" onclick="_ctrPosSave()">Salvar posições</button>
+      </div>
+    </div>`;
+    // usa um overlay separado (não o do modal principal, pra não fechar o wizard)
+    let o = document.getElementById('ctrPosOverlayRoot');
+    if (!o) {
+      o = document.createElement('div');
+      o.id = 'ctrPosOverlayRoot';
+      o.className = 'ctr-modal-overlay';
+      document.body.appendChild(o);
+    }
+    o.innerHTML = html;
+    o.style.display = 'flex';
+    try {
+      const pdfjs = await loadPdfJs();
+      const bytes = Uint8Array.from(atob(_ctrPdfData.base64), c => c.charCodeAt(0));
+      _pdfDocForPos = await pdfjs.getDocument({ data: bytes }).promise;
+      _posPage = 1;
+      await _ctrPosRender();
+    } catch (e) { alert('Erro ao carregar preview: ' + e.message); _ctrPosClose(); }
+  };
+  window._ctrPosSetMode = function(m){
+    _posMode = _posMode === m ? null : m;
+    document.getElementById('ctrPosBtnInt')?.classList.toggle('is-on', _posMode === 'internal');
+    document.getElementById('ctrPosBtnCli')?.classList.toggle('is-on', _posMode === 'client');
+    const wrap = document.getElementById('ctrPosCanvasWrap');
+    if (wrap) wrap.classList.toggle('is-placing', !!_posMode);
+    const hint = document.getElementById('ctrPosHint');
+    if (hint) hint.textContent = _posMode
+      ? (_posMode === 'internal' ? 'Toque no PDF onde vai sua assinatura (Contratado)' : 'Toque no PDF onde vai a assinatura do Contratante')
+      : 'Escolha uma assinatura acima e clique no lugar do PDF onde ela vai aparecer.';
+  };
+  window._ctrPosGoto = async function(p){
+    if (!_pdfDocForPos) return;
+    if (p < 1 || p > _pdfDocForPos.numPages) return;
+    _posPage = p;
+    await _ctrPosRender();
+  };
+  async function _ctrPosRender(){
+    const canvas = document.getElementById('ctrPosCanvas');
+    if (!canvas) return;
+    const page = await _pdfDocForPos.getPage(_posPage);
+    const maxW = Math.min(720, window.innerWidth - 60);
+    const baseVp = page.getViewport({ scale: 1 });
+    const scale = maxW / baseVp.width;
+    const viewport = page.getViewport({ scale });
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    canvas.style.width = viewport.width + 'px';
+    canvas.style.height = viewport.height + 'px';
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+    document.getElementById('ctrPosPageLbl').textContent = `Página ${_posPage} de ${_pdfDocForPos.numPages}`;
+    _ctrPosRedrawOverlay();
+  }
+  function _ctrPosRedrawOverlay(){
+    const wrap = document.getElementById('ctrPosCanvasWrap');
+    const overlay = document.getElementById('ctrPosOverlay');
+    const canvas = document.getElementById('ctrPosCanvas');
+    if (!overlay || !canvas) return;
+    overlay.style.width = canvas.width + 'px';
+    overlay.style.height = canvas.height + 'px';
+    overlay.innerHTML = _ctrSigFields
+      .filter(f => f.page === _posPage)
+      .map((f, i) => {
+        const idx = _ctrSigFields.indexOf(f);
+        const px = f.x * canvas.width;
+        const py = f.y * canvas.height;
+        const pw = f.w * canvas.width;
+        const ph = f.h * canvas.height;
+        const label = f.party === 'internal' ? 'Contratado' : 'Contratante';
+        return `<div class="ctr-pos-field pos-${f.party}" style="left:${px}px;top:${py}px;width:${pw}px;height:${ph}px;">
+          <span class="ctr-pos-field-label">${label}</span>
+          <button type="button" class="ctr-pos-field-remove" onclick="_ctrPosRemove(${idx})" aria-label="Remover">×</button>
+        </div>`;
+      }).join('');
+  }
+  // Click-to-place: se _posMode ativo, cria field na posição do clique
+  document.addEventListener('click', function(e){
+    if (!_posMode) return;
+    const canvas = document.getElementById('ctrPosCanvas');
+    if (!canvas || !canvas.contains(e.target) && e.target !== canvas) {
+      // clique fora do canvas do posicionador; ignora
+      // (mas se clicou no overlay, o event.target pode ser o overlay/field, também ignora)
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    // Remove qualquer field existente do mesmo party (só um por parte)
+    _ctrSigFields = _ctrSigFields.filter(f => f.party !== _posMode);
+    // Tamanho padrão: 32% x 8% da página, centralizado no clique
+    const w = 0.32, h = 0.08;
+    _ctrSigFields.push({
+      party: _posMode, page: _posPage,
+      x: Math.max(0, Math.min(1 - w, x - w/2)),
+      y: Math.max(0, Math.min(1 - h, y - h/2)),
+      w, h,
+    });
+    _posMode = null;
+    document.getElementById('ctrPosBtnInt')?.classList.remove('is-on');
+    document.getElementById('ctrPosBtnCli')?.classList.remove('is-on');
+    document.getElementById('ctrPosCanvasWrap')?.classList.remove('is-placing');
+    document.getElementById('ctrPosHint').textContent = 'Escolha outra assinatura acima ou salve.';
+    _ctrPosRedrawOverlay();
+  });
+  window._ctrPosRemove = function(idx){ _ctrSigFields.splice(idx, 1); _ctrPosRedrawOverlay(); };
+  window._ctrPosClearAll = function(){ _ctrSigFields = []; _ctrPosRedrawOverlay(); };
+  window._ctrPosClose = function(){
+    const o = document.getElementById('ctrPosOverlayRoot');
+    if (o) o.style.display = 'none';
+    _pdfDocForPos = null; _posMode = null;
+  };
+  window._ctrPosSave = function(){
+    _ctrPosClose();
+    _ctrUpdatePosLabel();
+    showToast('success','✓', _ctrSigFields.length + ' assinatura(s) posicionada(s)');
+  };
+
   // Abre o PDF do contrato em nova aba via Blob URL (Chrome bloqueia data: em href de download)
   window._csignOpenPdf = async function(id){
     try {
@@ -34803,7 +34993,31 @@ const POP = (() => {
     }
     const font = await pdf.embedFont(StandardFonts.Helvetica);
     const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
-    // Anexa página(s) de comprovante ao final
+    // 1) Estampar caixinhas de assinatura posicionadas pelo dono (se houver)
+    const fields = Array.isArray(c.sigFields) ? c.sigFields : [];
+    if (fields.length) {
+      const pages = pdf.getPages();
+      for (const f of fields) {
+        const pg = pages[(f.page || 1) - 1];
+        if (!pg) continue;
+        const { width: pw, height: ph } = pg.getSize();
+        const w = f.w * pw, h = f.h * ph;
+        const x = f.x * pw;
+        const y = ph - (f.y * ph) - h; // pdf-lib origem no bottom-left; f.y é top-based
+        const isInternal = f.party === 'internal';
+        const party = isInternal ? c.internalSig : {
+          name: c.signatureText || c.clientName,
+          signedAt: c.signedAt,
+        };
+        const color = isInternal ? rgb(0.23, 0.51, 0.96) : rgb(0.09, 0.64, 0.29);
+        pg.drawRectangle({ x, y, width: w, height: h, borderColor: color, borderWidth: 1.2, color: rgb(1,1,1), opacity: 0.9 });
+        pg.drawText(isInternal ? 'CONTRATADO' : 'CONTRATANTE', { x: x + 4, y: y + h - 10, size: 6.5, font: bold, color });
+        pg.drawText(String(party?.name || '').slice(0,40), { x: x + 4, y: y + h - 22, size: 9, font: bold, color: rgb(0.1,0.1,0.1) });
+        pg.drawText('Assinado eletronicamente', { x: x + 4, y: y + h - 34, size: 7, font, color: rgb(0.4,0.4,0.4) });
+        if (party?.signedAt) pg.drawText(fmtDate(party.signedAt), { x: x + 4, y: y + 4, size: 7, font, color: rgb(0.4,0.4,0.4) });
+      }
+    }
+    // 2) Anexa página(s) de comprovante ao final
     async function drawParty(page, title, party, startY) {
       let y = startY;
       page.drawText(title, { x: 40, y, size: 12, font: bold });
