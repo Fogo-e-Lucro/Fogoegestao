@@ -9359,7 +9359,7 @@ async function spFbLogin() {
       } else {
         showToast('Login cancelado ou negado.');
       }
-    }, { scope: SP_SCOPES, return_scopes: true });
+    }, { scope: SP_SCOPES, return_scopes: true, auth_type: 'rerequest' }); // rerequest reabre a escolha de páginas
   };
   // Garante que o SDK carregou
   if (typeof FB !== 'undefined') {
