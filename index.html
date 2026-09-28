@@ -6948,12 +6948,12 @@ function switchTab(tab, btn) {
     const sel = document.getElementById('mtrAccountSelect');
     const t = getSpToken ? getSpToken() : null;
     if (!t) {
-      if (sel) sel.innerHTML = '<option value="">⚠️ Configure o token na aba Social</option>';
+      if (sel) sel.innerHTML = '<option value="">⚠️ Nenhuma conta conectada</option><option value="__connect">➕ Conectar com Facebook</option>';
     } else if (spAccounts.length === 0) {
       if (sel) sel.innerHTML = '<option value="">⏳ Carregando contas...</option>';
       loadSpAccounts().then(() => {
         if (spAccounts.length === 0 && sel) {
-          sel.innerHTML = '<option value="">❌ Token inválido — atualize na aba Social</option>';
+          sel.innerHTML = '<option value="">❌ Conexão expirada</option><option value="__connect">➕ Conectar com Facebook</option>';
         }
         mtrPopulateAccounts();
       }).catch(err => {
@@ -11082,6 +11082,12 @@ function mtrDeltaHtml(curr, prev, invert = false) {
 function mtrOnAccountChange() {
   const sel = document.getElementById('mtrAccountSelect');
   const idx = sel.value;
+  if (idx === '__connect') {
+    const cur = spAccounts.indexOf(mtrCurrentAcc);
+    sel.value = cur >= 0 ? String(cur) : '';
+    spFbLogin();
+    return;
+  }
   if (idx === '') { mtrCurrentAcc = null; document.getElementById('mtrBody').innerHTML = '<div class="mtr-empty">Selecione uma conta para ver as métricas.</div>'; return; }
   mtrCurrentAcc = spAccounts[parseInt(idx)];
   localStorage.setItem('mtrSelectedIg', mtrCurrentAcc.igId);
@@ -12435,7 +12441,8 @@ function mtrPopulateAccounts() {
   if (sel) {
     const savedIg = localStorage.getItem('mtrSelectedIg');
     sel.innerHTML = '<option value="">📷 Selecione conta IG...</option>' +
-      spAccounts.map((a,i) => `<option value="${i}" ${savedIg===a.igId?'selected':''}>${escHtml(a.pageName||a.igUsername)}</option>`).join('');
+      spAccounts.map((a,i) => `<option value="${i}" ${savedIg===a.igId?'selected':''}>${escHtml(a.pageName||a.igUsername)}</option>`).join('') +
+      '<option value="__connect">➕ Conectar mais contas</option>';
     if (sel.value !== '' && !mtrCurrentAcc) {
       mtrCurrentAcc = spAccounts[parseInt(sel.value)];
     }
