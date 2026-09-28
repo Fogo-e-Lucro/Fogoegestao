@@ -562,6 +562,20 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 }
 .btn-danger:hover { background: rgba(239,68,68,.1); transform: translateY(-1px); }
 .btn-danger:active { transform: translateY(0); }
+
+/* Botão secundário (Cancelar/Voltar/Limpar). Antes só existia escopado
+   em #tab-lives e caía no estilo cru do navegador nos modais. */
+.btn-ghost {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 44px; padding: 0 18px; flex-shrink: 0;
+  background: transparent; color: var(--text2);
+  border: 1px solid var(--border); border-radius: 12px;
+  font-family: var(--font); font-size: 14px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  transition: background var(--t) var(--ease), border-color var(--t) var(--ease), color var(--t) var(--ease);
+}
+.btn-ghost:hover { background: color-mix(in srgb, var(--text) 5%, transparent); border-color: color-mix(in srgb, var(--text) 22%, var(--border)); color: var(--text); }
+.btn-ghost:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn-sm { padding: 5px 11px !important; font-size: 12px !important; }
 .post-card-compact { margin-bottom: 12px; }
 
@@ -2551,6 +2565,13 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
   white-space:nowrap; transition:border-color .15s, background .15s;
 }
 .mtr-conn:hover { border-color:color-mix(in srgb, var(--text) 25%, var(--border)); }
+.mtr-conn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.mtr-conn-act {
+  margin-left:4px; padding-left:8px; border-left:1px solid var(--border);
+  color:var(--accent); font-weight:700;
+}
+.mtr-conn-act:empty { display:none; }
+.mtr-conn:hover .mtr-conn-act { text-decoration:underline; text-underline-offset:2px; }
 .mtr-conn-dot { width:7px; height:7px; border-radius:50%; background:#94a3b8; flex-shrink:0; }
 .mtr-conn[data-state="on"] .mtr-conn-dot { background:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,.18); }
 .mtr-conn[data-state="off"] { color:#dc2626; border-color:rgba(220,38,38,.35); background:rgba(220,38,38,.06); }

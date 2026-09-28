@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=20260803-17">
+<link rel="stylesheet" href="styles.css?v=3.67.4">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -2468,7 +2468,7 @@ ufw allow 3000/tcp</pre>
               <div class="mtr-title">Métricas</div>
               <div class="mtr-subtitle">Performance dos perfis e campanhas</div>
               <button type="button" class="mtr-conn" id="mtrConn" onclick="spFbLogin()">
-                <span class="mtr-conn-dot"></span><span id="mtrConnTxt">Verificando conexão</span>
+                <span class="mtr-conn-dot"></span><span id="mtrConnTxt">Verificando conexão</span><span class="mtr-conn-act" id="mtrConnAct"></span>
               </button>
             </div>
           </div>
@@ -12445,14 +12445,17 @@ function mtrResetKpis() {
 function mtrRenderConn(broken) {
   const el = document.getElementById('mtrConn');
   const txt = document.getElementById('mtrConnTxt');
-  if (!el || !txt) return;
+  const act = document.getElementById('mtrConnAct');
+  if (!el || !txt || !act) return;
   const n = spAccounts.length;
-  let state, label;
-  if (!getSpToken()) { state = 'off'; label = 'Facebook desconectado · Conectar'; }
-  else if (broken || !n) { state = 'warn'; label = 'Conexão com problema · Reconectar'; }
-  else { state = 'on'; label = `Facebook conectado · ${n} ${n === 1 ? 'conta' : 'contas'} · Conectar mais`; }
+  let state, label, action;
+  if (!getSpToken()) { state = 'off'; label = 'Facebook desconectado'; action = 'Conectar'; }
+  else if (broken || !n) { state = 'warn'; label = 'Conexão com problema'; action = 'Reconectar'; }
+  else { state = 'on'; label = `Facebook conectado · ${n} ${n === 1 ? 'conta' : 'contas'}`; action = 'Conectar mais'; }
   el.dataset.state = state;
+  el.title = action + ' contas do Facebook e Instagram';
   txt.textContent = label;
+  act.textContent = action;
 }
 
 function mtrPopulateAccounts() {
