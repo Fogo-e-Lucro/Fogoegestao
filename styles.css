@@ -2542,6 +2542,21 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 }
 .mtr-title { font-size:17px; font-weight:700; color:var(--text); line-height:1.1; letter-spacing:-0.02em; }
 .mtr-subtitle { font-size:12px; color:var(--text3); margin-top:2px; }
+/* Status de conexão com o Facebook */
+.mtr-conn {
+  display:inline-flex; align-items:center; gap:6px; margin-top:6px;
+  padding:4px 10px; border-radius:999px; border:1px solid var(--border);
+  background:var(--card); color:var(--text2);
+  font:inherit; font-size:11.5px; font-weight:600; cursor:pointer;
+  white-space:nowrap; transition:border-color .15s, background .15s;
+}
+.mtr-conn:hover { border-color:color-mix(in srgb, var(--text) 25%, var(--border)); }
+.mtr-conn-dot { width:7px; height:7px; border-radius:50%; background:#94a3b8; flex-shrink:0; }
+.mtr-conn[data-state="on"] .mtr-conn-dot { background:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,.18); }
+.mtr-conn[data-state="off"] { color:#dc2626; border-color:rgba(220,38,38,.35); background:rgba(220,38,38,.06); }
+.mtr-conn[data-state="off"] .mtr-conn-dot { background:#dc2626; }
+.mtr-conn[data-state="warn"] { color:#b45309; border-color:rgba(245,158,11,.4); background:rgba(245,158,11,.08); }
+.mtr-conn[data-state="warn"] .mtr-conn-dot { background:#f59e0b; }
 /* Fontes */
 .mtr-sources { display:flex; gap:8px; flex:1; flex-wrap:wrap; }
 /* Ações rápidas */
@@ -2717,6 +2732,7 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
   .mtr-title-icon { width:32px; height:32px; font-size:16px; border-radius:9px; }
   .mtr-title { font-size:14px; }
   .mtr-subtitle { display:none; }
+  .mtr-conn { margin-top:3px; white-space:normal; text-align:left; }
 
   /* FONTES (selects IG/Meta/GMB) — full width, empilha */
   .mtr-sources {

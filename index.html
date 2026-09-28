@@ -2467,6 +2467,9 @@ ufw allow 3000/tcp</pre>
             <div>
               <div class="mtr-title">Métricas</div>
               <div class="mtr-subtitle">Performance dos perfis e campanhas</div>
+              <button type="button" class="mtr-conn" id="mtrConn" onclick="spFbLogin()">
+                <span class="mtr-conn-dot"></span><span id="mtrConnTxt">Verificando conexão</span>
+              </button>
             </div>
           </div>
           <div class="mtr-sources">
@@ -6949,6 +6952,7 @@ function switchTab(tab, btn) {
     const t = getSpToken ? getSpToken() : null;
     if (!t) {
       if (sel) sel.innerHTML = '<option value="">⚠️ Nenhuma conta conectada</option><option value="__connect">➕ Conectar com Facebook</option>';
+      mtrRenderConn();
     } else if (spAccounts.length === 0) {
       if (sel) sel.innerHTML = '<option value="">⏳ Carregando contas...</option>';
       loadSpAccounts().then(() => {
@@ -6957,7 +6961,8 @@ function switchTab(tab, btn) {
         }
         mtrPopulateAccounts();
       }).catch(err => {
-        if (sel) sel.innerHTML = `<option value="">❌ ${(err.message||'erro').slice(0,60)}</option>`;
+        if (sel) sel.innerHTML = `<option value="">❌ ${(err.message||'erro').slice(0,60)}</option><option value="__connect">➕ Conectar com Facebook</option>`;
+        mtrRenderConn(true);
       });
     } else {
       mtrPopulateAccounts();
@@ -12436,7 +12441,22 @@ function mtrResetKpis() {
 }
 
 /* Preenche selects ao entrar na aba métricas */
+// Status de conexão com o Facebook no cabeçalho de Métricas
+function mtrRenderConn(broken) {
+  const el = document.getElementById('mtrConn');
+  const txt = document.getElementById('mtrConnTxt');
+  if (!el || !txt) return;
+  const n = spAccounts.length;
+  let state, label;
+  if (!getSpToken()) { state = 'off'; label = 'Facebook desconectado · Conectar'; }
+  else if (broken || !n) { state = 'warn'; label = 'Conexão com problema · Reconectar'; }
+  else { state = 'on'; label = `Facebook conectado · ${n} ${n === 1 ? 'conta' : 'contas'} · Conectar mais`; }
+  el.dataset.state = state;
+  txt.textContent = label;
+}
+
 function mtrPopulateAccounts() {
+  mtrRenderConn();
   const sel = document.getElementById('mtrAccountSelect');
   if (sel) {
     const savedIg = localStorage.getItem('mtrSelectedIg');
