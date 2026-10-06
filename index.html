@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.67.4">
+<link rel="stylesheet" href="styles.css?v=3.67.5">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -26945,6 +26945,9 @@ function pjRenderActivityComment(c, isReply) {
   const m = pjMembers.find(m => m.uid === c.userId);
   const name = m?.name || m?.email || 'Alguém';
   const time = c.createdAt?.toDate ? pjRelTime(c.createdAt.toDate()) : (c.createdAt?.toMillis ? pjRelTime(new Date(c.createdAt.toMillis())) : '');
+  const _me = _auth?.currentUser?.uid || _currentUser?.uid;
+  // Autor ou admin podem apagar; id 'c_' é o otimista ainda não salvo
+  const canDel = !String(c.id).startsWith('c_') && (c.userId === _me || (typeof userIsAdmin === 'function' && userIsAdmin()));
   let attachHtml = '';
   if (c.attachment) {
     const a = c.attachment;
@@ -26955,7 +26958,8 @@ function pjRenderActivityComment(c, isReply) {
     const isImg = (a.type||'').startsWith('image/');
     attachHtml = `<div class="pj-comment-attach">${isImg
       ? `<img src="${src}" alt="${safeName}" loading="lazy" onclick="event.stopPropagation();pjOpenLightbox('${safeSrc}','${safeName}')">`
-      : `<button type="button" class="pj-comment-attach-doc" onclick="event.stopPropagation();pjDownloadFile('${safeSrc}','${safeNameJs}')">📄 ${escHtml(a.name||'Arquivo')}</button>`}</div>`;
+      : `<button type="button" class="pj-comment-attach-doc" onclick="event.stopPropagation();pjDownloadFile('${safeSrc}','${safeNameJs}')">📄 ${escHtml(a.name||'Arquivo')}</button>`}${canDel
+      ? `<button type="button" class="pj-comment-attach-del" onclick="event.stopPropagation();pjRemoveCommentAttachment('${c.id}')" aria-label="Remover ${isImg?'foto':'arquivo'}" title="Remover ${isImg?'foto':'arquivo'}">×</button>` : ''}</div>`;
   }
   const reactions = c.reactions || {};
   const uid = _auth?.currentUser?.uid || _currentUser?.uid;
@@ -26979,11 +26983,88 @@ function pjRenderActivityComment(c, isReply) {
         <span class="pj-activity-time">${time}</span>
         ${!isReply?`<button onclick="pjStartReply('${c.id}')">↩ Responder</button>`:''}
         <button onclick="pjShowReactionPicker(event,'${c.id}')">😊 Reagir</button>
+        ${canDel ? `<button class="pj-comment-del" onclick="pjDeleteComment('${c.id}')">🗑 Excluir</button>` : ''}
       </div>
       ${repliesHtml}
     </div>
   </div>`;
 }
+// Apaga o arquivo do Storage sem travar a ação (se falhar, só sobra o arquivo solto)
+async function _pjDeleteStorageFile(url) {
+  if (!url || !/firebasestorage\.googleapis\.com/.test(url)) return;
+  try { await ensureFirebaseStorage(); await firebase.storage().refFromURL(url).delete(); }
+  catch (e) { console.warn('[pj] arquivo do comentário ficou no Storage:', e?.message); }
+}
+
+async function pjRemoveCommentAttachment(commentId) {
+  const c = pjComments.find(x => x.id === commentId);
+  if (!c?.attachment) return;
+  const isImg = (c.attachment.type || '').startsWith('image/');
+  const oQue = isImg ? 'a foto' : 'o arquivo';
+  const hasText = !!(c.text || '').trim();
+  const hasReplies = pjComments.some(x => x.parentId === commentId);
+  const ok = await pjConfirmDanger({
+    icon: '🗑️',
+    title: isImg ? 'Remover foto' : 'Remover arquivo',
+    message: (hasText || hasReplies)
+      ? `${pjGetFirstName()}, ${oQue} sai do comentário e o texto continua.`
+      : `${pjGetFirstName()}, esse comentário só tem ${isImg ? 'essa foto' : 'esse arquivo'}, então ele vai ser apagado.`,
+    confirmLabel: 'Sim, remover',
+    cancelLabel: 'Cancelar',
+  });
+  if (!ok) return;
+  if (!hasText && !hasReplies) return _pjDeleteCommentDocs([c]);
+  const saved = c.attachment;
+  delete c.attachment;
+  pjRenderActivity();
+  try {
+    await pjC('pj_comments').doc(commentId).update({ attachment: firebase.firestore.FieldValue.delete() });
+  } catch (e) {
+    c.attachment = saved;
+    pjRenderActivity();
+    showToast('error', '❌', 'Não deu pra remover: ' + (e?.message || 'erro'));
+    return;
+  }
+  _pjDeleteStorageFile(saved.url);
+  showToast('success', '🗑️', isImg ? 'Foto removida' : 'Arquivo removido');
+}
+
+async function pjDeleteComment(commentId) {
+  const c = pjComments.find(x => x.id === commentId);
+  if (!c) return;
+  const replies = pjComments.filter(x => x.parentId === commentId);
+  const ok = await pjConfirmDanger({
+    icon: '🗑️',
+    title: 'Excluir comentário',
+    message: replies.length
+      ? `${pjGetFirstName()}, o comentário e ${replies.length === 1 ? 'a resposta dele' : `as ${replies.length} respostas dele`} vão ser apagados.`
+      : `${pjGetFirstName()}, tem certeza que quer apagar esse comentário?`,
+    confirmLabel: 'Sim, apagar',
+    cancelLabel: 'Cancelar',
+  });
+  if (!ok) return;
+  _pjDeleteCommentDocs([c, ...replies]);
+}
+
+async function _pjDeleteCommentDocs(list) {
+  const ids = new Set(list.map(x => x.id));
+  const before = pjComments;
+  pjComments = pjComments.filter(x => !ids.has(x.id));
+  pjRenderActivity();
+  try {
+    const batch = _db.batch();
+    list.forEach(x => batch.delete(pjC('pj_comments').doc(x.id)));
+    await batch.commit();
+  } catch (e) {
+    pjComments = before;
+    pjRenderActivity();
+    showToast('error', '❌', 'Não deu pra excluir: ' + (e?.message || 'erro'));
+    return;
+  }
+  list.forEach(x => _pjDeleteStorageFile(x.attachment?.url));
+  showToast('success', '🗑️', list.length > 1 ? 'Comentário e respostas excluídos' : 'Comentário excluído');
+}
+
 // Renderiza uma entrada do log de mudanças (status, prioridade, atribuição, etc)
 function pjRenderActivityLogItem(a) {
   if (!a) return '';
