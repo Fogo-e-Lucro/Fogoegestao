@@ -18383,7 +18383,7 @@ function pjBuildListPage(listId) {
     </div>`;
 
   statuses.forEach(st => {
-    const stTasks = tasks.filter(t => (t.statusId||statuses[0].id) === st.id);
+    const stTasks = tasks.filter(t => pjEffStatusId(t, statuses) === st.id);
     const isDoneStatus = st.id === 'done';
     const collapsedKey = `pjStatusCollapsed:${listId}:${st.id}`;
     // Concluído SEMPRE começa fechado na sessão (David quer, se precisar abre).
@@ -20019,10 +20019,17 @@ function pjBuildKanbanPage(listId) {
   return pjBuildListPage(listId);
 }
 
+// Status efetivo da tarefa dentro da lista: se o statusId não existe nela
+// (veio de outra lista, status apagado, criado por integração), cai no
+// primeiro status em vez de sumir da tela.
+function pjEffStatusId(t, statuses) {
+  return statuses.some(s => s.id === t.statusId) ? t.statusId : statuses[0].id;
+}
+
 function pjBuildKanban(listId, statuses, tasks) {
   let h = `<div class="pj-kanban">`;
   statuses.forEach(st => {
-    const stTasks = tasks.filter(t => (t.statusId||statuses[0].id) === st.id);
+    const stTasks = tasks.filter(t => pjEffStatusId(t, statuses) === st.id);
     h += `<div class="pj-col" style="--col-accent:${st.color}">
       <div class="pj-col-header">
         <div class="pj-col-dot" style="background:${st.color};box-shadow:0 0 0 3px ${st.color}22;"></div>
