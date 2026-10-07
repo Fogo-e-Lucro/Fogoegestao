@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.67.5">
+<link rel="stylesheet" href="styles.css?v=3.67.6">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -2851,6 +2851,11 @@ ufw allow 3000/tcp</pre>
           <button class="pj-btn pj-btn-wa" onclick="pjSendTaskWhatsApp(pjCurrentTaskId, this)" title="Avisar responsável + grupo no WhatsApp" style="padding:6px 12px;font-size:12px;">📤 WhatsApp</button>
           <button class="pj-btn pj-btn-primary" onclick="pjCloseTaskModal()" style="padding:6px 14px;font-size:12px;">✓ Salvar e fechar</button>
         </div>
+      </div>
+      <!-- Abas só no celular: Tarefa | Conversa -->
+      <div class="pj-modal-mtabs" role="tablist" aria-label="Seções da tarefa">
+        <button type="button" role="tab" id="pjMTabTask" class="on" aria-selected="true" onclick="pjModalMobileTab('task')">Tarefa</button>
+        <button type="button" role="tab" id="pjMTabChat" aria-selected="false" onclick="pjModalMobileTab('chat')">Conversa<span class="pj-mtab-count" id="pjMTabCount"></span></button>
       </div>
       <div class="pj-modal-body">
         <div class="pj-modal-left" id="pjModalLeft">
@@ -25870,8 +25875,28 @@ async function pjSpawnNextRecurrence(t) {
 }
 
 // ── Task Modal ──────────────────────────────────────────
+// Celular: alterna entre os dados da tarefa e a conversa (no desktop as duas colunas aparecem juntas)
+function pjModalMobileTab(tab) {
+  const modal = document.getElementById('pjTaskModal');
+  if (!modal) return;
+  modal.dataset.mtab = tab;
+  const isChat = tab === 'chat';
+  const tTask = document.getElementById('pjMTabTask');
+  const tChat = document.getElementById('pjMTabChat');
+  if (tTask) { tTask.classList.toggle('on', !isChat); tTask.setAttribute('aria-selected', String(!isChat)); }
+  if (tChat) { tChat.classList.toggle('on', isChat); tChat.setAttribute('aria-selected', String(isChat)); }
+  // Texto de exemplo longo corta no celular (lá o botão @ já está do lado)
+  const inp = document.getElementById('pjCommentInput');
+  if (inp && window.matchMedia('(max-width:768px)').matches) inp.placeholder = 'Escreva um comentário';
+  if (isChat) {
+    const list = document.getElementById('pjActivityList');
+    if (list) requestAnimationFrame(() => { list.scrollTop = list.scrollHeight; });
+  }
+}
+
 async function pjOpenTask(taskId) {
   pjCurrentTaskId = taskId;
+  pjModalMobileTab('task');
   // CRÍTICO: zera comentários da tarefa anterior ANTES de tudo, pra
   // não vazar histórico de uma tarefa pra outra enquanto o snapshot
   // novo do Firestore não chega (ou se a query falhar silenciosamente).
@@ -27180,6 +27205,12 @@ function pjRenderActivity() {
     <span class="pj-activity-empty-title">Sem atividade ainda</span>
     <span>Escreva um comentário para iniciar</span>
   </div>`;
+  // Contador da aba "Conversa" (celular): comentários + respostas dessa tarefa
+  const cnt = document.getElementById('pjMTabCount');
+  if (cnt) {
+    const n = pjComments.filter(c => c.taskId === tid).length;
+    cnt.textContent = n ? String(n) : '';
+  }
   if (pjReplyTo) {
     const target = pjComments.find(c => c.id === pjReplyTo);
     const banner = document.getElementById('pjReplyBanner');

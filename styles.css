@@ -7490,6 +7490,46 @@ body.pj-task-open { overflow:hidden !important; touch-action:none; }
 /* Permite scroll DENTRO do modal */
 body.pj-task-open .pj-modal-body { touch-action:pan-y; }
 
+/* Abas Tarefa | Conversa da janela de tarefa (só no celular) */
+.pj-modal-mtabs { display:none; }
+@media (max-width:768px) {
+  .pj-modal-mtabs {
+    display:grid; grid-template-columns:1fr 1fr; gap:4px; flex-shrink:0;
+    margin:8px 12px 0; padding:4px;
+    background:var(--bg2); border:1px solid var(--border); border-radius:12px;
+  }
+  .pj-modal-mtabs button {
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    min-height:42px; border:0; border-radius:9px; background:transparent;
+    font-family:var(--font); font-size:14px; font-weight:600; color:var(--text2);
+    cursor:pointer; touch-action:manipulation;
+  }
+  .pj-modal-mtabs button.on { background:var(--card); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,.12); }
+  .pj-modal-mtabs button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .pj-mtab-count {
+    min-width:20px; height:20px; padding:0 6px; border-radius:999px;
+    background:var(--accent); color:#fff; font-size:11px; font-weight:700;
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .pj-mtab-count:empty { display:none; }
+
+  /* Aba Tarefa (padrão): esconde a conversa */
+  .pj-task-modal:not([data-mtab="chat"]) .pj-modal-right { display:none !important; }
+  /* Aba Conversa: esconde a tarefa; lista rola e a caixa de comentário fica embaixo */
+  .pj-task-modal[data-mtab="chat"] .pj-modal-left { display:none !important; }
+  .pj-task-modal[data-mtab="chat"] .pj-modal-body { overflow:hidden !important; padding-bottom:0 !important; }
+  .pj-task-modal[data-mtab="chat"] .pj-modal-right {
+    display:flex !important; flex:1 1 auto; min-height:0;
+    overflow:hidden !important; border-top:0 !important;
+    padding:12px 14px calc(12px + env(safe-area-inset-bottom)) !important;
+  }
+  .pj-task-modal[data-mtab="chat"] .pj-activity-title { display:none; }
+  /* 16px evita o zoom automático do iPhone ao tocar na caixa */
+  .pj-task-modal .pj-comment-input { font-size:16px; min-height:56px; }
+  /* Na conversa não tem nada pra salvar: a barra Fechar/Salvar sai e libera espaço pro teclado */
+  .pj-task-modal[data-mtab="chat"] .pj-modal-bottombar { display:none !important; }
+}
+
 /* Bottom action bar — escondida no desktop, mostra no mobile via media query acima */
 .pj-modal-bottombar {
   display:none;
@@ -7860,7 +7900,7 @@ body.pj-task-open .pj-modal-body { touch-action:pan-y; }
 
 @media(max-width:700px){
   /* .pj-sidebar agora usa drawer off-canvas (ver bloco max-width:900px), não some mais */
-  .pj-modal-right { display:none; }
+  /* A conversa (.pj-modal-right) não some mais: vira a aba "Conversa" (ver .pj-modal-mtabs) */
   .pj-modal-left { padding:14px; }
   .pj-fields-grid { grid-template-columns:1fr; }
 }
