@@ -165,6 +165,10 @@ service cloud.firestore {
     match /ifood_events/{doc}            { allow read: if isSignedIn(); allow write: if false; }
     match /ifood_financial/{doc}         { allow read: if isSignedIn(); allow write: if false; }
     match /ifood_catalogs/{doc}          { allow read: if isSignedIn(); allow write: if false; }
+    // Analytics (D-1): sync grava kpis/sync via admin SDK; a tela só grava o vínculo
+    match /ifood_kpis/{doc}              { allow read: if isSignedIn(); allow write: if false; }
+    match /ifood_sync/{doc}              { allow read: if isSignedIn(); allow write: if false; }
+    match /ifood_vinculos/{doc}          { allow read: if isSignedIn(); allow write: if amIAdmin(); }
 
     // ── Default = negar ──────────────────────────────────
     match /{document=**} {

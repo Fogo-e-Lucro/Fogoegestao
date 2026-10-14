@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.67.6">
+<link rel="stylesheet" href="styles.css?v=3.67.9">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -2679,7 +2679,7 @@ ufw allow 3000/tcp</pre>
               <span class="pj-nav-ic">🚦</span>
               Saúde da carteira
             </button>
-            <button class="pj-nav-btn" id="pjBtnIfood" onclick="pjNavigate('ifood')" title="Dashboard dos clientes no iFood">
+            <button class="pj-nav-btn" id="pjBtnIfood" onclick="pjNavigate('ifood')" title="Vendas dos clientes no iFood">
               <span class="pj-nav-ic">🛵</span>
               iFood
             </button>
@@ -17227,6 +17227,8 @@ function pjNavigate(type, id = null) {
     if (typeof showToast === 'function') showToast('Acesso restrito a administradores.', 'warn');
     type = 'dashboard'; id = null;
   }
+  // Listeners do iFood só vivem enquanto a tela iFood está aberta
+  if (type !== 'ifood') { try { pjIfoodTeardown(); } catch(_){} }
   pjCurrentView = { type, id };
   // Persiste view atual pra sobreviver a F5. Modo Demo é excluído
   // pra não gravar estado sintético.
@@ -24978,71 +24980,104 @@ function pjCsRitmoFor(clientId, csListIds) {
 let pjCsHealth = {}; // { clientId: {scores:{...}, note, updatedAt, updatedBy} }
 let _pjCsHealthUnsub = null;
 
-// ── iFood — dashboard read-only ───────────────────────
-// Alimentado pelo poller /root/ifood-poller no VPS que sincroniza os módulos
-// da API iFood pro Firestore. Aqui só lê e renderiza.
-let _ifoodMerchants = [];    // [{id, name, corporateName, address, ...}]
-let _ifoodStatus = {};       // { merchantId: {channels, available, _checkedAt} }
-let _ifoodReviews = [];      // [{id, merchantId, rating, comment, createdAt, ...}]
-let _ifoodOrders = [];       // [{id, merchant, createdAt, total, ...}]
-let _ifoodFinancial = {};    // { merchantId_competence: { data, competence } }
-let _ifoodCatalogs = {};     // { merchantId: { catalogs } }
+// ── iFood: relatório do módulo Analytics (D-1) ─────────
+// O sync do servidor grava um doc por loja por dia em ifood_kpis
+// ({merchantId}_{AAAA-MM-DD}), o vínculo loja/cliente em ifood_vinculos e o
+// resumo da última rodada em ifood_sync/analytics. A tela só lê, soma o
+// período no navegador e grava o vínculo manual. Nunca mostra pedido avulso.
+let _ifoodVinculos = {};   // { merchantId: { merchantId, nomeLoja, clienteId, clienteNome, origem } }
+let _ifoodSync = null;     // ifood_sync/analytics (null = ainda não rodou)
+let _ifoodSyncLido = false;
+let _ifoodKpis = null;     // docs diários do período (null = carregando)
+let _ifoodKpisChave = '';  // "de|ate" do listener ativo
+let _ifoodKpisUnsub = null;
+let _ifoodErro = null;     // erro de leitura do Firestore
+let _ifoodLoja = '';       // filtro de loja ('' = todas)
+let _ifoodPeriodo = (() => {
+  try {
+    const p = JSON.parse(localStorage.getItem('ifood_periodo') || 'null');
+    const ok = s => /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s));
+    if (p && [7, 14, 30].includes(p.dias)) return { dias: p.dias };
+    if (p && ok(p.de) && ok(p.ate)) return { de: p.de, ate: p.ate };
+  } catch(_) {}
+  return { dias: 7 };
+})();
 let _ifoodInitialized = false;
 let _ifoodUnsubs = [];
+let _ifoodFichaSeq = 0;
 
-function pjIfoodEnsureInit() {
-  if (_ifoodInitialized || typeof _db === 'undefined') return;
-  _ifoodInitialized = true;
-  const rerender = () => {
-    try {
-      const cur = document.querySelector('.pj-nav-btn#pjBtnIfood.active');
-      if (cur && typeof pjRenderMain === 'function') {
-        const el = document.getElementById('pjMainRender');
-        if (el) el.innerHTML = pjBuildIfood();
-      }
-    } catch(_){}
-  };
-  _ifoodUnsubs.push(_db.collection('ifood_merchants').onSnapshot(s => {
-    _ifoodMerchants = s.docs.map(d => ({ id: d.id, ...d.data() }));
-    rerender();
-  }, e => console.warn('[ifood] merchants sub:', e.message)));
-  _ifoodUnsubs.push(_db.collection('ifood_merchant_status').onSnapshot(s => {
-    _ifoodStatus = {};
-    s.docs.forEach(d => _ifoodStatus[d.id] = d.data());
-    rerender();
-  }, e => console.warn('[ifood] status sub:', e.message)));
-  _ifoodUnsubs.push(_db.collection('ifood_reviews').orderBy('createdAt','desc').limit(500).onSnapshot(s => {
-    _ifoodReviews = s.docs.map(d => ({ id: d.id, ...d.data() }));
-    rerender();
-  }, e => {
-    // orderBy pode falhar se sem index; fallback
-    _db.collection('ifood_reviews').limit(500).onSnapshot(s2 => {
-      _ifoodReviews = s2.docs.map(d => ({ id: d.id, ...d.data() }));
-      rerender();
-    });
-  }));
-  _ifoodUnsubs.push(_db.collection('ifood_orders').limit(500).onSnapshot(s => {
-    _ifoodOrders = s.docs.map(d => ({ id: d.id, ...d.data() }));
-    rerender();
-  }, e => console.warn('[ifood] orders sub:', e.message)));
-  _ifoodUnsubs.push(_db.collection('ifood_financial').onSnapshot(s => {
-    _ifoodFinancial = {};
-    s.docs.forEach(d => _ifoodFinancial[d.id] = d.data());
-    rerender();
-  }, e => console.warn('[ifood] financial sub:', e.message)));
-  _ifoodUnsubs.push(_db.collection('ifood_catalogs').onSnapshot(s => {
-    _ifoodCatalogs = {};
-    s.docs.forEach(d => _ifoodCatalogs[d.id] = d.data());
-    rerender();
-  }, e => console.warn('[ifood] catalog sub:', e.message)));
+const IFOOD_DIMS = [
+  ['porCanal', 'Canal de venda'],
+  ['porStatus', 'Status do pedido'],
+  ['porPagamento', 'Forma de pagamento'],
+  ['porLogistica', 'Logística (quem entrega)'],
+];
+const IFOOD_ROTULOS = {
+  IFOOD: 'App iFood', DIGITAL_CATALOG: 'Cardápio digital', POS: 'PDV (balcão)', EMBEDDED_UBER: 'Uber',
+  CONCLUDED: 'Concluído', CANCELLED: 'Cancelado',
+  CREDIT: 'Crédito', DEBIT: 'Débito', PIX: 'Pix', CASH: 'Dinheiro', DIGITAL_WALLET: 'Carteira digital',
+  MEAL_VOUCHER: 'Vale-refeição', FOOD_VOUCHER: 'Vale-alimentação', OTHER_VOUCHER: 'Outros vales',
+  BANK_PAY: 'Pagamento pelo banco',
+  IFOOD_DELIVERY: 'Entrega iFood', MERCHANT_DELIVERY: 'Entrega da loja', DINE_IN: 'Consumo no local',
+  TAKEOUT: 'Retirada',
+};
+const IFOOD_TESTE = '<span class="pj-ifood-badge-test" title="Dados de teste do iFood, não são vendas reais">TESTE</span>';
+
+function _ifoodRotulo(k) {
+  if (!k || k === 'null' || k === 'undefined') return 'Não informado';
+  return IFOOD_ROTULOS[k] || String(k).toLowerCase().replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
+}
+function _ifoodNum(n) { return (Number(n) || 0).toLocaleString('pt-BR'); }
+function _ifoodPct(x) {
+  return ((Number(x) || 0) * 100).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
+}
+function _ifoodDataBR(ymd) { const [y, m, d] = String(ymd).split('-'); return `${d}/${m}/${y}`; }
+function _ifoodQuando(v) {
+  const d = v && typeof v.toDate === 'function' ? v.toDate() : (v ? new Date(v) : null);
+  return d && !isNaN(d) ? d : null;
+}
+function _ifoodQuandoTxt(d) {
+  return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+function _ifoodOntem() { const d = new Date(); d.setDate(d.getDate() - 1); return dateToStr(d); }
+
+// Período no dia da loja. Os atalhos terminam ontem (D-1): hoje nunca tem dado.
+function _ifoodPeriodoDatas() {
+  const p = _ifoodPeriodo;
+  if (p.de && p.ate) return { de: p.de, ate: p.ate };
+  const fim = new Date(); fim.setDate(fim.getDate() - 1);
+  const ini = new Date(fim); ini.setDate(ini.getDate() - (p.dias - 1));
+  return { de: dateToStr(ini), ate: dateToStr(fim) };
 }
 
-// Desmonta os 6 listeners iFood — chamado quando sai de projetos/iFood
-function pjIfoodTeardown() {
-  if (!_ifoodInitialized) return;
-  _ifoodUnsubs.forEach(u => { try { u && u(); } catch(_){} });
-  _ifoodUnsubs = [];
-  _ifoodInitialized = false;
+// Soma os docs diários (loja/dia) do período. Contagens são de pedidos.
+// Dinheiro somado em centavos pra não acumular erro de ponto flutuante.
+function _ifoodSomar(docs) {
+  let concluidos = 0, cancelados = 0, total = 0, gmvC = 0, gmvX = 0, gmvSE = 0;
+  let homologacao = false, ultimoDia = '';
+  const dims = {};
+  IFOOD_DIMS.forEach(([k]) => { dims[k] = {}; });
+  (docs || []).forEach(d => {
+    const c = Number(d.concluidos) || 0, x = Number(d.cancelados) || 0;
+    concluidos += c;
+    cancelados += x;
+    total += Number(d.totalPedidos) || (c + x);
+    gmvC += Math.round((Number(d.gmvConcluidos) || 0) * 100);
+    gmvX += Math.round((Number(d.gmvCancelados) || 0) * 100);
+    gmvSE += Math.round((Number(d.gmvSemEntregaConcluidos) || 0) * 100);
+    if (d.homologacao === true) homologacao = true;
+    if (typeof d.date === 'string' && d.date > ultimoDia) ultimoDia = d.date;
+    IFOOD_DIMS.forEach(([k]) => {
+      Object.entries(d[k] || {}).forEach(([chave, n]) => { dims[k][chave] = (dims[k][chave] || 0) + (Number(n) || 0); });
+    });
+  });
+  return {
+    concluidos, cancelados, total,
+    gmvConcluidos: gmvC / 100, gmvCancelados: gmvX / 100, gmvSemEntregaConcluidos: gmvSE / 100,
+    ticketMedio: concluidos ? Math.round(gmvC / concluidos) / 100 : 0,
+    taxaCancelamento: total ? cancelados / total : 0,
+    homologacao, ultimoDia, ...dims,
+  };
 }
 
 function _ifoodMatchClient(merchant) {
@@ -25058,118 +25093,307 @@ function _ifoodMatchClient(merchant) {
   } catch(_) { return null; }
 }
 
-function _ifoodMerchantMetrics(mid) {
-  const reviews = _ifoodReviews.filter(r => r.merchantId === mid);
-  const avg = reviews.length
-    ? (reviews.reduce((a,r) => a + (Number(r.score || r.rating) || 0), 0) / reviews.length)
-    : null;
-  const now = Date.now();
-  const last7d = now - 7 * 86400000;
-  const orders7d = _ifoodOrders.filter(o => {
-    const m = o.merchant?.id || o.merchantId;
-    const ts = o.createdAt ? new Date(o.createdAt).getTime() : 0;
-    return m === mid && ts >= last7d;
-  });
-  const revenue7d = orders7d.reduce((a,o) => a + (Number(o.total?.orderAmount || o.totalPrice || 0)), 0);
-  return {
-    reviewsCount: reviews.length,
-    avgRating: avg,
-    orders7d: orders7d.length,
-    revenue7d,
-    lastReviewAt: reviews[0]?.createdAt || null,
-  };
-}
-
 function _ifoodFmtCurrency(n) {
   return 'R$ ' + (Number(n) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function _ifoodNomeLoja(mid) {
+  const v = _ifoodVinculos[mid];
+  return String(v?.nomeLoja || v?.clienteNome || `Loja ${String(mid || '').slice(0, 8)}`).trim();
+}
+
+function _ifoodErroLeitura(e) {
+  if (e?.code === 'permission-denied') return 'Seu usuário não tem acesso aos números do iFood.';
+  if (e?.code === 'unavailable') return 'Sem conexão com o banco agora. Confira a internet.';
+  return 'Não deu pra carregar os números do iFood agora.';
+}
+
+// Status HTTP que o sync anotou em ifood_sync.erros, em português.
+function _ifoodErroSync(status, msg) {
+  const s = Number(status);
+  if (s === 401) return 'o iFood recusou a autorização do app.';
+  if (s === 403) return 'o cliente ainda não liberou os relatórios dessa loja.';
+  if (s === 404) return 'loja não encontrada no iFood.';
+  if (s === 429) return 'o iFood limitou as consultas. A próxima rodada tenta de novo.';
+  if (s >= 500) return 'o iFood ficou fora do ar na hora da consulta.';
+  if (s === 400) return 'o iFood recusou a consulta.';
+  return msg ? String(msg) : 'erro sem detalhe.';
+}
+
+function pjIfoodEnsureInit() {
+  if (typeof _db === 'undefined') return;
+  const rerender = () => { if (pjCurrentView?.type === 'ifood') pjScheduleRender(); };
+  const falhou = e => { console.warn('[ifood] leitura:', e?.message); _ifoodErro = e; rerender(); };
+  if (!_ifoodInitialized) {
+    _ifoodInitialized = true;
+    _ifoodUnsubs.push(_db.collection('ifood_vinculos').onSnapshot(s => {
+      _ifoodVinculos = {};
+      s.docs.forEach(d => { _ifoodVinculos[d.id] = { merchantId: d.id, ...d.data() }; });
+      rerender();
+    }, falhou));
+    _ifoodUnsubs.push(_db.collection('ifood_sync').doc('analytics').onSnapshot(s => {
+      _ifoodSync = s.exists ? s.data() : null;
+      _ifoodSyncLido = true;
+      rerender();
+    }, falhou));
+  }
+  // Listener dos docs diários troca junto com o período
+  const { de, ate } = _ifoodPeriodoDatas();
+  if (_ifoodKpisChave === de + '|' + ate) return;
+  try { _ifoodKpisUnsub && _ifoodKpisUnsub(); } catch(_){}
+  _ifoodKpisChave = de + '|' + ate;
+  _ifoodKpis = null;
+  _ifoodKpisUnsub = _db.collection('ifood_kpis').where('date', '>=', de).where('date', '<=', ate)
+    .onSnapshot(s => { _ifoodKpis = s.docs.map(d => d.data()); rerender(); }, falhou);
+}
+
+// Desmonta os listeners iFood. Chamado ao sair da tela iFood ou da aba Projetos.
+function pjIfoodTeardown() {
+  _ifoodUnsubs.forEach(u => { try { u && u(); } catch(_){} });
+  _ifoodUnsubs = [];
+  try { _ifoodKpisUnsub && _ifoodKpisUnsub(); } catch(_){}
+  _ifoodKpisUnsub = null;
+  _ifoodKpisChave = '';
+  _ifoodErro = null;
+  _ifoodInitialized = false;
+}
+
+function _ifoodRender() {
+  pjRenderMain();
+  try { window.fxEnhanceSelects?.(document.getElementById('pjMain')); } catch(_){}
+}
+function _ifoodRecarregarFichas() {
+  document.querySelectorAll('[data-ifood-ficha]').forEach(el => _ifoodFillFicha(el.dataset.ifoodFicha, el.id));
+}
+function _ifoodAplicarPeriodo(p) {
+  _ifoodPeriodo = p;
+  try { localStorage.setItem('ifood_periodo', JSON.stringify(p)); } catch(_) {}
+  if (pjCurrentView?.type === 'ifood' && document.body.classList.contains('at-projetos')) _ifoodRender();
+  _ifoodRecarregarFichas();
+}
+function ifoodSetPeriodo(dias) { _ifoodAplicarPeriodo({ dias }); }
+function ifoodSetDatas() {
+  let de = document.getElementById('ifoodDe')?.value || '';
+  let ate = document.getElementById('ifoodAte')?.value || '';
+  if (!de || !ate) return;
+  if (de > ate) [de, ate] = [ate, de];
+  const ontem = _ifoodOntem();
+  if (ate > ontem) ate = ontem;
+  if (de > ate) de = ate;
+  _ifoodAplicarPeriodo({ de, ate });
+}
+function ifoodVerLoja(mid) {
+  _ifoodLoja = mid || '';
+  _ifoodRender();
+  try { document.getElementById('pjMain')?.scrollTo(0, 0); } catch(_) {}
+}
+function ifoodRecarregar() { pjIfoodTeardown(); _ifoodRender(); }
+
+async function ifoodVincular(mid, clienteId) {
+  if (!mid) return;
+  const atual = _ifoodVinculos[mid];
+  const c = clienteId ? (_bdClientes || []).find(x => x.id === clienteId) : null;
+  const dados = {
+    merchantId: mid,
+    clienteId: clienteId || null,
+    clienteNome: clienteId ? (c?.nome || atual?.clienteNome || '') : '',
+    origem: 'manual',
+    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+  // nomeLoja é do sync; só cria o campo vazio se o doc ainda não existe
+  if (!atual) dados.nomeLoja = '';
+  try {
+    await _db.collection('ifood_vinculos').doc(mid).set(dados, { merge: true });
+    showToast('success', clienteId ? `Loja vinculada a ${escHtml(dados.clienteNome || 'cliente')}.` : 'Vínculo removido.');
+  } catch (e) {
+    console.warn('[ifood] vínculo:', e);
+    showToast('error', e?.code === 'permission-denied'
+      ? 'Só admin pode vincular loja a cliente.'
+      : 'Não deu pra salvar o vínculo. Confira a conexão e tente de novo.');
+    _ifoodRender(); // devolve o select pro valor salvo
+  }
+}
+
+// Período: atalhos 7/14/30 (sempre até ontem) e datas livres.
+function _ifoodPeriodoHtml(de, ate, comDatas, extra) {
+  const dias = Math.round((Date.parse(ate) - Date.parse(de)) / 864e5) + 1;
+  const ontem = _ifoodOntem();
+  const chips = [7, 14, 30].map(n =>
+    `<button class="mtr-preset${_ifoodPeriodo.dias === n ? ' active' : ''}" aria-pressed="${_ifoodPeriodo.dias === n}" onclick="ifoodSetPeriodo(${n})">${n} dias</button>`).join('');
+  const datas = comDatas ? `<div class="mtr-compare-dates">
+      <span class="mtr-period-label">De</span>
+      <input type="date" id="ifoodDe" class="mtr-date-input" value="${de}" max="${ontem}" onchange="ifoodSetDatas()" aria-label="Data inicial">
+      <span class="mtr-date-sep">até</span>
+      <input type="date" id="ifoodAte" class="mtr-date-input" value="${ate}" max="${ontem}" onchange="ifoodSetDatas()" aria-label="Data final">
+    </div>` : '';
+  return `<div class="mtr-period-group">
+      <div class="mtr-presets" role="group" aria-label="Período">${chips}</div>${datas}
+    </div>
+    <div class="pj-ifood-ref">Período de referência: <b>${_ifoodDataBR(de)} a ${_ifoodDataBR(ate)}</b> (${dias} dia${dias === 1 ? '' : 's'}).${extra || ''}</div>`;
+}
+
+// Indicadores + distribuições de um conjunto já somado (total ou uma loja).
+function _ifoodPainelHtml(t) {
+  const kpi = (rotulo, valor, nota, dica) => `<div class="pj-ifood-kpi" title="${escHtml(dica)}">
+      <div class="pj-ifood-kpi-label">${rotulo}</div>
+      <div class="pj-ifood-kpi-value">${valor}</div>
+      <div class="pj-ifood-kpi-note">${nota}</div>
+    </div>`;
+  const dist = ([k, titulo]) => {
+    const linhas = Object.entries(t[k] || {}).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
+    const soma = linhas.reduce((a, [, n]) => a + n, 0);
+    const corpo = linhas.length ? linhas.map(([chave, n]) => {
+      const p = soma ? n / soma : 0;
+      return `<div class="pj-ifood-dist-row" title="${escHtml(chave)}: ${_ifoodNum(n)} pedido${n === 1 ? '' : 's'}">
+        <span>${escHtml(_ifoodRotulo(chave))}</span>
+        <span class="pj-ifood-dist-val">${_ifoodNum(n)} · ${_ifoodPct(p)}</span>
+        <span class="pj-ifood-dist-bar"><span style="width:${Math.max(2, Math.round(p * 100))}%"></span></span>
+      </div>`;
+    }).join('') : '<div class="pj-ifood-dist-vazio">Sem pedidos.</div>';
+    return `<div class="pj-ifood-dist"><div class="pj-ifood-kpi-label">${titulo}</div>${corpo}</div>`;
+  };
+  return `<div class="pj-ifood-header">
+      ${kpi('Faturamento (GMV)', _ifoodFmtCurrency(t.gmvConcluidos), `Sem taxa de entrega: ${_ifoodFmtCurrency(t.gmvSemEntregaConcluidos)}`, 'Soma dos pedidos concluídos: produtos mais taxa de entrega.')}
+      ${kpi('Ticket médio', _ifoodFmtCurrency(t.ticketMedio), 'por pedido concluído', 'Faturamento dividido pelo número de pedidos concluídos.')}
+      ${kpi('Pedidos concluídos', _ifoodNum(t.concluidos), `de ${_ifoodNum(t.total)} pedidos no período`, 'Pedidos que chegaram ao fim sem cancelamento.')}
+      ${kpi('Cancelados', _ifoodNum(t.cancelados), `${_ifoodFmtCurrency(t.gmvCancelados)} que não entraram`, 'Pedidos cancelados no período, por qualquer motivo.')}
+      ${kpi('Taxa de cancelamento', _ifoodPct(t.taxaCancelamento), 'cancelados sobre o total', 'Pedidos cancelados divididos pelo total de pedidos do período.')}
+    </div>
+    <div class="pj-ifood-dists">${IFOOD_DIMS.map(dist).join('')}</div>`;
+}
+
+// Última rodada do sync: avisa se está velha ou se alguma loja deu erro.
+function _ifoodSyncHtml() {
+  if (!_ifoodSyncLido) return '';
+  const s = _ifoodSync;
+  if (!s) return '<div class="pj-ifood-aviso">A sincronização com o iFood ainda não rodou. Os números aparecem depois da primeira rodada.</div>';
+  const quando = _ifoodQuando(s.ultimaExecucao);
+  const erros = Array.isArray(s.erros) ? s.erros : [];
+  // ponytail: o sync roda 1x por dia depois das 9h; 26h dá 2h de folga. Se passar a rodar mais vezes, baixar.
+  const atrasado = !quando || Date.now() - quando.getTime() > 26 * 3600e3;
+  if (!atrasado && s.ok !== false && !erros.length) {
+    return `<div class="pj-ifood-hint">Sincronizado em ${_ifoodQuandoTxt(quando)}.</div>`;
+  }
+  const partes = [];
+  if (atrasado) {
+    partes.push(quando
+      ? `A última sincronização foi em ${_ifoodQuandoTxt(quando)}. Os números podem estar atrasados.`
+      : 'Não achei a data da última sincronização. Os números podem estar atrasados.');
+  }
+  if (erros.length) {
+    partes.push(`${atrasado ? 'Nessa rodada' : 'Na última sincronização'}, ${erros.length === 1 ? '1 loja deu erro' : erros.length + ' lojas deram erro'}:<ul>${erros.map(e =>
+      `<li title="${escHtml(`${e?.status || ''} ${e?.msg || ''}`.trim())}"><b>${escHtml(_ifoodNomeLoja(e?.merchantId))}</b>: ${escHtml(_ifoodErroSync(e?.status, e?.msg))}</li>`).join('')}</ul>`);
+  } else if (s.ok === false) {
+    partes.push('A última sincronização terminou com erro. Os números podem estar incompletos.');
+  }
+  return `<div class="pj-ifood-aviso">${partes.join(' ')}</div>`;
+}
+
+// Vínculo loja → cliente da base. Admin troca no select; sugestão pelo nome.
+function _ifoodVinculoHtml(l) {
+  const v = l.v || {};
+  const clientes = Array.isArray(_bdClientes) ? _bdClientes : [];
+  const atual = v.clienteId ? clientes.find(c => c.id === v.clienteId) : null;
+  const nomeCli = atual?.nome || v.clienteNome || '';
+  if (!(typeof userIsAdmin === 'function' && userIsAdmin())) {
+    return `<span>${v.clienteId ? 'Cliente: ' + escHtml(nomeCli || 'sem nome') : 'Sem cliente vinculado'}</span>`;
+  }
+  let opts = '<option value="">Sem cliente</option>';
+  // Cliente que saiu da base continua aparecendo como vinculado
+  if (v.clienteId && !atual) opts += `<option value="${escHtml(v.clienteId)}" selected>${escHtml(nomeCli || 'Cliente removido')}</option>`;
+  opts += clientes.map(c =>
+    `<option value="${escHtml(c.id)}"${c.id === v.clienteId ? ' selected' : ''}>${escHtml(c.nome || '(sem nome)')}</option>`).join('');
+  // Sugere só enquanto ninguém decidiu na mão
+  const sug = !v.clienteId && v.origem !== 'manual' ? _ifoodMatchClient({ name: v.nomeLoja || '' }) : null;
+  return `<label class="pj-ifood-vinculo">Cliente
+      <select class="mtr-select" data-mid="${escHtml(l.mid)}" onchange="ifoodVincular(this.dataset.mid, this.value)">${opts}</select>
+    </label>
+    ${v.clienteId && v.origem === 'auto' ? '<span class="pj-ifood-auto" title="Vinculado automaticamente pelo nome da loja">automático</span>' : ''}
+    ${sug ? `<button class="pj-filter-btn" data-mid="${escHtml(l.mid)}" data-cli="${escHtml(sug.id)}" onclick="ifoodVincular(this.dataset.mid, this.dataset.cli)" title="Sugestão pelo nome da loja">Vincular a ${escHtml(sug.nome)}</button>` : ''}`;
+}
+
+function _ifoodCardHtml(l, docs) {
+  const t = _ifoodSomar(docs);
+  const cli = l.v?.clienteId && Array.isArray(_bdClientes) ? _bdClientes.find(c => c.id === l.v.clienteId) : null;
+  const logo = cli?.logoDataUrl || cli?.logoUrl || cli?.fotoUrl || '';
+  const logoHtml = logo
+    ? `<img src="${escHtml(logo)}" alt="" class="pj-ifood-card-logo">`
+    : `<span class="pj-ifood-card-logo pj-ifood-card-logo-empty">${escHtml(l.nome.charAt(0).toUpperCase() || '?')}</span>`;
+  const metrica = (rotulo, valor) =>
+    `<div><div class="pj-ifood-metric-label">${rotulo}</div><div class="pj-ifood-metric-value">${valor}</div></div>`;
+  return `<div class="pj-ifood-card${l.mid === _ifoodLoja ? ' active' : ''}">
+    <div class="pj-ifood-card-top">
+      ${logoHtml}
+      <div class="pj-ifood-card-name">
+        <button class="pj-ifood-card-title" data-mid="${escHtml(l.mid)}" onclick="ifoodVerLoja(this.dataset.mid)" title="Ver só os números dessa loja">${escHtml(l.nome)}</button>
+        <div class="pj-ifood-card-sub">ID ${escHtml(l.mid.slice(0, 8))}${t.homologacao ? ' ' + IFOOD_TESTE : ''}</div>
+      </div>
+    </div>
+    <div class="pj-ifood-card-metrics">
+      ${metrica('Faturamento', _ifoodFmtCurrency(t.gmvConcluidos))}
+      ${metrica('Ticket médio', _ifoodFmtCurrency(t.ticketMedio))}
+      ${metrica('Concluídos', _ifoodNum(t.concluidos))}
+      ${metrica('Cancelados', `${_ifoodNum(t.cancelados)} (${_ifoodPct(t.taxaCancelamento)})`)}
+    </div>
+    <div class="pj-ifood-card-footer">${_ifoodVinculoHtml(l)}</div>
+  </div>`;
+}
+
 function pjBuildIfood() {
-  const merchants = _ifoodMerchants;
-  const totalRevenue7d = merchants.reduce((a,m) => a + _ifoodMerchantMetrics(m.id).revenue7d, 0);
-  const online = merchants.filter(m => _ifoodStatus[m.id]?.available === true).length;
-  const offline = merchants.length - online;
+  const { de, ate } = _ifoodPeriodoDatas();
+  const docs = _ifoodKpis || [];
+  const porLoja = {};
+  docs.forEach(d => { if (d.merchantId) (porLoja[String(d.merchantId)] = porLoja[String(d.merchantId)] || []).push(d); });
 
-  const header = `
-    <div class="pj-ifood-header">
-      <div class="pj-ifood-kpi">
-        <div class="pj-ifood-kpi-label">Vendas últimos 7 dias</div>
-        <div class="pj-ifood-kpi-value">${_ifoodFmtCurrency(totalRevenue7d)}</div>
-      </div>
-      <div class="pj-ifood-kpi">
-        <div class="pj-ifood-kpi-label">Lojas online agora</div>
-        <div class="pj-ifood-kpi-value">${online}<span class="pj-ifood-kpi-sub">/${merchants.length}</span></div>
-      </div>
-      <div class="pj-ifood-kpi">
-        <div class="pj-ifood-kpi-label">Offline</div>
-        <div class="pj-ifood-kpi-value ${offline > 0 ? 'red' : ''}">${offline}</div>
-      </div>
-      <div class="pj-ifood-kpi">
-        <div class="pj-ifood-kpi-label">Avaliações totais</div>
-        <div class="pj-ifood-kpi-value">${_ifoodReviews.length}</div>
-      </div>
-    </div>`;
+  // Loja entra na lista se tem vínculo, dado no período ou erro no último sync
+  const ids = new Set([...Object.keys(_ifoodVinculos), ...Object.keys(porLoja)]);
+  (Array.isArray(_ifoodSync?.erros) ? _ifoodSync.erros : []).forEach(e => { if (e?.merchantId) ids.add(String(e.merchantId)); });
+  const lojas = [...ids].map(mid => ({ mid, nome: _ifoodNomeLoja(mid), v: _ifoodVinculos[mid] || null }))
+    .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  if (_ifoodLoja && !ids.has(_ifoodLoja)) _ifoodLoja = '';
 
-  if (!merchants.length) {
-    return `<div class="pj-view pj-ifood-view">
-      <div class="pj-view-title">🛵 iFood — Dashboard</div>
-      <div class="pj-ifood-hint">Ainda em sandbox. Assim que os clientes autorizarem a integração após a homologação, cada loja aparece aqui como card.</div>
-      ${header}
-      <div class="pj-empty" style="padding:32px;color:var(--text2)">Nenhuma loja no escopo ainda.</div>
-    </div>`;
+  const escopo = _ifoodLoja ? (porLoja[_ifoodLoja] || []) : docs;
+  const t = _ifoodSomar(escopo);
+  const teste = docs.some(d => d.homologacao === true) || _ifoodSync?.homologacao === true;
+  const carregou = _ifoodKpis !== null && !_ifoodErro;
+
+  let conteudo;
+  if (_ifoodErro) {
+    conteudo = `<div class="pj-ifood-aviso pj-ifood-aviso-erro">${escHtml(_ifoodErroLeitura(_ifoodErro))}
+      <button class="pj-filter-btn" onclick="ifoodRecarregar()">Tentar de novo</button></div>`;
+  } else if (_ifoodKpis === null) {
+    conteudo = '<div class="pj-ifood-vazio">Carregando números do iFood…</div>';
+  } else if (!lojas.length) {
+    conteudo = '<div class="pj-ifood-vazio">Nenhuma loja do iFood conectada ainda. Quando o cliente autorizar o app no Portal do Parceiro, a loja aparece aqui depois da próxima sincronização.</div>';
+  } else if (!escopo.length) {
+    conteudo = `<div class="pj-ifood-vazio">Nenhum pedido no iFood entre ${_ifoodDataBR(de)} e ${_ifoodDataBR(ate)}${_ifoodLoja ? ' nessa loja' : ''}.</div>`;
+  } else {
+    conteudo = _ifoodPainelHtml(t);
   }
 
-  const cards = merchants.map(m => {
-    const st = _ifoodStatus[m.id];
-    const isOnline = st?.available === true;
-    const isTest = m.test === 'TEST';
-    const metrics = _ifoodMerchantMetrics(m.id);
-    const bdRow = _ifoodMatchClient(m);
-    const logo = bdRow?.logoDataUrl || bdRow?.logoUrl || bdRow?.fotoUrl || null;
-    const displayName = (m.name || '').replace(/^Teste\s*-\s*/i, '') || 'Sem nome';
-    const rating = metrics.avgRating != null ? metrics.avgRating.toFixed(1) : '—';
-    const ratingClass = metrics.avgRating == null ? 'gray'
-      : metrics.avgRating >= 4.5 ? 'green'
-      : metrics.avgRating >= 3.5 ? 'yellow' : 'red';
+  const seletor = carregou && lojas.length > 1 ? `<label class="pj-ifood-loja-sel">Mostrar
+      <select class="mtr-select" onchange="ifoodVerLoja(this.value === 'todas' ? '' : this.value)">
+        <option value="todas">Todas as lojas (${lojas.length})</option>
+        ${lojas.map(l => `<option value="${escHtml(l.mid)}"${l.mid === _ifoodLoja ? ' selected' : ''}>${escHtml(l.nome)}</option>`).join('')}
+      </select>
+    </label>` : '';
 
-    const logoHtml = logo
-      ? `<img src="${logo}" alt="" class="pj-ifood-card-logo">`
-      : `<span class="pj-ifood-card-logo pj-ifood-card-logo-empty">${escHtml((displayName || '?').charAt(0).toUpperCase())}</span>`;
+  const ultimo = carregou && t.ultimoDia && t.ultimoDia < ate ? ` Último dia com dados: ${_ifoodDataBR(t.ultimoDia)}.` : '';
 
-    return `<div class="pj-ifood-card" data-merchant-id="${m.id}">
-      <div class="pj-ifood-card-top">
-        ${logoHtml}
-        <div class="pj-ifood-card-name">
-          <div class="pj-ifood-card-title">${escHtml(displayName)}</div>
-          <div class="pj-ifood-card-sub">${escHtml((m.address?.city || '') + (m.address?.state ? ' · ' + m.address.state : ''))}${isTest ? ' <span class="pj-ifood-badge-test">TEST</span>' : ''}</div>
-        </div>
-        <div class="pj-ifood-card-status ${isOnline ? 'online' : 'offline'}" title="${isOnline ? 'Aberta agora' : 'Fechada'}"></div>
-      </div>
-      <div class="pj-ifood-card-metrics">
-        <div class="pj-ifood-metric">
-          <div class="pj-ifood-metric-label">7 dias</div>
-          <div class="pj-ifood-metric-value">${_ifoodFmtCurrency(metrics.revenue7d)}</div>
-        </div>
-        <div class="pj-ifood-metric">
-          <div class="pj-ifood-metric-label">Pedidos</div>
-          <div class="pj-ifood-metric-value">${metrics.orders7d}</div>
-        </div>
-        <div class="pj-ifood-metric">
-          <div class="pj-ifood-metric-label">Nota</div>
-          <div class="pj-ifood-metric-value pj-ifood-rating ${ratingClass}">${rating}${metrics.avgRating != null ? '<span class="pj-ifood-star">★</span>' : ''}</div>
-        </div>
-      </div>
-      <div class="pj-ifood-card-footer">
-        <span class="pj-ifood-footer-item">${metrics.reviewsCount} avaliação${metrics.reviewsCount !== 1 ? 'ões' : ''}</span>
-      </div>
-    </div>`;
-  }).join('');
+  const cards = carregou && lojas.length ? `<div class="pj-ifood-h">Lojas</div>
+    <div class="pj-ifood-grid">${lojas.map(l => _ifoodCardHtml(l, porLoja[l.mid] || [])).join('')}</div>` : '';
 
-  return `<div class="pj-view pj-ifood-view">
-    <div class="pj-view-title">🛵 iFood — Dashboard</div>
-    <div class="pj-ifood-hint">Poller sincroniza a cada 30s (pedidos), 60s (status), 15min (avaliações), 6h (cardápio), 1x/dia (financeiro).</div>
-    ${header}
-    <div class="pj-ifood-grid">${cards}</div>
+  return `<div class="pj-view-header">
+    <div class="pj-view-title">🛵 iFood ${teste ? IFOOD_TESTE : ''}</div>
+  </div>
+  <div class="pj-ifood-view">
+    <div class="pj-ifood-hint">Os números do iFood fecham no dia seguinte, até 9h. O dia de hoje ainda não entra. Pedido concluído pode ser cancelado em até 15 dias, então os últimos dias ainda podem mudar um pouco.</div>
+    ${teste ? '<div class="pj-ifood-aviso">Dados de teste do iFood (homologação). Não são vendas reais.</div>' : ''}
+    ${_ifoodSyncHtml()}
+    ${_ifoodPeriodoHtml(de, ate, true, ultimo)}
+    ${seletor}
+    ${conteudo}
+    ${cards}
   </div>`;
 }
 
@@ -29713,6 +29937,7 @@ function bdRenderDetail(id) {
       ${_bdSectionCardapio(c)}
       ${_bdSectionReputacao(c)}
       ${_bdSectionVendas(c)}
+      ${_bdSectionIfood(c)}
       ${_bdSectionInspiracoes(c)}
       ${_bdSectionAprendizados(c)}
       ${_bdSectionAvisos(c)}
@@ -30462,6 +30687,62 @@ function _bdSectionVendas(c) {
   setTimeout(() => _cwFillVendas(c.id, elId), 0);
   return _bdSec('💰 Vendas (Cardápio Web)', `
     <div id="${elId}" style="min-height:40px;font-size:12px;color:var(--text3);">Carregando vendas…</div>
+  `);
+}
+
+// ═════════════ iFood: números do cliente ═════════════
+// Lojas vinculadas ao cliente (ifood_vinculos) somadas no mesmo período da
+// tela Projetos > iFood. Lê sob demanda, como a seção do Cardápio Web.
+async function _ifoodFillFicha(clienteId, elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const req = String(++_ifoodFichaSeq);
+  el.dataset.req = req;
+  const { de, ate } = _ifoodPeriodoDatas();
+  const topo = _ifoodPeriodoHtml(de, ate, false)
+    + '<div class="pj-ifood-hint">Os números do iFood fecham no dia seguinte, até 9h.</div>';
+  const db = _bdDb();
+  if (!db) { el.innerHTML = topo + '<div class="pj-ifood-aviso pj-ifood-aviso-erro">Sem conexão com o banco agora.</div>'; return; }
+  el.innerHTML = topo + '<div class="pj-ifood-vazio">Carregando números do iFood…</div>';
+  try {
+    const vinc = await db.collection('ifood_vinculos').where('clienteId', '==', clienteId).get();
+    const lojas = vinc.docs.map(d => ({ mid: d.id, nome: String(d.data().nomeLoja || `Loja ${d.id.slice(0, 8)}`).trim() }));
+    const idCampo = firebase.firestore.FieldPath.documentId();
+    // Intervalo de id por loja ({merchantId}_{data}): dispensa índice composto
+    const porLoja = await Promise.all(lojas.map(l => db.collection('ifood_kpis')
+      .where(idCampo, '>=', `${l.mid}_${de}`).where(idCampo, '<=', `${l.mid}_${ate}`)
+      .get().then(s => s.docs.map(d => d.data()))));
+    if (el.dataset.req !== req) return; // pediram outro período no meio
+    if (!lojas.length) {
+      el.innerHTML = '<div style="font-size:12px;color:var(--text2);line-height:1.6;">Nenhuma loja do iFood vinculada a esse cliente ainda. Vincule em <b>Projetos → iFood</b>.</div>';
+      return;
+    }
+    const docs = porLoja.flat();
+    const t = _ifoodSomar(docs);
+    const quando = docs.map(d => _ifoodQuando(d.atualizadoEm)).filter(Boolean).sort((a, b) => b - a)[0];
+    const unidades = lojas.length > 1
+      ? `<div class="pj-ifood-hint">${lojas.map((l, i) => {
+          const u = _ifoodSomar(porLoja[i]);
+          return `${escHtml(l.nome)}: ${_ifoodFmtCurrency(u.gmvConcluidos)} em ${_ifoodNum(u.concluidos)} pedido${u.concluidos === 1 ? '' : 's'} concluído${u.concluidos === 1 ? '' : 's'}`;
+        }).join('<br>')}</div>`
+      : '';
+    el.innerHTML = topo
+      + (t.homologacao ? `<div class="pj-ifood-aviso">${IFOOD_TESTE} Dados de teste do iFood (homologação). Não são vendas reais.</div>` : '')
+      + (docs.length ? _ifoodPainelHtml(t) : `<div class="pj-ifood-vazio">Nenhum pedido no iFood entre ${_ifoodDataBR(de)} e ${_ifoodDataBR(ate)}.</div>`)
+      + unidades
+      + (quando ? `<div style="font-size:10px;color:var(--text3);margin-top:8px;">Atualizado em ${_ifoodQuandoTxt(quando)}</div>` : '');
+  } catch (e) {
+    if (el.dataset.req !== req) return;
+    console.warn('[ifood] ficha:', e);
+    el.innerHTML = topo + `<div class="pj-ifood-aviso pj-ifood-aviso-erro">${escHtml(_ifoodErroLeitura(e))} <button class="pj-filter-btn" onclick="_ifoodRecarregarFichas()">Tentar de novo</button></div>`;
+  }
+}
+
+function _bdSectionIfood(c) {
+  const elId = `ifoodFicha_${String(c.id).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+  setTimeout(() => _ifoodFillFicha(c.id, elId), 0);
+  return _bdSec('🛵 iFood', `
+    <div id="${elId}" data-ifood-ficha="${_bdEsc(c.id)}" style="min-height:40px;font-size:12px;color:var(--text3);">Carregando números do iFood…</div>
   `);
 }
 

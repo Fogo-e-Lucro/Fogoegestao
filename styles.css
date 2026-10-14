@@ -3485,12 +3485,43 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
   display:flex; align-items:center; gap:6px;
 }
 
-/* ── iFood dashboard ───────────────────────────────── */
-.pj-ifood-view { padding-bottom: 40px; }
+/* ── iFood: relatório (Analytics, D-1) ─────────────── */
+.pj-ifood-view { padding: 16px 20px 40px; }
 .pj-ifood-hint {
   color: var(--text2); font-size: 13px;
   margin: 6px 0 16px;
 }
+.pj-ifood-ref { font-size: 13px; color: var(--text2); margin: 10px 0 16px; }
+.pj-ifood-ref b { color: var(--text); font-weight: 600; }
+.pj-ifood-aviso {
+  background: rgba(245,158,11,.08);
+  border: 1px solid rgba(245,158,11,.35);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 0 0 14px;
+  font-size: 13px; line-height: 1.5;
+  color: var(--text);
+}
+.pj-ifood-aviso ul { margin: 6px 0 0; padding-left: 18px; }
+.pj-ifood-aviso .pj-filter-btn { margin-left: 8px; }
+.pj-ifood-aviso-erro { background: rgba(239,68,68,.08); border-color: rgba(239,68,68,.35); }
+.pj-ifood-vazio {
+  padding: 28px 20px;
+  margin-bottom: 22px;
+  text-align: center;
+  font-size: 13px; line-height: 1.5;
+  color: var(--text2);
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+}
+.pj-ifood-loja-sel {
+  display: flex; align-items: center; gap: 8px;
+  max-width: 360px;
+  font-size: 12px; color: var(--text2);
+  margin-bottom: 14px;
+}
+.pj-ifood-h { font-size: 14px; font-weight: 700; color: var(--text); margin: 4px 0 12px; }
 .pj-ifood-header {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -3516,11 +3547,34 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
   color: var(--text);
   display: flex; align-items: baseline; gap: 6px;
 }
-.pj-ifood-kpi-value.red { color: #dc2626; }
-.pj-ifood-kpi-sub {
-  font-size: 14px; font-weight: 500;
-  color: var(--text3);
+.pj-ifood-kpi-note { font-size: 12px; color: var(--text2); margin-top: 4px; }
+.pj-ifood-dists {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 26px;
 }
+.pj-ifood-dist {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.pj-ifood-dist-row {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  margin-top: 10px;
+  font-size: 13px; color: var(--text);
+}
+.pj-ifood-dist-val { color: var(--text2); font-variant-numeric: tabular-nums; }
+.pj-ifood-dist-bar {
+  grid-column: 1 / -1;
+  height: 6px; border-radius: 4px;
+  background: var(--bg2);
+  overflow: hidden;
+}
+.pj-ifood-dist-bar > span { display: block; height: 100%; border-radius: 4px; background: var(--accent); }
+.pj-ifood-dist-vazio { font-size: 12px; color: var(--text3); margin-top: 8px; }
 .pj-ifood-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -3532,14 +3586,8 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 2px 10px rgba(0,0,0,.05);
-  transition: transform .15s, box-shadow .15s, border-color .15s;
-  cursor: pointer;
 }
-.pj-ifood-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent);
-  box-shadow: 0 8px 22px rgba(99,102,241,.15);
-}
+.pj-ifood-card.active { border-color: var(--accent); }
 .pj-ifood-card-top {
   display: flex; align-items: center; gap: 12px;
   margin-bottom: 14px;
@@ -3560,10 +3608,14 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
 }
 .pj-ifood-card-name { flex: 1; min-width: 0; }
 .pj-ifood-card-title {
+  display: block; max-width: 100%;
+  padding: 0; border: none; background: none;
+  font-family: inherit; text-align: left; cursor: pointer;
   font-size: 14px; font-weight: 700;
   color: var(--text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.pj-ifood-card-title:hover { color: var(--accent); }
 .pj-ifood-card-sub {
   font-size: 11px; color: var(--text3);
   margin-top: 2px;
@@ -3571,8 +3623,8 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
 }
 .pj-ifood-badge-test {
   display: inline-block;
-  font-size: 8px; font-weight: 700;
-  padding: 1px 5px;
+  font-size: 9px; font-weight: 700;
+  padding: 1px 6px;
   border-radius: 8px;
   background: rgba(250, 204, 21, .18);
   color: #a16207;
@@ -3580,24 +3632,10 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
   vertical-align: middle;
   margin-left: 4px;
 }
-.pj-ifood-card-status {
-  width: 12px; height: 12px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 3px rgba(0,0,0,.03);
-}
-.pj-ifood-card-status.online {
-  background: #22c55e;
-  box-shadow: 0 0 0 3px rgba(34,197,94,.18);
-}
-.pj-ifood-card-status.offline {
-  background: #94a3b8;
-  box-shadow: 0 0 0 3px rgba(148,163,184,.18);
-}
 .pj-ifood-card-metrics {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 8px;
   padding: 12px 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -3614,22 +3652,19 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
   font-size: 13px; font-weight: 700;
   color: var(--text);
 }
-.pj-ifood-rating { display: inline-flex; align-items: center; gap: 2px; }
-.pj-ifood-rating.green  { color: #16a34a; }
-.pj-ifood-rating.yellow { color: #ea580c; }
-.pj-ifood-rating.red    { color: #dc2626; }
-.pj-ifood-rating.gray   { color: var(--text3); }
-.pj-ifood-star {
-  font-size: 11px;
-  margin-left: 1px;
-}
 .pj-ifood-card-footer {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--text3);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text2);
 }
-.pj-ifood-footer-item { font-weight: 500; }
+.pj-ifood-vinculo { display: flex; align-items: center; gap: 8px; }
+.pj-ifood-auto { font-size: 11px; color: var(--text3); }
+@media (max-width: 600px) {
+  .pj-ifood-view { padding: 14px 16px 40px; }
+  .pj-ifood-header { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pj-ifood-kpi { padding: 12px 14px; }
+  .pj-ifood-kpi-value { font-size: 18px; }
+}
 
 /* ── Saúde da carteira ────────────────────────────── */
 .pj-cs-view { padding-bottom: 40px; }
