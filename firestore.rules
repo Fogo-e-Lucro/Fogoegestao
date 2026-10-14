@@ -168,7 +168,15 @@ service cloud.firestore {
     // Analytics (D-1): sync grava kpis/sync via admin SDK; a tela só grava o vínculo
     match /ifood_kpis/{doc}              { allow read: if isSignedIn(); allow write: if false; }
     match /ifood_sync/{doc}              { allow read: if isSignedIn(); allow write: if false; }
-    match /ifood_vinculos/{doc}          { allow read: if isSignedIn(); allow write: if amIAdmin(); }
+    // Vínculo manual: só admin, id do doc = merchantId, nunca apaga
+    match /ifood_vinculos/{doc} {
+      allow read: if isSignedIn();
+      allow create, update: if amIAdmin() && request.resource.data.merchantId == doc && request.resource.data.origem == 'manual';
+      allow delete: if false;
+    }
+
+    // ── Cardápio Web (cron grava via admin SDK; client só lê) ─
+    match /cw_resumo/{doc} { allow read: if isSignedIn(); allow write: if false; }
 
     // ── Default = negar ──────────────────────────────────
     match /{document=**} {

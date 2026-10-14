@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.67.9">
+<link rel="stylesheet" href="styles.css?v=3.67.10">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -25011,7 +25011,9 @@ const IFOOD_DIMS = [
   ['porStatus', 'Status do pedido'],
   ['porPagamento', 'Forma de pagamento'],
   ['porLogistica', 'Logística (quem entrega)'],
+  ['porDiaSemana', 'Dia da semana'],
 ];
+const IFOOD_SEMANA = [...WD_SHORT.slice(1), WD_SHORT[0]]; // Seg..Dom
 const IFOOD_ROTULOS = {
   IFOOD: 'App iFood', DIGITAL_CATALOG: 'Cardápio digital', POS: 'PDV (balcão)', EMBEDDED_UBER: 'Uber',
   CONCLUDED: 'Concluído', CANCELLED: 'Cancelado',
@@ -25059,9 +25061,13 @@ function _ifoodSomar(docs) {
   IFOOD_DIMS.forEach(([k]) => { dims[k] = {}; });
   (docs || []).forEach(d => {
     const c = Number(d.concluidos) || 0, x = Number(d.cancelados) || 0;
+    const pedidos = Number(d.totalPedidos) || (c + x);
     concluidos += c;
     cancelados += x;
-    total += Number(d.totalPedidos) || (c + x);
+    total += pedidos;
+    // Dia da semana do dia da loja (meio-dia local: fuso não troca o dia)
+    const wd = WD_SHORT[new Date(d.date + 'T12:00:00').getDay()];
+    if (wd) dims.porDiaSemana[wd] = (dims.porDiaSemana[wd] || 0) + pedidos;
     gmvC += Math.round((Number(d.gmvConcluidos) || 0) * 100);
     gmvX += Math.round((Number(d.gmvCancelados) || 0) * 100);
     gmvSE += Math.round((Number(d.gmvSemEntregaConcluidos) || 0) * 100);
@@ -25180,7 +25186,10 @@ function ifoodSetDatas() {
   const ontem = _ifoodOntem();
   if (ate > ontem) ate = ontem;
   if (de > ate) de = ate;
-  _ifoodAplicarPeriodo({ de, ate });
+  // Até 3 meses por consulta: período longo puxa doc demais (loja x dia)
+  const limitado = (Date.parse(ate) - Date.parse(de)) / 864e5 > 92;
+  if (limitado) { const d = new Date(ate + 'T12:00:00'); d.setDate(d.getDate() - 92); de = dateToStr(d); }
+  _ifoodAplicarPeriodo(limitado ? { de, ate, limitado } : { de, ate });
 }
 function ifoodVerLoja(mid) {
   _ifoodLoja = mid || '';
@@ -25200,8 +25209,8 @@ async function ifoodVincular(mid, clienteId) {
     origem: 'manual',
     atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
   };
-  // nomeLoja é do sync; só cria o campo vazio se o doc ainda não existe
-  if (!atual) dados.nomeLoja = '';
+  // nomeLoja fica de fora: é do sync e o merge preserva o que ele gravou.
+  // Mandar '' num doc que o snapshot ainda não trouxe apagaria o nome.
   try {
     await _db.collection('ifood_vinculos').doc(mid).set(dados, { merge: true });
     showToast('success', clienteId ? `Loja vinculada a ${escHtml(dados.clienteNome || 'cliente')}.` : 'Vínculo removido.');
@@ -25229,7 +25238,7 @@ function _ifoodPeriodoHtml(de, ate, comDatas, extra) {
   return `<div class="mtr-period-group">
       <div class="mtr-presets" role="group" aria-label="Período">${chips}</div>${datas}
     </div>
-    <div class="pj-ifood-ref">Período de referência: <b>${_ifoodDataBR(de)} a ${_ifoodDataBR(ate)}</b> (${dias} dia${dias === 1 ? '' : 's'}).${extra || ''}</div>`;
+    <div class="pj-ifood-ref">Período de referência: <b>${_ifoodDataBR(de)} a ${_ifoodDataBR(ate)}</b> (${dias} dia${dias === 1 ? '' : 's'}).${_ifoodPeriodo.limitado ? ' A data inicial foi ajustada pro limite de 3 meses.' : ''}${extra || ''}</div>`;
 }
 
 // Indicadores + distribuições de um conjunto já somado (total ou uma loja).
@@ -25240,7 +25249,9 @@ function _ifoodPainelHtml(t) {
       <div class="pj-ifood-kpi-note">${nota}</div>
     </div>`;
   const dist = ([k, titulo]) => {
-    const linhas = Object.entries(t[k] || {}).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
+    const linhas = Object.entries(t[k] || {}).filter(([, n]) => n > 0).sort(k === 'porDiaSemana'
+      ? (a, b) => IFOOD_SEMANA.indexOf(a[0]) - IFOOD_SEMANA.indexOf(b[0])
+      : (a, b) => b[1] - a[1]);
     const soma = linhas.reduce((a, [, n]) => a + n, 0);
     const corpo = linhas.length ? linhas.map(([chave, n]) => {
       const p = soma ? n / soma : 0;
@@ -25362,7 +25373,7 @@ function pjBuildIfood() {
     conteudo = `<div class="pj-ifood-aviso pj-ifood-aviso-erro">${escHtml(_ifoodErroLeitura(_ifoodErro))}
       <button class="pj-filter-btn" onclick="ifoodRecarregar()">Tentar de novo</button></div>`;
   } else if (_ifoodKpis === null) {
-    conteudo = '<div class="pj-ifood-vazio">Carregando números do iFood…</div>';
+    conteudo = '<div class="pj-ifood-vazio">Carregando números do iFood</div>';
   } else if (!lojas.length) {
     conteudo = '<div class="pj-ifood-vazio">Nenhuma loja do iFood conectada ainda. Quando o cliente autorizar o app no Portal do Parceiro, a loja aparece aqui depois da próxima sincronização.</div>';
   } else if (!escopo.length) {
@@ -30703,7 +30714,7 @@ async function _ifoodFillFicha(clienteId, elId) {
     + '<div class="pj-ifood-hint">Os números do iFood fecham no dia seguinte, até 9h.</div>';
   const db = _bdDb();
   if (!db) { el.innerHTML = topo + '<div class="pj-ifood-aviso pj-ifood-aviso-erro">Sem conexão com o banco agora.</div>'; return; }
-  el.innerHTML = topo + '<div class="pj-ifood-vazio">Carregando números do iFood…</div>';
+  el.innerHTML = topo + '<div class="pj-ifood-vazio">Carregando números do iFood</div>';
   try {
     const vinc = await db.collection('ifood_vinculos').where('clienteId', '==', clienteId).get();
     const lojas = vinc.docs.map(d => ({ mid: d.id, nome: String(d.data().nomeLoja || `Loja ${d.id.slice(0, 8)}`).trim() }));
@@ -30742,7 +30753,7 @@ function _bdSectionIfood(c) {
   const elId = `ifoodFicha_${String(c.id).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
   setTimeout(() => _ifoodFillFicha(c.id, elId), 0);
   return _bdSec('🛵 iFood', `
-    <div id="${elId}" data-ifood-ficha="${_bdEsc(c.id)}" style="min-height:40px;font-size:12px;color:var(--text3);">Carregando números do iFood…</div>
+    <div id="${elId}" data-ifood-ficha="${_bdEsc(c.id)}" style="min-height:40px;font-size:12px;color:var(--text3);">Carregando números do iFood</div>
   `);
 }
 
