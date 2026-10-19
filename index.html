@@ -5971,7 +5971,7 @@ async function loadFromCloud() {
     // Inicia listener de notificações cross-device (menções, atribuições)
     try { if (typeof pjStartNotifListener === 'function') pjStartNotifListener(); } catch(_) {}
     // Avisos no celular: registra o aparelho (se já permitiu), oferece ativar e abre a tarefa do aviso
-    try { pjFcmInit(); pjPushNudge(); pjOpenTaskFromUrl(); } catch(_) {}
+    try { _pjFcmInitP = pjFcmInit(); pjPushNudge(); pjOpenTaskFromUrl(); } catch(_) {}
   } catch(e) { console.warn('Firestore load failed, using localStorage:', e); setSyncStatus('err'); }
 }
 
@@ -19313,7 +19313,7 @@ function pjRenderNotifPanel() {
       <button onclick="pjMarkAllRead()" title="Marcar todas como lidas">✓ lidas</button>
       <button onclick="pjClearNotifs()" title="Limpar todas">🗑</button>
     </div>
-    ${pjPushCanAsk() ? `<button type="button" class="pj-notif-push" onclick="pjFcmEnable()"><span>Avisar neste aparelho quando te passarem uma tarefa</span><b>Ativar</b></button>` : ''}
+    ${pjPushRow()}
     ${mentionBanner}
     <div class="pj-notif-list">${items || '<div class="pj-notif-empty">Nenhuma notificação.</div>'}</div>`;
 }
@@ -31374,6 +31374,7 @@ window.bdUploadCustomImage = async function(cid, fid, input) {
 // VAPID: usa app_config/secrets.fcm_vapid se o admin salvou; senão a padrão do Firebase.
 let _pjFcmToken = null;
 let _pjFcmWired = false;
+let _pjFcmInitP = null;
 
 async function pjFcmGetVapidKey() {
   // 1) localStorage (cache rápido)
@@ -31390,9 +31391,16 @@ async function pjFcmGetVapidKey() {
   } catch(e) { return ''; }
 }
 
-// Pode pedir permissão neste aparelho? (no iPhone só existe no app instalado)
-function pjPushCanAsk() {
-  return 'Notification' in window && 'serviceWorker' in navigator && Notification.permission === 'default';
+// Situação dos avisos neste aparelho: 'ok', 'ask' (dá pra ativar), 'denied' (bloqueado),
+// 'install' (iPhone fora do app instalado) ou null (este navegador não recebe)
+function pjPushState() {
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+    return /iPhone|iPad|iPod/.test(navigator.userAgent) && !standalone ? 'install' : null;
+  }
+  if (Notification.permission === 'denied') return 'denied';
+  if (Notification.permission === 'granted' && _pjFcmToken) return 'ok';
+  return 'ask';
 }
 
 async function pjFcmInit() {
@@ -31432,45 +31440,71 @@ async function pjFcmSaveToken(uid, token) {
 }
 
 window.pjFcmEnable = async function() {
-  if (!('Notification' in window) || !('serviceWorker' in navigator)) {
-    showToast?.('error','❌','Este aparelho não recebe avisos. No iPhone, instale o app na tela de início e ative por lá.');
-    return;
-  }
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) { pjPushNudgeShow('install'); return; }
   const perm = await Notification.requestPermission();
-  pjPushNudgeHide(true);
-  if (perm !== 'granted') {
-    showToast?.('warning','⚠️','Avisos bloqueados. Libere nas configurações do aparelho.');
-    if (pjNotifPanelOpen) pjRenderNotifPanel();
-    return;
+  if (perm === 'denied') { pjPushNudgeShow('denied'); if (pjNotifPanelOpen) pjRenderNotifPanel(); return; }
+  if (perm !== 'granted') { showToast?.('warning','⚠️','O pedido fechou sem resposta. Toque em Ativar notificações de novo.'); return; }
+  showToast?.('info','🔔','Ativando notificações…');
+  await (_pjFcmInitP = pjFcmInit());
+  if (_pjFcmToken) {
+    document.getElementById('fgPushNudge')?.remove();
+    showToast?.('success','✅','Notificações ativadas neste aparelho.');
+  } else {
+    showToast?.('error','❌','As notificações não ativaram. Confira a internet e toque em Ativar de novo.');
   }
-  showToast?.('info','🔔','Ativando avisos…');
-  await pjFcmInit();
-  if (_pjFcmToken) showToast?.('success','✅','Avisos ativados neste aparelho.');
-  else showToast?.('error','❌','Os avisos não ativaram. Confira a internet e toque em Ativar de novo.');
   if (pjNotifPanelOpen) pjRenderNotifPanel();
 };
+// "Já liberei": a pessoa voltou das configurações do aparelho
+window.pjPushRecheck = function() {
+  if (Notification.permission === 'granted') return pjFcmEnable();
+  showToast?.('warning','⚠️','Ainda está bloqueado. Libere nas configurações e toque em Já liberei.');
+};
 
-// Cartão no app instalado pedindo pra ligar os avisos (uma vez por aparelho)
-function pjPushNudge() {
-  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-  if (!standalone || !pjPushCanAsk() || document.getElementById('fgPushNudge')) return;
-  try { if (localStorage.getItem('fg_push_nudge')) return; } catch(_) {}
-  const el = document.createElement('div');
-  el.id = 'fgPushNudge';
-  el.className = 'fg-push-nudge';
-  el.setAttribute('role', 'dialog');
-  el.setAttribute('aria-label', 'Ativar avisos');
-  el.innerHTML = `<b>Ative os avisos</b>
-    <span>Quando alguém te passar uma tarefa, o celular avisa na hora.</span>
-    <div class="fg-push-nudge__acts">
-      <button type="button" class="fg-push-nudge__no" onclick="pjPushNudgeHide(true)">Agora não</button>
-      <button type="button" class="fg-push-nudge__yes" onclick="pjFcmEnable()">Ativar avisos</button>
-    </div>`;
-  document.body.appendChild(el);
+// Cartão pra ligar as notificações: aparece toda vez que o app abre até funcionar.
+// "Agora não" esconde só até a próxima abertura.
+const PJ_PUSH_CARD = {
+  ask: ['Ative as notificações', 'Assim você fica sabendo na hora quando alguém te passar uma tarefa.', 'Ativar notificações', 'pjFcmEnable()'],
+  denied: ['Notificações bloqueadas', 'Libere pra receber os avisos de tarefa. No iPhone: Ajustes → Notificações → Fogo Gestão → Permitir. No Android ou no computador: cadeado ao lado do endereço → Notificações → Permitir.', 'Já liberei', 'pjPushRecheck()'],
+  install: ['Instale o app pra receber avisos', 'No iPhone os avisos só chegam com o app na tela de início. Toque em Compartilhar e depois em Adicionar à Tela de Início.', '', ''],
+};
+async function pjPushNudge() {
+  try { if (sessionStorage.getItem('fg_push_nudge')) return; } catch(_) {}
+  await _pjFcmInitP;
+  const st = pjPushState();
+  if (st === 'ask') {
+    try { await ensureFirebaseMessaging(); if (!firebase.messaging.isSupported()) return; } catch(_) { return; }
+  }
+  if (st && st !== 'ok') pjPushNudgeShow(st);
 }
-function pjPushNudgeHide(remember) {
+function pjPushNudgeShow(kind) {
+  const [title, text, btn, fn] = PJ_PUSH_CARD[kind];
+  let el = document.getElementById('fgPushNudge');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'fgPushNudge';
+    el.className = 'fg-push-nudge';
+    el.setAttribute('role', 'dialog');
+    document.body.appendChild(el);
+  }
+  el.setAttribute('aria-label', title);
+  el.innerHTML = `<b>${title}</b><span>${text}</span>
+    <div class="fg-push-nudge__acts">
+      <button type="button" class="fg-push-nudge__no" onclick="pjPushNudgeHide()">${btn ? 'Agora não' : 'Entendi'}</button>
+      ${btn ? `<button type="button" class="fg-push-nudge__yes" onclick="${fn}">${btn}</button>` : ''}
+    </div>`;
+}
+function pjPushNudgeHide() {
   document.getElementById('fgPushNudge')?.remove();
-  if (remember) { try { localStorage.setItem('fg_push_nudge', '1'); } catch(_) {} }
+  try { sessionStorage.setItem('fg_push_nudge', '1'); } catch(_) {}
+}
+// Linha no sino enquanto os avisos não funcionam neste aparelho
+function pjPushRow() {
+  const st = pjPushState();
+  const row = (text, act, fn) => `<button type="button" class="pj-notif-push" onclick="${fn}"><span>${text}</span><b>${act}</b></button>`;
+  if (st === 'ask') return row('Avisar neste aparelho quando te passarem uma tarefa', 'Ativar', 'pjFcmEnable()');
+  if (st === 'denied') return row('Notificações bloqueadas neste aparelho', 'Como liberar', "pjPushNudgeShow('denied')");
+  if (st === 'install') return row('No iPhone os avisos precisam do app instalado', 'Como instalar', "pjPushNudgeShow('install')");
+  return '';
 }
 
 // Abre a tarefa do aviso: vai pra Projetos, espera as listas e abre
