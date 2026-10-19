@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.67.10">
+<link rel="stylesheet" href="styles.css?v=3.68.0">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -435,7 +435,7 @@
           <button class="app-settings-btn" onclick="appSettingsSave('fcm_vapid','cfgFcmVapid'); try{localStorage.setItem('pj_fcm_vapid',document.getElementById('cfgFcmVapid').value||'');}catch(_){}">Salvar</button>
         </div>
         <div class="app-settings-action-row">
-          <span class="app-settings-hint">Após salvar a VAPID key, clique em "Ativar push" para registrar este dispositivo. Tokens ficam em <code>pj_push_tokens/{token}</code>.</span>
+          <span class="app-settings-hint">Opcional: sem chave o app usa a padrão do Firebase. Cada pessoa ativa os avisos pelo sino; os aparelhos ficam em <code>pj_push_tokens/{uid}</code> e quem envia é o fg-push na VPS.</span>
         </div>
         <div class="app-settings-action-row">
           <a href="https://console.firebase.google.com/project/calendario-cd198/settings/cloudmessaging" target="_blank" class="app-settings-link">Console FCM →</a>
@@ -5970,6 +5970,8 @@ async function loadFromCloud() {
     try { if (typeof bdInit === 'function') bdInit(); } catch(_) {}
     // Inicia listener de notificações cross-device (menções, atribuições)
     try { if (typeof pjStartNotifListener === 'function') pjStartNotifListener(); } catch(_) {}
+    // Avisos no celular: registra o aparelho (se já permitiu), oferece ativar e abre a tarefa do aviso
+    try { pjFcmInit(); pjPushNudge(); pjOpenTaskFromUrl(); } catch(_) {}
   } catch(e) { console.warn('Firestore load failed, using localStorage:', e); setSyncStatus('err'); }
 }
 
@@ -19311,6 +19313,7 @@ function pjRenderNotifPanel() {
       <button onclick="pjMarkAllRead()" title="Marcar todas como lidas">✓ lidas</button>
       <button onclick="pjClearNotifs()" title="Limpar todas">🗑</button>
     </div>
+    ${pjPushCanAsk() ? `<button type="button" class="pj-notif-push" onclick="pjFcmEnable()"><span>Avisar neste aparelho quando te passarem uma tarefa</span><b>Ativar</b></button>` : ''}
     ${mentionBanner}
     <div class="pj-notif-list">${items || '<div class="pj-notif-empty">Nenhuma notificação.</div>'}</div>`;
 }
@@ -31361,15 +31364,15 @@ window.bdUploadCustomImage = async function(cid, fid, input) {
   setTimeout(() => update(navigator.onLine), 50);
 })();
 
-// ── FCM Push Notifications ────────────────────────────────────
-// Registra firebase-messaging-sw.js, pega o token e salva em pj_push_tokens.
-// Para envios reais, é preciso uma função de servidor (Cloud Function, n8n,
-// etc.) que use a Server Key + tokens armazenados em pj_push_tokens/{uid}.
-// VAPID public key fica em app_config/secrets.fcm_vapid (Firestore) — admin
-// configura em Settings → Integrações.
+// ── Avisos no celular (push via FCM) ──────────────────────────
+// O aparelho se registra no sw.js (um service worker só: o antigo
+// firebase-messaging-sw.js no mesmo escopo tirava o sw.js do lugar).
+// O token fica em pj_push_tokens/{uid}.tokens.{token} (a regra só deixa
+// gravar no doc do próprio uid). Quem envia é o fg-push na VPS
+// (/root/fg-push): avisos do sino (atribuição, menção, automação) e
+// tarefa nova criada pelo WhatsApp, n8n ou Claude.
+// VAPID: usa app_config/secrets.fcm_vapid se o admin salvou; senão a padrão do Firebase.
 let _pjFcmToken = null;
-let _pjFcmMessaging = null;
-let _pjFcmSwReg = null;
 let _pjFcmWired = false;
 
 async function pjFcmGetVapidKey() {
@@ -31387,101 +31390,102 @@ async function pjFcmGetVapidKey() {
   } catch(e) { return ''; }
 }
 
+// Pode pedir permissão neste aparelho? (no iPhone só existe no app instalado)
+function pjPushCanAsk() {
+  return 'Notification' in window && 'serviceWorker' in navigator && Notification.permission === 'default';
+}
+
 async function pjFcmInit() {
   if (!('serviceWorker' in navigator) || !('Notification' in window)) return;
-  await ensureFirebaseMessaging();
-  if (!firebase?.messaging?.isSupported || !firebase.messaging.isSupported()) {
-    console.log('[FCM] não suportado neste browser');
-    return;
-  }
+  if (Notification.permission !== 'granted') return;
   const uid = _auth?.currentUser?.uid || _currentUser?.uid;
   if (!uid) return;
-  const vapid = await pjFcmGetVapidKey();
-  if (!vapid) {
-    console.log('[FCM] VAPID key não configurada — push em background indisponível.');
-    return;
-  }
   try {
-    _pjFcmSwReg = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
-    await navigator.serviceWorker.ready;
-    _pjFcmMessaging = firebase.messaging();
-    // Permission gating — não pede automaticamente, espera ação do usuário via botão.
-    if (Notification.permission !== 'granted') return;
-    _pjFcmToken = await _pjFcmMessaging.getToken({
-      vapidKey: vapid,
-      serviceWorkerRegistration: _pjFcmSwReg
-    });
-    if (_pjFcmToken) await pjFcmSaveToken(_pjFcmToken);
-    // Idempotência: listeners atacham 1x por vida da aba (init roda em auth + pjFcmEnable)
+    await ensureFirebaseMessaging();
+    if (!firebase.messaging.isSupported()) return;
+    const reg = await navigator.serviceWorker.ready;
+    const vapid = await pjFcmGetVapidKey();
+    _pjFcmToken = await firebase.messaging().getToken(vapid
+      ? { vapidKey: vapid, serviceWorkerRegistration: reg }
+      : { serviceWorkerRegistration: reg });
+    if (_pjFcmToken) await pjFcmSaveToken(uid, _pjFcmToken);
+    // Toque no aviso com o app aberto: o sw.js manda abrir a tarefa
     if (!_pjFcmWired) {
       _pjFcmWired = true;
-      // Foreground messages → fallback pra desktop notif
-      _pjFcmMessaging.onMessage((payload) => {
-        const n = payload.notification || payload.data || {};
-        if (typeof pjFireDesktopNotif === 'function') {
-          pjFireDesktopNotif(n.title || 'Fogo & Gestão', n.body || '', n.taskId);
-        }
-      });
-      // Mensagens da SW (notificationclick → open task)
       navigator.serviceWorker.addEventListener('message', (ev) => {
-        if (ev.data?.type === 'fg-open-task' && ev.data.taskId && typeof pjOpenTask === 'function') {
-          pjOpenTask(ev.data.taskId);
-        }
+        if (ev.data?.type === 'fg-open-task' && ev.data.taskId) pjOpenTaskFromPush(ev.data.taskId);
       });
     }
-    console.log('[FCM] token registrado');
   } catch(e) {
     console.warn('[FCM] falha:', e?.message || e);
   }
 }
 
-async function pjFcmSaveToken(token) {
+async function pjFcmSaveToken(uid, token) {
+  const ua = navigator.userAgent || '';
+  const device = /Android/i.test(ua) ? 'android' : /iPhone|iPad|iPod/i.test(ua) ? 'ios' : 'desktop';
   try {
-    const uid = _auth?.currentUser?.uid || _currentUser?.uid;
-    if (!uid || !token) return;
-    const ua = navigator.userAgent || '';
-    const dev = /Android/i.test(ua) ? 'android' : /iPhone|iPad|iPod/i.test(ua) ? 'ios' : 'desktop';
-    await _db.collection('pj_push_tokens').doc(token).set({
-      uid, token, device: dev, ua,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    await _db.collection('pj_push_tokens').doc(uid).set({
+      tokens: { [token]: { device, ua, updatedAt: firebase.firestore.FieldValue.serverTimestamp() } }
     }, { merge: true });
   } catch(e) { console.warn('[FCM] save token:', e?.message); }
 }
 
 window.pjFcmEnable = async function() {
-  if (!('Notification' in window)) {
-    showToast?.('error','❌','Este navegador não suporta notificações.');
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+    showToast?.('error','❌','Este aparelho não recebe avisos. No iPhone, instale o app na tela de início e ative por lá.');
     return;
   }
   const perm = await Notification.requestPermission();
+  pjPushNudgeHide(true);
   if (perm !== 'granted') {
-    showToast?.('warning','⚠️','Permissão negada. Ative em Configurações do site.');
+    showToast?.('warning','⚠️','Avisos bloqueados. Libere nas configurações do aparelho.');
+    if (pjNotifPanelOpen) pjRenderNotifPanel();
     return;
   }
-  showToast?.('info','🔔','Ativando push...');
+  showToast?.('info','🔔','Ativando avisos…');
   await pjFcmInit();
-  showToast?.('success','✅', _pjFcmToken
-    ? 'Push ativado!'
-    : 'Permissão concedida (configure o VAPID em Integrações para push em background).');
+  if (_pjFcmToken) showToast?.('success','✅','Avisos ativados neste aparelho.');
+  else showToast?.('error','❌','Os avisos não ativaram. Confira a internet e toque em Ativar de novo.');
+  if (pjNotifPanelOpen) pjRenderNotifPanel();
 };
 
-window.pjFcmStatus = function() {
-  return {
-    supported: !!('Notification' in window && firebase?.messaging?.isSupported?.()),
-    permission: 'Notification' in window ? Notification.permission : 'unsupported',
-    hasToken: !!_pjFcmToken,
-    token: _pjFcmToken,
-  };
-};
+// Cartão no app instalado pedindo pra ligar os avisos (uma vez por aparelho)
+function pjPushNudge() {
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if (!standalone || !pjPushCanAsk() || document.getElementById('fgPushNudge')) return;
+  try { if (localStorage.getItem('fg_push_nudge')) return; } catch(_) {}
+  const el = document.createElement('div');
+  el.id = 'fgPushNudge';
+  el.className = 'fg-push-nudge';
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-label', 'Ativar avisos');
+  el.innerHTML = `<b>Ative os avisos</b>
+    <span>Quando alguém te passar uma tarefa, o celular avisa na hora.</span>
+    <div class="fg-push-nudge__acts">
+      <button type="button" class="fg-push-nudge__no" onclick="pjPushNudgeHide(true)">Agora não</button>
+      <button type="button" class="fg-push-nudge__yes" onclick="pjFcmEnable()">Ativar avisos</button>
+    </div>`;
+  document.body.appendChild(el);
+}
+function pjPushNudgeHide(remember) {
+  document.getElementById('fgPushNudge')?.remove();
+  if (remember) { try { localStorage.setItem('fg_push_nudge', '1'); } catch(_) {} }
+}
 
-// Auto-init quando logar (se já permitido)
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    if (_auth?.currentUser && Notification?.permission === 'granted') {
-      pjFcmInit();
-    }
-  }, 4000);
-});
+// Abre a tarefa do aviso: vai pra Projetos, espera as listas e abre
+async function pjOpenTaskFromPush(taskId) {
+  try { switchTab('projetos'); } catch(_) {}
+  for (let i = 0; i < 40 && !pjLists.length; i++) await new Promise(r => setTimeout(r, 250));
+  pjOpenTask(taskId);
+}
+// Toque no aviso com o app fechado: o sw.js abre ./?task=ID
+function pjOpenTaskFromUrl() {
+  const id = new URLSearchParams(location.search).get('task');
+  if (!id) return;
+  history.replaceState(null, '', location.pathname + location.hash);
+  pjOpenTaskFromPush(id);
+}
 
 /* ─────────────────────────────────────────────────────────────
    🔴 LIVES (streaming RTMP via backend VPS+ffmpeg)

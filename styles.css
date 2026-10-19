@@ -4517,6 +4517,39 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
   padding:2px 6px; border-radius:10px;
   align-self:center; flex-shrink:0;
 }
+/* Avisos no celular: linha no sino e cartão no app instalado (pjFcmEnable) */
+.pj-notif-push {
+  display:flex; align-items:center; gap:10px; width:100%;
+  padding:10px 14px; border:none; border-bottom:1px solid var(--border);
+  background:var(--bg2); color:var(--text); font:inherit; font-size:12px;
+  text-align:left; cursor:pointer;
+}
+.pj-notif-push span { flex:1; line-height:1.35; }
+.pj-notif-push b {
+  flex-shrink:0; padding:5px 10px; border-radius:8px;
+  background:var(--accent); color:#fff; font-size:11px; font-weight:700;
+}
+.fg-push-nudge {
+  position:fixed; z-index:9998; left:12px; right:12px;
+  bottom:calc(76px + env(safe-area-inset-bottom, 0px));
+  display:flex; flex-direction:column; gap:4px;
+  padding:14px; border-radius:14px;
+  background:var(--card); border:1px solid var(--border); color:var(--text);
+  box-shadow:0 12px 32px rgba(0,0,0,.22);
+  animation: pjPopIn .18s cubic-bezier(.4,0,.2,1);
+}
+.fg-push-nudge b { font-size:14px; }
+.fg-push-nudge span { font-size:12.5px; color:var(--text3); line-height:1.4; }
+.fg-push-nudge__acts { display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+.fg-push-nudge__acts button {
+  min-height:40px; padding:0 14px; border-radius:10px;
+  font:inherit; font-size:13px; font-weight:600; cursor:pointer;
+}
+.fg-push-nudge__no { background:transparent; border:1px solid var(--border); color:var(--text3); }
+.fg-push-nudge__yes { background:var(--accent); border:1px solid var(--accent); color:#fff; }
+@media (min-width: 641px) {
+  .fg-push-nudge { left:auto; right:24px; bottom:24px; width:340px; }
+}
 .pj-notif-mention-banner {
   background:rgba(168,85,247,.12);
   border-bottom:1px solid rgba(168,85,247,.25);

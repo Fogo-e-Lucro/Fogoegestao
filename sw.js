@@ -2,7 +2,7 @@
 // V2: cache app-shell para modo offline. Mutations Firestore são tratadas
 // pela própria persistência IndexedDB do Firestore (queue automática).
 // Bump cache version cada vez que mudar lógica:
-const SW_VERSION = 'fg-v3.67.10';
+const SW_VERSION = 'fg-v3.68.0';
 const SHELL_CACHE = `fg-shell-${SW_VERSION}`;
 const RUNTIME_CACHE = `fg-runtime-${SW_VERSION}`;
 
@@ -103,33 +103,34 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// Push notifications (preparado pra feature 13 — FCM)
-// Em paralelo, firebase-messaging-sw.js trata os pushes do FCM.
+// Avisos no celular: o fg-push (VPS) manda pelo FCM { data: { title, body, taskId, tag } }.
+// É o único service worker do app (o token do FCM é pego com este registro).
 self.addEventListener('push', (event) => {
-  if (!event.data) return;
-  let payload = {};
-  try { payload = event.data.json(); } catch(_) { payload = { title: 'Fogo & Gestão', body: event.data.text() }; }
-  const title = payload.title || 'Fogo & Gestão';
-  const opts = {
-    body: payload.body || '',
-    icon: payload.icon || './icon-192.png',
+  let p = {};
+  try { p = event.data ? event.data.json() : {}; } catch(_) { p = { title: 'Fogo & Gestão', body: event.data.text() }; }
+  const d = p.data || p.notification || p;
+  event.waitUntil(self.registration.showNotification(d.title || 'Fogo & Gestão', {
+    body: d.body || '',
+    icon: './icon-192.png',
     badge: './icon-192.png',
-    tag: payload.tag || 'fg-default',
-    data: payload.data || {},
-    requireInteraction: !!payload.requireInteraction,
-  };
-  event.waitUntil(self.registration.showNotification(title, opts));
+    // mesma tag do pjFireDesktopNotif: se os dois mostrarem, vira um aviso só
+    tag: d.tag || `fg-${d.taskId || Date.now()}`,
+    data: { taskId: d.taskId || null },
+  }));
 });
 
+// Toque no aviso: com o app aberto, foca e pede pra abrir a tarefa; fechado, abre em ./?task=ID
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const url = event.notification.data?.url || './index.html';
+  const taskId = event.notification.data?.taskId;
   event.waitUntil(
-    self.clients.matchAll({ type: 'window' }).then((clients) => {
-      for (const c of clients) {
-        if ('focus' in c) { c.focus(); if (c.navigate) c.navigate(url); return; }
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      const c = list.find(w => 'focus' in w);
+      if (c) {
+        if (taskId) c.postMessage({ type: 'fg-open-task', taskId });
+        return c.focus();
       }
-      if (self.clients.openWindow) self.clients.openWindow(url);
+      if (self.clients.openWindow) return self.clients.openWindow(taskId ? './?task=' + encodeURIComponent(taskId) : './');
     })
   );
 });
