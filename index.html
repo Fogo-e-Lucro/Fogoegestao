@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.68.1">
+<link rel="stylesheet" href="styles.css?v=3.68.2">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -4675,12 +4675,19 @@ function applyTabVisibility() {
 /* ═══════════════════════════════════════════════════════
    AUTH
 ═══════════════════════════════════════════════════════ */
+// Login feito agora, na tela de entrar: o force-logout (config/auth.forceLogout) só derruba
+// sessão antiga. Sem isso, aparelho novo (ex.: app recém-instalado no iPhone, que não tem
+// fg_last_login) era deslogado em silêncio no primeiro login e a pessoa tinha que entrar duas vezes.
+function pjMarkFreshLogin() {
+  try { localStorage.setItem('fg_last_login', String(Date.now())); } catch(_) {}
+}
 async function signInWithEmail() {
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const password = document.getElementById('loginPassword').value;
   const errEl = document.getElementById('loginError');
   errEl.textContent = '';
   if (!email || !password) { errEl.textContent = 'Preencha email e senha.'; return; }
+  pjMarkFreshLogin();
   try {
     await _auth.signInWithEmailAndPassword(email, password);
   } catch(e) {
@@ -4712,6 +4719,7 @@ async function signInWithEmail() {
 function signInWithGoogle() {
   document.getElementById('loginError').textContent = '';
   const provider = new firebase.auth.GoogleAuthProvider();
+  pjMarkFreshLogin();
   _auth.signInWithPopup(provider).catch(e => {
     document.getElementById('loginError').textContent = 'Erro ao entrar. Tente novamente.';
   });
