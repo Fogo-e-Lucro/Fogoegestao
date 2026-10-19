@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.68.0">
+<link rel="stylesheet" href="styles.css?v=3.68.1">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -31301,16 +31301,38 @@ window.bdUploadCustomImage = async function(cid, fid, input) {
     e.preventDefault();
     _deferredPrompt = e;
     pjShowInstallButton(true);
+    pjInstallNudge(); // no Android, troca as instruções pelo botão Instalar
   });
   window.addEventListener('appinstalled', () => {
     _deferredPrompt = null;
     pjShowInstallButton(false);
+    const card = document.getElementById('fgPushNudge');
+    if (PJ_APP_CARDS.includes(card?.dataset.kind)) card.remove();
     if (typeof showToast === 'function') showToast('success', '🎉', 'App instalado!');
   });
 
   // Detecta se já está rodando como app instalado
   const isStandalone = matchMedia('(display-mode: standalone)').matches
                     || navigator.standalone === true;
+
+  // Celular ou tablet fora do app instalado: 'app' (botão Instalar do navegador),
+  // 'install' (iPhone/iPad, instruções do Safari) ou 'android' (instruções do menu).
+  // No computador fica só o botão Instalar da barra lateral.
+  function pjAppState() {
+    const ua = navigator.userAgent;
+    const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    if (isStandalone || !(ios || /Android/i.test(ua))) return null;
+    return _deferredPrompt ? 'app' : ios ? 'install' : 'android';
+  }
+  // Cartão pra instalar: aparece assim que abre, até na tela de login (instalar antes de
+  // entrar evita logar duas vezes no iPhone). Devolve true se o cartão está na tela.
+  window.pjInstallNudge = function() {
+    const kind = pjAppState();
+    try { if (!kind || sessionStorage.getItem('fg_app_nudge')) return false; } catch(_) {}
+    pjPushNudgeShow(kind);
+    return true;
+  };
+  document.addEventListener('DOMContentLoaded', () => pjInstallNudge());
 
   // Botão visível apenas quando há prompt disponível e não está instalado
   window.pjShowInstallButton = function(show) {
@@ -31334,6 +31356,7 @@ window.bdUploadCustomImage = async function(cid, fid, input) {
     const result = await _deferredPrompt.userChoice;
     _deferredPrompt = null;
     pjShowInstallButton(false);
+    if (document.getElementById('fgPushNudge')?.dataset.kind === 'app') pjPushNudgeHide();
     if (typeof pjHaptic === 'function') pjHaptic('light');
     if (result.outcome === 'accepted' && typeof showToast === 'function') {
       showToast('success', '🎉', 'Instalando…');
@@ -31465,16 +31488,21 @@ window.pjPushRecheck = function() {
 const PJ_PUSH_CARD = {
   ask: ['Ative as notificações', 'Assim você fica sabendo na hora quando alguém te passar uma tarefa.', 'Ativar notificações', 'pjFcmEnable()'],
   denied: ['Notificações bloqueadas', 'Libere pra receber os avisos de tarefa. No iPhone: Ajustes → Notificações → Fogo Gestão → Permitir. No Android ou no computador: cadeado ao lado do endereço → Notificações → Permitir.', 'Já liberei', 'pjPushRecheck()'],
-  install: ['Instale o app pra receber avisos', 'No iPhone os avisos só chegam com o app na tela de início. Toque em Compartilhar e depois em Adicionar à Tela de Início.', '', ''],
+  // os três de baixo são o cartão de instalar (pjInstallNudge)
+  app: ['Instale o app', 'Fica na tela de início, abre como app e te avisa quando alguém te passar uma tarefa.', 'Instalar', 'pjTriggerInstall()'],
+  install: ['Instale o app', 'No Safari, toque em Compartilhar (nas versões novas fica no botão ⋯) e depois em Adicionar à Tela de Início. Abra pelo ícone novo: é por ele que chegam os avisos de tarefa.', '', ''],
+  android: ['Instale o app', 'Abra o menu ⋮ do navegador e toque em Instalar app ou Adicionar à tela inicial. Se já instalou, abra pelo ícone.', '', ''],
 };
+const PJ_APP_CARDS = ['app', 'install', 'android'];
 async function pjPushNudge() {
+  if (pjInstallNudge()) return; // fora do app instalado, o cartão é o de instalar
   try { if (sessionStorage.getItem('fg_push_nudge')) return; } catch(_) {}
   await _pjFcmInitP;
   const st = pjPushState();
   if (st === 'ask') {
     try { await ensureFirebaseMessaging(); if (!firebase.messaging.isSupported()) return; } catch(_) { return; }
   }
-  if (st && st !== 'ok') pjPushNudgeShow(st);
+  if (st && st !== 'ok' && st !== 'install') pjPushNudgeShow(st);
 }
 function pjPushNudgeShow(kind) {
   const [title, text, btn, fn] = PJ_PUSH_CARD[kind];
@@ -31487,6 +31515,7 @@ function pjPushNudgeShow(kind) {
     document.body.appendChild(el);
   }
   el.setAttribute('aria-label', title);
+  el.dataset.kind = kind;
   el.innerHTML = `<b>${title}</b><span>${text}</span>
     <div class="fg-push-nudge__acts">
       <button type="button" class="fg-push-nudge__no" onclick="pjPushNudgeHide()">${btn ? 'Agora não' : 'Entendi'}</button>
@@ -31494,8 +31523,11 @@ function pjPushNudgeShow(kind) {
     </div>`;
 }
 function pjPushNudgeHide() {
-  document.getElementById('fgPushNudge')?.remove();
-  try { sessionStorage.setItem('fg_push_nudge', '1'); } catch(_) {}
+  const el = document.getElementById('fgPushNudge');
+  const app = PJ_APP_CARDS.includes(el?.dataset.kind);
+  el?.remove();
+  try { sessionStorage.setItem(app ? 'fg_app_nudge' : 'fg_push_nudge', '1'); } catch(_) {}
+  if (app && _currentUser) pjPushNudge(); // dispensou o instalar: oferece os avisos (Android dá no navegador)
 }
 // Linha no sino enquanto os avisos não funcionam neste aparelho
 function pjPushRow() {
@@ -35738,51 +35770,6 @@ window.fgHaptic = function(kind) {
         else { pn.style.transform = 'translateY(0)'; }
       });
     });
-  }
-})();
-
-// ── PWA Install prompt ──
-(function(){
-  let deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    deferredPrompt = e;
-    // Só mostra o banner se ainda não instalado e passou 30s no app
-    const dismissed = Number(localStorage.getItem('fg_install_dismissed') || 0);
-    if (Date.now() - dismissed < 7 * 86400000) return; // 7 dias
-    setTimeout(() => {
-      if (!deferredPrompt) return;
-      if (window.matchMedia('(display-mode: standalone)').matches) return; // já instalado
-      showInstallBanner();
-    }, 30000);
-  });
-  function showInstallBanner() {
-    if (document.getElementById('fgInstallBanner')) return;
-    const b = document.createElement('div');
-    b.id = 'fgInstallBanner';
-    b.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(90px + env(safe-area-inset-bottom,0px));z-index:99998;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px;box-shadow:0 12px 30px rgba(0,0,0,.3);display:flex;align-items:center;gap:12px;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);animation:fgSlideUp .3s cubic-bezier(.32,.72,0,1);';
-    b.innerHTML = '<div style="font-size:28px;flex-shrink:0;">🔥</div><div style="flex:1;min-width:0;"><div style="font-weight:700;color:var(--text);font-size:14px;">Instala o app</div><div style="color:var(--text3);font-size:11.5px;margin-top:2px;">Fica na tela de início como app nativo</div></div><button id="fgInstallOk" style="background:linear-gradient(135deg,#3b82f6,#1e40af);color:#fff;border:0;border-radius:10px;padding:8px 14px;font-weight:700;font-size:12px;cursor:pointer;">Instalar</button><button id="fgInstallDismiss" style="background:transparent;border:0;color:var(--text3);font-size:22px;cursor:pointer;padding:0 4px;">×</button>';
-    document.body.appendChild(b);
-    document.getElementById('fgInstallOk').onclick = async () => {
-      if (!deferredPrompt) return;
-      fgHaptic('medium');
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      b.remove();
-      if (outcome !== 'accepted') localStorage.setItem('fg_install_dismissed', String(Date.now()));
-    };
-    document.getElementById('fgInstallDismiss').onclick = () => {
-      localStorage.setItem('fg_install_dismissed', String(Date.now()));
-      b.remove();
-    };
-  }
-  // CSS da animação (uma vez)
-  if (!document.getElementById('fgSlideUpKF')) {
-    const s = document.createElement('style');
-    s.id = 'fgSlideUpKF';
-    s.textContent = '@keyframes fgSlideUp { from { transform: translateY(120%); } to { transform: translateY(0); } }';
-    document.head.appendChild(s);
   }
 })();
 
