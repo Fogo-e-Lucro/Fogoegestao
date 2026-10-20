@@ -1237,7 +1237,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             <span class="sp2-kpi-dot"></span>
             <span id="sp2KpiText">Sem posts hoje</span>
           </div>
-          <button class="sp2-header-icon-btn" id="sp2HeaderConfig" onclick="sp2OpenAuthPanel()" title="Contas conectadas">
+          <button class="sp2-header-icon-btn" id="sp2HeaderConfig" onclick="sp2OpenAuthPanel()" title="Contas conectadas" aria-label="Contas conectadas">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </button>
         </div>
@@ -1252,7 +1252,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           </button>
           <span id="spTokenStatus" class="sp2-token-status"></span>
         </div>
-        <div class="sp2-auth-hint">Token Meta e ImgBB em <strong>⚙️ Configurações</strong></div>
+        <div class="sp2-auth-hint">Token da Meta e chave do ImgBB ficam em <strong>Configurações</strong>.</div>
       </div>
 
       <!-- Contas conectadas — strip horizontal com avatares -->
@@ -1285,8 +1285,8 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             <div class="sp2-drop-glyph">
               <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
             </div>
-            <h2 class="sp2-drop-title">Arrasta a foto pra cá</h2>
-            <p class="sp2-drop-sub" id="spUploadSub">Uma vira Feed, várias viram Carrossel, vídeo vira Reels — a gente detecta.</p>
+            <h2 class="sp2-drop-title">Escolha a foto ou o vídeo</h2>
+            <p class="sp2-drop-sub" id="spUploadSub">Uma foto vira Feed. Várias viram Carrossel. Vídeo vira Reels.</p>
             <div class="sp2-drop-cta">
               <button type="button" class="sp2-btn-pick" onclick="event.stopPropagation();document.getElementById('spFileInput').click()">Escolher arquivo</button>
               <button type="button" class="sp2-btn-carousel" onclick="event.stopPropagation();document.getElementById('spCarouselInput').click()" title="Carrossel de várias fotos">
@@ -1298,7 +1298,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           <div id="spUploadPreview" class="sp2-drop-preview" style="display:none">
             <img id="spPreviewImg" src="" alt="">
             <video id="spPreviewVid" muted playsinline></video>
-            <button class="sp2-remove-media" onclick="spRemoveMedia(event)" title="Remover">✕</button>
+            <button class="sp2-remove-media" onclick="spRemoveMedia(event)" title="Remover" aria-label="Remover"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
             <div id="sp2RatioBadge" class="sp2-ratio-badge" style="display:none"></div>
           </div>
         </div>
@@ -1311,7 +1311,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
               <span>+</span><span class="sp2-carousel-add-label">Adicionar</span>
             </div>
           </div>
-          <div class="sp2-carousel-hint">Toque numa imagem pra remover · Máx. 10</div>
+          <div class="sp2-carousel-hint">Toque numa imagem pra remover. Até 10.</div>
         </div>
 
         <!-- Tipo detectado + trocar -->
@@ -1329,12 +1329,12 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
 
         <!-- Editor: caption + collab -->
         <div class="sp2-editor" id="spCaptionField">
-          <textarea id="spCaption" class="sp2-caption" rows="3" placeholder="Escreva a legenda..." oninput="sp2OnCaptionInput(this)"></textarea>
+          <textarea id="spCaption" class="sp2-caption" rows="3" placeholder="Escreva a legenda" oninput="sp2OnCaptionInput(this)"></textarea>
           <div class="sp2-editor-bar">
             <div class="sp2-chips">
               <button type="button" class="sp2-chip sp2-chip-primary" onclick="sp2SuggestCaption()" id="sp2AiChip">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                Sugerir com IA
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+                Sugerir legenda
               </button>
               <button type="button" class="sp2-chip" id="sp2PacksBtn" onclick="sp2OpenPacksModal()">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
@@ -1349,7 +1349,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           </div>
           <!-- Collab body (progressive disclosure) -->
           <div class="sp2-collab-body" id="spCollabField" hidden>
-            <div class="sp2-collab-inputs" id="spCollabBody">
+            <div class="sp2-collab-inputs" id="spCollabBody" hidden>
               <input id="spCollabUser1" type="text" class="sp2-input-mini" placeholder="@usuario1" oninput="this.value=this.value.replace('@','')">
               <input id="spCollabUser2" type="text" class="sp2-input-mini" placeholder="@usuario2 (opcional)" oninput="this.value=this.value.replace('@','')">
             </div>
@@ -1358,11 +1358,10 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           <div class="sp2-first-comment" id="sp2FirstCommentWrap">
             <label class="sp2-first-comment-label" for="spFirstComment">
               Primeiro comentário
-              <span>hashtags que vão sozinhas depois do post subir</span>
+              <span>As hashtags entram sozinhas depois que o post sobe.</span>
             </label>
             <textarea id="spFirstComment" class="sp2-first-comment-input" rows="2" placeholder="#hashtag1 #hashtag2 #hashtag3" oninput="sp2OnFirstCommentInput(this)"></textarea>
             <div class="sp2-first-comment-foot">
-              <span class="sp2-first-comment-hint" id="sp2FirstCommentHint">Story não recebe primeiro comentário</span>
               <span class="sp2-first-comment-count"><span id="sp2FirstCommentCount">0</span>/2200</span>
             </div>
           </div>
@@ -1401,7 +1400,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           <input type="file" id="spStoryFileInput" style="display:none" accept="image/*,video/*" onchange="spHandleStoryFile(this.files[0])">
           <button type="button" class="sp2-btn-pick sp2-btn-fullw" onclick="document.getElementById('spStoryFileInput').click()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Escolher foto/vídeo
+            Escolher foto ou vídeo
           </button>
           <label class="sp2-field-label">Link do sticker</label>
           <input id="spStoryLink" type="url" placeholder="https://link-de-pedidos.com" class="sp2-input" oninput="spUpdateSticker()">
@@ -1456,7 +1455,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
               <!-- Legenda -->
               <div class="sp2-feed-caption">
                 <strong id="sp2FeedCapHandle">@sua_conta</strong>
-                <span id="sp2FeedCapText" class="sp2-feed-caption-text sp2-feed-caption-empty">Escreva a legenda ao lado…</span>
+                <span id="sp2FeedCapText" class="sp2-feed-caption-text sp2-feed-caption-empty">A legenda aparece aqui</span>
               </div>
               <div class="sp2-feed-time">Agora mesmo</div>
             </div>
@@ -1529,7 +1528,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
               <h3 class="sp2-cropper-title">Ajustar recorte</h3>
               <p class="sp2-cropper-sub">Arrasta pra reposicionar, usa o slider pra zoom</p>
             </div>
-            <button type="button" class="sp2-cropper-close" onclick="sp2CloseCropper()" aria-label="Fechar">✕</button>
+            <button type="button" class="sp2-cropper-close" onclick="sp2CloseCropper()" aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
           </div>
           <div class="sp2-cropper-canvas-wrap">
             <canvas id="sp2CropCanvas"
@@ -1560,10 +1559,10 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
               <h3 class="sp2-packs-title">Packs de hashtags</h3>
               <p class="sp2-packs-sub" id="sp2PacksSubtitle">Escolhe um pra jogar no primeiro comentário</p>
             </div>
-            <button type="button" class="sp2-packs-close" onclick="sp2ClosePacksModal()" aria-label="Fechar">✕</button>
+            <button type="button" class="sp2-packs-close" onclick="sp2ClosePacksModal()" aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
           </div>
           <div class="sp2-packs-body" id="sp2PacksBody">
-            <div class="sp2-packs-empty">Carregando packs...</div>
+            <div class="sp2-packs-empty">Carregando packs</div>
           </div>
           <div class="sp2-packs-foot">
             <button type="button" class="sp2-cropper-btn primary" onclick="sp2StartCreatePack()">
@@ -1597,13 +1596,13 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
 
       <!-- Modal de configuração do backend (clean) -->
       <div id="liveSettingsModal" onclick="if(event.target===this)liveCloseSettings()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:10000;align-items:center;justify-content:center;padding:20px;">
-        <div style="background:#fff;border-radius:18px;width:100%;max-width:480px;max-height:90vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.4);position:relative;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+        <div class="lvs-card" style="background:#fff;border-radius:18px;width:100%;max-width:480px;max-height:90vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.4);position:relative;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
 
           <!-- Header -->
-          <div style="padding:24px 28px 20px;border-bottom:1px solid #f1f5f9;position:relative;">
-            <button onclick="liveCloseSettings()" style="position:absolute;top:18px;right:18px;width:30px;height:30px;border-radius:50%;background:#f1f5f9;border:0;cursor:pointer;font-size:13px;color:#64748b;display:flex;align-items:center;justify-content:center;transition:all .15s;" onmouseover="this.style.background='#fee2e2';this.style.color='#dc2626'" onmouseout="this.style.background='#f1f5f9';this.style.color='#64748b'">✕</button>
+          <div class="lvs-head" style="padding:24px 28px 20px;border-bottom:1px solid #f1f5f9;position:relative;">
+            <button class="lvs-close" aria-label="Fechar" onclick="liveCloseSettings()" style="position:absolute;top:18px;right:18px;width:30px;height:30px;border-radius:50%;background:#f1f5f9;border:0;cursor:pointer;font-size:13px;color:#64748b;display:flex;align-items:center;justify-content:center;transition:all .15s;" onmouseover="this.style.background='#fee2e2';this.style.color='#dc2626'" onmouseout="this.style.background='#f1f5f9';this.style.color='#64748b'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
             <div style="display:flex;align-items:center;gap:12px;">
-              <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;box-shadow:0 6px 16px rgba(99,102,241,.35);">⚙️</div>
+              <div class="lvs-ico" style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;box-shadow:0 6px 16px rgba(99,102,241,.35);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></div>
               <div>
                 <div style="font-size:17px;font-weight:800;color:#0f172a;letter-spacing:-.01em;">Conectar VPS de Streaming</div>
                 <div style="font-size:12.5px;color:#64748b;margin-top:2px;">Configure as credenciais da sua VPS</div>
@@ -1616,8 +1615,8 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
 
             <!-- URL -->
             <div style="margin-bottom:18px;">
-              <label style="display:block;font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">URL do backend</label>
-              <input type="text" id="liveBackendUrl" placeholder="http://89.116.30.126:3000"
+              <label class="lvs-label" style="display:block;font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">URL do backend</label>
+              <input type="text" id="liveBackendUrl" class="lvs-input" placeholder="http://89.116.30.126:3000"
                      style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 14px;font-size:13px;color:#0f172a;font-family:ui-monospace,SFMono-Regular,monospace;box-sizing:border-box;outline:none;transition:border-color .15s;"
                      onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
               <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Endereço da VPS com a porta. Ex: <code style="background:#f1f5f9;padding:1px 5px;border-radius:3px;">http://89.116.30.126:3000</code></div>
@@ -1625,15 +1624,15 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
 
             <!-- Token -->
             <div style="margin-bottom:18px;">
-              <label style="display:block;font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">Token</label>
+              <label class="lvs-label" style="display:block;font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">Token</label>
               <div style="position:relative;">
-                <input type="password" id="liveBackendToken" placeholder="Cole o token gerado"
+                <input type="password" id="liveBackendToken" class="lvs-input" placeholder="Cole o token gerado"
                        autocomplete="off"
                        style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 44px 12px 14px;font-size:13px;color:#0f172a;font-family:ui-monospace,SFMono-Regular,monospace;box-sizing:border-box;outline:none;transition:border-color .15s;"
                        onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-                <button type="button" onclick="liveToggleSettingsToken()" title="Mostrar/ocultar"
+                <button type="button" class="lvs-eye" onclick="liveToggleSettingsToken()" title="Mostrar ou esconder" aria-label="Mostrar ou esconder o token"
                         style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#fff;border:1px solid #e2e8f0;border-radius:7px;padding:5px 9px;font-size:13px;cursor:pointer;color:#64748b;transition:all .15s;"
-                        onmouseover="this.style.borderColor='#6366f1';this.style.color='#6366f1'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">👁</button>
+                        onmouseover="this.style.borderColor='#6366f1';this.style.color='#6366f1'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg></button>
               </div>
               <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Senha secreta que protege o backend.</div>
             </div>
@@ -1644,20 +1643,20 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           </div>
 
           <!-- Actions -->
-          <div style="display:flex;gap:10px;align-items:center;padding:16px 28px;background:#f8fafc;border-top:1px solid #f1f5f9;border-radius:0 0 18px 18px;">
-            <button onclick="liveTestBackend()"
+          <div class="lvs-foot" style="display:flex;gap:10px;align-items:center;padding:16px 28px;background:#f8fafc;border-top:1px solid #f1f5f9;border-radius:0 0 18px 18px;">
+            <button class="lvs-test" onclick="liveTestBackend()"
                     style="background:rgba(99,102,241,.1);color:#6366f1;border:1.5px solid rgba(99,102,241,.3);border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;"
                     onmouseover="this.style.background='rgba(99,102,241,.18)'" onmouseout="this.style.background='rgba(99,102,241,.1)'">
-              ▶ Testar
+              Testar
             </button>
             <div style="flex:1;"></div>
-            <button onclick="liveCloseSettings()"
+            <button class="lvs-cancel" onclick="liveCloseSettings()"
                     style="background:#fff;color:#64748b;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;"
                     onmouseover="this.style.borderColor='#94a3b8'" onmouseout="this.style.borderColor='#e2e8f0'">Cancelar</button>
-            <button onclick="liveSaveBackend()"
+            <button class="lvs-save" onclick="liveSaveBackend()"
                     style="background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;border:0;border-radius:9px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(99,102,241,.3);transition:all .12s;"
                     onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 18px rgba(99,102,241,.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 12px rgba(99,102,241,.3)'">
-              💾 Salvar
+              Salvar
             </button>
           </div>
         </div>
@@ -1841,8 +1840,8 @@ ufw allow 3000/tcp</pre>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
           Nova live
         </button>
-        <button type="button" id="btn-studio-config" class="btn-ghost btn-ghost--icon" aria-label="Configuracoes do servidor" onclick="liveOpenSettings()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <button type="button" id="btn-studio-config" class="btn-ghost btn-ghost--icon" aria-label="Configurações do servidor" title="Configurações do servidor" onclick="liveOpenSettings()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
       </div>
     </header>
@@ -1855,7 +1854,7 @@ ufw allow 3000/tcp</pre>
       <p>Suba a primeira transmissão pra um cliente e acompanhe tudo por aqui.</p>
       <button type="button" class="btn-primary btn-primary--lg" data-open-drawer>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-        Nova transmissão
+        Nova live
       </button>
     </div>
 
@@ -1879,7 +1878,7 @@ ufw allow 3000/tcp</pre>
                     <span class="live-mockup__ig-time">agora</span>
                   </div>
                   <div class="live-mockup__ig-actions">
-                    <span class="live-mockup__ig-live">🔴 AO VIVO</span>
+                    <span class="live-mockup__ig-live">AO VIVO</span>
                   </div>
                 </div>
                 <!-- Mídia do usuário: image OU video -->
@@ -1889,10 +1888,10 @@ ufw allow 3000/tcp</pre>
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="12" cy="12" r="3.5"/><circle cx="17" cy="7" r="1"/></svg>
                 </div>
                 <div class="live-mockup__ig-footer">
-                  <div class="live-mockup__ig-input">Enviar mensagem…</div>
+                  <div class="live-mockup__ig-input">Enviar mensagem</div>
                   <div class="live-mockup__ig-icons">
-                    <span>♡</span>
-                    <span>📤</span>
+                    <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></span>
+                    <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg></span>
                   </div>
                 </div>
               </div>
@@ -1960,7 +1959,7 @@ ufw allow 3000/tcp</pre>
       <div class="drawer__backdrop" data-close-drawer></div>
       <div class="drawer__panel" role="dialog" aria-modal="true">
         <header class="drawer__header">
-          <h3 id="drawer-title">Nova transmissão</h3>
+          <h3 id="drawer-title">Nova live</h3>
           <button type="button" class="icon-btn" data-close-drawer aria-label="Fechar">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -2013,8 +2012,8 @@ ufw allow 3000/tcp</pre>
               <span class="lv-drop__icon">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
               </span>
-              <span class="lv-drop__title" id="lv-drop-title">Arraste o arquivo</span>
-              <span class="lv-drop__sub" id="lv-drop-sub">ou clique pra escolher · MP4 (vídeo até 3500 kbps) ou JPG/PNG · até 500 MB</span>
+              <span class="lv-drop__title" id="lv-drop-title">Escolha o arquivo</span>
+              <span class="lv-drop__sub" id="lv-drop-sub">MP4 (vídeo até 3500 kbps) ou JPG/PNG · até 500 MB</span>
             </label>
           </div>
 
@@ -2060,7 +2059,7 @@ ufw allow 3000/tcp</pre>
             </div>
             <label class="lv-field">
               <span class="lv-field__label">URL do servidor</span>
-              <input type="text" name="rtmpUrl" id="lv-rtmp-url" required placeholder="rtmps://live-upload.instagram.com/rtmp/…"/>
+              <input type="text" name="rtmpUrl" id="lv-rtmp-url" required placeholder="rtmps://live-upload.instagram.com/rtmp/"/>
             </label>
             <label class="lv-field">
               <span class="lv-field__label">Chave da transmissão</span>
@@ -2074,7 +2073,7 @@ ufw allow 3000/tcp</pre>
             <div class="lv-ig-howto">
               <div class="lv-ig-howto__step"><b>1.</b> Abre o Live Producer (link abaixo) e escolhe a conta do Instagram.</div>
               <div class="lv-ig-howto__step"><b>2.</b> Marca <b>"Usar chave de transmissão"</b>. Copia a <b>URL do servidor</b> e a <b>Chave secreta</b>.</div>
-              <div class="lv-ig-howto__step"><b>3.</b> Cola aqui (dá pra usar o botão "Colar chave" se copiou os dois juntos) e clica Iniciar.</div>
+              <div class="lv-ig-howto__step"><b>3.</b> Cola aqui (o botão "Colar URL e chave" preenche os dois de uma vez) e toca em <b>Entrar no ar</b>.</div>
               <div class="lv-ig-howto__step"><b>4.</b> Quando o preview aparecer no Live Producer, clica <b>Ir ao vivo</b>.</div>
               <a href="https://business.facebook.com/latest/live_producer/" target="_blank" rel="noopener" class="lv-ig-howto__link">Abrir Live Producer →</a>
             </div>
@@ -2158,7 +2157,7 @@ ufw allow 3000/tcp</pre>
           <input type="search" id="popSearch" placeholder="Buscar cadeira ou POP" autocomplete="off">
         </div>
         <nav class="pop-nav" id="popNav" role="tree">
-          <div class="pop-nav__loading">Carregando…</div>
+          <div class="pop-nav__loading">Carregando</div>
         </nav>
       </aside>
 
@@ -2170,7 +2169,8 @@ ufw allow 3000/tcp</pre>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
           </div>
           <h2 class="pop-home__title">Manual da agência</h2>
-          <p class="pop-home__text">Cada cadeira reúne o playbook do cargo e os POPs que a pessoa precisa saber pra executar. Selecione uma cadeira à esquerda pra ver o conteúdo.</p>
+          <p class="pop-home__text" id="popHomeText">Cada cadeira reúne o playbook do cargo e os POPs que a pessoa precisa pra executar. Escolha uma cadeira na lista pra ver o conteúdo.</p>
+          <div class="pop-home__cta" id="popHomeCta"></div>
           <div class="pop-home__stats" id="popHomeStats"></div>
           <div class="pop-home__recent" id="popHomeRecent"></div>
         </div>
@@ -2195,7 +2195,7 @@ ufw allow 3000/tcp</pre>
           <div class="pop-editor__body">
             <div class="pop-editor__pane">
               <div class="pop-editor__label">HTML</div>
-              <textarea id="popEditorHtml" spellcheck="false" placeholder="Cole ou escreva o HTML..."></textarea>
+              <textarea id="popEditorHtml" spellcheck="false" placeholder="Cole ou escreva o HTML"></textarea>
             </div>
             <div class="pop-editor__pane">
               <div class="pop-editor__label">Preview</div>
@@ -9337,9 +9337,9 @@ function spUpdateTokenStatus() {
   if (days > 7) {
     status.innerHTML = `<span style="color:#22c55e;font-size:12px;font-weight:600;">${dot('#22c55e')}Expira em ${days} dias</span>`;
   } else if (days > 0) {
-    status.innerHTML = `<span style="color:#f59e0b;font-size:12px;font-weight:600;">${dot('#f59e0b')}Expira em ${days} dias — <a href="#" onclick="spFbLogin();return false;" style="color:#f59e0b;">Renovar</a></span>`;
+    status.innerHTML = `<span style="color:#f59e0b;font-size:12px;font-weight:600;">${dot('#f59e0b')}Expira em ${days} dias. <a href="#" onclick="spFbLogin();return false;" style="color:#f59e0b;">Renovar</a></span>`;
   } else {
-    status.innerHTML = `<span style="color:#ef4444;font-size:12px;font-weight:600;">${dot('#ef4444')}Expirado — <a href="#" onclick="spFbLogin();return false;" style="color:#ef4444;">Renovar agora</a></span>`;
+    status.innerHTML = `<span style="color:#ef4444;font-size:12px;font-weight:600;">${dot('#ef4444')}Expirado. <a href="#" onclick="spFbLogin();return false;" style="color:#ef4444;">Renovar agora</a></span>`;
   }
 }
 
@@ -9357,7 +9357,7 @@ async function spExchangeForLongLived(shortToken) {
 
 async function spSaveAndActivateToken(rawToken) {
   const status = document.getElementById('spTokenStatus');
-  if (status) status.innerHTML = '<span style="color:#94a3b8;font-size:12px;">Trocando por token longo...</span>';
+  if (status) status.innerHTML = '<span style="color:var(--text2);font-size:12px;">Trocando pelo token de longa duração</span>';
   try {
     const { token, expiresIn } = await spExchangeForLongLived(rawToken);
     localStorage.setItem('metaAccessToken', token);
@@ -9375,7 +9375,7 @@ async function spSaveAndActivateToken(rawToken) {
 
 async function spFbLogin() {
   const btn = document.getElementById('spFbLoginBtn');
-  if (btn) btn.textContent = 'Conectando...';
+  if (btn) btn.textContent = 'Conectando';
   await ensureFbSdk();
   const doLogin = () => {
     FB.login(function(response) {
@@ -9410,7 +9410,7 @@ async function loadSpAccounts() {
   const token = getSpToken();
   if (!token) return;
   const sel = document.getElementById('spAccountSelect');
-  if (sel) sel.innerHTML = '<option value="">Carregando...</option>';
+  if (sel) sel.innerHTML = '<option value="">Carregando</option>';
   try {
     const r = await fetch(`https://graph.facebook.com/v25.0/me/accounts?fields=id,name,access_token,instagram_business_account{id,name,username,profile_picture_url}&limit=50&access_token=${token}`);
     const data = await r.json();
@@ -9461,7 +9461,7 @@ function spOnAccountChange() {
 // ── Type ──
 const SP_TYPE_HINT = {
   FEED:     'Formato 1:1 ou 4:5 · Imagem JPG/PNG',
-  CAROUSEL: '2–10 imagens · Mesmo aspecto pra todas (1:1 recomendado)',
+  CAROUSEL: '2 a 10 imagens · Mesmo aspecto pra todas (1:1 recomendado)',
   REELS:    'Vertical 9:16 · Vídeo MP4 até 1 GB · 60s ideal',
   STORIES:  'Vertical 9:16 · Sai do ar em 24h · Sticker de link opcional'
 };
@@ -9479,7 +9479,7 @@ function spSetType(type, btn) {
   if (carouselZone) carouselZone.style.display = isCarousel ? 'block' : 'none';
   // Story mode agora é controlado pelo segment (sp2SetMode) — não escondemos aqui pra não conflitar
   const uploadSub = document.getElementById('spUploadSub');
-  if (uploadSub) uploadSub.textContent = isReel ? 'Vídeo MP4 (até 1GB) — sai como Reels' : 'Uma vira Feed, várias viram Carrossel, vídeo vira Reels';
+  if (uploadSub) uploadSub.textContent = isReel ? 'Vídeo MP4 até 1 GB. Sai como Reels.' : 'Uma foto vira Feed. Várias viram Carrossel. Vídeo vira Reels.';
   const hint = document.getElementById('spTypeHint');
   if (hint) hint.textContent = SP_TYPE_HINT[type] || '';
   if (isStory && spCurrentFile) spHandleStoryFile(spCurrentFile);
@@ -9490,7 +9490,10 @@ function spSetType(type, btn) {
 function spToggleCollab() {
   const body = document.getElementById('spCollabBody');
   const btn = document.getElementById('spCollabToggle');
+  // o campo de fora também nasce [hidden] (e no .sp2-app o [hidden] é !important): abre e fecha junto, senão o Collab não aparecia nunca
+  const field = document.getElementById('spCollabField');
   const open = !body.hasAttribute('hidden');
+  if (field) field.toggleAttribute('hidden', open);
   if (open) {
     body.setAttribute('hidden', '');
     btn.setAttribute('aria-expanded', 'false');
@@ -9617,7 +9620,7 @@ function spHandleCarousel(files) {
 
 function renderCarouselStrip() {
   const strip = document.getElementById('spCarouselStrip');
-  const addBtn = strip.querySelector('.sp-carousel-add');
+  const addBtn = strip.querySelector('.sp2-carousel-add');
   // Remove existing thumbs
   strip.querySelectorAll('img.sp-carousel-thumb').forEach(el => el.remove());
   spCarouselFiles.forEach((file, i) => {
@@ -9626,7 +9629,7 @@ function renderCarouselStrip() {
       const img = document.createElement('img');
       img.className = 'sp-carousel-thumb';
       img.src = ev.target.result;
-      img.title = `Imagem ${i+1} — clique para remover`;
+      img.title = `Imagem ${i+1}. Toque pra remover`;
       img.onclick = () => { spCarouselFiles.splice(i, 1); renderCarouselStrip(); };
       strip.insertBefore(img, addBtn);
     };
@@ -9826,22 +9829,22 @@ async function spSubmitPost() {
   if (when === 'schedule' && !scheduleDate) { showToast('Selecione data e hora para agendamento'); return; }
 
   btn.disabled = true;
-  document.getElementById('spPublishBtnText').textContent = 'Enviando…';
+  document.getElementById('spPublishBtnText').textContent = 'Enviando';
   statusEl.textContent = '';
 
   try {
     // Upload media
     const isVideo = fileToUse && fileToUse.type.startsWith('video/');
-    statusEl.innerHTML = `<span style="color:var(--text2)">${isVideo ? '📡 Enviando vídeo direto para Meta...' : '⬆️ Fazendo upload da foto...'}</span>`;
+    statusEl.innerHTML = `<span style="color:var(--text2)">${isVideo ? 'Enviando o vídeo pra Meta' : 'Enviando a foto'}</span>`;
 
     let containerId;
     let firstMediaUrl = null;
 
     if (spCurrentType === 'CAROUSEL') {
-      statusEl.innerHTML = '<span style="color:var(--text2)">⬆️ Fazendo upload das imagens...</span>';
+      statusEl.innerHTML = '<span style="color:var(--text2)">Enviando as imagens</span>';
       const childIds = [];
       for (let i = 0; i < spCarouselFiles.length; i++) {
-        statusEl.innerHTML = `<span style="color:var(--text2)">⬆️ Foto ${i+1}/${spCarouselFiles.length}...</span>`;
+        statusEl.innerHTML = `<span style="color:var(--text2)">Foto ${i+1} de ${spCarouselFiles.length}</span>`;
         const up = await uploadToCloud(spCarouselFiles[i], acc.igId, acc.pageToken);
         if (i === 0) firstMediaUrl = up.value;
         const p = new URLSearchParams({ image_url: up.value, is_carousel_item: 'true', access_token: acc.pageToken });
@@ -9850,7 +9853,7 @@ async function spSubmitPost() {
         if (d.error) throw new Error(d.error.message);
         childIds.push(d.id);
       }
-      statusEl.innerHTML = '<span style="color:var(--text2)">📤 Criando carrossel...</span>';
+      statusEl.innerHTML = '<span style="color:var(--text2)">Montando o carrossel</span>';
       const carouselCollabs = [document.getElementById('spCollabUser1').value.trim(), document.getElementById('spCollabUser2').value.trim()].filter(Boolean);
       const p = new URLSearchParams({ media_type: 'CAROUSEL', children: childIds.join(','), caption, access_token: acc.pageToken });
       if (carouselCollabs.length) p.append('collaborators', JSON.stringify(carouselCollabs));
@@ -9862,21 +9865,21 @@ async function spSubmitPost() {
     } else {
       const up = await uploadToCloud(fileToUse, acc.igId, acc.pageToken);
       firstMediaUrl = up.type === 'url' ? up.value : null;
-      statusEl.innerHTML = '<span style="color:var(--text2)">📤 Publicando no Instagram...</span>';
+      statusEl.innerHTML = '<span style="color:var(--text2)">Publicando no Instagram</span>';
       const p = new URLSearchParams({ access_token: acc.pageToken });
       if (spCurrentType === 'STORIES') {
         if (when === 'schedule') {
           // Para Stories agendados: upload imediato + publicação automática na hora certa
-          statusEl.innerHTML = '<span style="color:var(--text2)">⬆️ Fazendo upload para agendamento...</span>';
+          statusEl.innerHTML = '<span style="color:var(--text2)">Enviando pra agendar</span>';
           const upSched = await uploadToCloud(spStoryFile, acc.igId, acc.pageToken);
           const schedMs = new Date(scheduleDate).getTime();
           spAddToQueue({ acc: { igId: acc.igId, pageToken: acc.pageToken, username: acc.username },
             type: 'STORIES', caption: '', when: scheduleDate, status: 'pending',
             date: new Date().toISOString(), mediaUrl: upSched.value,
             pendingStory: true, imageUrl: upSched.value, storyLink, scheduledTime: schedMs });
-          statusEl.innerHTML = '<span style="color:#22c55e;font-weight:700;">✅ Agendado!</span>';
+          statusEl.innerHTML = '<span class="sp-status-ok"><span class="sp-status-dot"></span>Agendado</span>';
           btn.disabled = false;
-          document.getElementById('spPublishBtnText').textContent = '🚀 Publicar';
+          document.getElementById('spPublishBtnText').textContent = 'Publicar';
           spRemoveMedia({ stopPropagation: ()=>{} });
           if (storyLink) document.getElementById('spStoryLink').value = '';
           return;
@@ -9921,7 +9924,7 @@ async function spSubmitPost() {
       const firstComment = firstCommentEl ? firstCommentEl.value.trim() : '';
       if (firstComment && spCurrentType !== 'STORIES' && d2.id) {
         try {
-          statusEl.innerHTML = '<span style="color:var(--text2)">Postando primeiro comentário...</span>';
+          statusEl.innerHTML = '<span style="color:var(--text2)">Postando o primeiro comentário</span>';
           const cRes = await fetch(`https://graph.facebook.com/v25.0/${d2.id}/comments`, {
             method: 'POST',
             body: new URLSearchParams({ message: firstComment, access_token: acc.pageToken })
@@ -10005,7 +10008,7 @@ function renderSpQueue() {
   const el = document.getElementById('spQueue');
   if (!el) return;
   if (spQueue.length === 0) {
-    el.innerHTML = `<div class="sp2-today-empty">Nada agendado ou publicado ainda. Solte uma foto acima pra começar.</div>`;
+    el.innerHTML = `<div class="sp2-today-empty">Nada agendado ainda.</div>`;
     sp2RenderTodayBar();
     sp2UpdateKpi();
     return;
@@ -10114,11 +10117,12 @@ function sp2AutoDetectType() {
   sp2UpdateTypeBadge();
 }
 
+const SP2_ICO = (d) => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const SP2_TYPE_META = {
-  FEED:     { label:'Feed',     hint:'Formato 1:1 ou 4:5 · Imagem JPG/PNG',                icon:'🖼️' },
-  CAROUSEL: { label:'Carrossel',hint:'2–10 imagens · Mesmo aspecto (1:1 recomendado)',      icon:'🎞️' },
-  REELS:    { label:'Reels',    hint:'Vertical 9:16 · MP4 até 1GB · 60s ideal',             icon:'🎬' },
-  STORIES:  { label:'Story',    hint:'Vertical 9:16 · Sai em 24h · Sticker de link opcional', icon:'⭕' },
+  FEED:     { label:'Feed',     hint:'Formato 1:1 ou 4:5 · Imagem JPG/PNG',                icon: SP2_ICO('<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>') },
+  CAROUSEL: { label:'Carrossel',hint:'2 a 10 imagens · Mesmo aspecto (1:1 recomendado)',    icon: SP2_ICO('<path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/>') },
+  REELS:    { label:'Reels',    hint:'Vertical 9:16 · MP4 até 1 GB · 60s ideal',            icon: SP2_ICO('<path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>') },
+  STORIES:  { label:'Story',    hint:'Vertical 9:16 · Sai em 24h · Sticker de link opcional', icon: SP2_ICO('<path d="M10.1 2.18a10 10 0 0 1 3.8 0"/><path d="M13.9 21.82a10 10 0 0 1-3.8 0"/><path d="M17.61 3.72a10 10 0 0 1 2.69 2.7"/><path d="M2.18 13.9a10 10 0 0 1 0-3.8"/><path d="M20.28 17.61a10 10 0 0 1-2.7 2.69"/><path d="M21.82 10.1a10 10 0 0 1 0 3.8"/><path d="M3.72 6.39a10 10 0 0 1 2.7-2.69"/><path d="M6.39 20.28a10 10 0 0 1-2.69-2.7"/>') },
 };
 function sp2UpdateTypeBadge() {
   const badge = document.getElementById('sp2TypeBadge');
@@ -10130,7 +10134,7 @@ function sp2UpdateTypeBadge() {
   }
   const meta = SP2_TYPE_META[spCurrentType] || SP2_TYPE_META.FEED;
   badge.style.display = 'flex';
-  document.getElementById('sp2TypeBadgeIcon').textContent = meta.icon;
+  document.getElementById('sp2TypeBadgeIcon').innerHTML = meta.icon;
   document.getElementById('sp2TypeBadgeLabel').textContent = meta.label;
   const hint = document.getElementById('spTypeHint');
   if (hint) hint.textContent = meta.hint;
@@ -10190,12 +10194,12 @@ function sp2SuggestCaption() {
   const sel = document.getElementById('spAccountSelect');
   const acc = sel && sel.value !== '' ? spAccounts[parseInt(sel.value)] : null;
   const hasMedia = spCurrentFile || spCarouselFiles.length > 0 || spStoryFile;
-  if (!hasMedia) { showToast('warn','⚠️','Solte uma foto primeiro pra IA sugerir a legenda'); return; }
+  if (!hasMedia) { showToast('warn','⚠️','Escolha a foto antes de pedir a sugestão'); return; }
   if (!acc) { showToast('warn','⚠️','Escolha a conta antes'); return; }
   // Placeholder simples — IA real conectar depois. Copy realista.
   chip.disabled = true;
   const original = chip.innerHTML;
-  chip.innerHTML = '<span style="opacity:.7">Pensando...</span>';
+  chip.innerHTML = '<span style="opacity:.7">Gerando</span>';
   const sugestoes = [
     `Novidade fresquinha no ${acc.igUsername.split(/[._-]/)[0] || 'menu'} 🔥 Vem provar!`,
     `A gente sempre fala: o segredo tá no fogo. Vem sentir.`,
@@ -10214,7 +10218,7 @@ function sp2FmtTime(iso) {
   try {
     const d = new Date(iso);
     return d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-  } catch(_) { return '—'; }
+  } catch(_) { return ''; }
 }
 function sp2RenderTodayBar() {
   const pills = document.getElementById('sp2TodayPills');
@@ -10241,7 +10245,7 @@ function sp2RenderTodayBar() {
   const items = [...next.map(q => ({...q, _hint:'agendado'})), ...publishedToday.map(q => ({...q, _hint:'published'}))];
   count.textContent = String(items.length);
   if (items.length === 0) {
-    pills.innerHTML = '<div class="sp2-today-empty" style="padding:0 0 6px;">Sem posts na fila — solte uma foto acima</div>';
+    pills.innerHTML = '<div class="sp2-today-empty" style="padding:0 0 6px;">Nada na fila ainda.</div>';
     return;
   }
   pills.innerHTML = items.map(q => {
@@ -10327,7 +10331,7 @@ function sp2UpdateFeedPreview() {
       capEl.textContent = txt.length > 220 ? txt.slice(0, 220) + '…' : txt;
       capEl.classList.remove('sp2-feed-caption-empty');
     } else {
-      capEl.textContent = 'Escreva a legenda ao lado…';
+      capEl.textContent = 'A legenda aparece aqui';
       capEl.classList.add('sp2-feed-caption-empty');
     }
   }
@@ -10399,7 +10403,7 @@ async function sp2OpenPacksModal() {
   const handle = sp2CurrentClientHandle();
   if (sub) sub.textContent = handle ? `Escolhe um pack pra @${handle}` : 'Escolhe um pack pra jogar no primeiro comentário';
   backdrop.classList.add('on');
-  body.innerHTML = '<div class="sp2-packs-empty">Carregando packs...</div>';
+  body.innerHTML = '<div class="sp2-packs-empty">Carregando packs</div>';
   const packs = await sp2LoadPacks();
   sp2RenderPacksList(packs);
 }
@@ -10425,7 +10429,7 @@ function sp2RenderPacksList(packs) {
     <div class="sp2-pack-item" data-id="${escHtml(p.id)}">
       <div class="sp2-pack-item-top">
         <div class="sp2-pack-name">${escHtml(p.name || 'Sem nome')}</div>
-        <span class="sp2-pack-scope">${p.igUsername ? '@' + escHtml(p.igUsername) : 'GLOBAL'}</span>
+        <span class="sp2-pack-scope">${p.igUsername ? '@' + escHtml(p.igUsername) : 'Global'}</span>
       </div>
       <div class="sp2-pack-tags">${escHtml((p.tags || []).join(' '))}</div>
       <div class="sp2-pack-actions">
@@ -10546,7 +10550,7 @@ async function spCheckAspectRatio(file) {
   if (!badge) return;
   badge.style.display = 'inline-flex';
   badge.classList.remove('ok', 'warn');
-  badge.innerHTML = '<span>Analisando...</span>';
+  badge.innerHTML = '<span>Analisando</span>';
   const isVideo = (file.type || '').startsWith('video/');
   let w, h;
   try {
@@ -32120,7 +32124,7 @@ const LIV = (() => {
       const af = document.getElementById('lv-audio-field'); if (af) af.hidden = (val !== 'image_audio');
       const f = document.getElementById('lv-file');
       if (f) f.accept = (val === 'video') ? 'video/*' : 'image/*';
-      const tt = document.getElementById('lv-drop-title'); if (tt && (!f || !f.files[0])) tt.textContent = (val === 'video') ? 'Arraste o vídeo' : 'Arraste a imagem';
+      const tt = document.getElementById('lv-drop-title'); if (tt && (!f || !f.files[0])) tt.textContent = (val === 'video') ? 'Escolha o vídeo' : 'Escolha a imagem';
     };
     document.querySelectorAll('#form-new-live input[name="type"]').forEach(r => {
       r.addEventListener('change', syncType);
@@ -32201,7 +32205,7 @@ const LIV = (() => {
       if (s) s.textContent = (f.size / 1024 / 1024).toFixed(1) + ' MB · clique pra trocar';
       if (drop) drop.classList.add('has-file');
     } else {
-      if (t) t.textContent = 'Arraste o arquivo';
+      if (t) t.textContent = 'Escolha o arquivo';
       if (s) s.textContent = defaultSub;
       if (drop) drop.classList.remove('has-file');
     }
@@ -32215,7 +32219,7 @@ const LIV = (() => {
     if (btn?.disabled) return;
     if (btn) btn.disabled = true;
     const lbl = btn.querySelector('[data-submit-label]');
-    if (lbl) lbl.textContent = 'Subindo...';
+    if (lbl) lbl.textContent = 'Subindo';
     const fd = new FormData(form);
     const label = fd.get('label')?.trim();
     const type = fd.get('type');
@@ -32231,7 +32235,7 @@ const LIV = (() => {
     if (!rtmpUrl || !streamKey) return toast('Preenche URL RTMP e Chave', 'warn');
     if (!file || !file.size) return toast('Escolhe um arquivo', 'warn');
 
-    lbl.textContent = 'Subindo...'; btn.disabled = true;
+    lbl.textContent = 'Subindo'; btn.disabled = true;
     try {
       // Upload principal
       const up1 = new FormData(); up1.append('file', file);
@@ -32317,6 +32321,8 @@ const LIV = (() => {
 window.liveOpenSettings = function() {
   const m = document.getElementById('liveSettingsModal');
   if (!m) return;
+  // a janela mora dentro do #tab-social: aberta pelo Ao vivo ela ficava escondida junto com a aba
+  if (m.parentElement !== document.body) document.body.appendChild(m);
   try {
     const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
     const url = document.getElementById('liveBackendUrl'); if (url) url.value = cfg.url || '';
@@ -32336,14 +32342,14 @@ window.liveTestBackend = async function() {
   const url = (document.getElementById('liveBackendUrl')?.value || '').trim().replace(/\/+$/,'');
   const res = document.getElementById('liveTestResult');
   if (!url) { if (res) res.innerHTML = '<span style="color:#dc2626">Informe a URL.</span>'; return; }
-  if (res) res.innerHTML = '<span style="color:#64748b">Testando...</span>';
+  if (res) res.innerHTML = '<span style="color:#64748b">Testando</span>';
   try {
     const r = await fetch(url + '/health', { cache: 'no-store' });
     if (!r.ok) throw new Error('http_' + r.status);
     const j = await r.json();
-    if (res) res.innerHTML = '<span style="color:#059669">✓ Servidor online · v' + (j.version || '?') + ' · ' + (j.active || 0) + ' ativa(s)</span>';
+    if (res) res.innerHTML = '<span style="color:#059669">Servidor online · v' + (j.version || '?') + ' · ' + (j.active || 0) + ' ativa(s)</span>';
   } catch(e) {
-    if (res) res.innerHTML = '<span style="color:#dc2626">✗ Não conseguiu conectar. ' + (e.message || 'erro') + '</span>';
+    if (res) res.innerHTML = '<span style="color:#dc2626">Não conseguiu conectar. ' + (e.message || 'erro') + '</span>';
   }
 };
 window.liveSaveBackend = function() {
@@ -34087,6 +34093,7 @@ const POP = (() => {
     const filtro = state.filter.toLowerCase().trim();
     const cad = state.cadeiras.filter(c => !filtro || (c.nome||'').toLowerCase().includes(filtro) ||
                                             state.docs.some(d => d.cadeiraId === c.id && ((d.titulo||'').toLowerCase().includes(filtro))));
+    nav.classList.toggle('is-vazio', !state.cadeiras.length);
     if (!cad.length) {
       nav.innerHTML = filtro
         ? '<div class="pop-nav__empty">Nada encontrado com "' + esc(filtro) + '".</div>'
@@ -34189,7 +34196,19 @@ const POP = (() => {
     if (state.selection) return;
     const home = document.getElementById('popHome');
     if (!home) return;
+    // sem cadeira: some os números zerados; admin ganha o botão de criar a primeira
+    const semCadeira = !state.cadeiras.length;
+    const txt = document.getElementById('popHomeText');
+    if (txt) txt.textContent = semCadeira
+      ? (isAdmin() ? 'Cada cadeira reúne o playbook do cargo e os POPs que a pessoa precisa pra executar. Crie a primeira pra começar.' : 'Ainda não tem cadeira cadastrada.')
+      : 'Cada cadeira reúne o playbook do cargo e os POPs que a pessoa precisa pra executar. Escolha uma cadeira na lista pra ver o conteúdo.';
+    const cta = document.getElementById('popHomeCta');
+    if (cta) {
+      cta.innerHTML = semCadeira && isAdmin() ? `<button type="button" class="pop-btn pop-btn--primary" id="popHomeCreate">${ICON_PLUS} Criar primeira cadeira</button>` : '';
+      document.getElementById('popHomeCreate')?.addEventListener('click', createCadeira);
+    }
     const stats = document.getElementById('popHomeStats');
+    if (stats) stats.style.display = semCadeira ? 'none' : '';
     if (stats) {
       const now = Date.now(), lastMonth = state.docs.filter(d => (d.updatedAt||0) > now - 30*86400000).length;
       stats.innerHTML = `
@@ -34206,7 +34225,7 @@ const POP = (() => {
           recent.map(d => {
             const cad = state.cadeiras.find(c=>c.id===d.cadeiraId);
             return `<div class="pop-home__recent-item" data-recent-open data-cadeira="${d.cadeiraId}" data-pop="${d.id}">
-              <div><strong>${esc(d.titulo)}</strong><br><small>${esc(cad?.nome||'—')}</small></div>
+              <div><strong>${esc(d.titulo)}</strong><br><small>${esc(cad?.nome||'')}</small></div>
               <small>${fmtRelative(d.updatedAt)}</small>
             </div>`;
           }).join('');
@@ -34252,7 +34271,7 @@ const POP = (() => {
     const admin = isAdmin();
     cont.innerHTML = `
       <article class="pop-doc">
-        <div class="pop-doc__crumb"><b>${esc(cad?.nome||'—')}</b> · POP</div>
+        <div class="pop-doc__crumb"><b>${esc(cad?.nome||'')}</b> · POP</div>
         <div class="pop-doc__head">
           <div>
             <h1 class="pop-doc__title">${esc(doc.titulo||'Sem título')}</h1>
