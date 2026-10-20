@@ -1604,12 +1604,13 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 #loginScreen .login-hero { position: relative; overflow: hidden; isolation: isolate; background: #160e09; min-height: clamp(200px, 34vh, 400px); }
 #loginScreen .login-hero__foto {
   position: absolute; inset: -3%; z-index: 0;
-  background: #160e09 url(login-hero.webp) 50% 22% / cover no-repeat;
+  background: #160e09 url(login-hero.webp) 50% 30% / cover no-repeat;
   animation: fgLoginFoto 26s ease-in-out infinite alternate, fgLoginAparece 1.4s ease both;
   will-change: transform;
 }
+#loginScreen .login-hero__desfoque { display: none; }
 #loginScreen .login-hero::after {
-  content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
   background: linear-gradient(to top, rgba(20,12,7,.95) 0%, rgba(20,12,7,.62) 34%, rgba(20,12,7,.10) 64%, rgba(20,12,7,.38) 100%);
 }
 #loginScreen .login-hero__brasa {
@@ -1764,21 +1765,35 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
   #loginScreen { grid-template-columns: 1.1fr 1fr; grid-template-rows: 1fr; overflow: hidden; }
   #loginScreen .login-hero { min-height: 100dvh; }
   #loginScreen .login-painel { overflow-y: auto; }
-}
-/* ── Celular e tablet: foto grande com a mulher e o app no celular, formulário numa folha por cima ── */
-@media (max-width: 1023.98px) {
-  #loginScreen .login-hero { min-height: 0; height: clamp(300px, 46vh, 520px); }
-  #loginScreen .login-hero__foto { background-size: 125% auto; background-position: 84% 26%; }
+  /* A foto quadrada fica inteira em cima (ela e o celular com o app); a frase vai na faixa escura embaixo */
+  #loginScreen .login-hero__foto { inset: -3% -3% 20% -3%; background-position: 50% 70%; }
   #loginScreen .login-hero::after {
-    background: linear-gradient(to bottom, rgba(20,12,7,.55) 0%, rgba(20,12,7,0) 26%, rgba(20,12,7,0) 72%, rgba(20,12,7,.28) 100%);
+    background: linear-gradient(to top, #160e09 0%, #160e09 20%, rgba(22,14,9,.82) 26%, rgba(22,14,9,0) 40%, rgba(22,14,9,0) 80%, rgba(22,14,9,.40) 100%);
+  }
+  #loginScreen .login-hero__texto { padding-bottom: 44px; }
+  #loginScreen .login-hero__texto h2 { font-size: clamp(30px, 2.8vw, 42px); }
+}
+/* ── Celular e tablet: foto em cima que derrete no fundo do formulário (igual ao Cheflist) ── */
+@media (max-width: 1023.98px) {
+  #loginScreen .login-hero { min-height: 0; height: clamp(300px, 48vh, 600px); }
+  /* Foto própria do celular (4:3); sem o zoom lento, que com o desfoque pesaria no aparelho */
+  #loginScreen .login-hero__foto { background-image: url(login-hero-cel.webp); background-size: cover; background-position: 46% 30%; animation: fgLoginAparece 1.2s ease both; }
+  /* Desfoque em degradê: a foto vai borrando até virar o fundo do formulário */
+  #loginScreen .login-hero__desfoque {
+    display: block; position: absolute; left: 0; right: 0; bottom: 0; height: 46%; z-index: 1; pointer-events: none;
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 65%); mask-image: linear-gradient(to bottom, transparent 0%, #000 65%);
+  }
+  #loginScreen .login-hero::after {
+    background: linear-gradient(to bottom,
+      rgba(20,12,7,.50) 0%, rgba(20,12,7,0) 22%,
+      rgba(248,247,245,0) 62%, rgba(248,247,245,.75) 82%, var(--lg-papel) 100%);
   }
   #loginScreen .login-hero__texto, #loginScreen .login-hero__brasa, #loginScreen .login-faiscas { display: none; }
   #loginScreen .login-hero__marca { padding: calc(16px + env(safe-area-inset-top, 0px)) 20px 0; font-size: 17px; }
   #loginScreen .login-painel {
-    position: relative; z-index: 4; margin-top: -26px; justify-content: flex-start;
-    padding: 26px 22px calc(24px + env(safe-area-inset-bottom, 0px));
-    background: var(--lg-papel); border-radius: 26px 26px 0 0;
-    box-shadow: 0 -12px 30px -14px rgba(20,12,7,.45);
+    position: relative; z-index: 4; margin-top: -30px; justify-content: flex-start;
+    padding: 0 22px calc(24px + env(safe-area-inset-bottom, 0px));
   }
   #loginScreen .login-marca { display: none; }
   #loginScreen .login-titulo { margin-top: 0; font-size: 26px; }
@@ -1788,8 +1803,8 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
   #loginScreen .login-footer { margin-top: 16px; }
 }
 @media (min-width: 600px) and (max-width: 1023.98px) {
-  #loginScreen .login-hero { height: clamp(300px, 50vh, 640px); }
-  #loginScreen .login-hero__foto { background-size: cover; background-position: 50% 25%; }
+  #loginScreen .login-hero { height: clamp(300px, 52vh, 680px); }
+  #loginScreen .login-hero__foto { background-position: 50% 22%; }
 }
 
 /* Quem pede menos movimento no aparelho vê tudo parado (só o girando do botão continua) */
