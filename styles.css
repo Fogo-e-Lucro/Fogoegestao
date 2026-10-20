@@ -8950,11 +8950,11 @@ body.pj-focus .pj-main {
   margin-right: auto !important;
   transition: max-width .28s cubic-bezier(.4,0,.2,1);
 }
-body.pj-focus .pj-fab,
-body.pj-focus .pj-drawer-toggle,
-body.pj-focus .pj-notif-bell,
-body.pj-focus .pj-notif-panel,
-body.pj-focus .pj-drawer-backdrop {
+body.pj-focus.at-projetos .pj-fab,
+body.pj-focus.at-projetos .pj-drawer-toggle,
+body.pj-focus.at-projetos .pj-notif-bell,
+body.pj-focus.at-projetos .pj-notif-panel,
+body.pj-focus.at-projetos .pj-drawer-backdrop {
   display: none !important;
 }
 body.pj-focus .pj-focus-exit-pill {
@@ -21200,9 +21200,8 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   /* 22. Toques de 44: xis do filtro em Todas e ações do espaço na gaveta */
   body.at-projetos #pjMain .pj-view-title .pj-dash-filter-chip button { position: relative; }
   body.at-projetos #pjMain .pj-view-title .pj-dash-filter-chip button::after { content: ''; position: absolute; inset: -8px; }
-  body.at-projetos .pj-space-actions { gap: 0 !important; }
-  body.at-projetos .pj-space-actions .pj-icon-btn { min-width: 44px; min-height: 44px; }
-  body.at-projetos .pj-space-row:hover .pj-space-chevron { display: none; } /* com as 5 ações de 44 não cabia; tocar na linha abre e fecha do mesmo jeito */
+  body.fg-menu .pj-space-actions { gap: 0 !important; }
+  body.fg-menu .pj-space-actions .pj-icon-btn { min-width: 44px; min-height: 44px; }
 
   /* 23. Resumo semanal e Integrações: cartões brancos, título de seção sem caixa alta, uma coluna */
   body.at-projetos .pj-view-header:has(> .pj-digest-nav) { flex-wrap: wrap !important; row-gap: 4px !important; }
@@ -21342,7 +21341,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
 .fg-grp-head { position: relative; }
 .fg-grp-head > .pj-nav-btn { width: 100%; }
 .fg-chev { margin-left: auto; flex-shrink: 0; opacity: .55; transition: transform .2s ease; }
-.fg-grp.open .fg-chev { transform: rotate(180deg); }
+.fg-grp.open > .fg-grp-head .fg-chev, .fg-esp-btn[aria-expanded="true"] .fg-chev { transform: rotate(180deg); }
 .fg-grp-chev .fg-chev { margin: 0; }
 .fg-grp[data-grp="gc"] .fg-grp-head > .pj-nav-btn { padding-right: 44px; }
 .fg-grp-chev {
@@ -21354,21 +21353,26 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
 .fg-grp.open > .fg-grp-sub { grid-template-rows: 1fr; }
 .fg-grp-in { min-height: 0; overflow: hidden; }
 .fg-grp-line { display: flex; flex-direction: column; gap: 1px; margin-left: 26px; padding: 2px 0 6px; border-left: 1px solid var(--fg-line, var(--border)); }
-.fg-grp-line > :is(.pj-nav-btn, .pj-add-space-btn) { margin-left: 8px; width: calc(100% - 8px); }
+.fg-grp-line :is(.pj-nav-btn, .pj-add-space-btn) { margin-left: 8px; width: calc(100% - 8px); }
 .pj-sidebar .pj-nav-btn.fg-sub { padding: 7px 10px 7px 16px; font-size: 13px; }
 .pj-sidebar .pj-nav-btn.fg-sub.active::before { left: -10px; top: 0; bottom: 0; width: 3px; border-radius: 2px; }
-.fg-grp-line > .pj-add-space-btn { padding-left: 16px; }
-.fg-grp-line > .pj-section-label { padding-left: 24px; }
+.fg-grp-line .pj-add-space-btn { padding-left: 16px; }
+.fg-grp-line .pj-section-label { padding-left: 24px; }
+/* Relatórios em dois blocos com rótulo (Resultados, Equipe); traço fino antes de Pergunte à IA e de Dados de exemplo */
+.fg-blk { display: contents; }
+.fg-sep { height: 1px; margin: 6px 8px 6px 16px; background: var(--fg-line, var(--border)); flex-shrink: 0; }
+/* Espaços: linha com setinha; fechado não mostra a árvore, numa lista mostra só o espaço dela.
+   Novo espaço só com a árvore inteira aberta. O contador da Caixa de entrada sobe pro nome do grupo quando ele fecha */
+.fg-esp:not(.all) .fg-esp-new { display: none !important; }
+.fg-grp.open .fg-gc-badge { display: none !important; }
 /* árvore de espaços dentro do traço: mesma escada de antes, puxada pra caber */
 .fg-grp-line :is(.pj-space-row, .pj-folder-row, .pj-list-row) { margin: 1px 0 1px 6px; }
 .fg-grp-line .pj-space-row { padding-left: 8px; }
 .fg-grp-line .pj-folder-row { padding-left: 24px; }
-.fg-grp-line .pj-list-row { padding-left: 36px; }
-.fg-grp-line .pj-list-row.indent2 { padding-left: 50px; }
+.fg-grp-line .pj-list-row { padding-left: 47px; }
+.fg-grp-line .pj-list-row.indent2 { padding-left: 61px; }
 /* modo foco é de Tarefas: fora dela o olho some do rodapé */
 body:not(.at-projetos) #pjFocusToggle { display: none; }
-/* fora de Tarefas a lista de espaços pode estar vazia até carregar */
-.fg-grp-line > .pj-section-label:has(+ #pjSpacesList:empty) { display: none; }
 /* o painel da conta não repete o que o menu já tem (módulos e busca) */
 .app-menu-section-label:has(+ .app-menu-grid), .app-menu-grid, .app-menu-search { display: none !important; }
 @media (prefers-reduced-motion: reduce) { .fg-grp-sub, .fg-chev { transition: none; } }
@@ -21385,19 +21389,60 @@ body:not(.at-projetos) #pjFocusToggle { display: none; }
   }
   #pjSidebar .pj-sidebar-top { padding-top: 12px; }
   #appMenuTrigger { display: none !important; }
-  #pjSidebar .pj-sidebar-footer { padding: 10px 8px 12px; }
+  #pjSidebar .pj-sidebar-footer { padding: 8px 8px 10px; }
+  /* a coluna das telas sem margem (Clientes, POPs) começa no topo: a faixa vazia era o .app-content sem aba dentro */
+  .app-content:not(:has(> .tab-panel.active)) { padding: 0 !important; }
+  /* bolinha de sincronizar sozinha no canto: só aparece salvando ou com erro (o selo Sem conexão continua) */
+  #syncStatus.ok { visibility: hidden; }
+  /* no Calendário o ⌘K é da busca de posts */
+  body.at-visualizar #pjSidebar .pj-search-trigger > span { display: none; }
+  /* Publipost e Google com a barra ao lado: o conteúdo perde 256px, então a coluna estreita precisa caber */
+  body.fg-menu .gmb-rank-keyword { min-width: 0; }
   /* painel da conta abre ao lado do rodapé, não mais no canto de cima */
   .app-menu-panel { top: auto; right: auto; left: calc(var(--fg-side, 0px) + 12px); bottom: 12px; max-height: calc(100vh - 24px); }
+  /* avisos também: o sino mora no rodapé da barra */
+  body.fg-menu .pj-notif-panel { top: auto; right: auto; left: calc(var(--fg-side, 0px) + 12px); bottom: 12px; }
 }
 
-/* Computador e tablet: conta no rodapé, mais baixa que o cartão do topo de antes (no celular ela sobe pro topo da gaveta) */
-@media (min-width: 641px) {
-  #pjSidebar .pj-me-hero { padding: 0; gap: 6px; animation: none; }
-  #pjSidebar .pj-me-hero-card { padding: 8px 10px; gap: 10px; }
-  #pjSidebar .pj-me-hero-avatar-wrap { width: 36px; height: 36px; }
-  #pjSidebar .pj-me-hero-hi { display: none; }
-  #pjSidebar .pj-me-hero-name { font-size: 14px; }
+@media (min-width: 901px) and (max-width: 1180px) {
+  /* Publipost: a caixa de envio cresce com o conteúdo (o botão Várias caía embaixo da legenda) e o celular de prévia encolhe */
+  body.fg-menu .sp2-drop { aspect-ratio: auto; min-height: 300px; }
+  body.fg-menu .sp2-workspace { grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; }
+  /* Google: a palavra-chave não espreme; o raio e as opções descem pra segunda linha */
+  body.fg-menu .gmb-rank-keyword-wrap { min-width: 240px; }
+  body.fg-menu .gmb-rank-toolbar { border-radius: 16px; }
 }
+
+/* Computador e tablet: conta numa linha só no rodapé (cartão, olho e sino), sem degradê nem animação.
+   No celular ela sobe pro topo da gaveta */
+@media (min-width: 641px) {
+  #pjSidebar .pj-me-hero {
+    flex-direction: row; align-items: center; gap: 2px; padding: 0 6px 0 0; animation: none;
+    background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .08); border-radius: 12px;
+  }
+  #pjSidebar .pj-me-hero-card { flex: 1; min-width: 0; text-align: left; padding: 7px 8px; gap: 10px; background: none; border: 0; border-radius: 11px; }
+  #pjSidebar .pj-me-hero-card:hover { transform: none; background: rgba(255, 255, 255, .04); }
+  #pjSidebar :is(.pj-me-hero-glow, .pj-me-hero-hi) { display: none; }
+  #pjSidebar .pj-me-hero-avatar-wrap { width: 34px; height: 34px; }
+  #pjSidebar .pj-me-hero-avatar-ring { inset: 0; background: none; border: 1px solid rgba(255, 255, 255, .22); animation: none; filter: none; }
+  #pjSidebar .pj-me-hero-avatar-ring::after { display: none; }
+  #pjSidebar .pj-me-hero-avatar { inset: 2px; }
+  #pjSidebar .pj-me-hero-status { width: 10px; height: 10px; animation: none; box-shadow: none; }
+  #pjSidebar :is(.pj-me-hero-name, .pj-me-hero-role) { opacity: 1; transform: none; animation: none; }
+  #pjSidebar .pj-me-hero-name { font-size: 14px; }
+  #pjSidebar .pj-me-hero-actions { flex: none; gap: 2px; padding: 0; }
+  #pjSidebar .pj-me-hero-action { flex: none; width: 32px; height: 32px; padding: 0; background: none; border: 0; }
+  #pjSidebar .pj-me-hero-action:hover { background: rgba(255, 255, 255, .08); transform: none; }
+  /* selo Novo e destaque do item escolhido sem degradê */
+  #pjSidebar .pj-askai-pill { background: none; border: 1px solid rgba(255, 255, 255, .2); color: rgba(226, 232, 240, .75); }
+  #pjSidebar .pj-nav-btn.active::before { background: #f97316; box-shadow: none; }
+  /* a barra rola: o fim esmaece (o respiro de baixo da rolagem deixa o último item inteiro) */
+  #pjSidebar .pj-sidebar-scroll {
+    -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 32px), transparent);
+  }
+}
+/* Dados de exemplo e o traço dele somem onde o botão já sumia (até 900px) */
+@media (max-width: 900px) { .fg-sep-demo { display: none; } }
 /* fundo da gaveta sem vidro em qualquer tela (em Tarefas no celular já era assim) */
 body.fg-menu .pj-drawer-backdrop { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 
@@ -21407,13 +21452,13 @@ body.fg-menu .pj-drawer-backdrop { -webkit-backdrop-filter: none !important; bac
   body.fg-menu .pj-sidebar-scroll > .pj-me-hero { margin: 0 12px; }
   body.fg-menu .fg-grp-line { margin-left: 22px; }
   body.fg-menu .pj-sidebar .pj-nav-btn.fg-sub { padding-left: 13px !important; font-size: 15px !important; }
-  body.fg-menu .pj-sidebar .fg-grp-line > .pj-add-space-btn { padding-left: 13px; }
-  body.fg-menu .pj-sidebar .fg-grp-line > .pj-section-label { padding-left: 21px !important; }
+  body.fg-menu .pj-sidebar .fg-grp-line .pj-add-space-btn { padding-left: 13px; }
+  body.fg-menu .pj-sidebar .fg-grp-line .pj-section-label { padding-left: 21px !important; }
   body.fg-menu .pj-sidebar .fg-grp-line :is(.pj-space-row, .pj-folder-row, .pj-list-row) { margin: 0 0 0 8px; }
   body.fg-menu .fg-grp-line .pj-space-row { padding-left: 13px; }
   body.fg-menu .fg-grp-line .pj-folder-row { padding-left: 29px; }
-  body.fg-menu .fg-grp-line .pj-list-row { padding-left: 41px; }
-  body.fg-menu .fg-grp-line .pj-list-row.indent2 { padding-left: 55px; }
+  body.fg-menu .fg-grp-line .pj-list-row { padding-left: 56px; }
+  body.fg-menu .fg-grp-line .pj-list-row.indent2 { padding-left: 72px; }
   body.fg-menu .fg-grp-chev { width: 44px; right: -2px; border-radius: 10px; }
   body.fg-menu .pj-sidebar .fg-grp[data-grp="gc"] .fg-grp-head > .pj-nav-btn { padding-right: 52px !important; }
   /* rodapé sem a conta (ela sobe pro topo): só o Instalar app quando existe, e o respiro do fim */

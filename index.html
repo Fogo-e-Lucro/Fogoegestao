@@ -847,6 +847,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           <button class="pj-nav-btn" onclick="fgGoView('dashboard');fgNavToggle('gc',true)">
             <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></svg></span>
             Gestão Central
+            <span class="pj-badge fg-gc-badge" id="fgGcBadge" style="display:none">0</span>
           </button>
           <button class="fg-grp-chev" onclick="fgNavToggle('gc')" aria-expanded="false" aria-label="Mostrar vistas e espaços da Gestão Central">
             <svg class="fg-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
@@ -858,12 +859,15 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             <button class="pj-nav-btn fg-sub" id="pjBtnInbox" data-nav="v:inbox" onclick="fgGoView('inbox')">Caixa de entrada <span class="pj-badge" id="pjInboxCount" style="display:none">0</span></button>
             <button class="pj-nav-btn fg-sub" id="pjBtnAll" data-nav="v:all" onclick="fgGoView('all')">Todas as tarefas</button>
             <button class="pj-nav-btn fg-sub" id="pjBtnArchived" data-nav="v:archived" onclick="fgGoView('archived')">Arquivadas</button>
-            <div class="pj-section-label fg-spaces-label">Espaços</div>
-            <div id="pjSpacesList"></div>
-            <button class="pj-add-space-btn pj-admin-only" onclick="fgNoProjetos(() => pjOpenSpaceForm())">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-              Novo espaço
-            </button>
+            <!-- Espaços: fechado por padrão (fg_nav_esp); numa lista mostra só o espaço dela -->
+            <button class="pj-nav-btn fg-sub fg-esp-btn" id="fgEspBtn" onclick="fgEspToggle()" aria-expanded="false">Espaços <svg class="fg-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+            <div class="fg-esp" id="fgEsp">
+              <div id="pjSpacesList"></div>
+              <button class="pj-add-space-btn pj-admin-only fg-esp-new" onclick="fgNoProjetos(() => pjOpenSpaceForm())">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                Novo espaço
+              </button>
+            </div>
           </div>
         </div></div>
       </div>
@@ -903,15 +907,22 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           </button>
         </div>
         <div class="fg-grp-sub"><div class="fg-grp-in"><div class="fg-grp-line">
-          <button class="pj-nav-btn fg-sub" data-tab="metricas" data-nav="t:metricas" onclick="switchTab('metricas')">Métricas</button>
-          <button class="pj-nav-btn fg-sub" data-tab="gmb" data-nav="t:gmb" onclick="switchTab('gmb')">Google</button>
-          <button class="pj-nav-btn fg-sub" id="pjBtnCsHealth" data-tab="projetos" data-nav="v:cshealth" onclick="fgGoView('cshealth')">Saúde da carteira</button>
-          <button class="pj-nav-btn fg-sub" id="pjBtnIfood" data-tab="projetos" data-nav="v:ifood" onclick="fgGoView('ifood')">iFood</button>
-          <button class="pj-nav-btn fg-sub" id="pjBtnByClient" data-tab="projetos" data-nav="v:byclient" onclick="fgGoView('byclient')">Por cliente</button>
-          <button class="pj-nav-btn fg-sub" id="pjBtnWorkload" data-tab="projetos" data-nav="v:workload" onclick="fgGoView('workload')">Carga da semana</button>
-          <button class="pj-nav-btn fg-sub" id="pjBtnTimeline" data-tab="projetos" data-nav="v:timeline" onclick="fgGoView('timeline')">Linha do tempo</button>
-          <button class="pj-nav-btn fg-sub pj-admin-only" id="pjBtnTimeMetrics" data-tab="projetos" data-nav="v:timemetrics" onclick="fgGoView('timemetrics')">Métricas de tempo</button>
-          <button class="pj-nav-btn fg-sub pj-admin-only" id="pjBtnDigest" data-tab="projetos" data-nav="v:digest" onclick="fgGoView('digest')">Resumo semanal</button>
+          <div class="fg-blk">
+            <div class="pj-section-label">Resultados</div>
+            <button class="pj-nav-btn fg-sub" data-tab="gmb" data-nav="t:gmb" onclick="switchTab('gmb')">Perfil no Google</button>
+            <button class="pj-nav-btn fg-sub" data-tab="metricas" data-nav="t:metricas" onclick="switchTab('metricas')">Métricas</button>
+            <button class="pj-nav-btn fg-sub" id="pjBtnIfood" data-tab="projetos" data-nav="v:ifood" onclick="fgGoView('ifood')">iFood</button>
+            <button class="pj-nav-btn fg-sub" id="pjBtnCsHealth" data-tab="projetos" data-nav="v:cshealth" onclick="fgGoView('cshealth')">Saúde da carteira</button>
+          </div>
+          <div class="fg-blk">
+            <div class="pj-section-label">Equipe</div>
+            <button class="pj-nav-btn fg-sub" id="pjBtnByClient" data-tab="projetos" data-nav="v:byclient" onclick="fgGoView('byclient')">Tarefas por cliente</button>
+            <button class="pj-nav-btn fg-sub" id="pjBtnWorkload" data-tab="projetos" data-nav="v:workload" onclick="fgGoView('workload')">Carga da semana</button>
+            <button class="pj-nav-btn fg-sub" id="pjBtnTimeline" data-tab="projetos" data-nav="v:timeline" onclick="fgGoView('timeline')">Linha do tempo</button>
+            <button class="pj-nav-btn fg-sub pj-admin-only" id="pjBtnTimeMetrics" data-tab="projetos" data-nav="v:timemetrics" onclick="fgGoView('timemetrics')">Horas da equipe</button>
+            <button class="pj-nav-btn fg-sub pj-admin-only" id="pjBtnDigest" data-tab="projetos" data-nav="v:digest" onclick="fgGoView('digest')">Resumo semanal</button>
+          </div>
+          <div class="fg-sep pj-admin-only" role="separator"></div>
           <button class="pj-nav-btn fg-sub pj-admin-only pj-askai-nav" id="pjBtnAskAi" data-tab="projetos" data-nav="v:askai" onclick="fgGoView('askai')">Pergunte à IA <span class="pj-askai-pill">Novo</span></button>
         </div></div></div>
       </div>
@@ -931,12 +942,13 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           </button>
         </div>
         <div class="fg-grp-sub"><div class="fg-grp-in"><div class="fg-grp-line">
-          <button class="pj-nav-btn fg-sub" onclick="openAppSettings();setTimeout(()=>appSettingsTab('equipe'),50)">Acesso</button>
+          <button class="pj-nav-btn fg-sub" onclick="openAppSettings();setTimeout(()=>appSettingsTab('equipe'),50)">Equipe e acesso</button>
           <button class="pj-nav-btn fg-sub" id="pjBtnIntegracoes" data-nav="v:integracoes" onclick="fgGoView('integracoes')">Integrações</button>
           <button class="pj-nav-btn fg-sub" id="pjBtnTags" onclick="fgNoProjetos(pjOpenTagsManager)">Tags</button>
           <button class="pj-nav-btn fg-sub" onclick="fgNoProjetos(pjOpenTemplatesModal)">Templates</button>
-          <button class="pj-nav-btn fg-sub" onclick="openAppSettings()">Config</button>
-          <button class="pj-nav-btn fg-sub pj-demo-btn" id="pjDemoBtn" onclick="fgNoProjetos(pjToggleDemo)">Carregar demo</button>
+          <button class="pj-nav-btn fg-sub" onclick="openAppSettings()">Configurações</button>
+          <div class="fg-sep fg-sep-demo" role="separator"></div>
+          <button class="pj-nav-btn fg-sub" id="pjDemoBtn" onclick="fgNoProjetos(pjToggleDemo)">Dados de exemplo</button>
         </div></div></div>
       </div>
     </div>
@@ -6899,7 +6911,7 @@ function appMenuOpen() {
   const backdrop = document.getElementById('appMenuBackdrop');
   if (!panel) return;
   // Celular: o painel da conta abre sozinho, sem a gaveta por baixo
-  if (window.matchMedia('(max-width: 640px)').matches && typeof pjCloseDrawer === 'function') pjCloseDrawer();
+  if (window.matchMedia('(max-width: 900px)').matches && typeof pjCloseDrawer === 'function') pjCloseDrawer();
   appMenuSync();
   panel.classList.add('open');
   panel.setAttribute('aria-hidden', 'false');
@@ -16577,6 +16589,10 @@ function _applyShareTabs(allowedTabs) {
       document.body.dataset.activeTab = firstTabKey;
     }
   }
+  // Convidado sem conta não vê o menu interno (Gestão Central, Ajustes etc.)
+  document.body.classList.remove('fg-menu');
+  const sb = document.getElementById('pjSidebar');
+  if (sb) sb.style.display = 'none';
   // Mark as shared session
   window._isSharedSession = true;
 }
@@ -17184,17 +17200,21 @@ function pjRenderSidebar() {
   let html = '';
   const isAdmin = (typeof userIsAdmin === 'function') ? userIsAdmin() : true;
   const visibleSpaces = isAdmin ? pjSpaces : pjSpaces.filter(sp => userCanSeeSpace(sp.id));
+  // Espaços: fechado mostra nada; numa lista mostra só o espaço dela (com a lista à vista)
+  const espAll = fgEspOpen(), focus = _fgEspFocus = fgEspFocus();
+  const focusList = focus ? pjLists.find(l => l.id === pjCurrentView.id) : null;
+  const espBtn = document.getElementById('fgEspBtn');
+  if (espBtn) { espBtn.setAttribute('aria-expanded', espAll); espBtn.classList.toggle('fg-off', !isAdmin && !visibleSpaces.length && !!pjSpaces.length); }
+  document.getElementById('fgEsp')?.classList.toggle('all', espAll);
   const adminActions = isAdmin ? `
-        <button class="pj-icon-btn" title="Editar" aria-label="Editar espaço" onclick="event.stopPropagation();pjOpenSpaceForm('SPID')">${fgIco('pencil', 15)}</button>
-        <button class="pj-icon-btn" title="Salvar como template" aria-label="Salvar como template" onclick="event.stopPropagation();pjSaveSpaceAsTemplate('SPID')">${pjlIco('template', 15)}</button>
-        <button class="pj-icon-btn" title="Nova pasta" aria-label="Nova pasta" onclick="event.stopPropagation();pjOpenFolderForm(null,'SPID')">${pjlIco('folderplus', 15)}</button>
         <button class="pj-icon-btn" title="Nova lista" aria-label="Nova lista" onclick="event.stopPropagation();pjOpenListForm(null,'SPID')">${pjlIco('plus', 15)}</button>
-        <button class="pj-icon-btn" title="Excluir" aria-label="Excluir espaço" onclick="event.stopPropagation();pjDeleteSpace('SPID')">${fgIco('trash', 15)}</button>` : '';
+        <button class="pj-icon-btn" title="Mais opções" aria-label="Mais opções do espaço" onclick="event.stopPropagation();fgSpaceMenu(event,'SPID')">${fgIco('more', 15)}</button>` : '';
   visibleSpaces.forEach(sp => {
+    if (!espAll && sp.id !== focus) return;
     const spFolders = pjFolders.filter(f => f.spaceId === sp.id);
     const directLists = pjLists.filter(l => l.spaceId === sp.id && !l.folderId);
     const key = 'pj_sp_' + sp.id;
-    const open = lsRaw(key, '1') !== '0';
+    const open = sp.id === focus || lsRaw(key, '1') !== '0';
     html += `
     <div class="pj-space-row" onclick="pjToggleSpace('${sp.id}')">
       <div class="pj-space-icon" style="background:${sp.color||'#6366f1'}">${(sp.name||'?')[0].toUpperCase()}</div>
@@ -17209,7 +17229,7 @@ function pjRenderSidebar() {
       spFolders.forEach(f => {
         const fLists = pjLists.filter(l => l.folderId === f.id);
         const fKey = 'pj_fd_' + f.id;
-        const fOpen = lsRaw(fKey,'1') !== '0';
+        const fOpen = f.id === focusList?.folderId || lsRaw(fKey,'1') !== '0';
         const folderActions = isAdmin ? `
           <div class="pj-folder-actions">
             <button class="pj-icon-btn" title="Editar" aria-label="Editar pasta" onclick="event.stopPropagation();pjOpenFolderForm('${f.id}','${sp.id}')">${fgIco('pencil', 15)}</button>
@@ -17256,7 +17276,7 @@ function fgNavSync() {
   const tab = document.body.dataset.activeTab;
   const view = tab === 'projetos' ? pjCurrentView?.type : null;
   sb.querySelectorAll('[data-tab]').forEach(el => el.classList.toggle('fg-off', !userCanSeeTab(el.dataset.tab)));
-  sb.querySelectorAll('.fg-grp:not([data-tab])').forEach(g => g.classList.toggle('fg-off',
+  sb.querySelectorAll('.fg-grp:not([data-tab]), .fg-blk').forEach(g => g.classList.toggle('fg-off',
     ![...g.querySelectorAll('[data-nav]')].some(b => !b.classList.contains('fg-off') && b.style.display !== 'none')));
   sb.querySelectorAll('[data-nav]').forEach(b => {
     const on = b.dataset.nav === 't:' + tab || (!!view && b.dataset.nav === 'v:' + view);
@@ -17264,6 +17284,7 @@ function fgNavSync() {
     if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
   if (tab !== 'projetos') sb.querySelectorAll('.pj-list-row.active').forEach(r => r.classList.remove('active'));
+  if (fgEspFocus() !== _fgEspFocus) pjRenderSidebar();
   const grp = sb.querySelector('[data-nav].active')?.closest('.fg-grp')?.dataset.grp || (tab === 'projetos' ? 'gc' : null);
   if (grp !== _fgNavGrp) { _fgNavGrp = grp; _fgNavOpen = grp; }
   fgNavPaint();
@@ -17278,7 +17299,38 @@ function fgGoView(type, id = null) {
 // Janelas que dependem dos dados de Tarefas (tags, templates, espaço novo): entra em Tarefas e abre depois de carregar
 function fgNoProjetos(fn) {
   if (document.body.dataset.activeTab !== 'projetos') switchTab('projetos');
-  Promise.resolve(window._pjInitP).then(() => fn());
+  let pronto = false;
+  Promise.resolve(window._pjInitP).then(() => { pronto = true; if (document.body.dataset.activeTab === 'projetos') fn(); });
+  setTimeout(() => { if (!pronto) showToast('info', pjlIco('info', 18), 'Carregando as tarefas, já abre'); }, 250);
+}
+// Espaços dentro da Gestão Central: fechado por padrão, a setinha lembra (fg_nav_esp).
+// Fechado e numa lista, mostra só o espaço dessa lista (fgEspFocus devolve o id dele).
+var _fgEspFocus = '';
+function fgEspOpen() { return lsRaw('fg_nav_esp', '0') === '1'; }
+function fgEspFocus() {
+  const v = pjCurrentView;
+  if (fgEspOpen() || document.body.dataset.activeTab !== 'projetos' || !v?.id || !/^(list|kanban)$/.test(v.type)) return '';
+  return pjLists.find(l => l.id === v.id)?.spaceId || '';
+}
+function fgEspToggle() {
+  try { localStorage.setItem('fg_nav_esp', fgEspOpen() ? '0' : '1'); } catch (_) {}
+  fgNavLoadSpaces();
+  pjRenderSidebar();
+}
+// Ações do espaço: na linha só Nova lista e o ⋯; o resto mora aqui (o nome do espaço fica visível)
+function fgSpaceMenu(ev, spId) {
+  pjShowPopupMenu(ev, [
+    { id: 'edit', label: 'Editar espaço', icon: fgIco('pencil') },
+    { id: 'folder', label: 'Nova pasta', icon: pjlIco('folderplus', 16) },
+    { id: 'tpl', label: 'Salvar como template', icon: pjlIco('template', 16) },
+    { divider: true },
+    { id: 'del', label: 'Excluir espaço', icon: fgIco('trash') },
+  ], null, (id) => {
+    if (id === 'edit') pjOpenSpaceForm(spId);
+    else if (id === 'folder') pjOpenFolderForm(null, spId);
+    else if (id === 'tpl') pjSaveSpaceAsTemplate(spId);
+    else if (id === 'del') pjDeleteSpace(spId);
+  });
 }
 // Fora de Tarefas a árvore de espaços ainda não foi lida: lê só espaços, pastas e listas pro menu
 let _fgSpacesP = null;
@@ -17306,7 +17358,6 @@ function pjListRowHtml(l, indent, isAdmin) {
     ondragover="pjSidebarListDragOver(event,'${l.id}')"
     ondragleave="pjSidebarListDragLeave(event)"
     ondrop="pjSidebarListDrop(event,'${l.id}')">
-    <span style="color:var(--text3);font-size:11px;">☰</span>
     <span class="pj-list-name">${escHtml(l.name)}</span>
     ${count > 0 ? `<span class="pj-list-count">${count}</span>` : ''}${actions}
   </div>`;
@@ -17330,8 +17381,10 @@ function pjUpdateInboxCount() {
   const today = pjDateStr(new Date());
   const myTasks = pjAllTasks.filter(t => !pjIsDone(t) && (t.assignees||[]).includes(uid));
   const dueOrOverdue = myTasks.filter(t => t.dueDate && t.dueDate <= today);
-  const el = document.getElementById('pjInboxCount');
-  if (el) { el.textContent = dueOrOverdue.length; el.style.display = dueOrOverdue.length>0?'':'none'; }
+  ['pjInboxCount', 'fgGcBadge'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = dueOrOverdue.length; el.style.display = dueOrOverdue.length>0?'':'none'; }
+  });
 }
 
 // ── Demo data ──────────────────────────────────────────
@@ -17431,7 +17484,7 @@ function pjLoadDemo() {
   pjRenderSidebar();
   pjNavigate('dashboard');
   const dBtn = document.getElementById('pjDemoBtn');
-  if (dBtn) dBtn.textContent = 'Sair do demo';
+  if (dBtn) dBtn.textContent = 'Sair dos dados de exemplo';
   const _gb = document.getElementById('globalDemoBanner'); if (_gb) _gb.style.display = 'block';
   if (typeof showToast === 'function') showToast('🎭 Demo carregado! Explore a sidebar e clique nas tarefas.', 'success');
 }
@@ -17447,7 +17500,7 @@ function pjExitDemo() {
   pjTasks = {}; pjAllTasks = []; pjInitialized = false;
   pjCurrentView = { type:'inbox', id:null };
   const dBtn = document.getElementById('pjDemoBtn');
-  if (dBtn) dBtn.textContent = 'Carregar demo';
+  if (dBtn) dBtn.textContent = 'Dados de exemplo';
   const _gb = document.getElementById('globalDemoBanner'); if (_gb) _gb.style.display = 'none';
   // Reinicia do Firestore se usuário logado
   if (typeof pjInit === 'function' && (_auth?.currentUser || _currentUser)) {
@@ -23039,6 +23092,7 @@ document.addEventListener('keydown', function(e) {
     const target = e.target;
     const inField = target?.matches?.('input, textarea, [contenteditable]') && !target?.classList?.contains('app-menu-search-input');
     if (inField) return;
+    if (document.body.dataset.activeTab === 'visualizar') return; // o Calendário tem a busca de posts no ⌘K
     e.preventDefault();
     pjOpenSearch();
   }
