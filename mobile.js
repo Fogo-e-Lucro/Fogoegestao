@@ -96,6 +96,10 @@ function pjInitDrawerAutoClose() {
   document.addEventListener('touchstart', (e) => {
     if (!matchMedia('(max-width:900px)').matches) return;
     if (sb.classList.contains('open')) return;
+    // a gaveta é de Tarefas: em outra aba ela está escondida e só o escuro aparecia;
+    // com janela, folha ou painel aberto, abria por trás
+    if (!document.getElementById('tab-projetos')?.classList.contains('active')) return;
+    if (document.querySelector('.pj-modal-overlay.open, #pjFabModal.open, #pjFormModal.open, .pj-notif-panel.open, #appMenuPanel.open, #fgMore:not([hidden]), .pj-popup-menu, .pj-wa-modal, .pj-dash-customize-overlay')) return;
     const t = e.touches[0];
     if (t.clientX < 18) { sx = t.clientX; sy = t.clientY; edge = true; }
   }, { passive: true });
@@ -346,11 +350,16 @@ function pjInitPullToRefresh() {
       ind.classList.add('refreshing');
       ind.style.transform = `translateX(-50%) translateY(70px)`;
       try {
-        if (typeof pjLoadAllTasks === 'function') await pjLoadAllTasks();
-        else if (typeof loadFromCloud === 'function') await loadFromCloud();
+        // Tarefas: recomeça igual a sair e voltar pra aba (só zerar as tarefas deixava a lista
+        // vazia até a próxima mudança, porque o listener antigo não manda o retrato de novo)
+        if (document.body.dataset.activeTab === 'projetos' && typeof pjInit === 'function') {
+          try { _pjCleanupRealtimeOnly(); } catch (_) {}
+          pjInitialized = false;
+          await pjInit();
+        }
         if (typeof pjRenderMain === 'function') pjRenderMain();
         if (typeof pjRenderSidebar === 'function') pjRenderSidebar();
-        if (typeof showToast === 'function') showToast('✓ Atualizado', 'ok');
+        if (typeof showToast === 'function') showToast('Atualizado', 'ok');
       } catch(e) {
         if (typeof showToast === 'function') showToast('Erro ao atualizar', 'warn');
       }
@@ -372,3 +381,45 @@ function pjInitPullToRefresh() {
   document.addEventListener('touchend', onTouchEnd, { passive: true });
   document.addEventListener('touchcancel', onTouchEnd, { passive: true });
 }
+
+// ── Voltar do sistema fecha a camada de cima ──
+// Android (botão ou gesto) e navegador: com janela, folha, painel ou menu aberto, o app grava
+// 1 entrada no histórico e o voltar fecha a camada de cima em vez de sair do app.
+// Observa as camadas em vez de mexer em cada função de abrir e fechar. Fechar pelo X tira a
+// entrada sozinho. A janela da tarefa sem cliente continua recusando fechar e regrava a entrada.
+// A troca de aba pela barra de baixo fica fora: na raiz o voltar sai do app (padrão do Android).
+(function pjInitVoltar() {
+  const CAMADAS = [ // de cima pra baixo
+    ['[data-pj-confirm-danger]', (el) => el.querySelector('[data-pj-cancel]')?.click()],
+    ['.pj-popup-bd', (el) => el.click()], // menus, data, hora, tags e selects: o fundo fecha o balão
+    ['.pj-quick-actions-backdrop', (el) => el.remove()],
+    ['#pjFormModal.open', () => pjCloseFormModal()],
+    ['#pjWaModal', () => pjCloseDailyReport()],
+    ['.pj-dash-customize-overlay', () => pjCloseDashCustomize()],
+    ['#pjFabModal.open', () => pjCloseFabModal()],
+    ['#pjTaskOverlay.open', () => pjCloseTaskModal()],
+    ['#appSettingsModal.open', () => closeAppSettings()],
+    ['.pj-notif-panel.open', () => pjCloseNotifPanel()],
+    ['#appMenuPanel.open', () => appMenuClose()],
+    ['#dayPanel.open', () => closeDayPanel()],
+    ['#fgMore:not([hidden])', () => fgMoreClose()],
+    ['#pjSidebar.open', () => pjCloseDrawer()],
+  ];
+  const topo = () => {
+    for (const [sel, fechar] of CAMADAS) { const el = document.querySelector(sel); if (el) return () => fechar(el); }
+    return null;
+  };
+  let marcado = false, ignorar = false;
+  const sync = () => {
+    const aberta = !!topo();
+    if (aberta && !marcado) { history.pushState({ fg: 1 }, ''); marcado = true; }
+    else if (!aberta && marcado) { marcado = false; ignorar = true; history.back(); }
+  };
+  new MutationObserver(sync).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'hidden'] });
+  addEventListener('popstate', () => {
+    marcado = false;
+    if (ignorar) { ignorar = false; sync(); return; }
+    const fechar = topo();
+    if (fechar) { try { fechar(); } catch (_) {} setTimeout(sync, 0); }
+  });
+})();
