@@ -781,7 +781,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
 <div class="day-panel" id="dayPanel">
   <div class="day-panel-header">
     <div class="day-panel-title" id="dayPanelTitle"></div>
-    <button class="btn-close-panel" onclick="closeDayPanel()">✕</button>
+    <button class="btn-close-panel" onclick="closeDayPanel()" aria-label="Fechar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
   </div>
   <div id="dayPanelContent"></div>
 </div>
@@ -884,7 +884,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
                       <img class="estudio-ig-media-img" id="mockMediaImg" alt="" hidden>
                       <div class="estudio-ig-media-empty" id="mockMediaEmpty">
                         <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="M21 15l-5-5-11 11"/></svg>
-                        <span data-empty-text>Solte a arte aqui, ou cole uma URL nos Extras</span>
+                        <span data-empty-text>A arte aparece aqui. Envie em Extras.</span>
                       </div>
                       <div class="estudio-ig-gancho" id="mockGancho" hidden></div>
                       <button class="estudio-ig-play" id="mockPlay" hidden aria-label="Reproduzir">
@@ -978,11 +978,11 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
                 <input type="text" id="pratoDestaque" placeholder="Ex: burrata da casa, rodízio de terça">
               </label>
               <label class="estudio-field">
-                <span class="estudio-field-head"><span class="estudio-field-label">Gancho</span><button type="button" class="estudio-ai" onclick="aiSugerirGancho()"><span class="estudio-ai-spark">✧</span> Sugerir</button></span>
+                <span class="estudio-field-head"><span class="estudio-field-label">Gancho</span><button type="button" class="estudio-ai" onclick="aiSugerirGancho()">Sugerir</button></span>
                 <input type="text" id="gancho" placeholder="A frase que trava o polegar em 2 segundos" oninput="atualizarPreview()">
               </label>
               <label class="estudio-field" id="scriptWrapper" hidden>
-                <span class="estudio-field-head"><span class="estudio-field-label">Roteiro do vídeo</span><button type="button" class="estudio-ai" onclick="aiGerarRoteiro()"><span class="estudio-ai-spark">✧</span> Gerar</button></span>
+                <span class="estudio-field-head"><span class="estudio-field-label">Roteiro do vídeo</span><button type="button" class="estudio-ai" onclick="aiGerarRoteiro()">Gerar</button></span>
                 <textarea id="script" placeholder="Cenas, falas, cortes"></textarea>
               </label>
               <label class="estudio-field">
@@ -990,7 +990,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
                 <div class="estudio-legenda-wrap">
                   <textarea id="legenda" placeholder="Escreva a legenda como você fala com o cliente" oninput="atualizarPreview(); atualizarContador()"></textarea>
                   <div class="estudio-legenda-toolbar">
-                    <button type="button" class="estudio-ai" onclick="aiMelhorarLegenda()"><span class="estudio-ai-spark">✧</span> 3 versões da IA</button>
+                    <button type="button" class="estudio-ai" onclick="aiMelhorarLegenda()">3 versões da IA</button>
                     <button type="button" class="estudio-mini" onclick="copiarLegenda()">Copiar</button>
                   </div>
                 </div>
@@ -1067,9 +1067,9 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
                 <span class="estudio-field-head"><span class="estudio-field-label">Mídia</span></span>
                 <label class="estudio-media-drop" id="mediaDrop" tabindex="0">
                   <input type="file" id="imgUpload" accept="image/*,video/*" hidden multiple onchange="handleImageUpload(event)">
-                  <span class="estudio-media-drop-icon">↑</span>
+                  <span class="estudio-media-drop-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg></span>
                   <span class="estudio-media-drop-title">Solte a arte aqui</span>
-                  <span class="estudio-media-drop-sub">ou clique pra escolher do computador</span>
+                  <span class="estudio-media-drop-sub">ou toque pra escolher o arquivo</span>
                 </label>
                 <div class="estudio-media-url">
                   <input type="url" id="imgUrl" placeholder="Ou cole a URL da imagem">
@@ -1099,8 +1099,8 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
     <!-- 1. HERO EDITORIAL -->
     <header class="ed-hero" data-reveal>
       <div class="ed-hero-left">
-        <h1 class="ed-hero-title">Pauta</h1>
-        <p class="ed-hero-sub" id="edHeroSub">Carregando…</p>
+        <h1 class="ed-hero-title">Calendário</h1>
+        <p class="ed-hero-sub" id="edHeroSub">Carregando</p>
       </div>
       <div class="ed-hero-actions">
         <button class="ed-hero-search-btn" onclick="openCmdk()" title="Buscar cliente ou post">
@@ -1114,7 +1114,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
         </button>
         <button class="ed-new-post-btn" onclick="createPostFor(null)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
-          Novo post
+          Criar post
         </button>
       </div>
     </header>
@@ -1154,7 +1154,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
       </div>
       <div class="ed-filter-mini">
         <svg class="ed-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input id="filterSearch" class="ed-search" placeholder="Buscar por gancho, prato ou legenda" oninput="applyFilters()">
+        <input id="filterSearch" class="ed-search" type="search" enterkeyhint="search" placeholder="Buscar por gancho, prato ou legenda" oninput="applyFilters()">
         <button id="filterClear" class="ed-clear-btn" onclick="clearFilters()" aria-label="Limpar busca">×</button>
       </div>
     </div>
@@ -1179,7 +1179,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
           <span class="collapsible-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
           <div>
             <div class="collapsible-head-title">Todos os posts</div>
-            <div class="collapsible-head-sub" id="postsBlockSub">Carregando…</div>
+            <div class="collapsible-head-sub" id="postsBlockSub">Carregando</div>
           </div>
         </div>
         <svg class="collapsible-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 8 10 13 15 8"/></svg>
@@ -6358,9 +6358,7 @@ function toggleFilterTipo(tipo) {
 function applyFilters() {
   filterSearch = document.getElementById('filterSearch')?.value || '';
   updateFilterClear();
-  if (typeof renderClientStrip === 'function') renderClientStrip();
-  if (typeof renderHero === 'function') renderHero();
-  renderStats(); renderCalendar(); renderPosts();
+  renderCalendar(); renderPosts();
 }
 function clearFilters() {
   filterTipo = ''; filterSearch = '';
@@ -6368,9 +6366,7 @@ function clearFilters() {
   if (el) el.value = '';
   document.querySelectorAll('.ed-type-chip, .filter-chip').forEach(b => b.classList.remove('active'));
   updateFilterClear();
-  if (typeof renderClientStrip === 'function') renderClientStrip();
-  if (typeof renderHero === 'function') renderHero();
-  renderStats(); renderCalendar(); renderPosts();
+  renderCalendar(); renderPosts();
 }
 function updateFilterClear() {
   const active = filterTipo || filterSearch;
@@ -6433,7 +6429,7 @@ function duplicatePost(id) {
     selectTipo(clone.tipo); selectObjetivo(clone.objetivo);
     document.getElementById('submitBtn').innerHTML = '➕ Adicionar ao Calendário';
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast('success','📋','Post duplicado — ajuste a data e salve.');
+    showToast('success','📋','Post duplicado. Ajuste a data e salve.');
   }, 180);
 }
 
@@ -6452,9 +6448,6 @@ function goToToday(e) {
 function renderAll() {
   if (typeof renderRestaurantChips === 'function') renderRestaurantChips();
   if (typeof populateRestauranteSelect === 'function') populateRestauranteSelect();
-  if (typeof renderClientStrip === 'function') renderClientStrip();
-  if (typeof renderHero === 'function') renderHero();
-  renderStats();
   renderCalendar();
   renderPosts();
 }
@@ -6468,11 +6461,34 @@ function _initials(name){
 function escJs(s){ return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 function _labelTipo(t){ return {REELS:'Reels', FOTO:'Foto', CARROSSEL:'Carrossel', STORY:'Story'}[t] || t; }
 
-/* Contagem por cliente que IGNORA activeRestaurante mas respeita tipo+search.
+/* Ícones de traço do Calendário e do Criar post (lucide). Próprios, pra não mexer no FG_ICO.
+   Declaração de função (hoisted): pode ser chamada antes desta linha rodar. */
+function calIco(k, s = 16) {
+  const P = {
+    grid: '<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
+    copy: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+    copyplus: '<line x1="15" x2="15" y1="12" y2="18"/><line x1="12" x2="18" y1="15" y2="15"/><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+    pencil: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
+    trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
+    link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+    repeat: '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+    plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  };
+  return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[k] || ''}</svg>`;
+}
+
+/* Post no mês que o calendário mostra (contagens do topo, dos chips e dos tipos) */
+function _noMes(p){
+  const k = calDate.getFullYear() + '-' + String(calDate.getMonth() + 1).padStart(2, '0');
+  return (p.dataPublicacao || '').startsWith(k);
+}
+
+/* Contagem por cliente que IGNORA activeRestaurante mas respeita tipo+search e o mês visível.
    Serve pra contagens dos chips do strip. */
 function _postsForStripCounts(){
   const term = (filterSearch||'').toLowerCase().trim();
   return posts.filter(p => {
+    if (!_noMes(p)) return false;
     if (filterTipo && p.tipo !== filterTipo) return false;
     if (!term) return true;
     return (p.gancho||'').toLowerCase().includes(term)
@@ -6501,7 +6517,7 @@ function renderClientStrip(){
     <button class="ed-client-chip ${!activeRestaurante?'active':''}"
             role="tab" aria-selected="${!activeRestaurante}"
             onclick="selectClient(null)">
-      <span class="ed-client-avatar ed-client-avatar-all">✱</span>
+      <span class="ed-client-avatar ed-client-avatar-all">${calIco('grid', 14)}</span>
       <span class="ed-client-name">Todos</span>
       <span class="ed-client-count">${total}</span>
     </button>`);
@@ -6575,19 +6591,19 @@ function selectClient(name){
 function renderHero(){
   const sub = document.getElementById('edHeroSub');
   if (!sub) return;
-  const n = getFilteredPosts().length;
-  const mes = MONTHS_PT[calDate.getMonth()] + ' de ' + calDate.getFullYear();
-  const label = n === 0 ? 'nada programado ainda'
-             : (n === 1 ? '1 post programado' : `${n} posts programados`);
+  const n = getFilteredPosts().filter(_noMes).length;
+  const mes = MONTHS_PT[calDate.getMonth()].toLowerCase();
+  const label = n === 0 ? `Nenhum post em ${mes}`
+             : (n === 1 ? `1 post em ${mes}` : `${n} posts em ${mes}`);
   const cli = activeRestaurante ? ` · ${activeRestaurante}` : '';
-  sub.textContent = `${mes} · ${label}${cli}`;
+  sub.textContent = `${label}${cli}`;
 }
 
 /* ═══════════════════════════════════════════════════════
    STATS — pílulas por tipo (novo layout Pauta)
 ═══════════════════════════════════════════════════════ */
 function renderStats() {
-  const fp = getFilteredPosts();
+  const fp = getFilteredPosts().filter(_noMes);
   const byTipo = { REELS:0, FOTO:0, CARROSSEL:0, STORY:0 };
   fp.forEach(p => { if (byTipo[p.tipo] != null) byTipo[p.tipo]++; });
 
@@ -6609,7 +6625,8 @@ function createPostFor(ds){
   if (typeof switchTab === 'function') switchTab('entrada');
   requestAnimationFrame(() => {
     const el = document.getElementById('dataPublicacao');
-    if (el && ds) el.value = ds;
+    if (ds && typeof escolherDia === 'function') escolherDia(ds);
+    else if (el && ds) el.value = ds;
     const restSel = document.getElementById('restaurante');
     if (restSel && activeRestaurante && !restSel.value) restSel.value = activeRestaurante;
     const first = document.getElementById('gancho');
@@ -8256,16 +8273,20 @@ function switchCalView(view, e) {
 }
 
 function renderCalendar() {
+  renderClientStrip(); renderHero(); renderStats();
   const lbl = document.getElementById('calMonthLabel');
   if (calView==='month') {
     lbl.textContent=`${MONTHS_PT[calDate.getMonth()]} ${calDate.getFullYear()}`;
     renderMonthView();
   } else if (calView==='week') {
     const ws=getWeekStart(calDate), we=new Date(ws.getTime()+6*86400000);
-    lbl.textContent=`${ws.getDate()}–${we.getDate()} ${MONTHS_PT[we.getMonth()]}`;
+    const mc = (d) => MONTHS_PT[d.getMonth()].slice(0, 3).toLowerCase();
+    lbl.textContent = ws.getMonth() === we.getMonth()
+      ? `${ws.getDate()} a ${we.getDate()} de ${MONTHS_PT[we.getMonth()].toLowerCase()}`
+      : `${ws.getDate()} ${mc(ws)} a ${we.getDate()} ${mc(we)}`;
     renderWeekView();
   } else {
-    lbl.textContent=`${calDate.getDate()} ${MONTHS_PT[calDate.getMonth()]}`;
+    lbl.textContent=`${calDate.getDate()} de ${MONTHS_PT[calDate.getMonth()].toLowerCase()}`;
     renderDayView();
   }
 }
@@ -8318,7 +8339,7 @@ function renderMonthView() {
     const dt = new Date(y, m, d);
     html += dayCell(d, dateToStr(dt), false, isToday(dt), postsByDay, counts, maxCount);
   }
-  const rem = 42 - firstDay - daysInMonth;
+  const rem = (7 - (firstDay + daysInMonth) % 7) % 7; // só fecha a última semana
   for (let d = 1; d <= rem; d++) {
     const dt = new Date(y, m+1, d);
     html += dayCell(d, dateToStr(dt), true, false, postsByDay, counts, maxCount);
@@ -8408,11 +8429,11 @@ function renderWeekView() {
   html+='</div><div class="week-posts">';
   days.forEach(d=>{
     const ds=dateToStr(d);
-    html+=`<div class="week-day-posts" data-date="${ds}" ondragover="event.preventDefault()" ondragenter="calDragEnter(event)" ondragleave="calDragLeave(event)" ondrop="calDrop(event,'${ds}')">`;
+    html+=`<div class="week-day-posts" data-date="${ds}" onclick="openDayPanel('${ds}')" ondragover="event.preventDefault()" ondragenter="calDragEnter(event)" ondragleave="calDragLeave(event)" ondrop="calDrop(event,'${ds}')">`;
     getPostsForDate(ds).forEach(p=>{
       const col=getClientColor(p.restaurante);
-      const pillStyle=col?`border-color:${col};color:${col}`:'';
-      html+=`<div class="week-post-pill ${col?'':p.tipo}" style="${pillStyle}" draggable="true" data-post-id="${p.id}" ondragstart="calDragStart(event)" onclick="openDayPanel('${ds}')" title="${escHtml(p.gancho)}">${escHtml(p.gancho)}</div>`;
+      const pillStyle=(col?`border-color:${col};color:${col};`:'')+`--c:${col||`var(--${(p.tipo||'').toLowerCase()})`}`;
+      html+=`<div class="week-post-pill ${col?'':p.tipo}" style="${pillStyle}" draggable="true" data-post-id="${p.id}" ondragstart="calDragStart(event)" onclick="event.stopPropagation();openDayPanel('${ds}')" title="${escHtml(p.gancho)}">${escHtml(p.gancho)}</div>`;
     });
     html+='</div>';
   });
@@ -8432,7 +8453,7 @@ function renderDayView() {
         <div class="empty-state-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
         <div class="empty-state-text">Nenhum post para este dia</div>
         <div class="empty-state-sub">Crie um post pra agendar nesta data.</div>
-        <button class="empty-state-cta" onclick="switchTab('entrada')">Criar post</button>
+        <button class="empty-state-cta" onclick="createPostFor('${ds}')">Criar post</button>
       </div>`;
   html+='</div>';
   animateCalBody(html);
@@ -8448,12 +8469,12 @@ function openDayPanel(ds) {
   document.getElementById('dayPanelTitle').textContent=`${WD_FULL[dt.getDay()]}, ${dt.getDate()} de ${MONTHS_PT[dt.getMonth()]}`;
   const c=document.getElementById('dayPanelContent');
   c.innerHTML = dp.length
-    ? dp.map(p=>renderPostCardCompact(p)).join('')
+    ? dp.map(p=>renderPostCardCompact(p)).join('') + `<button class="empty-state-cta day-panel-new" onclick="closeDayPanel();createPostFor('${ds}')">${calIco('plus')} Criar post neste dia</button>`
     : `<div class="empty-state">
         <div class="empty-state-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
         <div class="empty-state-text">Nenhum post</div>
         <div class="empty-state-sub">Crie um post pra agendar.</div>
-        <button class="empty-state-cta" onclick="closeDayPanel();switchTab('entrada')">Criar post</button>
+        <button class="empty-state-cta" onclick="closeDayPanel();createPostFor('${ds}')">Criar post</button>
       </div>`;
   document.getElementById('dayPanel').classList.add('open');
   document.getElementById('panelOverlay').classList.add('open');
@@ -8537,31 +8558,32 @@ function renderPostCard(post) {
   const thumbs  = imgs ? `<div class="post-thumb">${imgs}</div>` : '';
   const scriptSafe = escHtml(post.script||'');
   const legendaSafe = escHtml(post.legenda||'');
+  // copia pelo id: o texto com quebra de linha ou aspas quebrava o onclick
   const script  = post.script
     ? `<div class="post-field" style="position:relative;">
-        <div class="post-field-label">🎤 Script</div>
+        <div class="post-field-label">Roteiro</div>
         <div class="post-field-text">${scriptSafe}</div>
-        <button class="copy-btn" style="position:absolute;top:8px;right:8px;" onclick="copyText('${post.script.replace(/'/g,"\\'")}',this)" title="Copiar script">📋</button>
+        <button class="copy-btn" style="position:absolute;top:8px;right:8px;" onclick="copyText(posts.find(p=>p.id==='${post.id}').script,this)" title="Copiar roteiro" aria-label="Copiar roteiro">${calIco('copy')}</button>
       </div>` : '';
   const link    = post.link
-    ? `<a class="post-link" href="${escHtml(post.link)}" target="_blank">🔗 ${escHtml(post.link)}</a>` : '';
+    ? `<a class="post-link" href="${escHtml(post.link)}" target="_blank" rel="noopener">${calIco('link', 14)} <span class="post-link-txt">${escHtml(post.link)}</span></a>` : '';
   const prato   = post.pratoDestaque
-    ? `<div class="post-prato">🍽️ ${escHtml(post.pratoDestaque)}</div>` : '';
+    ? `<div class="post-prato">${escHtml(post.pratoDestaque)}</div>` : '';
   const notas   = post.notasInternas
     ? `<div class="post-field post-field-note">
-        <div class="post-field-label">📝 Notas internas</div>
+        <div class="post-field-label">Notas internas</div>
         <div class="post-field-text">${escHtml(post.notasInternas)}</div>
       </div>` : '';
-  const recBadge = post.recorrente ? `<span class="badge recorrente">🔄 ${post.recorrente}</span>` : '';
-  const restPill = post.restaurante ? `<span class="post-rest-pill">🏪 ${escHtml(post.restaurante)}</span>` : '';
+  const recBadge = post.recorrente ? `<span class="badge recorrente">${calIco('repeat', 12)} ${post.recorrente}</span>` : '';
+  const restPill = post.restaurante ? `<span class="post-rest-pill">${escHtml(post.restaurante)}</span>` : '';
   return `<div class="post-card">
     <div class="post-card-header">
       <div class="post-badges">
-        <span class="badge ${post.tipo}">${TYPE_ICONS[post.tipo]} ${post.tipo}</span>
+        <span class="badge ${post.tipo}"><i class="post-tipo-dot"></i>${_labelTipo(post.tipo)}</span>
         <span class="badge objetivo">${escHtml(post.objetivo)}</span>
         ${recBadge}
       </div>
-      <div class="post-date">📅 ${formatDate(post.dataPublicacao)}${post.horario?` · ${post.horario}`:''}</div>
+      <div class="post-date">${formatDate(post.dataPublicacao)}${post.horario?` · ${post.horario}`:''}</div>
     </div>
     ${restPill ? `<div class="post-card-rest">${restPill}</div>` : ''}
     <div class="post-card-body">
@@ -8569,24 +8591,24 @@ function renderPostCard(post) {
       <div class="post-gancho">${escHtml(post.gancho)}</div>
       ${script}
       <div class="post-field" style="position:relative;">
-        <div class="post-field-label">💬 Legenda</div>
+        <div class="post-field-label">Legenda</div>
         <div class="post-field-text">${legendaSafe}</div>
-        <button class="copy-btn" style="position:absolute;top:8px;right:8px;" onclick="copyText('${post.legenda.replace(/'/g,"\\'")}',this)" title="Copiar legenda">📋</button>
+        <button class="copy-btn" style="position:absolute;top:8px;right:8px;" onclick="copyText(posts.find(p=>p.id==='${post.id}').legenda,this)" title="Copiar legenda" aria-label="Copiar legenda">${calIco('copy')}</button>
       </div>
       ${notas}${link}
     </div>
     <div class="post-card-footer">
-      <button class="btn-secondary" onclick="duplicatePost('${post.id}')" title="Duplicar post">📋</button>
-      <button class="btn-secondary" onclick="editPost('${post.id}')">✏️ Editar</button>
-      <button class="btn-danger" onclick="confirmDelete('${post.id}')">🗑️</button>
+      <button class="btn-secondary" onclick="duplicatePost('${post.id}')" title="Duplicar post" aria-label="Duplicar post">${calIco('copyplus')}</button>
+      <button class="btn-secondary" onclick="editPost('${post.id}')">${calIco('pencil')} Editar</button>
+      <button class="btn-danger" onclick="confirmDelete('${post.id}')" title="Excluir post" aria-label="Excluir post">${calIco('trash')}</button>
     </div>
   </div>`;
 }
 
 function renderPostCardCompact(post) {
-  const recBadge = post.recorrente ? `<span class="badge recorrente">🔄 ${post.recorrente}</span>` : '';
-  const restPill = post.restaurante ? `<span class="post-rest-pill">🏪 ${escHtml(post.restaurante)}</span>` : '';
-  const horaBadge = post.horario ? `<span class="badge" style="background:var(--bg2);color:var(--text2);">🕐 ${escHtml(post.horario)}</span>` : '';
+  const recBadge = post.recorrente ? `<span class="badge recorrente">${calIco('repeat', 12)} ${post.recorrente}</span>` : '';
+  const restPill = post.restaurante ? `<span class="post-rest-pill">${escHtml(post.restaurante)}</span>` : '';
+  const horaBadge = post.horario ? `<span class="badge post-hora" style="background:var(--bg2);color:var(--text2);">${escHtml(post.horario)}</span>` : '';
   const rawImgs = Array.isArray(post.imagens) ? post.imagens : [];
   const cleanImgs = rawImgs.filter(s => typeof s === 'string' && !s.startsWith('blob:'));
   const brokenLocal = rawImgs.length > 0 && cleanImgs.length === 0; // tinha algo mas nada persistente
@@ -8601,16 +8623,16 @@ function renderPostCardCompact(post) {
       ${cleanImgs.length > 4 ? `<div style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2);">+${cleanImgs.length-4}</div>` : ''}
     </div>`;
   } else if (brokenLocal) {
-    thumbs = `<div style="margin:8px 0;padding:10px 12px;background:var(--bg2);border:1px dashed var(--border);border-radius:8px;font-size:12px;color:var(--text2);">⚠️ Mídia local não sincronizou. Abra o post em <b>Editar</b> e reenvie o arquivo.</div>`;
+    thumbs = `<div style="margin:8px 0;padding:10px 12px;background:var(--bg2);border:1px dashed var(--border);border-radius:8px;font-size:12px;color:var(--text2);">Mídia local não sincronizou. Abra o post em <b>Editar</b> e reenvie o arquivo.</div>`;
   } else if (['REELS','FOTO','CARROSSEL','STORY'].includes(post.tipo)) {
-    thumbs = `<div style="margin:8px 0;padding:10px 12px;background:var(--bg2);border:1px dashed var(--border);border-radius:8px;font-size:12px;color:var(--text3);">📎 Sem mídia anexada</div>`;
+    thumbs = `<div style="margin:8px 0;padding:10px 12px;background:var(--bg2);border:1px dashed var(--border);border-radius:8px;font-size:12px;color:var(--text3);">Sem mídia anexada</div>`;
   }
-  const section = (label, value) => value ? `<div style="margin-top:10px;"><div style="font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;">${label}</div><div style="font-size:13px;color:var(--text2);line-height:1.55;white-space:pre-wrap;">${escHtml(value)}</div></div>` : '';
-  const link = post.link ? `<div style="margin-top:10px;"><a href="${escHtml(post.link)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--accent);text-decoration:none;">🔗 Ver referência</a></div>` : '';
+  const section = (label, value) => value ? `<div style="margin-top:10px;"><div class="pcc-label" style="font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;">${label}</div><div style="font-size:13px;color:var(--text2);line-height:1.55;white-space:pre-wrap;">${escHtml(value)}</div></div>` : '';
+  const link = post.link ? `<div style="margin-top:10px;"><a href="${escHtml(post.link)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:4px;">${calIco('link', 14)} Ver referência</a></div>` : '';
   return `<div class="post-card revealed post-card-compact">
     <div class="post-card-header">
       <div class="post-badges">
-        <span class="badge ${post.tipo}">${TYPE_ICONS[post.tipo]} ${post.tipo}</span>
+        <span class="badge ${post.tipo}"><i class="post-tipo-dot"></i>${_labelTipo(post.tipo)}</span>
         <span class="badge objetivo">${escHtml(post.objetivo||'')}</span>
         ${horaBadge}
         ${recBadge}
@@ -8618,7 +8640,7 @@ function renderPostCardCompact(post) {
       ${restPill}
     </div>
     <div class="post-card-body">
-      ${post.pratoDestaque ? `<div style="font-size:11px;color:var(--accent);margin-bottom:6px;font-weight:600;">${escHtml(post.pratoDestaque)}</div>` : ''}
+      ${post.pratoDestaque ? `<div class="pcc-prato" style="font-size:11px;color:var(--accent);margin-bottom:6px;font-weight:600;">${escHtml(post.pratoDestaque)}</div>` : ''}
       <div class="post-gancho">${escHtml(post.gancho||'')}</div>
       ${thumbs}
       ${section('Roteiro', post.tipo==='REELS' ? post.script : '')}
@@ -8627,8 +8649,8 @@ function renderPostCardCompact(post) {
       ${link}
     </div>
     <div class="post-card-footer">
-      <button class="btn-secondary btn-sm" onclick="editPost('${post.id}');closeDayPanel();">✏️ Editar</button>
-      <button class="btn-danger btn-sm" onclick="confirmDelete('${post.id}')">🗑️</button>
+      <button class="btn-secondary btn-sm" onclick="editPost('${post.id}');closeDayPanel();">${calIco('pencil')} Editar</button>
+      <button class="btn-danger btn-sm" onclick="confirmDelete('${post.id}')" title="Excluir post" aria-label="Excluir post">${calIco('trash')}</button>
     </div>
   </div>`;
 }
@@ -33435,7 +33457,7 @@ const OBJETIVOS_ESTUDIO = [
     id: 'Atrair',
     icon: '🎯',
     funnel: 'Topo do funil',
-    hint: 'Pra quem ainda não conhece — parar o scroll e virar seguidor novo',
+    hint: 'Pra quem ainda não conhece: parar o scroll e virar seguidor novo',
     examples: [
       'Reels de tendência com áudio da moda',
       'Meme, humor, "adivinha o prato"',
@@ -33449,7 +33471,7 @@ const OBJETIVOS_ESTUDIO = [
     id: 'Relacionar',
     icon: '💬',
     funnel: 'Meio do funil',
-    hint: 'Pra quem já segue mas ainda não é fiel — criar vínculo, mostrar gente humana',
+    hint: 'Pra quem já segue mas ainda não é fiel: criar vínculo, mostrar gente humana',
     examples: [
       'História do dono, como o prato é feito',
       'Apresentar a equipe',
@@ -33463,7 +33485,7 @@ const OBJETIVOS_ESTUDIO = [
     id: 'Vender',
     icon: '💰',
     funnel: 'Fundo do funil',
-    hint: 'Pra quem já tá pronto — converter em pedido ou reserva agora',
+    hint: 'Pra quem já tá pronto: converter em pedido ou reserva agora',
     examples: [
       'Promoção do dia, combo novo',
       'Evento na casa, ao vivo',
@@ -33557,7 +33579,7 @@ function filtrarClientes(q) {
   // Firestore ainda carregando? mostra loading + retry
   const bdReady = (typeof _bdClientes !== 'undefined' && Array.isArray(_bdClientes));
   if (!bdReady && rests.length === 0) {
-    lista.innerHTML = `<div class="estudio-combo-empty">Carregando clientes…</div>`;
+    lista.innerHTML = `<div class="estudio-combo-empty">Carregando clientes</div>`;
     clearTimeout(_clienteRetryTimer);
     _clienteRetryTimer = setTimeout(() => {
       const dd = document.getElementById('clienteDropdown');
@@ -33662,11 +33684,11 @@ function escolherFormato(tipo) {
   // Vitrine 15: texto placeholder do empty state muda com formato
   const emptyTxt = document.querySelector('#mockMediaEmpty [data-empty-text]');
   if (emptyTxt) emptyTxt.textContent = ({
-    REELS: 'Solte o thumb do Reels aqui',
-    FOTO: 'Solte a foto ou cole a URL nos Extras',
-    CARROSSEL: 'Solte a 1ª arte do carrossel',
-    STORY: 'Solte a arte 9:16 do story'
-  })[tipo] || 'Solte a arte aqui';
+    REELS: 'A capa do Reels aparece aqui. Envie em Extras.',
+    FOTO: 'A foto aparece aqui. Envie em Extras.',
+    CARROSSEL: 'A 1ª arte do carrossel aparece aqui. Envie em Extras.',
+    STORY: 'A arte do story aparece aqui. Envie em Extras.'
+  })[tipo] || 'A arte aparece aqui. Envie em Extras.';
   flashPreview();
   atualizarPreview();
   scheduleAutoSave();
@@ -33677,7 +33699,7 @@ function renderObjetivosEstudio() {
   const grid = document.getElementById('objetivoGrid');
   if (!grid) return;
   grid.innerHTML = OBJETIVOS_ESTUDIO.map(o =>
-    `<button type="button" class="estudio-obj-chip" data-obj="${o.id}" onclick="selectObjetivoEstudio('${escJs(o.id)}')" title="${o.hint}">${o.icon} ${o.id}</button>`
+    `<button type="button" class="estudio-obj-chip" data-obj="${o.id}" onclick="selectObjetivoEstudio('${escJs(o.id)}')" title="${o.hint}">${o.id}</button>`
   ).join('');
 }
 function selectObjetivoEstudio(obj) {
@@ -33694,7 +33716,6 @@ function selectObjetivoEstudio(obj) {
     desc.hidden = false;
     desc.innerHTML = `
       <div class="estudio-obj-desc-head">
-        <span class="estudio-obj-desc-icon">${meta.icon}</span>
         <div>
           <div class="estudio-obj-desc-title">${meta.id}</div>
           <div class="estudio-obj-desc-funnel">${escHtml(meta.funnel)}</div>
@@ -33781,10 +33802,6 @@ window.selectRecorrencia = function(rec) {
 };
 
 /* PREVIEW LIVE — Vitrine 15 (2026-08-03) */
-function _pickTrack() {
-  const t = ['Trending · Sertanejo', 'Trending · Funk BH', 'Chill Lofi', 'Instrumental Bossa', 'Áudio original'];
-  return t[Math.floor(Math.random() * t.length)];
-}
 function atualizarPreview() {
   const ganchoEl = document.getElementById('gancho');
   const legendaEl = document.getElementById('legenda');
@@ -33824,13 +33841,13 @@ function atualizarPreview() {
     else { img.hidden = true; img.removeAttribute('src'); mock.classList.remove('has-media'); }
   }
 
-  // Audio pill (Reels/Carrossel), trilha aleatória persistida na sessao
+  // Audio pill (Reels/Carrossel): nada no formulário escolhe música
   const audio = document.getElementById('mockAudio');
   const audioTxt = document.getElementById('mockAudioText');
   if (audio && audioTxt) {
     const showAudio = (tipo === 'REELS' || tipo === 'CARROSSEL');
     audio.hidden = !showAudio;
-    if (showAudio) audioTxt.textContent = window._mockTrack || (window._mockTrack = _pickTrack());
+    if (showAudio) audioTxt.textContent = 'Áudio original';
   }
 
   // Loc line (subtitle sob o handle)
@@ -33838,7 +33855,7 @@ function atualizarPreview() {
   if (loc) loc.textContent = (tipo === 'REELS') ? 'Áudio original' : 'Publicação';
 
   const cp = document.getElementById('conteudoPreview');
-  if (cp) cp.textContent = gancho ? gancho.slice(0, 32) + (gancho.length > 32 ? '…' : '') : 'Em branco';
+  if (cp) cp.textContent = gancho || 'Em branco'; // o CSS corta com reticências
   if (gancho || legenda) document.querySelector('[data-block="conteudo"]')?.classList.add('filled');
 }
 function atualizarContador() {
@@ -33926,7 +33943,7 @@ function renderMediaThumbs() {
 let autoSaveTimer = null;
 function scheduleAutoSave() {
   const hint = document.getElementById('estudioAutoSave');
-  if (hint) { hint.textContent = 'Salvando…'; hint.classList.add('saving'); }
+  if (hint) { hint.textContent = 'Salvando'; hint.classList.add('saving'); }
   clearTimeout(autoSaveTimer);
   autoSaveTimer = setTimeout(() => {
     salvarRascunho(true);

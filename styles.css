@@ -18534,6 +18534,361 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
 /* ═══ Celular v2, espalhar: cada grupo escreve logo abaixo do seu marcador ═══ */
 
 /* ─── Celular v2: calendario ─── */
+/* Calendário (body.at-visualizar e o painel do dia #dayPanel) e Criar post (body.at-entrada).
+   Fora da media: só a base dos ícones novos (o emoji dos cartões de post saiu também no computador). */
+.badge .post-tipo-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; margin-right: 2px; flex-shrink: 0; }
+:is(#tab-visualizar, #dayPanel) :is(.badge, .post-link, .btn-secondary, .btn-danger, .empty-state-cta) svg { flex-shrink: 0; }
+#tab-visualizar .copy-btn svg { width: 14px; height: 14px; }
+.ed-client-avatar-all svg { display: block; }
+#dayPanel .day-panel-new { width: 100%; justify-content: center; margin-top: 4px; }
+/* Criar post: a lista de clientes vazia ficava sempre aberta ([hidden] perdia pro display:flex) */
+#tab-entrada .estudio-combo-dropdown[hidden] { display: none; }
+/* Criar post: play, áudio e pontos do carrossel ficavam na prévia de todo formato ([hidden] perdia pro display) */
+.vitrine15 :is(.estudio-ig-play, .estudio-ig-audio, .estudio-ig-dots-carr, .estudio-ig-gancho)[hidden] { display: none; }
+/* Criar post: no Story a mídia 9:16 não enchia a tela do celular de mentira e sobrava uma faixa preta embaixo */
+.vitrine15 .estudio-mock[data-tipo="STORY"] .estudio-ig-media { aspect-ratio: auto; }
+
+@media (max-width: 640px) {
+
+  /* 1. Topo do Calendário: o nome já está na barra de cima; fica a contagem do mês e o Criar post */
+  body.at-visualizar .app-content { padding: 0 16px !important; }
+  body.at-visualizar #tab-visualizar { padding-top: 0; }
+  body.at-visualizar .ed-hero { align-items: center; gap: 12px; margin: 0 0 12px; padding: 16px 0 0; border-bottom: 0; }
+  /* dia vazio no modo Dia: o Criar post do vazio já leva a data, o do topo sai */
+  body.at-visualizar #tab-visualizar:has(.day-view .empty-state) .ed-new-post-btn { display: none; }
+  body.at-visualizar .ed-hero-left { min-height: 44px; display: flex; align-items: center; }
+  body.at-visualizar :is(.ed-hero-title, .ed-hero-search-btn, .ed-stats) { display: none !important; }
+  body.at-visualizar .ed-hero-sub { margin: 0; font-size: 14px; line-height: 20px; font-weight: 500; }
+  body.at-visualizar .ed-new-post-btn { height: 44px; padding: 0 16px; gap: 8px; border-radius: 12px; font-size: 15px; transform: none !important; }
+  body.at-visualizar .ed-new-post-btn svg { width: 18px; height: 18px; stroke-width: 2; }
+  html:not(.fg-noturno) body.at-visualizar .ed-hero-sub { color: var(--text2); }
+  html:not(.fg-noturno) body.at-visualizar .ed-new-post-btn { background: var(--fg-acao); border-color: var(--fg-acao); color: var(--on-ink); box-shadow: none; }
+
+  /* 2. Clientes: chip de 44, escolhido em grafite; "Todos" com quadradinho neutro */
+  body.at-visualizar .ed-client-strip-wrap { margin: 0 -16px 12px; }
+  body.at-visualizar .ed-client-strip { gap: 8px; padding: 0 16px; border-bottom: 0; scroll-padding-inline: 16px; }
+  body.at-visualizar .ed-client-strip-wrap::before, body.at-visualizar .ed-client-strip-wrap::after { bottom: 0; width: 16px; }
+  body.at-visualizar .ed-client-chip { height: 44px; padding: 0 12px 0 6px; gap: 8px; font-size: 14px; font-weight: 600; transform: none !important; box-shadow: none !important; }
+  body.at-visualizar .ed-client-avatar { width: 32px; height: 32px; }
+  body.at-visualizar .ed-client-avatar-all svg { width: 16px; height: 16px; }
+  body.at-visualizar .ed-client-count { min-width: 20px; height: 20px; padding: 0 6px; line-height: 18px; font-size: 12px; font-weight: 600; }
+  html:not(.fg-noturno) body.at-visualizar .ed-client-chip { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-visualizar .ed-client-avatar-all { background: var(--card); border-color: var(--border); color: var(--text2); }
+  html:not(.fg-noturno) body.at-visualizar .ed-client-count { background: var(--card); border: 1px solid var(--border); color: var(--text2); }
+  html:not(.fg-noturno) body.at-visualizar .ed-client-chip.active { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+  html:not(.fg-noturno) body.at-visualizar .ed-client-chip.active .ed-client-count { background: var(--on-ink); border-color: var(--on-ink); color: var(--ink); }
+
+  /* 3. Mês, Semana e Dia: segmentado na largura toda */
+  body.at-visualizar .ed-controls { margin-bottom: 12px; }
+  body.at-visualizar .ed-view-switch { display: flex; gap: 3px; padding: 3px; border-radius: 12px; }
+  body.at-visualizar .ed-view-switch .cal-view-btn { flex: 1; min-height: 40px; padding: 0 8px; border-radius: 9px; font-size: 14px; font-weight: 600; }
+  html:not(.fg-noturno) body.at-visualizar .ed-view-switch { background: var(--card); border-color: var(--border); }
+  html:not(.fg-noturno) body.at-visualizar .ed-view-switch .cal-view-btn { color: var(--text2); }
+  html:not(.fg-noturno) body.at-visualizar .ed-view-switch .cal-view-btn.active { background: var(--ink); color: var(--on-ink); box-shadow: none; }
+
+  /* 4. Linha do mês: nome à esquerda, setas e Hoje à direita */
+  body.at-visualizar .ed-nav-row { gap: 12px; margin-bottom: 12px; }
+  body.at-visualizar .calendar-nav { width: 100%; gap: 8px; }
+  body.at-visualizar .cal-month-label { order: -1; flex: 1; min-width: 0; text-align: left; font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  body.at-visualizar .cal-nav-btn { width: 44px; height: 44px; border-radius: 12px; transform: none !important; }
+  body.at-visualizar .cal-nav-btn svg { width: 18px; height: 18px; stroke-width: 1.75; }
+  body.at-visualizar #tab-visualizar .cal-nav-today { height: 44px; padding: 0 14px !important; font-size: 14px !important; font-weight: 600 !important; text-transform: none; letter-spacing: 0; }
+  html:not(.fg-noturno) body.at-visualizar .cal-nav-btn,
+  html:not(.fg-noturno) body.at-visualizar .cal-nav-btn:hover { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-visualizar .cal-nav-btn:active { background: var(--bg2); }
+
+  /* 5. Busca: 44, branca; o × do navegador sai (já tem o nosso) */
+  body.at-visualizar .ed-filter-mini { flex: 1 1 100%; min-width: 0; }
+  body.at-visualizar .ed-search { height: 44px; padding: 0 44px 0 40px; border-radius: 12px; font-size: 16px; -webkit-appearance: none; appearance: none; }
+  body.at-visualizar .ed-search::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+  body.at-visualizar .ed-search-icon { left: 14px; width: 16px; height: 16px; stroke-width: 1.75; }
+  body.at-visualizar .ed-clear-btn { right: 0; width: 44px; height: 44px; border-radius: 12px; background: none; font-size: 20px; }
+  html:not(.fg-noturno) body.at-visualizar .ed-search { background: var(--card); border-color: var(--border); }
+  html:not(.fg-noturno) body.at-visualizar .ed-search::placeholder { color: var(--text3); }
+  html:not(.fg-noturno) body.at-visualizar .ed-search:focus { background: var(--card); border-color: var(--ink); box-shadow: none; }
+  html:not(.fg-noturno) body.at-visualizar .ed-clear-btn { background: none; color: var(--text2); }
+
+  /* 6. Tipos: chip de 44 numa linha que rola; a cor do tipo fica só na bolinha */
+  body.at-visualizar .ed-type-chips { flex-wrap: nowrap; gap: 8px; margin: 0 -16px 12px; padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
+  body.at-visualizar .ed-type-chips::-webkit-scrollbar { display: none; }
+  body.at-visualizar .ed-type-chip { flex: 1 0 auto; justify-content: center; min-height: 44px; padding: 0 10px; gap: 8px; font-size: 14px; font-weight: 600; transform: none !important; }
+  body.at-visualizar .ed-type-chip-dot { width: 8px; height: 8px; }
+  html:not(.fg-noturno) body.at-visualizar .ed-type-chip,
+  html:not(.fg-noturno) body.at-visualizar .ed-type-chip:hover { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-visualizar .ed-type-chip.active { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+
+  /* 7. Grade do mês: número no centro, hoje num círculo grafite, sem + em cada dia (tocar no dia abre o painel com Criar post) */
+  body.at-visualizar .ed-cal-week-head { gap: 4px; padding: 0 0 6px; }
+  body.at-visualizar .ed-cal-wd { padding: 0; font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+  body.at-visualizar .ed-cal-grid { grid-auto-rows: minmax(60px, auto); gap: 4px; }
+  body.at-visualizar .ed-day { align-items: center; gap: 4px; padding: 5px 2px 4px; border-radius: 10px; transform: none !important; animation: none !important; }
+  body.at-visualizar .ed-day-add { display: none !important; }
+  body.at-visualizar .ed-day-head { justify-content: center; min-height: 26px; }
+  body.at-visualizar .ed-day-num { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 3px; border-radius: 13px; font-size: 14px; font-weight: 500; }
+  body.at-visualizar .ed-day-cards { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 3px; }
+  body.at-visualizar .ed-mini { padding: 0; gap: 0; border: 0; border-radius: 50%; transform: none !important; }
+  body.at-visualizar .ed-mini-body { display: none; }
+  body.at-visualizar .ed-mini-avatar { width: 18px !important; height: 18px !important; min-width: 18px; min-height: 18px; max-width: 18px !important; max-height: 18px !important; font-size: 8px; }
+  body.at-visualizar .ed-mini-more { padding: 0 2px; border: 0; font-size: 11px; line-height: 18px; text-align: center; }
+  html:not(.fg-noturno) body.at-visualizar .ed-cal-wd { color: var(--text3); }
+  html:not(.fg-noturno) body.at-visualizar .ed-day:not(.other-month),
+  html:not(.fg-noturno) body.at-visualizar .ed-day:not(.other-month):hover,
+  html:not(.fg-noturno) body.at-visualizar .ed-day.today { background: var(--card); border-color: var(--border) !important; box-shadow: none; }
+  html:not(.fg-noturno) body.at-visualizar .ed-day:not(.other-month):active { background: var(--bg2); }
+  html:not(.fg-noturno) body.at-visualizar .ed-day.drag-over { background: var(--bg2); border-color: var(--ink) !important; }
+  html:not(.fg-noturno) body.at-visualizar .ed-day-num { color: var(--text); }
+  html:not(.fg-noturno) body.at-visualizar .ed-day.today .ed-day-num { background: var(--ink); color: var(--on-ink); font-weight: 700; }
+  html:not(.fg-noturno) body.at-visualizar .ed-mini,
+  html:not(.fg-noturno) body.at-visualizar .ed-mini:hover { background: none; }
+  html:not(.fg-noturno) body.at-visualizar .ed-mini-avatar { box-shadow: 0 0 0 1px var(--border); }
+  html:not(.fg-noturno) body.at-visualizar .ed-mini-more { background: none; color: var(--text2); }
+
+  /* 8. Semana vira agenda num cartão: um dia por linha (dia à esquerda, posts à direita), sem rolar de lado.
+        O HTML tem 7 cabeçalhos e depois 7 colunas; com display: contents, a grade em coluna põe cada um na sua linha */
+  body.at-visualizar .week-view { display: grid; grid-template-columns: 64px minmax(0, 1fr); grid-template-rows: repeat(7, auto); grid-auto-flow: column; gap: 0; padding: 0; overflow: hidden; border: 1px solid; border-radius: 16px; }
+  body.at-visualizar :is(.week-header, .week-posts) { display: contents; }
+  body.at-visualizar :is(.week-day-header, .week-day-posts) { border: 0; border-top: 1px solid; border-radius: 0; }
+  body.at-visualizar :is(.week-day-header, .week-day-posts):first-child { border-top: 0; }
+  body.at-visualizar .week-day-header { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 60px; padding: 8px 0; transform: none !important; }
+  body.at-visualizar .week-day-name { font-size: 12px; font-weight: 600; text-transform: none; }
+  body.at-visualizar .week-day-num { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; margin-top: 0; padding: 0 3px; border-radius: 14px; font-size: 16px; font-weight: 600; }
+  body.at-visualizar .week-day-posts { min-width: 0; min-height: 60px; justify-content: center; gap: 0; padding: 4px 16px 4px 4px; cursor: pointer; }
+  body.at-visualizar .week-post-pill { min-height: 40px; padding: 0; border: 0 !important; border-radius: 0; line-height: 40px; font-size: 14px; font-weight: 500; transform: none !important; }
+  body.at-visualizar .week-post-pill + .week-post-pill { border-top: 1px solid var(--sep) !important; }
+  body.at-visualizar .week-post-pill::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; vertical-align: 1px; background: var(--c, #9ca3af); }
+  /* Dia: o dia já está na linha do mês */
+  body.at-visualizar .day-view { padding: 0; }
+  body.at-visualizar .day-view-header { display: none; }
+  html:not(.fg-noturno) body.at-visualizar .week-view { background: var(--card); border-color: var(--border); box-shadow: var(--sh-card); }
+  html:not(.fg-noturno) body.at-visualizar :is(.week-day-header, .week-day-header:hover, .week-day-posts) { background: none; border-color: var(--sep); }
+  html:not(.fg-noturno) body.at-visualizar :is(.week-day-header, .week-day-posts):active { background: var(--bg2); }
+  html:not(.fg-noturno) body.at-visualizar .week-day-name { color: var(--text3); }
+  html:not(.fg-noturno) body.at-visualizar .week-day-num { color: var(--text); }
+  html:not(.fg-noturno) body.at-visualizar .week-day-header.today .week-day-num { background: var(--ink); color: var(--on-ink); }
+  html:not(.fg-noturno) body.at-visualizar .week-post-pill { background: none; color: var(--text) !important; opacity: 1; }
+
+  /* 9. Vazio (dia sem post, no Dia e no painel do dia) */
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .empty-state { gap: 0; padding: 32px 16px; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .empty-state-icon { width: 56px; height: 56px; margin-bottom: 12px; border-radius: 14px; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .empty-state-icon svg { width: 26px; height: 26px; stroke-width: 1.75; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .empty-state-text { font-size: 16px; font-weight: 600; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .empty-state-sub { margin: 4px 0 16px; font-size: 14px; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .empty-state-cta { min-height: 44px; padding: 0 20px; gap: 8px; border-radius: 12px; font-size: 15px; }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .empty-state-icon { background: var(--card); border-color: var(--border); color: var(--text2); }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .empty-state-sub { color: var(--text3); }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .empty-state-cta { background: var(--fg-acao); color: var(--on-ink); }
+
+  /* 10. Todos os posts: cartão neutro, Feed/Story em segmentado */
+  body.at-visualizar #postsBlock { margin-top: 16px !important; border-radius: 16px; }
+  body.at-visualizar #postsBlock .collapsible-head { min-height: 64px; padding: 12px 16px; }
+  body.at-visualizar #postsBlock .collapsible-icon { width: 32px !important; height: 32px !important; }
+  body.at-visualizar #postsBlock .collapsible-icon svg { width: 16px; height: 16px; stroke-width: 1.75; }
+  body.at-visualizar #postsBlock .collapsible-head-title { font-size: 15px; font-weight: 600; }
+  body.at-visualizar #postsBlock .collapsible-head-sub { font-size: 13px; }
+  body.at-visualizar .posts-inner-tabs { gap: 3px; margin: 12px 16px 0; padding: 3px; border: 1px solid; border-radius: 12px; }
+  body.at-visualizar .posts-inner-tabs::after { content: none; }
+  body.at-visualizar .posts-inner-tab { min-height: 40px; padding: 0 8px; border-radius: 9px; font-size: 14px; font-weight: 600; }
+  body.at-visualizar .posts-count-badge { min-width: 20px; padding: 0 6px; line-height: 18px; font-size: 12px; }
+  body.at-visualizar .posts-panel { padding: 12px 0 0; }
+  body.at-visualizar .posts-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  /* dentro do cartão Todos os posts, cada post é uma linha com fio (cartão não vai dentro de cartão) */
+  body.at-visualizar #tab-visualizar #postsBlock .post-card { border: 0; border-top: 1px solid var(--sep); border-radius: 0; box-shadow: none !important; }
+  body.at-visualizar #postsBlock .posts-panel .empty-state { border-top: 1px solid var(--sep); }
+  html:not(.fg-noturno) body.at-visualizar #postsBlock { border-color: var(--border); box-shadow: var(--sh-card); }
+  html:not(.fg-noturno) body.at-visualizar #postsBlock .collapsible-head:hover { background: none; }
+  html:not(.fg-noturno) body.at-visualizar #postsBlock:not(.closed) .collapsible-head { border-bottom-color: var(--sep); }
+  html:not(.fg-noturno) body.at-visualizar #postsBlock .collapsible-icon { background: var(--card) !important; border-color: var(--border) !important; color: var(--text2); }
+  html:not(.fg-noturno) body.at-visualizar #postsBlock .collapsible-head-sub,
+  html:not(.fg-noturno) body.at-visualizar #postsBlock .collapsible-chevron { color: var(--text3); }
+  html:not(.fg-noturno) body.at-visualizar .posts-inner-tabs { background: var(--card); border-color: var(--border); }
+  html:not(.fg-noturno) body.at-visualizar .posts-inner-tab { color: var(--text2); }
+  html:not(.fg-noturno) body.at-visualizar .posts-inner-tab.active { background: var(--ink); color: var(--on-ink); }
+  html:not(.fg-noturno) body.at-visualizar .posts-count-badge { background: var(--card); border-color: var(--border); color: var(--text2); }
+  html:not(.fg-noturno) body.at-visualizar .posts-inner-tab.active .posts-count-badge { background: var(--on-ink); border-color: var(--on-ink); color: var(--ink); }
+
+  /* 11. Cartão de post (Todos os posts, Dia e painel do dia): branco, etiquetas neutras com bolinha, campos em linhas com fio */
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card { border-radius: 16px; transform: none !important; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-header { gap: 8px; padding: 12px 16px; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-badges { gap: 6px; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) :is(.badge, .post-rest-pill) {
+    display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border: 1px solid; border-radius: 999px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none;
+  }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .badge .post-tipo-dot { width: 8px; height: 8px; margin: 0; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .badge.recorrente svg { width: 12px; height: 12px; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-date { flex-basis: 100%; font-size: 13px; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-rest { padding: 12px 16px 0; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-body { padding: 12px 16px 4px; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) :is(.post-prato, .pcc-prato) { margin-bottom: 4px; font-size: 13px !important; font-weight: 500 !important; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-gancho { margin-bottom: 12px; font-size: 15px; font-weight: 600; line-height: 1.35; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-field { margin: 0; padding: 12px 44px 12px 0; border: 0; border-top: 1px solid; border-radius: 0; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) :is(.post-field-label, .pcc-label) { margin-bottom: 2px !important; font-size: 13px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-field-text { font-size: 14px; line-height: 1.45; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .copy-btn { top: 4px !important; right: -10px !important; width: 44px; height: 44px; border: 0; border-radius: 12px; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .copy-btn svg { width: 18px; height: 18px; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-link { display: flex; max-width: 100%; min-height: 44px; margin-top: 0; font-size: 14px; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-link-txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-footer { gap: 8px; padding: 8px 12px; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-footer :is(.btn-secondary, .btn-danger) {
+    min-width: 44px; min-height: 44px; padding: 0 14px !important; justify-content: center; gap: 8px;
+    border: 1px solid; border-radius: 12px; font-size: 14px !important; font-weight: 600; transform: none !important;
+  }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-footer svg { width: 18px; height: 18px; }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card,
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card:hover { background: var(--card); border-color: var(--border); box-shadow: var(--sh-card); }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) :is(.post-card-header, .post-card-footer) { border-color: var(--sep); }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) :is(.badge, .post-rest-pill) { background: var(--card) !important; border-color: var(--border) !important; color: var(--text) !important; }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .badge.REELS .post-tipo-dot { background: var(--reels); }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .badge.FOTO .post-tipo-dot { background: var(--foto); }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .badge.CARROSSEL .post-tipo-dot { background: var(--carrossel); }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .badge.STORY .post-tipo-dot { background: var(--story); }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-date { color: var(--text3); }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) :is(.post-prato, .pcc-prato) { color: var(--text2) !important; }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) :is(.post-field, .post-field-note) { background: none !important; border-color: var(--sep) !important; }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) :is(.post-field-label, .pcc-label) { color: var(--text2) !important; }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-field-text { color: var(--text); }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .copy-btn { background: none; color: var(--text2); }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .copy-btn.copied { background: none; color: var(--fg-green); }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) :is(.post-link, .post-link:hover, .post-card a[href]) { color: var(--text) !important; }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-footer :is(.btn-secondary, .btn-danger),
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-footer :is(.btn-secondary, .btn-danger):hover { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-footer .btn-danger { color: var(--fg-red) !important; }
+  html:not(.fg-noturno) body.at-visualizar #tab-visualizar #postsBlock .post-card { border-color: var(--sep); }
+
+  /* 12. Painel do dia: folha de baixo branca, X de 44, Criar post neste dia */
+  #dayPanel { max-height: 85dvh !important; padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0px)); border-radius: 20px 20px 0 0; }
+  #dayPanel .day-panel-header { position: sticky; top: 0; z-index: 2; min-height: 64px; margin: 0 0 4px; padding: 10px 0; }
+  #dayPanel .day-panel-title { font-size: 17px; font-weight: 600; }
+  #dayPanel .btn-close-panel { width: 44px; height: 44px; border-radius: 12px; transform: none !important; }
+  #dayPanel .day-panel-new { min-height: 48px; gap: 8px; margin: 0; border-radius: 12px; font-size: 15px; }
+  #dayPanel .day-panel-new svg { width: 18px; height: 18px; stroke-width: 2; }
+  html:not(.fg-noturno) #dayPanel { background: var(--card); }
+  html:not(.fg-noturno) #dayPanel.open { box-shadow: 0 -8px 24px rgba(16,24,40,.12); }
+  html:not(.fg-noturno) #dayPanel .day-panel-header { background: var(--card); }
+  html:not(.fg-noturno) #dayPanel .day-panel-title { color: var(--text); }
+  html:not(.fg-noturno) #dayPanel .btn-close-panel,
+  html:not(.fg-noturno) #dayPanel .btn-close-panel:hover { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) #dayPanel .btn-close-panel:active { background: var(--bg2); }
+  html:not(.fg-noturno) #dayPanel .post-hora { background: var(--card) !important; color: var(--text) !important; }
+  html:not(.fg-noturno) #dayPanel .day-panel-new { background: var(--fg-acao); color: var(--on-ink); }
+  html:not(.fg-noturno) body.at-visualizar .panel-overlay.open { background: var(--dim); }
+
+  /* 13. Criar post: formulário antes da prévia, que vira a conferência no fim */
+  body.at-entrada .app-content { padding: 0 !important; }
+  body.at-entrada #tab-entrada .estudio-panel { order: -1; padding: 12px 16px 16px; gap: 12px; }
+  body.at-entrada .estudio-stage.vitrine15 { padding: 4px 16px 24px; border: 0; }
+  body.at-entrada .vitrine15 .estudio-phone { width: 220px; }
+  html:not(.fg-noturno) body.at-entrada .vitrine15 .estudio-phone { box-shadow: 0 8px 24px rgba(16,24,40,.18); }
+  body.at-entrada .vitrine15 .estudio-mock-tabs { display: none; }
+  html:not(.fg-noturno) body.at-entrada .estudio-stage.vitrine15 { background: none; }
+
+  /* barra Rascunho/Salvar */
+  body.at-entrada header.estudio-bar { min-height: 0; padding: 8px 16px; flex-wrap: nowrap; }
+  body.at-entrada .estudio-bar-back { width: 44px; height: 44px; padding: 0; border-radius: 12px; }
+  body.at-entrada .estudio-bar-back svg { width: 20px; height: 20px; stroke-width: 1.75; }
+  body.at-entrada .estudio-bar-btn { min-height: 44px; padding: 0 16px; border-radius: 12px; font-size: 15px; font-weight: 600; transform: none !important; }
+  html:not(.fg-noturno) body.at-entrada header.estudio-bar { background: var(--card); border-bottom-color: var(--border); }
+  html:not(.fg-noturno) body.at-entrada .estudio-bar-back,
+  html:not(.fg-noturno) body.at-entrada .estudio-bar-btn.ghost { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-entrada .estudio-bar-btn.primary { background: var(--fg-acao); border-color: var(--fg-acao); color: var(--on-ink); box-shadow: none; }
+  html:not(.fg-noturno) body.at-entrada .estudio-bar-btn.primary:active { background: var(--ink-press, var(--fg-acao)); }
+
+  /* blocos: cartão branco; ícone num quadradinho neutro */
+  body.at-entrada .estudio-block { border-radius: 16px; }
+  body.at-entrada .estudio-block-head { grid-template-columns: 28px minmax(0, 1fr) auto 16px; gap: 12px; min-height: 56px; padding: 12px 16px; }
+  body.at-entrada .estudio-block-icon { width: 28px; height: 28px; border: 1px solid; border-radius: 8px; }
+  body.at-entrada .estudio-block-icon svg { width: 16px; height: 16px; stroke-width: 1.75; }
+  body.at-entrada .estudio-block-title { font-size: 15px; font-weight: 600; }
+  body.at-entrada .estudio-block-value { max-width: 150px; font-size: 13px; }
+  body.at-entrada .estudio-block-body { gap: 16px; padding: 4px 16px 16px; }
+  html:not(.fg-noturno) body.at-entrada .estudio-block,
+  html:not(.fg-noturno) body.at-entrada .estudio-block:focus-within { background: var(--card); border-color: var(--border); box-shadow: var(--sh-card); }
+  html:not(.fg-noturno) body.at-entrada .estudio-block-head:hover { background: none; }
+  html:not(.fg-noturno) body.at-entrada .estudio-block-head:active { background: var(--bg2); }
+  html:not(.fg-noturno) body.at-entrada .estudio-block-icon { background: var(--card); border-color: var(--border); color: var(--text2); }
+  html:not(.fg-noturno) body.at-entrada .estudio-block-value { color: var(--text3); }
+  html:not(.fg-noturno) body.at-entrada .estudio-block.filled .estudio-block-value { color: var(--text2); }
+
+  /* campos: 44, brancos, foco grafite; rótulo 13/600 */
+  body.at-entrada .estudio-field-label, body.at-entrada .estudio-recorrencia-label { font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+  body.at-entrada .estudio-field-hint { font-size: 12px !important; font-style: normal; letter-spacing: 0 !important; }
+  body.at-entrada :is(.estudio-field input, .estudio-field textarea, .estudio-combo-input, .estudio-media-url input, .estudio-time-custom, .estudio-recorrencia-qtd input) {
+    min-height: 44px; border-width: 1px; border-radius: 12px; font-size: 16px; font-weight: 400;
+  }
+  body.at-entrada .estudio-combo-input { padding-left: 40px; background-repeat: no-repeat; background-position: 14px center; background-size: 16px; }
+  body.at-entrada .estudio-legenda-wrap textarea { padding-bottom: 60px; }
+  html:not(.fg-noturno) body.at-entrada :is(.estudio-field input, .estudio-field textarea, .estudio-combo-input, .estudio-media-url input, .estudio-time-custom, .estudio-recorrencia-qtd input) {
+    background-color: var(--card); border-color: var(--border); color: var(--text); color-scheme: light; box-shadow: none;
+  }
+  html:not(.fg-noturno) body.at-entrada :is(.estudio-field input, .estudio-field textarea, .estudio-combo-input, .estudio-media-url input, .estudio-time-custom, .estudio-recorrencia-qtd input):focus { background-color: var(--card); border-color: var(--ink); box-shadow: none; }
+  html:not(.fg-noturno) body.at-entrada :is(.estudio-field input, .estudio-field textarea, .estudio-combo-input, .estudio-media-url input)::placeholder { color: var(--text3); }
+  html:not(.fg-noturno) body.at-entrada .estudio-combo-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235a6272' stroke-width='1.75' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E"); }
+  html:not(.fg-noturno) body.at-entrada :is(.estudio-field-label, .estudio-recorrencia-label) { color: var(--text2); }
+  html:not(.fg-noturno) body.at-entrada .estudio-field-hint { color: var(--text3); }
+
+  /* botões pequenos (IA, Copiar, Adicionar): brancos, 44 */
+  body.at-entrada :is(button.estudio-ai, button.estudio-mini) { min-height: 44px; padding: 0 14px; border: 1px solid; border-radius: 12px; font-size: 14px; font-weight: 600; }
+  body.at-entrada button.estudio-mini + button.estudio-mini, body.at-entrada button.estudio-ai + button.estudio-mini { margin-left: 0; }
+  body.at-entrada .estudio-legenda-toolbar { right: 8px; bottom: 8px; gap: 8px; }
+  html:not(.fg-noturno) body.at-entrada :is(button.estudio-ai, button.estudio-ai:hover, button.estudio-mini) { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-entrada :is(button.estudio-ai, button.estudio-mini):active { background: var(--bg2); }
+
+  /* escolhas (formato, objetivo, dia, hora, repetir): branco com borda; escolhido grafite */
+  body.at-entrada .estudio-format-grid { gap: 8px; }
+  body.at-entrada .estudio-format-card { min-height: 64px; padding: 12px 14px; gap: 2px; border-width: 1px; border-radius: 12px; transform: none !important; }
+  body.at-entrada .estudio-format-dot { width: 8px; height: 8px; margin-bottom: 4px; }
+  body.at-entrada .estudio-format-name { font-size: 15px; font-weight: 600; }
+  body.at-entrada .estudio-format-sub { font-size: 13px; }
+  body.at-entrada .estudio-obj-grid, body.at-entrada .estudio-recorrencia-pills, body.at-entrada .estudio-time-row { gap: 8px; }
+  body.at-entrada :is(.estudio-obj-chip, .estudio-time-chip, .estudio-recorrencia-pills button) { min-height: 44px; padding: 0 16px; border-width: 1px; border-radius: 999px; font-size: 14px; font-weight: 600; transform: none !important; }
+  body.at-entrada .estudio-time-custom { flex: 1 1 100%; margin-left: 0; }
+  body.at-entrada .estudio-recorrencia { gap: 8px; }
+  html:not(.fg-noturno) body.at-entrada :is(.estudio-format-card, .estudio-obj-chip, .estudio-time-chip, .estudio-recorrencia-pills button),
+  html:not(.fg-noturno) body.at-entrada :is(.estudio-format-card, .estudio-obj-chip, .estudio-time-chip, .estudio-recorrencia-pills button):hover { background: var(--card); border-color: var(--border); color: var(--text); box-shadow: none; }
+  html:not(.fg-noturno) body.at-entrada .estudio-format-name { color: var(--text); }
+  html:not(.fg-noturno) body.at-entrada .estudio-format-sub { color: var(--text3); }
+  html:not(.fg-noturno) body.at-entrada :is(.estudio-format-card.active, .estudio-obj-chip.active, .estudio-time-chip.active, .estudio-recorrencia-pills button.active) { background: var(--ink); border-color: var(--ink); color: var(--on-ink); box-shadow: none; }
+  html:not(.fg-noturno) body.at-entrada .estudio-format-card.active :is(.estudio-format-name, .estudio-format-sub) { color: var(--on-ink); }
+
+  /* objetivo escolhido: explicação em linhas, sem caixa colorida */
+  body.at-entrada .estudio-obj-desc { margin-top: 4px; padding: 12px 0 0; border: 0; border-top: 1px solid; border-radius: 0; animation: none; }
+  body.at-entrada .estudio-obj-desc-title { font-size: 15px; font-weight: 600; }
+  body.at-entrada :is(.estudio-obj-desc-funnel, .estudio-obj-desc-examples-label) { margin-top: 2px; font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+  body.at-entrada .estudio-obj-desc-hint { font-size: 14px; }
+  body.at-entrada .estudio-obj-desc-examples li { font-size: 14px; }
+  html:not(.fg-noturno) body.at-entrada .estudio-obj-desc { background: none; border-color: var(--sep); }
+  html:not(.fg-noturno) body.at-entrada :is(.estudio-obj-desc-funnel, .estudio-obj-desc-examples-label) { color: var(--text3); }
+  html:not(.fg-noturno) body.at-entrada .estudio-obj-desc-examples li::before { background: var(--text3); opacity: 1; }
+
+  /* mini calendário: sem caixa dentro do cartão; dia escolhido grafite */
+  body.at-entrada .estudio-mini-cal { padding: 0; border: 0; border-radius: 0; }
+  body.at-entrada .estudio-mini-cal-head { margin-bottom: 4px; }
+  body.at-entrada .estudio-mini-cal-title { font-size: 15px; font-weight: 600; }
+  body.at-entrada .estudio-mini-cal-nav { width: 44px; height: 44px; border-radius: 12px; font-size: 20px; }
+  body.at-entrada .estudio-mini-cal-dow span { font-size: 12px; font-weight: 600; }
+  body.at-entrada .estudio-mini-cal-grid button { min-height: 44px; border-radius: 22px; font-size: 15px; }
+  html:not(.fg-noturno) body.at-entrada .estudio-mini-cal { background: none; }
+  html:not(.fg-noturno) body.at-entrada .estudio-mini-cal-nav,
+  html:not(.fg-noturno) body.at-entrada .estudio-mini-cal-nav:hover { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-entrada .estudio-mini-cal-dow span { color: var(--text3); }
+  html:not(.fg-noturno) body.at-entrada .estudio-mini-cal-grid button { color: var(--text); }
+  html:not(.fg-noturno) body.at-entrada .estudio-mini-cal-grid button:hover { background: none; }
+  html:not(.fg-noturno) body.at-entrada .estudio-mini-cal-grid button.today { color: var(--text); font-weight: 700; }
+  html:not(.fg-noturno) body.at-entrada .estudio-mini-cal-grid button.selected { background: var(--ink); color: var(--on-ink); }
+  html:not(.fg-noturno) body.at-entrada .estudio-mini-cal-grid button.other-month { color: var(--text3); }
+  html:not(.fg-noturno) body.at-entrada .estudio-mini-cal-grid button.has-post::after { background: var(--text2); }
+
+  /* mídia */
+  body.at-entrada .estudio-media-drop { padding: 20px 16px; gap: 4px; border-width: 1.5px; border-radius: 12px; }
+  body.at-entrada .estudio-media-drop-icon svg { display: block; }
+  body.at-entrada .estudio-media-drop-title { font-size: 15px; font-weight: 600; }
+  body.at-entrada .estudio-media-drop-sub { font-size: 13px; }
+  body.at-entrada .estudio-media-url { gap: 8px; }
+  html:not(.fg-noturno) body.at-entrada .estudio-media-drop,
+  html:not(.fg-noturno) body.at-entrada .estudio-media-drop:hover { background: var(--card); border-color: var(--border); color: var(--text3); }
+  html:not(.fg-noturno) body.at-entrada .estudio-media-drop.drag { border-color: var(--ink); }
+  html:not(.fg-noturno) body.at-entrada .estudio-media-drop-icon { color: var(--text2); }
+}
 
 
 
