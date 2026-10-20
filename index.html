@@ -978,12 +978,12 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
                 <input type="text" id="pratoDestaque" placeholder="Ex: burrata da casa, rodízio de terça">
               </label>
               <label class="estudio-field">
-                <span class="estudio-field-head"><span class="estudio-field-label">Gancho</span><button type="button" class="estudio-ai" id="aiGanchoBtn" onclick="aiSugerirGancho()">Sugerir</button></span>
+                <span class="estudio-field-head"><span class="estudio-field-label">Gancho</span><button type="button" class="estudio-ai" id="aiGanchoBtn" onclick="aiSugerirGancho()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>Sugerir gancho</button></span>
                 <input type="text" id="gancho" placeholder="Frase que prende em 2 segundos" oninput="atualizarPreview()">
               </label>
               <div class="ai-result-box" id="aiGanchoResult" aria-live="polite"></div>
               <label class="estudio-field" id="scriptWrapper" hidden>
-                <span class="estudio-field-head"><span class="estudio-field-label">Roteiro do vídeo</span><button type="button" class="estudio-ai" id="aiScriptBtn" onclick="aiGerarRoteiro()">Gerar</button></span>
+                <span class="estudio-field-head"><span class="estudio-field-label">Roteiro do vídeo</span><button type="button" class="estudio-ai" id="aiScriptBtn" onclick="aiGerarRoteiro()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>Sugerir roteiro</button></span>
                 <textarea id="script" placeholder="Cenas, falas, cortes"></textarea>
               </label>
               <div class="ai-result-box" id="aiScriptResult" aria-live="polite"></div>
@@ -992,7 +992,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
                 <div class="estudio-legenda-wrap">
                   <textarea id="legenda" placeholder="Escreva a legenda como você fala com o cliente" oninput="atualizarPreview(); atualizarContador()"></textarea>
                   <div class="estudio-legenda-toolbar">
-                    <button type="button" class="estudio-ai" id="aiLegendaBtn" onclick="aiMelhorarLegenda()">Escrever com IA</button>
+                    <button type="button" class="estudio-ai" id="aiLegendaBtn" onclick="aiMelhorarLegenda()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>Sugerir legenda</button>
                     <button type="button" class="estudio-mini" onclick="copiarLegenda(this)">Copiar</button>
                   </div>
                 </div>
@@ -2229,6 +2229,7 @@ ufw allow 3000/tcp</pre>
       <!-- Pré-análise pública -->
       <div class="gmb-preanalise-card">
         <div class="gmb-preanalise-header">
+          <div class="gmb-connect-icon gmb-sec-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
           <div>
             <div class="gmb-preanalise-title">Pré-análise de negócio</div>
             <div class="gmb-preanalise-sub">Analise qualquer perfil público no Google sem conectar conta</div>
@@ -2255,7 +2256,7 @@ ufw allow 3000/tcp</pre>
         </div>
         <div class="gmb-connect-text">
           <div class="gmb-connect-title">Perfil no Google</div>
-          <div class="gmb-connect-sub" id="gmbConnectSub">Conecte sua conta Google para gerenciar avaliações e posts.</div>
+          <div class="gmb-connect-sub" id="gmbConnectSub">Conecte sua conta Google pra gerenciar avaliações e posts.</div>
         </div>
         <button class="gmb-connect-btn" id="gmbConnectBtn" onclick="gmbConnect()">
           <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.58-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
@@ -2387,8 +2388,11 @@ ufw allow 3000/tcp</pre>
       <!-- ── Ranking Grid (sempre visível, independente de conta GMB) ── -->
       <div class="gmb-rank-section">
         <div class="gmb-rank-header">
-          <div class="gmb-rank-title">Grid de posicionamento</div>
-          <div class="gmb-rank-sub">Veja em quais posições seu negócio aparece ao redor do endereço</div>
+          <div class="gmb-connect-icon gmb-sec-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg></div>
+          <div>
+            <div class="gmb-rank-title">Grade de posições</div>
+            <div class="gmb-rank-sub">Veja em quais posições seu negócio aparece ao redor do endereço</div>
+          </div>
         </div>
 
         <!-- Campo de busca do negócio com autocomplete -->
@@ -2559,7 +2563,7 @@ ufw allow 3000/tcp</pre>
       </aside>
 
       <div id="mtrBody">
-        <div class="mtr-empty">Selecione uma conta para ver as métricas.</div>
+        <div class="mtr-empty mtr-empty--pick"><span class="mtr-empty-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span><b>Escolha uma conta</b><span>Os números aparecem aqui depois que você escolher a conta do Instagram ou de anúncios.</span></div>
       </div>
 
     </div>
@@ -2661,11 +2665,11 @@ ufw allow 3000/tcp</pre>
             <!-- Vistas principais -->
             <button class="pj-nav-btn" id="pjBtnDashboard" onclick="pjNavigate('dashboard')">
               <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg></span>
-              Dashboard
+              Painel
             </button>
             <button class="pj-nav-btn" id="pjBtnInbox" onclick="pjNavigate('inbox')">
               <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>
-              Caixa de Entrada
+              Caixa de entrada
               <span class="pj-badge" id="pjInboxCount" style="display:none">0</span>
             </button>
             <button class="pj-nav-btn" id="pjBtnAll" onclick="pjNavigate('all')">
@@ -2674,11 +2678,11 @@ ufw allow 3000/tcp</pre>
             </button>
             <button class="pj-nav-btn" id="pjBtnWorkload" onclick="pjNavigate('workload')">
               <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-              Workload
+              Carga da semana
             </button>
             <button class="pj-nav-btn" id="pjBtnByClient" onclick="pjNavigate('byclient')">
               <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span>
-              Por Cliente
+              Por cliente
             </button>
             <button class="pj-nav-btn" id="pjBtnCsHealth" onclick="pjNavigate('cshealth')" title="Saúde da carteira — só em Sucesso do Cliente">
               <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>
@@ -2690,7 +2694,7 @@ ufw allow 3000/tcp</pre>
             </button>
             <button class="pj-nav-btn" id="pjBtnTimeline" onclick="pjNavigate('timeline')">
               <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h10"/><path d="M6 12h9"/><path d="M11 18h7"/></svg></span>
-              Timeline
+              Linha do tempo
             </button>
             <button class="pj-nav-btn" id="pjBtnArchived" onclick="pjNavigate('archived')">
               <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
@@ -2701,11 +2705,11 @@ ufw allow 3000/tcp</pre>
             <div class="pj-section-label pj-admin-only">Admin</div>
             <button class="pj-nav-btn pj-admin-only" id="pjBtnTimeMetrics" onclick="pjNavigate('timemetrics')">
               <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-              Tempo
+              Métricas de tempo
             </button>
             <button class="pj-nav-btn pj-admin-only" id="pjBtnDigest" onclick="pjNavigate('digest')">
               <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>
-              Digest Semanal
+              Resumo semanal
             </button>
             <button class="pj-nav-btn pj-admin-only" id="pjBtnIntegracoes" onclick="pjNavigate('integracoes')">
               <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
@@ -2729,7 +2733,7 @@ ufw allow 3000/tcp</pre>
           <div id="pjSidebarUserRow"></div>
           <button class="pj-add-space-btn pj-admin-only" onclick="pjOpenSpaceForm()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-            Novo Espaço
+            Novo espaço
           </button>
           <button class="pj-add-space-btn pj-admin-only" onclick="pjOpenTemplatesModal()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="7" x="3" y="3" rx="1"/><rect width="9" height="7" x="3" y="14" rx="1"/><rect width="5" height="7" x="16" y="14" rx="1"/></svg>
@@ -2765,7 +2769,7 @@ ufw allow 3000/tcp</pre>
           <input type="text" class="bd-search-input" id="bdSearchInput" placeholder="Buscar cliente, prato ou sócio" aria-label="Buscar cliente" oninput="bdSearch(this.value)">
         </div>
         <div class="bd-list-actions">
-          <button class="bd-add-btn" onclick="bdNewCliente()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Novo cliente</button>
+          <button class="bd-add-btn" onclick="bdNewCliente()" title="Novo cliente" aria-label="Novo cliente"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Novo cliente</button>
         </div>
         <div class="bd-list" id="bdList"></div>
       </div>
@@ -2791,8 +2795,8 @@ ufw allow 3000/tcp</pre>
   <button class="pj-fab" id="pjFab" onclick="pjOpenFabModal()" title="Criar tarefa" aria-label="Criar tarefa" style="display:none;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
   <div class="pj-fab-modal-overlay" id="pjFabModal" onclick="if(event.target===this)pjCloseFabModal()" onkeydown="if(event.key==='Escape')pjCloseFabModal()">
     <div class="pj-fab-modal">
-      <h3>🪄 Nova tarefa</h3>
-      <p style="font-size:12.5px;color:var(--text3);margin:0 0 14px;line-height:1.5;">Onde você quer criar? Após escolher, abriremos o editor completo pra preencher tudo (título, descrição, prazo, prioridade, responsáveis…).</p>
+      <div class="pj-sheet-head"><h3>Nova tarefa</h3><button type="button" class="pj-sheet-x" onclick="pjCloseFabModal()" title="Fechar" aria-label="Fechar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+      <p style="font-size:12.5px;color:var(--text3);margin:0 0 14px;line-height:1.5;">Escolha onde criar. Depois abre o editor completo pra preencher título, prazo e responsáveis.</p>
       <form onsubmit="return pjFabSubmit(event)">
         <label>Pasta</label>
         <select id="pjFabSpaceSelect" onchange="pjFabRefreshListOptions()"></select>
@@ -2800,7 +2804,7 @@ ufw allow 3000/tcp</pre>
         <select id="pjFabListSelect"></select>
         <div class="pj-fab-modal-footer">
           <button type="button" class="pj-btn" onclick="pjCloseFabModal()">Cancelar</button>
-          <button type="submit" class="pj-btn pj-btn-primary">Continuar →</button>
+          <button type="submit" class="pj-btn pj-btn-primary">Continuar</button>
         </div>
       </form>
     </div>
@@ -11213,7 +11217,7 @@ function mtrOnAccountChange() {
     spFbLogin();
     return;
   }
-  if (idx === '') { mtrCurrentAcc = null; document.getElementById('mtrBody').innerHTML = '<div class="mtr-empty">Selecione uma conta para ver as métricas.</div>'; return; }
+  if (idx === '') { mtrCurrentAcc = null; document.getElementById('mtrBody').innerHTML = '<div class="mtr-empty mtr-empty--pick"><span class="mtr-empty-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span><b>Escolha uma conta</b><span>Os números aparecem aqui depois que você escolher a conta do Instagram ou de anúncios.</span></div>'; return; }
   mtrCurrentAcc = spAccounts[parseInt(idx)];
   localStorage.setItem('mtrSelectedIg', mtrCurrentAcc.igId);
   // Carrega preferências per-cliente (KPIs + treinamento da IA)
@@ -17176,7 +17180,7 @@ function pjRenderSidebar() {
       <div class="pj-space-icon" style="background:${sp.color||'#6366f1'}">${(sp.name||'?')[0].toUpperCase()}</div>
       <span class="pj-space-name">${escHtml(sp.name)}</span>
       <div class="pj-space-actions">${adminActions.replace(/SPID/g, sp.id)}</div>
-      <span class="pj-space-chevron ${open?'open':''}" id="pjChev_${sp.id}">▶</span>
+      <span class="pj-space-chevron ${open?'open':''}" id="pjChev_${sp.id}">${pjlIco('right',14)}</span>
     </div>`;
     if (open) {
       // Direct lists (no folder)
@@ -17539,6 +17543,7 @@ function pjRenderMain() {
   const el = document.getElementById('pjMain');
   if (!el) return;
   const { type, id } = pjCurrentView;
+  el.dataset.view = type; // o CSS do celular usa pra esconder o + onde não se cria tarefa
   const done = () => { try { pjEnsureAutoTick(); } catch(_) {} };
   if (type === 'dashboard') { el.innerHTML = pjBuildDashboard(); done(); return; }
   if (type === 'inbox') { el.innerHTML = pjBuildInbox(); done(); return; }
@@ -17904,7 +17909,7 @@ function pjOpenDashCustomize() {
         </div>
         <div class="pj-dash-customize-footer">
           <button onclick="pjResetDashLayout()" class="pj-dash-customize-reset">Restaurar padrão</button>
-          <button onclick="pjCloseDashCustomize()" class="pj-dash-customize-done">Concluído</button>
+          <button onclick="pjCloseDashCustomize()" class="pj-dash-customize-done">Pronto</button>
         </div>
       </div>
     </div>`;
@@ -17956,7 +17961,7 @@ function pjBuildInbox() {
 
   const _inboxIsAdmin = (typeof userIsAdmin === 'function') ? userIsAdmin() : true;
   let h = `<div class="pj-view-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-    <div class="pj-view-title">Caixa de entrada</div>
+    <div class="pj-view-title">Caixa de entrada <span class="pj-view-sub">Só as suas tarefas</span></div>
     ${_inboxIsAdmin ? `<button class="pj-wa-trigger-btn" onclick="pjOpenDailyReport()" title="Ver o relatório do dia no formato do WhatsApp">
       ${fgIco('send', 18)}
       Relatório do dia
@@ -17980,9 +17985,9 @@ function pjBuildInbox() {
       <div class="pj-inbox-section-body">${bodyContent}</div>
     </div>`;
   };
-  h += section('Atrasadas','#ef4444', overdue, 'Nenhuma tarefa atrasada', false);
-  h += section('Hoje','#f97316', todayT, 'Sem tarefas para hoje', false);
-  h += section('Futuras','#6366f1', future, 'Sem tarefas futuras', true);
+  if (overdue.length) h += section('Atrasadas','#ef4444', overdue, '', false); // zerada some, como no painel
+  h += section('Hoje','#f97316', todayT, 'Nenhuma tarefa pra hoje', false);
+  h += section('Futuras','#6366f1', future, 'Nenhuma tarefa futura', true);
   if (done.length) h += section('Concluídas recentes','#22c55e', done, '', true);
   return h + '</div>';
 }
@@ -18040,15 +18045,14 @@ function pjGenerateDailyReport() {
   const months = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   const dateLabel = `${dows[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]}`;
 
-  const SEP = '━━━━━━━━━━━━━━━━━━';
   let m = '';
   m += `🔥 *FOGO & GESTÃO*\n`;
-  m += `📋 _Relatório Diário_\n`;
+  m += `📋 _Relatório do dia_\n`;
   m += `📅 ${dateLabel}\n`;
-  m += `\n${SEP}\n\n`;
+  m += `\n`;
 
   if (overdue.length) {
-    m += `🚨 *ATRASADAS* — ${overdue.length} ${overdue.length === 1 ? 'tarefa' : 'tarefas'}\n\n`;
+    m += `🚨 *Atrasadas*: ${overdue.length} ${overdue.length === 1 ? 'tarefa' : 'tarefas'}\n\n`;
     overdue.forEach((t, i) => {
       const cli = pjGetTaskClient(t);
       m += `🔴 *${t.title || 'Sem título'}*\n`;
@@ -18057,11 +18061,11 @@ function pjGenerateDailyReport() {
       m += `   ⏰ Venceu *${pjDaysLateLabel(t.dueDate)}*\n`;
       if (i < overdue.length - 1) m += `\n`;
     });
-    m += `\n${SEP}\n\n`;
+    m += `\n`;
   }
 
   if (todayT.length) {
-    m += `📋 *HOJE* — ${todayT.length} ${todayT.length === 1 ? 'tarefa' : 'tarefas'}\n\n`;
+    m += `📋 *Hoje*: ${todayT.length} ${todayT.length === 1 ? 'tarefa' : 'tarefas'}\n\n`;
     todayT.forEach((t, i) => {
       const cli = pjGetTaskClient(t);
       m += `${pjPriorityEmoji(t.priority)} *${t.title || 'Sem título'}*\n`;
@@ -18070,13 +18074,12 @@ function pjGenerateDailyReport() {
       if (t.dueTime) m += `   🕐 ${t.dueTime}\n`;
       if (i < todayT.length - 1) m += `\n`;
     });
-    m += `\n${SEP}\n\n`;
+    m += `\n`;
   }
 
   if (!overdue.length && !todayT.length) {
     m += `🎉 *Tudo em dia!*\n\n`;
-    m += `Sem tarefas atrasadas nem agendadas para hoje.\nAproveita o dia! ✨\n\n`;
-    m += `${SEP}\n\n`;
+    m += `Sem tarefas atrasadas nem agendadas pra hoje.\nAproveita o dia! ✨\n\n`;
   }
 
   m += `_Sistema Fogo & Gestão_`;
@@ -18642,6 +18645,7 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
 const PJL_ICO = {
   plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
   right: '<path d="m9 18 6-6-6-6"/>',
+  prev: '<path d="m15 18-6-6 6-6"/>',
   left: '<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
   list: '<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
   kanban: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/>',
@@ -18808,7 +18812,7 @@ function pjOpenFiltersSheet() {
       </div>
     </div>` : '';
   const html = `
-    <h3 class="pj-filter-sheet-title">Filtros</h3>
+    <div class="pj-sheet-head"><h3 class="pj-filter-sheet-title">Filtros</h3><button type="button" class="pj-sheet-x" onclick="pjCloseFormModal()" title="Fechar" aria-label="Fechar">${fgIco('x', 20)}</button></div>
     ${viewRow}
     <div class="pj-filter-sheet-list">
       ${row('user','Responsável', assigneeLabel, "pjFilterPopAssigneeFromSheet()")}
@@ -18825,7 +18829,7 @@ function pjOpenFiltersSheet() {
     </div>
     <div class="pj-form-actions">
       <button class="pj-btn pj-btn-secondary" onclick="pjClearFilter();pjCloseFormModal()">Limpar tudo</button>
-      <button class="pj-btn pj-btn-primary" onclick="pjCloseFormModal()">Fechar</button>
+      <button class="pj-btn pj-btn-primary" onclick="pjCloseFormModal()">Pronto</button>
     </div>`;
   pjOpenFormModal(html);
 }
@@ -19595,7 +19599,7 @@ function pjBuildWorkload() {
   const maxByUser = Math.max(1, ...members.map(m => openTasks.filter(t => (t.assignees||[]).includes(m.uid)).length));
 
   let h = `<div class="pj-view-header">
-    <div class="pj-view-title">Workload da semana</div>
+    <div class="pj-view-title">Carga da semana</div>
     <div class="pj-view-header-meta">${totalCount.toLocaleString('pt-BR')} ${totalCount===1?'tarefa aberta':'tarefas abertas'}</div>
   </div>
   <div class="pj-view-body pj-view-body-sm">
@@ -20207,7 +20211,7 @@ function pjBuildTimeline() {
   pjVisibleTasks().forEach(t => { if (t.dueDate) (tasksByDay[t.dueDate] = tasksByDay[t.dueDate]||[]).push(t); });
 
   let h = `<div class="pj-view-header">
-    <div class="pj-view-title">Timeline</div>
+    <div class="pj-view-title">Linha do tempo</div>
     <div style="margin-left:auto;font-size:12px;color:var(--text3);">${start.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}</div>
   </div>
   <div class="pj-view-body" style="padding:14px;">
@@ -20302,15 +20306,16 @@ function pjBuildKanban(listId, statuses, tasks) {
           <div class="pj-card-top">
             ${prio}
             <div class="pj-card-title">${escHtml(t.title||'(sem título)')}</div>
-            ${recur}
           </div>
-          ${tagsHtml || staleHtml ? `<div class="pj-card-tags">${tagsHtml}${staleHtml}</div>` : ''}
+          ${tagsHtml ? `<div class="pj-card-tags">${tagsHtml}</div>` : ''}
           ${clientHtml ? `<div class="pj-card-client-wrap">${clientHtml}</div>` : ''}
           <div class="pj-card-footer">
-            ${prio ? `<span class="pj-priority ${t.priority} pj-card-prio-pill">${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}</span>` : ''}
             ${due ? `<span class="pj-task-due ${due.cls}" title="${escHtml(dueLabelFull||'')}"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="margin-right:3px;vertical-align:-1px"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6h12M5 1v3M11 1v3"/></svg>${dueLabelFull}</span>` : ''}
+            ${prio ? `<span class="pj-priority ${t.priority} pj-card-prio-pill">${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}</span>` : ''}
             ${trackingHtml}
+            ${staleHtml}
             ${attachCount ? `<span class="pj-card-meta-pill" title="Anexos">${pjlIco('clip', 12)}${attachCount}</span>` : ''}
+            ${recur}
             <span style="flex:1"></span>
             <div class="pj-task-assignees">
               ${assigneeHtml}
@@ -20320,7 +20325,7 @@ function pjBuildKanban(listId, statuses, tasks) {
         </div>`;
     });
     h += `</div>
-      <div class="pj-col-add"><button class="pj-col-add-btn" onclick="pjQuickCreateTask('${listId}','${st.id}')">${pjlIco('plus', 16)}Adicionar</button></div>
+      <div class="pj-col-add"><button class="pj-col-add-btn" onclick="pjQuickCreateTask('${listId}','${st.id}')">${pjlIco('plus', 16)}Adicionar tarefa</button></div>
     </div>`;
   });
   return h + '</div>';
@@ -20564,12 +20569,13 @@ function pjTaskRowHtml(t) {
       ${done?'✓':''}
     </div>
     <div class="pj-task-title-cell">
-      <div class="pj-task-title-text ${done?'done':''}">${escHtml(t.title||'(sem título)')} ${recurBadge}</div>
+      <div class="pj-task-title-text ${done?'done':''}">${escHtml(t.title||'(sem título)')}</div>
     </div>
     <div class="pj-task-row-meta">
       ${clientPill}
       ${t.priority&&t.priority!=='low'?`<span class="pj-priority ${t.priority}">${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}</span>`:''}
       ${dueLabel?`<span class="pj-task-due ${due.cls}" title="Vencimento">${escHtml(dueLabel)}</span>`:''}
+      ${recurBadge}
       <button type="button" class="pj-status-dot" style="--c:${st.color}" onclick="event.stopPropagation();pjOpenStatusMenu(event,'${t.id}')" title="${escHtml(st.name)}: toque pra trocar"></button>
       <button type="button" class="pj-task-row-status-pill" style="--c:${st.color}" onclick="event.stopPropagation();pjOpenStatusMenu(event,'${t.id}')" title="${escHtml(st.name)}: toque pra trocar">
         <span class="pj-task-row-status-dot"></span><span class="pj-task-row-status-label">${escHtml(st.name)}</span>
@@ -21396,17 +21402,7 @@ function pjRecentActivity(limit = 6, uidFilter) {
   return items.slice(0, limit);
 }
 
-function pjRelativeTime(ts) {
-  const diff = Date.now() - ts;
-  const s = Math.floor(diff/1000);
-  if (s < 60) return 'agora';
-  const m = Math.floor(s/60);
-  if (m < 60) return `há ${m}min`;
-  const h = Math.floor(m/60);
-  if (h < 24) return `há ${h}h`;
-  const d = Math.floor(h/24);
-  return `há ${d}d`;
-}
+function pjRelativeTime(ts) { return pjNotifTime(ts); } // mesma escrita do sino em toda tela
 
 // ── Quick-add FAB ──
 // Helpers pra "última lista usada" — persistido em localStorage
@@ -21460,6 +21456,7 @@ function pjOpenFabModal() {
         `<option value="${s.id}" ${s.id === preSpace ? 'selected' : ''}>${escHtml(s.name)}</option>`
       ).join('');
     }
+    spaceSel.value = spaceSel.value; // o botão do fx-select só se atualiza pelo .value (innerHTML novo não avisa)
   }
   pjFabRefreshListOptions();
   // Pré-seleciona última lista usada (se ainda existe)
@@ -21479,13 +21476,15 @@ function pjFabRefreshListOptions() {
   const listSel  = document.getElementById('pjFabListSelect');
   if (!spaceSel || !listSel) return;
   const spaceId = spaceSel.value;
+  // o botão do fx-select só se atualiza pelo .value (innerHTML novo não avisa)
+  const put = (h) => { listSel.innerHTML = h; listSel.value = listSel.value; };
   if (!spaceId) {
-    listSel.innerHTML = '<option value="">Selecione uma pasta primeiro</option>';
+    put('<option value="">Selecione uma pasta primeiro</option>');
     return;
   }
   const lists = pjLists.filter(l => l.spaceId === spaceId);
   if (!lists.length) {
-    listSel.innerHTML = '<option value="">Sem listas nessa pasta</option>';
+    put('<option value="">Sem listas nessa pasta</option>');
     return;
   }
   // Agrupa por folder pro select ficar mais legível
@@ -21513,7 +21512,7 @@ function pjFabRefreshListOptions() {
     });
     html += `</optgroup>`;
   });
-  listSel.innerHTML = html;
+  put(html);
 }
 function pjCloseFabModal() {
   try { if (typeof pjVoiceStop === 'function') pjVoiceStop(); } catch(_) {}
@@ -23077,11 +23076,11 @@ function pjBuildGantt() {
     });
   });
 
-  if (!rowsHtml) return `<div class="pj-view-header"><div class="pj-view-title">📊 Gantt</div></div>
+  if (!rowsHtml) return `<div class="pj-view-header"><div class="pj-view-title">Gantt</div></div>
     <div class="pj-view-body" style="padding:30px;color:var(--text3);">Adicione datas de vencimento às tarefas para vê-las aqui.</div>`;
 
   return `<div class="pj-view-header">
-    <div class="pj-view-title">📊 Gantt</div>
+    <div class="pj-view-title">Gantt</div>
     <div style="margin-left:auto;font-size:12px;color:var(--text3);">${tasks.length} tarefa${tasks.length!==1?'s':''} · hoje marcado em azul</div>
   </div>
   <div class="pj-view-body" style="padding:0;overflow:auto;">
@@ -24121,7 +24120,7 @@ function pjBuildDigest() {
   weekEnd.setDate(weekStart.getDate() + 7);
 
   const fmtDate = d => d.toLocaleDateString('pt-BR', { day:'2-digit', month:'short' });
-  const rangeLabel = `${fmtDate(weekStart)} – ${fmtDate(new Date(weekEnd.getTime()-1))}`;
+  const rangeLabel = `${fmtDate(weekStart)} a ${fmtDate(new Date(weekEnd.getTime()-1))}`;
 
   // Tasks completed this week
   const allTasks = pjVisibleTasks(true);
@@ -24239,12 +24238,12 @@ function pjBuildDigest() {
       </div>`;
     }).join('');
 
-  const prevBtn = `<button class="pj-filter-btn" onclick="sessionStorage.setItem('pj_digest_week_offset','${weekOffset-1}');pjRenderMain();">◀ Semana anterior</button>`;
-  const nextBtn = weekOffset < 0 ? `<button class="pj-filter-btn" onclick="sessionStorage.setItem('pj_digest_week_offset','${weekOffset+1}');pjRenderMain();">Próxima ▶</button>` : '';
+  const prevBtn = `<button class="pj-filter-btn" onclick="sessionStorage.setItem('pj_digest_week_offset','${weekOffset-1}');pjRenderMain();">${pjlIco('prev',16)}Semana anterior</button>`;
+  const nextBtn = weekOffset < 0 ? `<button class="pj-filter-btn" onclick="sessionStorage.setItem('pj_digest_week_offset','${weekOffset+1}');pjRenderMain();">Próxima${pjlIco('right',16)}</button>` : '';
   const isCurrentWeek = weekOffset === 0;
 
   return `<div class="pj-view-header">
-    <div class="pj-view-title">📋 Digest Semanal</div>
+    <div class="pj-view-title">Resumo semanal</div>
     <div class="pj-digest-nav">
       ${prevBtn}
       <span class="pj-digest-range">${rangeLabel}${isCurrentWeek?' · esta semana':''}</span>
@@ -24281,22 +24280,22 @@ function pjBuildDigest() {
       </div>
       <!-- Top lists -->
       <div style="flex:1;min-width:220px;">
-        <div class="pj-digest-section-title">Top listas</div>
-        ${topLists || `<div style="color:var(--text3);font-size:13px;padding:16px 0;">—</div>`}
+        <div class="pj-digest-section-title">Listas que mais entregaram</div>
+        <div class="pj-digest-box">${topLists || `<div style="color:var(--text3);font-size:13px;padding:16px 0;">Nenhuma lista com tarefa concluída.</div>`}</div>
         ${dueThisWeek.length ? `
         <div class="pj-digest-section-title" style="margin-top:24px;">Vencem esta semana</div>
-        ${dueThisWeek.map(t=>{
+        <div class="pj-digest-box">${dueThisWeek.map(t=>{
           const done = pjIsDone(t);
           const d = new Date(t.dueDate);
           const overdue = !done && d < now;
           return `<div class="pj-digest-task-row${done?' done':''}">
-            <span style="font-size:11px;${overdue?'color:#ef4444;':''}">${overdue?'⚠':'📅'}</span>
+            <span class="pj-digest-due-ic">${fgIco('calendar',14)}</span>
             <div style="flex:1;min-width:0;">
               <div class="pj-digest-task-title${done?' pj-done-text':''}">${escHtml(t.title||'')}</div>
-              <div class="pj-digest-task-list-name${overdue?' overdue':''}">${d.toLocaleDateString('pt-BR')}${done?' · concluída':overdue?' · atrasada':''}</div>
+              <div class="pj-digest-task-list-name">${d.toLocaleDateString('pt-BR')}${done?' · concluída':''}${overdue?' <span class="pj-digest-late"><i class="pj-dot r"></i>atrasada</span>':''}</div>
             </div>
           </div>`;
-        }).join('')}` : ''}
+        }).join('')}</div>` : ''}
       </div>
     </div>
   </div>`;
@@ -24469,11 +24468,11 @@ function pjBuildIntegracoes() {
         <div style="font-size:13px;font-weight:600;">${ev.label}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:2px;">${ev.desc}</div>
       </div>
-      <input class="pj-integ-input" placeholder="https://n8n.exemplo.com/webhook/…"
+      <input class="pj-integ-input" placeholder="https://n8n.exemplo.com/webhook/uuid"
         value="${escHtml(val)}"
         onchange="pjSetWebhookUrl('${ev.id}',this.value)"
         style="${useGlobal?'opacity:.4;pointer-events:none;':''}">
-      ${!useGlobal && val ? `<button class="pj-filter-btn" onclick="pjTestWebhook('${ev.id}')">▶ Testar</button>` : ''}
+      ${!useGlobal && val ? `<button class="pj-filter-btn" onclick="pjTestWebhook('${ev.id}')">Testar</button>` : ''}
     </div>`;
   }).join('');
 
@@ -24489,27 +24488,27 @@ function pjBuildIntegracoes() {
   }).join('') : `<div class="pj-integ-log-empty">Nenhum disparo nesta sessão.</div>`;
 
   const queueStatus = _pjQueueUnsub
-    ? `<span class="pj-queue-status-ok">● Conectado</span>`
-    : `<span class="pj-queue-status-off">○ Não iniciado</span>`;
+    ? `<span class="pj-queue-status-ok"><i class="pj-dot g"></i>Conectado</span>`
+    : `<span class="pj-queue-status-off"><i class="pj-dot"></i>Não iniciado</span>`;
 
   const globalAppUrl = (window._appConfig?.n8n_global_url || '').trim();
   const globalNotice = `<div class="pj-integ-card pj-integ-notice">
     <div class="pj-integ-notice-inner">
-      <div class="pj-integ-notice-icon">⚙️</div>
+      <div class="pj-integ-notice-icon">${fgIco('sliders',18)}</div>
       <div class="pj-integ-notice-body">
         <div class="pj-integ-notice-title">Configuração global do app</div>
         <div class="pj-integ-notice-sub">
           ${globalAppUrl
             ? `URL n8n global: <code>${escHtml(globalAppUrl.slice(0,50))}${globalAppUrl.length>50?'…':''}</code> · Os eventos abaixo são <strong>overrides</strong> deste fallback.`
-            : `Nenhuma URL global configurada. Use abas <strong>⚙️ no cabeçalho → Integrações</strong> para definir uma URL padrão para todos os módulos.`}
+            : `Nenhuma URL global configurada. Defina uma URL padrão para todos os módulos em <strong>Ajustes, Integrações</strong>.`}
         </div>
       </div>
-      <button class="pj-filter-btn" onclick="openAppSettings(); setTimeout(()=>appSettingsTab('integ'),50);">Abrir ⚙️</button>
+      <button class="pj-filter-btn" onclick="openAppSettings(); setTimeout(()=>appSettingsTab('integ'),50);">Abrir ajustes</button>
     </div>
   </div>`;
 
   return `<div class="pj-view-header">
-    <div class="pj-view-title">🔗 Integrações de Projetos</div>
+    <div class="pj-view-title">Integrações</div>
   </div>
   <div class="pj-view-body">
     ${globalNotice}
@@ -24523,7 +24522,7 @@ function pjBuildIntegracoes() {
           placeholder="https://n8n.exemplo.com/webhook/uuid"
           value="${escHtml(urls['*']||'')}"
           onchange="pjSetWebhookUrl('*',this.value)">
-        ${urls['*'] ? `<button class="pj-filter-btn" onclick="pjTestWebhook('*')">▶ Testar</button>` : ''}
+        ${urls['*'] ? `<button class="pj-filter-btn" onclick="pjTestWebhook('*')">Testar</button>` : ''}
       </div>
       <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;cursor:pointer;">
         <input type="checkbox" ${useGlobal?'checked':''} onchange="pjSetWebhookGlobal(this.checked)">
@@ -24539,7 +24538,7 @@ function pjBuildIntegracoes() {
 
     <!-- Incoming queue -->
     <div class="pj-integ-card">
-      <div class="pj-integ-card-title">Entrada — n8n → sistema</div>
+      <div class="pj-integ-card-title">Entrada: do n8n para o sistema</div>
       <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">
         O n8n pode criar/atualizar tarefas e adicionar comentários escrevendo documentos na coleção <code>pj_queue</code> do Firestore com <code>processed: false</code>.<br><br>
         <b>Ações disponíveis:</b>
@@ -24581,7 +24580,7 @@ function pjBuildIntegracoes() {
       </div>
       <div style="margin-top:14px;display:flex;align-items:center;gap:12px;">
         <span style="font-size:12px;">Listener: ${queueStatus}</span>
-        ${!_pjQueueUnsub ? `<button class="pj-filter-btn" onclick="pjStartQueueListener();pjRenderMain()">▶ Iniciar listener</button>` : ''}
+        ${!_pjQueueUnsub ? `<button class="pj-filter-btn" onclick="pjStartQueueListener();pjRenderMain()">Iniciar listener</button>` : ''}
       </div>
     </div>
 
@@ -29838,13 +29837,7 @@ function pjDueCls(dateStr, dueTime) {
   if (diff <= 7)  return {cls:'future', label:`em ${diff}d`};
   return {cls:'future', label: dueLocal.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})};
 }
-function pjRelTime(date) {
-  const diff = Date.now() - date.getTime();
-  if (diff < 60000) return 'agora';
-  if (diff < 3600000) return Math.floor(diff/60000)+'min atrás';
-  if (diff < 86400000) return Math.floor(diff/3600000)+'h atrás';
-  return Math.floor(diff/86400000)+'d atrás';
-}
+function pjRelTime(date) { return pjNotifTime(date.getTime()); }
 
 // ── Tab init hook ────────────────────────────────────────
 // Auto-init when Projetos tab is activated (pjInit called from switchTab)
@@ -34795,7 +34788,7 @@ const POP = (() => {
   <div class="fg-more__bd" onclick="fgMoreClose()"></div>
   <div class="fg-more__pn" role="dialog" aria-modal="true">
     <div class="fg-more__gr"></div>
-    <h3>Mais</h3>
+    <div class="fg-more__hd"><h3>Mais</h3><button type="button" class="fg-more__x" onclick="fgMoreClose()" title="Fechar" aria-label="Fechar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
     <div class="fg-more__gd">
       <button data-tab="entrada" onclick="switchTab('entrada');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>Criar post</button>
       <button data-tab="lives" onclick="switchTab('lives');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>Ao vivo</button>
@@ -34897,7 +34890,7 @@ const POP = (() => {
           <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>
         </div>
         <h3>Nenhum contrato por aqui</h3>
-        <p>Sobe o PDF, escolhe quem vai assinar e manda o link. Selfie e IP ficam registrados pra ter validade jurídica.</p>
+        <p>Suba o PDF, escolha quem assina e mande o link.</p>
         <button class="btn-primary" onclick="ctrOpenCreate()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
           Criar primeiro contrato
@@ -35218,7 +35211,7 @@ const POP = (() => {
   };
   window.ctrSave = async function(){
     const u = cur(); if (!u) { showToast('warn','⚠️','Faça login'); return; }
-    if (!_ctrPdfData) { showToast('warn','⚠️','Sobe o PDF primeiro'); return; }
+    if (!_ctrPdfData) { showToast('warn','⚠️','Suba o PDF primeiro'); return; }
     const title = document.getElementById('ctrfTitle').value.trim();
     const clientName = document.getElementById('ctrfClientName').value.trim();
     const clientEmail = document.getElementById('ctrfClientEmail').value.trim();
@@ -36122,7 +36115,7 @@ window.fgHaptic = function(kind) {
       if (!pn) return;
       let startY = 0, currentY = 0, dragging = false;
       pn.addEventListener('touchstart', e => {
-        if (e.target.closest('.fg-more__b')) return; // não bloqueia click dos botões
+        if (e.target.closest('.fg-more__b, .fg-more__x')) return; // não bloqueia click dos botões
         startY = e.touches[0].clientY; currentY = startY; dragging = true;
         pn.style.transition = 'none';
       }, { passive: true });

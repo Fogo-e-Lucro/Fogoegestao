@@ -10,7 +10,6 @@ const PJ_DEFAULT_STATUSES = [
   { id: 'done',   name: 'Concluído',    bucket: 'closed'  },
 ];
 const PJ_ARCHIVE_DAYS = 30;
-const SEP = '━━━━━━━━━━━━━━━━━━';
 const DOWS   = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
 const MONTHS = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const PRIO_ORDER = { urgent: 0, high: 1, normal: 2, low: 3 };
@@ -144,12 +143,12 @@ export function buildDailyReportText({ tasks, lists, members, now = new Date() }
 
   let m = '';
   m += `🔥 *FOGO & GESTÃO*\n`;
-  m += `📋 _Relatório Diário_\n`;
+  m += `📋 _Relatório do dia_\n`;
   m += `📅 ${dateLabel}\n`;
-  m += `\n${SEP}\n\n`;
+  m += `\n`;
 
   if (overdue.length) {
-    m += `🚨 *ATRASADAS* — ${overdue.length} ${overdue.length === 1 ? 'tarefa' : 'tarefas'}\n\n`;
+    m += `🚨 *Atrasadas*: ${overdue.length} ${overdue.length === 1 ? 'tarefa' : 'tarefas'}\n\n`;
     overdue.forEach((t, i) => {
       const cli = pjResolveTaskClient(t, lists);
       m += `🔴 *${t.title || 'Sem título'}*\n`;
@@ -158,11 +157,11 @@ export function buildDailyReportText({ tasks, lists, members, now = new Date() }
       m += `   ⏰ Venceu *${pjDaysLateLabel(t.dueDate, now)}*\n`;
       if (i < overdue.length - 1) m += `\n`;
     });
-    m += `\n${SEP}\n\n`;
+    m += `\n`;
   }
 
   if (todayT.length) {
-    m += `📋 *HOJE* — ${todayT.length} ${todayT.length === 1 ? 'tarefa' : 'tarefas'}\n\n`;
+    m += `📋 *Hoje*: ${todayT.length} ${todayT.length === 1 ? 'tarefa' : 'tarefas'}\n\n`;
     todayT.forEach((t, i) => {
       const cli = pjResolveTaskClient(t, lists);
       m += `${pjPriorityEmoji(t.priority)} *${t.title || 'Sem título'}*\n`;
@@ -171,13 +170,12 @@ export function buildDailyReportText({ tasks, lists, members, now = new Date() }
       if (t.dueTime) m += `   🕐 ${t.dueTime}\n`;
       if (i < todayT.length - 1) m += `\n`;
     });
-    m += `\n${SEP}\n\n`;
+    m += `\n`;
   }
 
   if (!overdue.length && !todayT.length) {
     m += `🎉 *Tudo em dia!*\n\n`;
-    m += `Sem tarefas atrasadas nem agendadas para hoje.\nAproveita o dia! ✨\n\n`;
-    m += `${SEP}\n\n`;
+    m += `Sem tarefas atrasadas nem agendadas pra hoje.\nAproveita o dia! ✨\n\n`;
   }
 
   m += `_Sistema Fogo & Gestão_`;

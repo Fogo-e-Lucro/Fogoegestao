@@ -15732,14 +15732,13 @@ body:has(#tab-social.active) #pjFab { display: none !important; }
 
 /* FAB some quando modal/drawer/painel aberto */
 body:has(.modal-overlay.open, .pj-modal-overlay.open, .pj-fab-modal-overlay.open, .drawer.open, .day-panel.open, .confirm-dialog.open) .fab,
-body:has(.modal-overlay.open, .pj-modal-overlay.open, .pj-fab-modal-overlay.open, .drawer.open, .day-panel.open, .confirm-dialog.open) .pj-fab,
-body:has(.modal-overlay.open, .pj-modal-overlay.open, .pj-fab-modal-overlay.open, .drawer.open, .day-panel.open, .confirm-dialog.open) [class*="fab-"] {
+body:has(.modal-overlay.open, .pj-modal-overlay.open, .pj-fab-modal-overlay.open, .drawer.open, .day-panel.open, .confirm-dialog.open) .pj-fab {
   display: none !important;
 }
 
 /* Safe area pro FAB e elementos fixed bottom */
 @supports (padding: env(safe-area-inset-bottom)) {
-  .fab, .pj-fab, [class*="fab-"] { bottom: calc(24px + env(safe-area-inset-bottom)); }
+  .fab, .pj-fab { bottom: calc(24px + env(safe-area-inset-bottom)); }
 }
 
 /* ============================================================
@@ -15777,7 +15776,7 @@ body:has(.modal-overlay.open, .pj-modal-overlay.open, .pj-fab-modal-overlay.open
   body { padding-bottom: calc(66px + env(safe-area-inset-bottom, 0px)) !important; }
 
   /* FAB sobe pra não ficar embaixo do nav */
-  .fab, .pj-fab, [class*="fab-"] { bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important; }
+  .fab, .pj-fab { bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important; }
 
   /* Header compacto no mobile */
   .app-topbar, .top-bar, header.topbar, .app-header { padding: 8px 12px !important; min-height: 56px !important; }
@@ -16786,7 +16785,7 @@ body.at-projetos .app-header-right { display: none !important; }
   /* ── Botões primários mais confortáveis (touch target 44px+) ── */
   .btn-primary, .pj-btn-primary, #tab-lives .btn-primary {
     min-height: 46px;
-    border-radius: 14px !important;
+    border-radius: 12px !important; /* igual aos outros botões principais do app */
     font-size: 15px;
     padding-left: 20px; padding-right: 20px;
   }
@@ -17914,6 +17913,12 @@ body.ctr-sign-mode > *:not(#ctrSignPage):not(#ctrModalOverlay):not(script):not(s
 body:has(.pj-sidebar.open) #pjFab { display: none !important; }
 /* busca da gaveta: atalho de teclado não existe no toque */
 @media (pointer: coarse) { .pj-search-trigger > span:last-child { display: none; } }
+/* cabeçalho das folhas e janelas: título à esquerda, X à direita */
+.pj-sheet-head, .fg-more__hd { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pj-sheet-head { margin: 0 0 12px; }
+.pj-sheet-head h3 { margin: 0 !important; }
+.pj-sheet-x, .fg-more__x { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 10px; background: none; color: var(--text2); cursor: pointer; }
+.pj-sheet-x:hover { background: var(--bg2); }
 
 @media (max-width: 900px) {
   /* gaveta fechada: a sombra vazava na borda esquerda de Tarefas */
@@ -17977,6 +17982,11 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   /* POPs: rótulo "ATUALIZADOS" quebrava o 3º número */
   .pop-home__stat { padding: 12px; }
   .pop-home__stat span { font-size: 11px; letter-spacing: 0; text-transform: none; }
+  /* folha Mais: X de 44 no canto, como nas outras folhas */
+  body .fg-more__pn .fg-more__hd { margin: 0 0 12px 4px; }
+  body .fg-more__pn .fg-more__hd h3 { margin: 0 !important; }
+  body .fg-more__x { width: 44px; height: 44px; border-radius: 12px; }
+  body .fg-more__x:active { background: var(--bg2); }
   /* alvos de toque de 24 a 36px */
   #tab-visualizar .cal-nav-btn { width: 44px; height: 44px; }
   .ed-new-post-btn { height: 44px; }
@@ -18032,9 +18042,12 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
     --text3: #6b7280;
     --ink-press: #2c3037;
   }
+  /* Modo Noturno: escolhido e ação ficam na cor do tema (roxo), como nas telas que guardam o visual antigo no noturno.
+     Sem isso, Tarefas e as telas do Mais tinham botão branco e o Calendário e o Publipost, roxo */
+  html.fg-noturno body { --ink: var(--accent); --on-ink: #fff; --ink-press: var(--accent2); }
   /* o brilho roxo desses botões é cor fixa e ficava em volta do grafite; Novo Cliente (roxo) e Nova live (azul) eram degradê fixo */
-  html:not(.fg-noturno) body :is(.btn-primary, .ed-new-post-btn, .ed-day-add, .estudio-bar-btn.primary, .cal-view-btn.active) { box-shadow: none !important; }
-  html:not(.fg-noturno) body :is(.bd-add-btn, #tab-lives .btn-primary) { background: var(--accent); }
+  body :is(.btn-primary, .ed-new-post-btn, .ed-day-add, .estudio-bar-btn.primary, .cal-view-btn.active) { box-shadow: none !important; }
+  body :is(.bd-add-btn, #tab-lives .btn-primary) { background: var(--accent); }
   body.at-projetos {
     --danger: #c9353a; --warning: #d97706; --success: #16a34a;
     padding-bottom: 0 !important;
@@ -18538,6 +18551,10 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
    Fora da media: só a base dos ícones novos (o emoji dos cartões de post saiu também no computador). */
 .badge .post-tipo-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; margin-right: 2px; flex-shrink: 0; }
 :is(#tab-visualizar, #dayPanel) :is(.badge, .post-link, .btn-secondary, .btn-danger, .empty-state-cta) svg { flex-shrink: 0; }
+/* título "Calendário" no computador: o degradê roxo antigo aparecia no "ário" */
+.ed-hero-title { background: none; -webkit-text-fill-color: currentColor; }
+/* lâmpada dos botões de IA do Criar post */
+.estudio-ai > svg { width: 13px; height: 13px; flex-shrink: 0; }
 #tab-visualizar .copy-btn svg { width: 14px; height: 14px; }
 .ed-client-avatar-all svg { display: block; }
 #dayPanel .day-panel-new { width: 100%; justify-content: center; margin-top: 4px; }
@@ -18647,7 +18664,8 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   html:not(.fg-noturno) body.at-visualizar .ed-day:not(.other-month):active { background: var(--bg2); }
   html:not(.fg-noturno) body.at-visualizar .ed-day.drag-over { background: var(--bg2); border-color: var(--ink) !important; }
   html:not(.fg-noturno) body.at-visualizar .ed-day-num { color: var(--text); }
-  html:not(.fg-noturno) body.at-visualizar .ed-day.today .ed-day-num { background: var(--ink); color: var(--on-ink); font-weight: 700; }
+  /* hoje = anel grafite (grafite cheio quer dizer escolhido), igual ao Workload e ao seletor de data */
+  html:not(.fg-noturno) body.at-visualizar .ed-day.today .ed-day-num { background: none; box-shadow: inset 0 0 0 1.5px var(--ink); color: var(--text); font-weight: 700; }
   html:not(.fg-noturno) body.at-visualizar .ed-mini,
   html:not(.fg-noturno) body.at-visualizar .ed-mini:hover { background: none; }
   html:not(.fg-noturno) body.at-visualizar .ed-mini-avatar { box-shadow: 0 0 0 1px var(--border); }
@@ -18674,7 +18692,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   html:not(.fg-noturno) body.at-visualizar :is(.week-day-header, .week-day-posts):active { background: var(--bg2); }
   html:not(.fg-noturno) body.at-visualizar .week-day-name { color: var(--text3); }
   html:not(.fg-noturno) body.at-visualizar .week-day-num { color: var(--text); }
-  html:not(.fg-noturno) body.at-visualizar .week-day-header.today .week-day-num { background: var(--ink); color: var(--on-ink); }
+  html:not(.fg-noturno) body.at-visualizar .week-day-header.today .week-day-num { background: none; box-shadow: inset 0 0 0 1.5px var(--ink); color: var(--text); }
   html:not(.fg-noturno) body.at-visualizar .week-post-pill { background: none; color: var(--text) !important; opacity: 1; }
 
   /* 9. Vazio (dia sem post, no Dia e no painel do dia) */
@@ -18762,7 +18780,6 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) :is(.post-link, .post-link:hover, .post-card a[href]) { color: var(--text) !important; }
   html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-footer :is(.btn-secondary, .btn-danger),
   html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-footer :is(.btn-secondary, .btn-danger):hover { background: var(--card); border-color: var(--border); color: var(--text); }
-  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-footer .btn-danger { color: var(--fg-red) !important; }
   html:not(.fg-noturno) body.at-visualizar #tab-visualizar #postsBlock .post-card { border-color: var(--sep); }
 
   /* 12. Painel do dia: folha de baixo branca, X de 44, Criar post neste dia */
@@ -18925,6 +18942,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   /* Criar post: setas do mini calendário em traço; IA com retorno (girando e caixa de resposta) */
   body.at-entrada .estudio-mini-cal-nav svg { display: block; }
   body.at-entrada button.estudio-ai { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  body.at-entrada button.estudio-ai > svg { width: 16px; height: 16px; color: var(--text2); }
   body.at-entrada button.estudio-ai:disabled { opacity: 1; }
   body.at-entrada .ai-result-box { margin: 0; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 15px; line-height: 1.5; box-shadow: none; }
   body.at-entrada .ai-rendered .ai-section { margin: 0 0 12px; padding: 0; border: 0; border-radius: 0; background: none; }
@@ -19064,7 +19082,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-social .sp2-editor-bar { flex-direction: column-reverse; align-items: stretch; gap: 6px; padding: 4px 12px 12px; }
   body.at-social .sp2-counter { align-self: flex-end; padding: 0 4px; font-size: 12px; }
   body.at-social .sp2-chips { flex-wrap: nowrap; gap: 6px; }
-  body.at-social .sp2-chip { flex: 1 1 auto; justify-content: center; min-height: 44px; padding: 0 10px; gap: 6px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  body.at-social .sp2-chip { flex: 1 1 auto; justify-content: center; min-height: 44px; padding: 0 10px; gap: 6px; border-radius: 12px; font-size: 13px; font-weight: 600; white-space: nowrap; }
   body.at-social .sp2-chip svg { width: 16px; height: 16px; stroke-width: 1.75; }
   html:not(.fg-noturno) body.at-social :is(.sp2-chip, .sp2-chip-primary) { background: var(--card); border-color: var(--border); color: var(--text); }
   html:not(.fg-noturno) body.at-social .sp2-chip svg { color: var(--text2); }
@@ -19219,7 +19237,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   html:not(.fg-noturno) body.at-lives #tab-lives .studio-empty > svg { background: var(--card); border: 1px solid var(--border); color: var(--text); }
   body.at-lives .studio-empty h3 { font-size: 16px; font-weight: 600; }
   body.at-lives .studio-empty p { max-width: 280px; margin-bottom: 8px; font-size: 14px; line-height: 20px; color: var(--text2); }
-  body.at-lives #tab-lives .studio-empty .btn-primary--lg { max-width: none; padding: 0 20px; font-size: 15px; }
+  body.at-lives #tab-lives .studio-empty .btn-primary--lg { width: auto; max-width: none; align-self: center; padding: 0 20px; font-size: 15px; }
   /* cartão da live */
   body.at-lives .studio-grid { gap: 12px; }
   body.at-lives .live-card { border-radius: 16px; box-shadow: var(--sh-card); transform: none !important; }
@@ -19406,6 +19424,10 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-pop .pop-home__text { max-width: 300px; margin-bottom: 16px; font-size: 14px; line-height: 20px; }
   body.at-pop .pop-home__cta:empty { display: none; }
   body.at-pop .pop-home__cta { margin-bottom: 8px; }
+  /* sem cadeira: o vazio fica num cartão, igual ao Ao vivo e ao Contratos */
+  body.at-pop .pop-home:has(#popHomeStats[style*="none"]) { padding: 32px 20px 24px; border: 1px solid var(--border); border-radius: 16px; background: var(--card); box-shadow: var(--sh-card); }
+  body.at-pop .pop-home:has(#popHomeStats[style*="none"]) .pop-home__title { font-size: 16px; }
+  body.at-pop .pop-home__cta .pop-btn--primary { min-height: 44px; border-radius: 12px; }
   body.at-pop .pop-home__stats { gap: 8px; margin: 16px 0; }
   body.at-pop .pop-home__stat { border-radius: 16px; box-shadow: var(--sh-card); }
   body.at-pop .pop-home__stat span { color: var(--text2); }
@@ -19456,6 +19478,11 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
 .ctr-link-row input { flex: 1 1 auto; min-width: 0; }
 /* bases neutras dos ícones de traço que entraram no lugar dos emoji (valem em qualquer tamanho) */
 .bd-add-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.gmb-sec-icon { display: none; }
+.mtr-empty--pick { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.mtr-empty--pick b { margin-top: 8px; font-size: 16px; font-weight: 600; color: var(--text); }
+.mtr-empty--pick > span:last-child { max-width: 300px; }
+.mtr-empty-ic { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 14px; background: var(--card); border: 1px solid var(--border); color: var(--text); }
 .bd-add-btn svg, .bd-action-btn svg, .bd-pin-note > svg { flex-shrink: 0; }
 .bd-action-btn { display: inline-flex; align-items: center; gap: 6px; }
 .bd-sec-ic { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--text2); }
@@ -19497,7 +19524,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   }
   body.at-contratos .ctr-empty-illust svg { width: 26px; height: 26px; stroke-width: 1.75; }
   body.at-contratos .ctr-empty h3 { font-size: 16px; font-weight: 600; line-height: 22px; }
-  body.at-contratos .ctr-empty p { max-width: 280px; margin: 0; font-size: 14px; line-height: 20px; color: var(--text2); }
+  body.at-contratos .ctr-empty p { max-width: 280px; margin: 0; font-size: 14px; line-height: 20px; color: var(--text2); text-wrap: balance; }
   body.at-contratos .ctr-empty .btn-primary { width: auto; margin-top: 8px; padding: 0 18px; }
   body.at-contratos .ctr-empty--slim { padding: 24px 16px; }
   /* filtro Total/Aguardando/Assinados: segmentado, escolhido em grafite */
@@ -19608,6 +19635,13 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
     border-radius: 12px; background: var(--fg-acao) !important; color: var(--on-ink);
     font-size: 15px; font-weight: 600; opacity: 1;
   }
+  /* Novo cliente vira botão de ícone de 44 ao lado da busca (a barra de largura toda pesava mais que a lista) */
+  body.at-base .bd-sidebar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-content: start; }
+  body.at-base .bd-sidebar > :not(.bd-search-wrap, .bd-list-actions) { grid-column: 1 / -1; }
+  body.at-base .bd-search-wrap { padding: 16px 0 12px 16px; }
+  body.at-base .bd-list-actions { padding: 16px 16px 12px 8px; }
+  body.at-base .bd-add-btn { width: 44px; height: 44px; padding: 0; font-size: 0; }
+  body.at-base .bd-add-btn svg { width: 20px; height: 20px; }
   body.at-base .bd-add-btn:active { background: var(--ink-press, var(--fg-acao)) !important; }
   body.at-base .bd-list {
     margin: 0 16px calc(24px + env(safe-area-inset-bottom, 0px)); padding: 0; overflow: hidden;
@@ -19762,6 +19796,11 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-gmb .gmb-connect-bar { align-items: flex-start; gap: 12px; }
   body.at-gmb .gmb-connect-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--card); color: var(--text2); }
   body.at-gmb .gmb-connect-icon svg { width: 16px; height: 16px; stroke-width: 1.75; }
+  /* todo cartão de seção abre com o quadradinho, como o "Perfil no Google" */
+  body.at-gmb .gmb-sec-icon { display: flex; border: 1px solid var(--border); }
+  body.at-gmb :is(.gmb-preanalise-header, .gmb-rank-header) { display: flex; align-items: flex-start; gap: 12px; }
+  /* a caixa do mapa só aparece quando o mapa existe (ou está carregando): antes era um bloco cinza vazio */
+  body.at-gmb .gmb-rank-map-wrap:not(:has(.gm-style, #gmbRankLoading[style*="flex"])) { display: none; }
   body.at-gmb .gmb-demo-badge { background: var(--card); border: 1px solid var(--border); color: var(--text2); text-transform: none; letter-spacing: 0; }
   body.at-gmb .gmb-loc-bar { gap: 8px; margin-bottom: 12px; }
   body.at-gmb .gmb-loc-select { flex: 1 1 100%; min-width: 0; padding-right: 36px; font-weight: 500; }
@@ -19839,11 +19878,13 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-metricas .mtr-hrow-top { position: relative; }
   body.at-metricas :is(.mtr-title-icon, .mtr-title, .mtr-subtitle) { display: none; }
   body.at-metricas .mtr-title-wrap { flex: 1 1 100%; min-height: 44px; padding-right: 52px; }
+  /* mesma pílula de status do Publipost e do Ao vivo: 32 de altura, 14/500 cinza; o toque continua com 44 */
   body.at-metricas .mtr-conn {
-    margin: 0; min-height: 44px; padding: 6px 14px; gap: 8px; border-radius: 999px;
-    background: var(--card); border-color: var(--border); color: var(--text2); font-size: 13px; line-height: 18px; white-space: normal;
+    position: relative; margin: 0; height: 32px; min-height: 0; padding: 0 12px; gap: 8px; border-radius: 999px;
+    background: var(--card); border-color: var(--border); color: var(--text2); font-size: 14px; font-weight: 500; line-height: 18px; white-space: nowrap;
   }
-  body.at-metricas .mtr-conn :is(#mtrConnTxt) { color: var(--text); }
+  body.at-metricas .mtr-conn::before { content: ''; position: absolute; inset: -6px; }
+  body.at-metricas .mtr-conn :is(#mtrConnTxt) { color: var(--text2); font-size: 14px; font-weight: 500; }
   body.at-metricas .mtr-conn-act { color: var(--text); font-weight: 600; }
   body.at-metricas .mtr-conn[data-state="on"] .mtr-conn-act { display: none; } /* a pílula inteira já conecta mais contas, e o seletor também tem a opção */
   body.at-metricas :is(.mtr-conn[data-state="off"], .mtr-conn[data-state="warn"]) { background: var(--card); border-color: var(--border); color: var(--text); }
@@ -19888,7 +19929,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-metricas .mtr-tool-btn.active { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
   body.at-metricas .mtr-tool-btn.active svg { color: currentColor; }
   body.at-metricas .mtr-empty {
-    padding: 32px 16px; font-size: 14px; line-height: 20px; color: var(--text2);
+    padding: 32px 20px; font-size: 14px; line-height: 20px; color: var(--text2);
     background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--sh-card);
   }
   /* painel: pílulas neutras com bolinha, cartões brancos, sem ícone de emoji nem faixa colorida */
@@ -20524,7 +20565,11 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
 .pj-filter-btn svg, .pj-col-add-btn svg, .pj-add-task-row svg, .pj-bc-back svg, .pj-bc-filter-reset svg,
 .pj-view-toggle button svg, .pj-card-meta-pill svg { flex-shrink: 0; vertical-align: -2px; }
 .pj-view-toggle button, .pj-col-add-btn, .pj-add-task-row, .pj-bc-back, .pj-bc-filter-reset { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-.pj-add-task-row { justify-content: flex-start; }
+.pj-add-task-row { display: flex; justify-content: flex-start; } /* no computador é a linha inteira (o inline-flex de cima encolhia pro texto) */
+.pj-space-chevron { display: inline-flex; }
+.pj-view-sub { margin-left: 6px; font-size: 12px; font-weight: 500; color: var(--text3); }
+.pj-digest-due-ic { display: inline-flex; flex-shrink: 0; color: var(--text3); }
+.pj-digest-late { display: inline-flex; align-items: center; gap: 4px; }
 .pj-card-recur, .pj-cs-lock { display: inline-flex; color: var(--text3); }
 .pj-filter-sheet-value, .pj-filter-sheet-icon { display: inline-flex; align-items: center; gap: 4px; }
 .pj-empty-ic svg { display: block; margin: 0 auto; }
@@ -20537,18 +20582,19 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
 
   /* 1. Cabeçalho das vistas deste grupo (Pergunte à IA, Digest, Integrações e Gantt ficam como estão):
         nome da vista em 17/600 no papel, sem fio nem brilho */
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-header {
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-header {
     min-height: 60px; padding: 8px 12px 8px 16px !important; gap: 8px !important;
     background: var(--bg) !important; border-bottom: 0 !important;
   }
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-header::after { content: none !important; }
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-title { font-size: 17px !important; font-weight: 600 !important; letter-spacing: -.01em; color: var(--text); }
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) :is(.pj-view-header-meta, .pj-view-header-sub) {
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-header::after { content: none !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-title { font-size: 17px !important; font-weight: 600 !important; letter-spacing: -.01em; color: var(--text); }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) :is(.pj-view-header-meta, .pj-view-header-sub) {
     margin-left: auto; padding: 0 !important; background: none !important; border: 0 !important;
     font-size: 13px !important; font-weight: 500 !important; color: var(--text3) !important; text-align: right; line-height: 18px;
   }
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body {
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-body {
     padding: 4px 16px calc(96px + env(safe-area-inset-bottom, 0px)) !important; background: var(--bg);
+    border-top: 1px solid var(--border); /* o cabeçalho fica parado: o fio marca onde o cartão some ao rolar, igual à barra do Criar post */
   }
 
   /* 2. Busca e Filtros numa linha só */
@@ -20743,15 +20789,15 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-projetos .pj-task-row .pj-task-assignees { display: flex !important; order: 1; flex: 0 0 auto; margin: -4px 0 -4px 4px; }
   body.at-projetos .pj-task-row .pj-task-assignees:empty { display: none !important; }
   /* Todas: as linhas soltas viram um cartão (primeira com cantos em cima, última embaixo) */
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body > .pj-task-row { border-left: 1px solid var(--border) !important; border-right: 1px solid var(--border) !important; }
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body > .pj-task-row:first-child { margin-top: 4px !important; border-top: 1px solid var(--border) !important; border-radius: 16px 16px 0 0 !important; }
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body > .pj-task-row:last-child { border-bottom-color: var(--border) !important; border-radius: 0 0 16px 16px !important; }
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body > .pj-task-row:only-child { border-radius: 16px !important; }
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-title .pj-dash-filter-chip {
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-body > .pj-task-row { border-left: 1px solid var(--border) !important; border-right: 1px solid var(--border) !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-body > .pj-task-row:first-child { margin-top: 4px !important; border-top: 1px solid var(--border) !important; border-radius: 16px 16px 0 0 !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-body > .pj-task-row:last-child { border-bottom-color: var(--border) !important; border-radius: 0 0 16px 16px !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-body > .pj-task-row:only-child { border-radius: 16px !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-title .pj-dash-filter-chip {
     display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 4px 0 12px !important; margin-left: 4px;
     border-radius: 999px !important; font-size: 13px !important; font-weight: 600 !important;
   }
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-title .pj-dash-filter-chip button { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 0; background: none; color: var(--text2); }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-title .pj-dash-filter-chip button { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 0; background: none; color: var(--text2); }
   /* Caixa de Entrada: cada grupo é um cartão com cabeçalho de 52 */
   body.at-projetos .pj-inbox-section {
     margin: 0 0 12px !important; overflow: hidden;
@@ -20835,11 +20881,11 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-projetos .pj-archived-row .pj-filter-btn { flex-shrink: 0; min-height: 44px; padding: 0 12px !important; font-size: 14px !important; font-weight: 600 !important; }
   body.at-projetos .pj-archived-row .pj-filter-btn svg { color: var(--text2); }
   /* cabeçalho com o número embaixo do título */
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-header:has(> .pj-view-header-sub) { flex-wrap: wrap !important; row-gap: 0 !important; padding-top: 10px !important; }
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-header > .pj-view-header-sub { flex: 0 0 100%; margin: 0 !important; text-align: left; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-header:has(> .pj-view-header-sub) { flex-wrap: wrap !important; row-gap: 0 !important; padding-top: 10px !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-header > .pj-view-header-sub { flex: 0 0 100%; margin: 0 !important; text-align: left; }
 
   /* 9. Workload: atividade num cartão que ocupa a largura; uma pessoa por cartão, dias sem caixinhas */
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body-sm { padding: 4px 16px calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-body-sm { padding: 4px 16px calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
   body.at-projetos .pj-activity-heatmap { margin: 4px 0 12px !important; padding: 16px !important; border-radius: 16px !important; box-shadow: var(--sh-card); }
   body.at-projetos .pj-heat-head { gap: 4px; margin-bottom: 12px; }
   body.at-projetos .pj-heat-title { font-size: 15px !important; font-weight: 600 !important; }
@@ -20877,7 +20923,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-projetos .pj-wl-day.today .pj-wl-day-label { color: var(--text) !important; font-weight: 700 !important; }
 
   /* 10. Por cliente: um cartão com uma linha por cliente; números em pílula neutra */
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body[style*="18px 22px"] { padding: 4px 16px calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-body[style*="18px 22px"] { padding: 4px 16px calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
   body.at-projetos .pj-bc-grid { display: block !important; overflow: hidden; background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--sh-card); }
   body.at-projetos .pj-bc-card {
     min-height: 68px; padding: 12px 8px 12px 16px !important; gap: 12px !important;
@@ -20964,7 +21010,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-projetos .pj-cs-td-final { padding: 10px 16px !important; }
 
   /* 12. Timeline: vira agenda; um cartão por dia com tarefa, todas as tarefas do dia, bolinha do status */
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body[style*="padding:14px"] { padding: 4px 16px calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-body[style*="padding:14px"] { padding: 4px 16px calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
   body.at-projetos .pj-cal-grid { display: flex !important; flex-direction: column; gap: 12px !important; overflow: visible !important; }
   body.at-projetos .pj-cal-head, body.at-projetos .pj-cal-cell:not(.has-tasks), body.at-projetos .pj-cal-more, body.at-projetos .pj-cal-date { display: none !important; }
   body.at-projetos .pj-cal-cell {
@@ -21101,12 +21147,12 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   }
 
   /* Caixa de entrada: Relatório do dia igual ao do painel (branco, ícone de traço) */
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-header .pj-wa-trigger-btn {
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-header .pj-wa-trigger-btn {
     flex-shrink: 0; min-height: 44px; padding: 0 14px !important; gap: 8px !important; border-radius: 12px !important;
     background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important;
     box-shadow: none !important; font-size: 14px !important; font-weight: 600 !important;
   }
-  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-header .pj-wa-trigger-btn svg { color: var(--text2); }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-gantt-label)) .pj-view-header .pj-wa-trigger-btn svg { color: var(--text2); }
 
   /* 16. Selecionar várias: o quadradinho só aparece no modo seleção (Filtros > Selecionar várias)
          e toma o lugar do concluir, sem dois alvos empilhados; tocar na linha marca ou desmarca */
@@ -21161,6 +21207,132 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-projetos .pj-space-actions { gap: 0 !important; }
   body.at-projetos .pj-space-actions .pj-icon-btn { min-width: 44px; min-height: 44px; }
   body.at-projetos .pj-space-row:hover .pj-space-chevron { display: none; } /* com as 5 ações de 44 não cabia; tocar na linha abre e fecha do mesmo jeito */
+
+  /* 23. Resumo semanal e Integrações: cartões brancos, título de seção sem caixa alta, uma coluna */
+  body.at-projetos .pj-view-header:has(> .pj-digest-nav) { flex-wrap: wrap !important; row-gap: 4px !important; }
+  body.at-projetos .pj-digest-nav { flex: 0 0 100%; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin: 0; }
+  body.at-projetos .pj-digest-range { order: -1; flex: 0 0 100%; padding: 0; background: none; border: 0; border-radius: 0; font-size: 13px; font-weight: 500; color: var(--text3); }
+  body.at-projetos .pj-digest-nav .pj-filter-btn { min-height: 44px; padding: 0 12px !important; font-size: 14px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-digest-nav .pj-filter-btn svg { color: var(--text2); }
+  body.at-projetos .pj-digest-kpis {
+    display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 !important; margin: 4px 0 4px !important; overflow: hidden;
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--sh-card);
+  }
+  body.at-projetos .pj-digest-kpi { min-width: 0 !important; padding: 12px 16px !important; text-align: left !important; background: none !important; border: 0 !important; border-radius: 0 !important; }
+  body.at-projetos .pj-digest-kpi:nth-child(even) { border-left: 1px solid var(--sep) !important; }
+  body.at-projetos .pj-digest-kpi:nth-child(n+3) { border-top: 1px solid var(--sep) !important; }
+  body.at-projetos .pj-digest-kpi-num { font-size: 22px !important; line-height: 26px !important; color: var(--text) !important; font-variant-numeric: tabular-nums; }
+  body.at-projetos .pj-digest-kpi-label { margin-top: 2px !important; font-size: 12px !important; color: var(--text2) !important; }
+  body.at-projetos .pj-digest-cols { flex-direction: column; flex-wrap: nowrap !important; gap: 0 !important; }
+  body.at-projetos .pj-digest-cols > div { flex: 0 0 auto !important; width: 100%; min-width: 0 !important; }
+  body.at-projetos .pj-digest-section-title { margin: 20px 0 8px !important; font-size: 13px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; color: var(--text2) !important; }
+  body.at-projetos .pj-digest-collab-filter { flex-wrap: nowrap !important; gap: 8px !important; margin: 0 -16px 12px !important; padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
+  body.at-projetos .pj-digest-collab-filter::-webkit-scrollbar { display: none; }
+  body.at-projetos .pj-digest-chip {
+    flex-shrink: 0; min-height: 44px; padding: 0 12px 0 8px !important; gap: 8px !important; border-radius: 999px !important; white-space: nowrap;
+    background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; font-size: 14px !important; font-weight: 500 !important;
+  }
+  body.at-projetos .pj-digest-chip:first-child { padding-left: 14px !important; }
+  body.at-projetos .pj-digest-chip.active { background: var(--ink) !important; border-color: var(--ink) !important; color: var(--on-ink) !important; font-weight: 600 !important; }
+  body.at-projetos .pj-digest-chip .pj-avatar { width: 28px !important; height: 28px !important; min-width: 28px !important; min-height: 28px !important; box-shadow: none !important; }
+  body.at-projetos .pj-digest-chip-count { padding: 0 7px !important; border-radius: 999px !important; line-height: 18px; background: var(--card) !important; border: 1px solid var(--border); color: var(--text2) !important; font-size: 12px !important; }
+  body.at-projetos .pj-digest-chip.active .pj-digest-chip-count { background: var(--on-ink) !important; border-color: var(--on-ink); color: var(--ink) !important; }
+  body.at-projetos :is(.pj-digest-member-card, .pj-digest-box) { overflow: hidden; margin: 0 0 12px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 16px !important; box-shadow: var(--sh-card); }
+  body.at-projetos .pj-digest-box > div:not([class]) { padding: 16px !important; }
+  body.at-projetos .pj-digest-member-header { min-height: 56px; padding: 8px 16px !important; border-bottom-color: var(--sep) !important; }
+  body.at-projetos .pj-digest-avatar { width: 36px !important; height: 36px !important; background: var(--card) !important; border: 1px solid var(--border); color: var(--text) !important; font-size: 14px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-digest-member-name { font-size: 15px !important; }
+  body.at-projetos .pj-digest-member-meta { font-size: 13px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-digest-task-list { padding: 0 !important; }
+  body.at-projetos .pj-digest-task-row { min-height: 52px; padding: 8px 16px !important; gap: 12px !important; border-bottom-color: var(--sep) !important; }
+  body.at-projetos .pj-digest-task-row.done { opacity: 1 !important; }
+  body.at-projetos .pj-digest-task-row .pj-task-check.done {
+    position: static !important; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 22px !important; height: 22px !important;
+    border-radius: 50% !important; background: var(--ink) !important; border: 0 !important; box-shadow: none !important; color: var(--on-ink) !important; font-size: 12px !important; transform: none !important;
+  }
+  body.at-projetos .pj-digest-task-title { font-size: 15px !important; line-height: 20px; }
+  body.at-projetos .pj-digest-task-list-name { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; margin-top: 2px; font-size: 13px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-digest-due-ic { width: 28px; height: 28px; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text2); }
+  body.at-projetos .pj-digest-late { height: 22px; padding: 0 8px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--text); font-size: 12px; font-weight: 600; }
+  body.at-projetos .pj-digest-late .pj-dot { margin: 0; }
+  body.at-projetos .pj-digest-list-row { min-height: 52px; padding: 8px 16px !important; gap: 12px !important; border-bottom-color: var(--sep) !important; }
+  body.at-projetos .pj-digest-list-name { min-width: 0; font-size: 15px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  body.at-projetos .pj-digest-list-cnt { margin: 0 !important; font-size: 13px !important; white-space: nowrap; }
+  body.at-projetos .pj-digest-list-bar { flex-shrink: 0; width: 56px !important; height: 4px !important; border-radius: 2px !important; }
+  body.at-projetos .pj-digest-list-bar-fill { background: var(--ink) !important; border-radius: 2px !important; }
+  body.at-projetos .pj-integ-card { margin: 0 0 12px !important; padding: 16px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 16px !important; box-shadow: var(--sh-card); }
+  body.at-projetos .pj-view-body > .pj-integ-card:first-child { margin-top: 4px !important; }
+  body.at-projetos .pj-integ-notice-inner { flex-wrap: wrap; align-items: flex-start !important; gap: 12px !important; }
+  body.at-projetos .pj-integ-notice-icon { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text2); }
+  body.at-projetos .pj-integ-notice-body { flex: 1 1 calc(100% - 44px); min-width: 0; }
+  body.at-projetos :is(.pj-integ-notice-title, .pj-integ-card-title) { margin: 0 0 4px !important; padding: 0 !important; border: 0 !important; font-size: 15px !important; font-weight: 600 !important; }
+  body.at-projetos :is(.pj-integ-notice-sub, .pj-integ-section-sub) { font-size: 13px !important; line-height: 18px; color: var(--text2) !important; }
+  body.at-projetos .pj-integ-notice-sub code { word-break: break-all; }
+  body.at-projetos .pj-integ-notice-inner > .pj-filter-btn { flex: 1 1 100%; justify-content: center; }
+  body.at-projetos .pj-integ-card .pj-filter-btn { min-height: 44px; padding: 0 14px !important; font-size: 14px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-integ-row, body.at-projetos .pj-integ-event-row { flex-wrap: wrap; gap: 8px !important; }
+  body.at-projetos .pj-integ-event-row { padding: 12px 0 !important; border-bottom-color: var(--sep) !important; }
+  body.at-projetos .pj-integ-event-row > div:first-child { flex: 1 1 100% !important; }
+  body.at-projetos .pj-integ-event-row > div:first-child > div:first-child { font-size: 15px !important; }
+  body.at-projetos .pj-integ-event-row > div:first-child > div:last-child { font-size: 13px !important; color: var(--text2) !important; }
+  body.at-projetos .pj-integ-input { flex: 1 1 0; height: 44px !important; padding: 0 12px !important; border-radius: 12px !important; background: var(--card) !important; }
+  body.at-projetos .pj-integ-card label { min-height: 44px; font-size: 14px !important; }
+  body.at-projetos .pj-integ-schema-block { flex: 1 1 100% !important; min-width: 0 !important; }
+  body.at-projetos .pj-integ-schema-title { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px !important; text-transform: none !important; color: var(--text) !important; }
+  body.at-projetos .pj-integ-pre { border-radius: 12px !important; background: var(--bg) !important; font-size: 12px !important; }
+  body.at-projetos .pj-integ-id-table { display: block; overflow-x: auto; white-space: nowrap; }
+  body.at-projetos :is(.pj-queue-status-ok, .pj-queue-status-off) { color: var(--text) !important; }
+  /* o + some onde não se cria tarefa (Arquivadas cobria o Restaurar; Integrações, os campos) */
+  body.at-projetos:has(#pjMain:is([data-view="archived"], [data-view="timemetrics"], [data-view="digest"], [data-view="integracoes"])) #pjFab { display: none !important; }
+
+  /* 24. Cartão de tarefa na mesma ordem na lista, no Kanban e em Todas:
+        em cima o título com o avatar; embaixo [status, só em Todas] · data · prioridade · parada · repetir */
+  body.at-projetos .pj-list-tr .pj-list-cell.title > .pj-recur-badge { order: 5 !important; }
+  body.at-projetos .pj-task-row .pj-recur-badge { order: 6; }
+  /* cliente em Todas: logo quadrado de 20 (redondo parecia mais uma pessoa) */
+  body.at-projetos .pj-task-row .pj-task-client-mini { order: 7; width: 20px; height: 20px; border-radius: 6px; overflow: hidden; }
+  body.at-projetos .pj-task-row .pj-task-client-mini .pj-task-client-logo { width: 20px !important; height: 20px !important; min-width: 20px !important; max-width: 20px !important; max-height: 20px !important; border-radius: 6px !important; }
+  body.at-projetos .pj-task-row .pj-task-client-dot { border-radius: 4px !important; }
+  body.at-projetos .pj-kanban .pj-card { position: relative; }
+  body.at-projetos .pj-kanban .pj-card:has(.pj-task-assignees > *) .pj-card-top { padding-right: 36px; }
+  body.at-projetos .pj-kanban .pj-card-footer .pj-task-assignees { position: absolute; top: 10px; right: 12px; }
+  body.at-projetos .pj-kanban .pj-card-footer .pj-avatar { width: 28px !important; height: 28px !important; min-width: 28px !important; min-height: 28px !important; box-shadow: none !important; }
+  body.at-projetos .pj-kanban .pj-card-footer .pj-card-recur { margin-top: 0 !important; }
+  /* Caixa de entrada: "Só as suas tarefas" embaixo do nome */
+  body.at-projetos .pj-view-title .pj-view-sub { order: 2; flex: 0 0 100%; margin: 0; font-size: 13px; line-height: 18px; color: var(--text3); }
+  /* gaveta: chevron de traço no lugar do ▶ */
+  body.at-projetos .pj-sidebar .pj-space-chevron { padding: 0; }
+
+  /* 25. Folhas (Filtros, Personalizar, Relatório do dia e Nova tarefa): presas embaixo, topo de raio 20, alça de 36 × 5,
+        título 17/600 à esquerda, X de 44 à direita e rodapé na área segura. A do Mais é igual (casca) */
+  body.at-projetos :is(#pjFormModal:has(.pj-filter-sheet-list) .pj-form-card, .pj-dash-customize-modal, .pj-wa-card, .pj-fab-modal)::before {
+    content: ''; display: block; flex-shrink: 0; width: 36px; height: 5px; margin: 8px auto; border-radius: 3px; background: var(--border);
+  }
+  body.at-projetos #pjFormModal:has(.pj-filter-sheet-list) .pj-form-card { padding-top: 0 !important; }
+  body.at-projetos .pj-sheet-head .pj-filter-sheet-title { margin: 0 !important; }
+  body.at-projetos .pj-sheet-x { width: 44px; height: 44px; margin-right: -8px; border-radius: 12px; }
+  body.at-projetos .pj-sheet-x:active { background: var(--bg2); }
+  body.at-projetos .pj-dash-customize-head { padding-top: 4px !important; }
+  body.at-projetos .pj-wa-modal { align-items: flex-end !important; padding: 0 !important; }
+  body.at-projetos .pj-wa-card {
+    max-width: none !important; max-height: 88dvh !important; border: 0 !important; border-radius: 20px 20px 0 0 !important;
+    box-shadow: 0 -8px 24px rgba(16,24,40,.12) !important; animation: none !important;
+  }
+  body.at-projetos .pj-wa-head { min-height: 52px !important; padding: 0 8px 0 16px !important; border-bottom-color: var(--sep) !important; }
+  body.at-projetos .pj-wa-actions { padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important; }
+  body.at-projetos .pj-fab-modal-overlay.open { align-items: flex-end; padding: 0; background: var(--dim); animation: none; }
+  body.at-projetos .pj-fab-modal {
+    max-width: none; padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0px)); border: 0; border-radius: 20px 20px 0 0;
+    box-shadow: 0 -8px 24px rgba(16,24,40,.12);
+  }
+  body.at-projetos .pj-fab-modal .pj-sheet-head { margin-bottom: 4px; }
+  body.at-projetos .pj-fab-modal h3 { font-size: 17px; font-weight: 600; }
+  body.at-projetos .pj-fab-modal > p { font-size: 14px !important; line-height: 20px !important; color: var(--text2) !important; }
+  body.at-projetos .pj-fab-modal label { margin: 12px 0 6px; font-size: 13px; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--text2); }
+  body.at-projetos .pj-fab-modal :is(select, .fx-select-btn) { min-height: 44px; border: 1px solid var(--border); border-radius: 12px; background: var(--card) !important; }
+  body.at-projetos .pj-fab-modal-footer { margin-top: 16px; }
+  body.at-projetos .pj-fab-modal-footer .pj-btn { flex: 1; min-height: 44px; border-radius: 12px; font-size: 15px; font-weight: 600; }
+  body.at-projetos .pj-fab-modal-footer .pj-btn:not(.pj-btn-primary) { background: var(--card); border: 1px solid var(--border); color: var(--text); }
 }
 
 
