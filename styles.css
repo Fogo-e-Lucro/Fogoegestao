@@ -9792,9 +9792,7 @@ body.pj-offline .pj-add-btn { filter: saturate(.6); }
 
 /* ── PWA install button ──────────────────────────────────── */
 .pj-install-btn {
-  background: linear-gradient(135deg,
-    color-mix(in srgb, var(--accent) 18%, transparent),
-    color-mix(in srgb, var(--accent) 8%, transparent)) !important;
+  background: color-mix(in srgb, var(--accent) 14%, transparent) !important;
   border-color: color-mix(in srgb, var(--accent) 35%, transparent) !important;
   color: var(--accent) !important;
   font-weight: 600;
@@ -15972,7 +15970,7 @@ body:has(.modal-overlay.open, .pj-modal-overlay.open, .pj-fab-modal-overlay.open
 /* Footer da sidebar — barra fixa embaixo, tipo BDN */
 .pj-sidebar .pj-sidebar-footer {
   border-top: 1px solid rgba(255, 255, 255, .10);
-  background: linear-gradient(180deg, rgba(11,18,32,.55) 0%, rgba(11,18,32,.85) 100%);
+  background: rgba(11,18,32,.75);
   padding: 12px 10px 14px;
   box-shadow: 0 -6px 20px -8px rgba(0, 0, 0, .55);
   position: relative;
