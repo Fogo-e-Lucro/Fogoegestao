@@ -17877,3 +17877,655 @@ body.ctr-sign-mode > *:not(#ctrSignPage):not(#ctrModalOverlay):not(script):not(s
   max-height: 480px; overflow-y: auto;
   color: #1a1d24; margin: 0;
 }
+
+/* ═══ Celular: correções (todas as telas) ═══ */
+/* Só defeitos, sem mudar o estilo (2026-10-20). Quase tudo fica no celular (max-width: 640px);
+   o que está fora da media é defeito que também aparece no computador ou no tablet. */
+/* sombra preta do tema escuro antigo ao rolar (styles.css:78) */
+.app-header.scrolled { box-shadow: none; }
+/* painel do dia fechado fica logo fora da tela e a sombra dele suja o pé (celular) e a borda direita (computador) */
+.day-panel:not(.open) { box-shadow: none !important; }
+/* início de Tarefas não rolava: o flex encolhia o painel até caber */
+.pj-dash-wrap { flex-shrink: 0; }
+/* nome do rodapé da gaveta, cinza-escuro sobre azul-marinho */
+.pj-sidebar .pj-sidebar-user-name { color: #f1f5f9; }
+/* Enviar do comentário perdia o estilo pra .pj-comment-actions button e parecia desligado */
+.pj-comment-actions .pj-comment-send,
+.pj-comment-actions .pj-comment-send:hover { background: var(--accent); color: #fff; font-size: 14px; padding: 11px 22px; box-shadow: none; }
+/* cartão de avisos/instalar: explicação em #9ca3af (2,5:1) e botões de 40px */
+.fg-push-nudge span, .fg-push-nudge__no { color: var(--text2); }
+.fg-push-nudge__acts button { min-height: 44px; }
+/* Ao vivo: [hidden] perdia pro display:flex/grid */
+.studio-empty[hidden], .studio-grid[hidden] { display: none !important; }
+/* Ao vivo: ícone do vazio com 16px e + do botão apagado (#tab-lives svg { 1em }) */
+#tab-lives .studio-empty > svg { width: 56px; height: 56px; }
+#tab-lives .studio-empty .btn-primary svg { width: 16px; height: 16px; opacity: 1; color: currentColor; }
+/* POPs: cartão vazio no fim e números com larguras diferentes */
+.pop-home__recent:empty { display: none; }
+.pop-home__stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* Métricas: linha solta do painel lateral fechado */
+.mtr-side:not(.open) { border-width: 0; margin: 0; }
+/* Criar post: prévia do Reels cortava o cabeçalho, sumia com os ícones e a 1ª linha da legenda */
+.vitrine15 .estudio-phone-screen { grid-template-rows: 64px minmax(0, 1fr) 40px auto 22px; }
+.vitrine15 .estudio-mock[data-tipo="REELS"] .estudio-ig-media { aspect-ratio: auto; }
+/* Calendário: chip "Todos" encaixava em scrollLeft 4 e nascia cortado */
+.ed-client-strip { scroll-padding-inline: 4px; }
+/* botão + some com a gaveta aberta (ficava aceso por cima do fundo escuro) */
+body:has(.pj-sidebar.open) #pjFab { display: none !important; }
+/* busca da gaveta: atalho de teclado não existe no toque */
+@media (pointer: coarse) { .pj-search-trigger > span:last-child { display: none; } }
+
+@media (max-width: 900px) {
+  /* gaveta fechada: a sombra vazava na borda esquerda de Tarefas */
+  .pj-sidebar:not(.open) { box-shadow: none !important; }
+  /* gaveta respeita a área segura do iPhone (relógio em cima, barrinha embaixo) */
+  .pj-sidebar { padding-top: env(safe-area-inset-top, 0px); padding-left: env(safe-area-inset-left, 0px); }
+  .pj-sidebar .pj-sidebar-footer { padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important; }
+  /* ☰ ficava por cima da gaveta aberta */
+  .pj-drawer-toggle[aria-expanded="true"] { opacity: 0; pointer-events: none; }
+  /* botão de teste à mostra */
+  #pjDemoBtn { display: none !important; }
+}
+@media (max-width: 768px) {
+  .mtr-refresh-btn { justify-content: center; gap: 0; }
+}
+@media (max-width: 640px) {
+  /* barras de vidro deixavam ler o texto que passa por baixo */
+  .app-header { background: var(--bg) !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .fg-mnav { background: var(--card) !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  /* .app-content vazio (7 abas ficam fora dele) virava faixa cinza de 20px embaixo do topo */
+  .app-content:not(:has(> .tab-panel.active)) { padding: 0 !important; }
+  /* + de tarefa cobria botões e o + de cada tela; no celular fica só em Tarefas */
+  body:not(.at-projetos) #pjFab { display: none !important; }
+  /* o fim do início de Tarefas sobe acima do + e da barra de baixo (no .pj-dash-wrap: nas listas o .pj-main não é quem rola) */
+  .pj-dash-wrap { padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)) !important; }
+  /* janela da tarefa: puxador falso empurrava o X pro meio e quebrava o topo em 2 linhas */
+  .pj-modal-topbar::before { content: none; }
+  .pj-modal-topbar { flex-wrap: nowrap; }
+  /* caminho ilegível ("Ma…/Produçã…"): fica só o nome da lista, inteiro; WhatsApp vira botão de ícone */
+  #pjModalSpaceName, .pj-modal-topbar > .sep { display: none; }
+  #pjModalListName { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; color: var(--text2); }
+  .pj-modal-topbar > div[style*="margin-left:auto"] { margin-left: 0 !important; flex-shrink: 0; gap: 4px !important; }
+  .pj-modal-topbar > div[style*="margin-left:auto"] > span { display: none; }
+  .pj-modal-topbar .pj-icon-btn { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  .pj-modal-topbar .pj-btn-wa { flex-shrink: 0; white-space: nowrap; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .pj-modal-topbar .pj-btn-wa .pj-btn-wa-label { display: none; }
+  /* Responder, Reagir e Excluir tinham 17px de altura */
+  .pj-comment-actions { flex-wrap: wrap; }
+  .pj-comment-actions button:not(.pj-comment-send) { min-height: 44px; padding: 0 8px; font-size: 12px; white-space: nowrap; }
+  /* Criar post: mesma correção da prévia no celular; Rascunho/Salvar parava embaixo do topo */
+  .vitrine15 .estudio-phone-screen { grid-template-rows: 58px minmax(0, 1fr) 36px auto 20px; }
+  header.estudio-bar { top: calc(56px + env(safe-area-inset-top, 0px)); } /* 56 = barra de cima nova */
+  /* Publipost: o botão de publicar grudado no pé cobria "Escolher arquivo" e "Várias"; fica no fluxo, como no computador */
+  .sp2-cta-wrap { position: static; padding-top: 8px; }
+  /* Google: cartões encostados na borda, botão saindo da tela, texto numa coluna de 99px */
+  .gmb-wrap { padding: 12px 16px calc(96px + env(safe-area-inset-bottom, 0px)); }
+  #gmbRankBizRow .gmb-rank-biz-wrap > div:first-child { flex-wrap: wrap; }
+  .gmb-rank-biz-input { min-width: 0; flex: 1 1 0; }
+  .gmb-rank-biz-btn { flex: 1 0 100%; min-height: 44px; border-radius: 10px; }
+  .gmb-connect-text { flex: 1 1 calc(100% - 44px); }
+  .gmb-connect-btn { flex: 1 1 100%; justify-content: center; min-height: 44px; }
+  .gmb-demo-btn { display: none; }
+  #gmbEmpty { display: none !important; }
+  /* Google: o campo da palavra-chave não encolhia e o controle de grade passava por cima do Analisar */
+  .gmb-rank-keyword-wrap { flex: 1 1 100%; min-width: 0; }
+  .gmb-rank-keyword { min-width: 0; }
+  .gmb-rank-keyword-wrap + .gmb-rank-sep { display: none; }
+  .gmb-rank-toolbar { border-radius: 16px; }
+  /* Google: o campo da pré-análise não encolhia e empurrava o Pesquisar pra fora do cartão */
+  .gmb-preanalise-input { min-width: 0; }
+  /* POPs: rótulo "ATUALIZADOS" quebrava o 3º número */
+  .pop-home__stat { padding: 12px; }
+  .pop-home__stat span { font-size: 11px; letter-spacing: 0; text-transform: none; }
+  /* alvos de toque de 24 a 36px */
+  #tab-visualizar .cal-nav-btn { width: 44px; height: 44px; }
+  .ed-new-post-btn { height: 44px; }
+  .ed-type-chip, .cal-view-btn { min-height: 44px; }
+  .mtr-quick-btn, .mtr-refresh-btn, .pop-add-btn, #tab-lives .btn-ghost--icon { width: 44px; height: 44px; }
+  #tab-metricas .fx-select-btn, .mtr-preset, .mtr-tool-btn, .gmb-preanalise-input, .gmb-preanalise-btn,
+  .gmb-rank-btn, .gmb-rank-pill, .bd-add-btn, .studio-filters .pill { min-height: 44px; }
+}
+
+/* ═══ Celular v2: amostra na tela Tarefas ═══ */
+/* "Papel e grafite" no celular (max-width: 640px).
+   - Casca (barra de cima, barra de baixo, folha Mais, sino, painel da conta, cartão de avisos):
+     igual em TODAS as telas, senão a barra muda de cara ao trocar de aba.
+   - Escolhido e botão principal em grafite (troca do --accent): em todas as telas, pra não ter
+     duas cores de escolhido na mesma tela.
+   - Conteúdo novo (gaveta, início de Tarefas, listas): só em body.at-projetos.
+     As outras telas mantêm o conteúdo de hoje.
+   Grafite = escolhido, ação principal, aba ativa e foco. Cor só em bolinha de status,
+   aviso (vermelho/âmbar) e logo. Fora da media ficam só bases neutras dos ícones novos. */
+.app-title, .app-bell { display: none; }
+.pj-dash-st-ic { display: inline-flex; vertical-align: -3px; margin-right: 6px; }
+.pj-dash-kpi-icon svg { width: 20px; height: 20px; }
+.pj-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #9ca3af; margin-right: 4px; vertical-align: 1px; }
+.pj-dot.r { background: #c9353a; }
+.pj-dot.g { background: #16a34a; }
+.pj-recur-badge { display: inline-flex; align-items: center; vertical-align: -2px; color: var(--text3); opacity: 1; }
+.pj-view-header .pj-icon-btn svg, .pj-filter-btn svg { flex-shrink: 0; }
+.pj-filter-btn { display: inline-flex; align-items: center; gap: 6px; }
+.pj-wa-head .close-btn { display: inline-flex; align-items: center; justify-content: center; }
+.pj-wa-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.pj-modal-topbar .pj-btn-wa { display: inline-flex; align-items: center; gap: 6px; }
+
+@media (max-width: 640px) {
+
+  /* 1. Tokens. O tema vem inline no <html>; no body vale pra tudo dentro.
+        Casca: tokens próprios (nomes novos, ninguém mais usa). */
+  body {
+    --ink: var(--text); --on-ink: var(--card);
+    --fg-acao: var(--ink);            /* cor da ação principal (+ e botão principal). Trocar aqui se o David pedir cor */
+    --fg-red: #c9353a; --fg-amber: #d97706; --fg-green: #16a34a;
+    --sep: var(--bg2);
+    --sh-card: 0 1px 2px rgba(16,24,40,.05);
+    --sh-float: 0 4px 14px rgba(16,24,40,.18);
+    --sh-pop: 0 16px 40px rgba(16,24,40,.16), 0 2px 6px rgba(16,24,40,.06);
+    --dim: rgba(17,19,24,.40);
+  }
+  /* Escolhido e ação em grafite no lugar do índigo, em todas as telas do celular: com a barra de baixo
+     igual em toda aba, o índigo das outras telas virava uma 2ª cor de escolhido ao lado da pílula grafite.
+     Só no tema claro (o noturno ganha .fg-noturno no <html>). Pra voltar a valer só em Tarefas: body.at-projetos */
+  html:not(.fg-noturno) body {
+    --accent: #1a1d23; --accent2: #1a1d23; --accent3: #5a6272;
+    --accent-glow: rgba(26,29,35,.06); --accentGlow: rgba(26,29,35,.06);
+    --text3: #6b7280;
+    --ink-press: #2c3037;
+  }
+  /* o brilho roxo desses botões é cor fixa e ficava em volta do grafite; Novo Cliente (roxo) e Nova live (azul) eram degradê fixo */
+  html:not(.fg-noturno) body :is(.btn-primary, .ed-new-post-btn, .ed-day-add, .estudio-bar-btn.primary, .cal-view-btn.active) { box-shadow: none !important; }
+  html:not(.fg-noturno) body :is(.bd-add-btn, #tab-lives .btn-primary) { background: var(--accent); }
+  body.at-projetos {
+    --danger: #c9353a; --warning: #d97706; --success: #16a34a;
+    padding-bottom: 0 !important;
+  }
+
+  /* 2. Tarefas: sem vidro; foco e escolha em grafite */
+  body.at-projetos *, body.at-projetos *::before, body.at-projetos *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  body.at-projetos :is(button, a, [role="button"]):focus-visible { outline: 2px solid var(--ink) !important; outline-offset: 2px; }
+  body.at-projetos :is(input, textarea, select):focus { border-color: var(--ink) !important; box-shadow: none !important; outline: none !important; }
+  body.at-projetos :is(input[type="checkbox"], input[type="radio"]) { accent-color: var(--ink); }
+  body.at-projetos :is(.btn-primary, .pj-btn-primary) { background: var(--fg-acao) !important; color: var(--on-ink) !important; border-color: var(--fg-acao) !important; box-shadow: none !important; text-shadow: none !important; }
+  body.at-projetos :is(.btn-primary, .pj-btn-primary):active { background: var(--ink-press, var(--fg-acao)) !important; }
+
+  /* 3. Barra de cima (todas as telas): branca, 56px + área segura. ☰ · título · sino.
+        Em Tarefas o ☰ é o da gaveta (fixo); nas outras é o do painel da conta. */
+  body .app-header {
+    position: sticky !important; top: 0 !important; z-index: 60;
+    display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: flex-start !important;
+    gap: 8px !important; min-height: 0 !important;
+    height: calc(56px + env(safe-area-inset-top, 0px));
+    padding: env(safe-area-inset-top, 0px) calc(12px + env(safe-area-inset-right, 0px)) 0 calc(12px + env(safe-area-inset-left, 0px)) !important;
+    background: var(--card) !important;
+    border: 0 !important; border-bottom: 1px solid var(--border) !important;
+    box-shadow: none !important; pointer-events: auto;
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  }
+  body .app-header .app-header-right { display: flex !important; flex: 1 1 auto !important; min-width: 0; margin-left: 0 !important; align-items: center; gap: 8px !important; }
+  body #syncStatus { display: none !important; }
+  body .app-title {
+    display: block; flex: 1; min-width: 0; padding-left: 0;
+    font-size: 17px; font-weight: 600; letter-spacing: -.01em; line-height: 22px; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  body.at-projetos .app-title { padding-left: 52px; }
+  body .app-header #appMenuTrigger { order: -1; }
+  body :is(#appMenuTrigger, .app-bell),
+  body.at-projetos .pj-drawer-toggle {
+    width: 44px !important; height: 44px !important; flex-shrink: 0; padding: 0 !important;
+    align-items: center; justify-content: center;
+    border-radius: 12px !important; background: var(--card) !important;
+    border: 1px solid var(--border) !important; color: var(--text) !important;
+    box-shadow: none !important; cursor: pointer;
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  }
+  body .app-bell, body.at-projetos .pj-drawer-toggle { display: inline-flex !important; }
+  body :is(#appMenuTrigger, .app-bell):active, body.at-projetos .pj-drawer-toggle:active { background: var(--bg2) !important; transform: none !important; }
+  body :is(#appMenuTrigger, .app-bell) svg, body.at-projetos .pj-drawer-toggle svg { width: 20px; height: 20px; stroke-width: 1.75; }
+  body.at-projetos .pj-drawer-toggle {
+    top: calc(6px + env(safe-area-inset-top, 0px)) !important;
+    left: calc(12px + env(safe-area-inset-left, 0px)) !important;
+    z-index: 61 !important;
+  }
+  body .app-bell { position: relative; }
+  body .app-bell .pj-notif-count {
+    position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px;
+    border-radius: 10px; border: 2px solid var(--card); background: var(--fg-red); color: #fff;
+    font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; box-shadow: none; animation: none;
+  }
+  body .pj-offline-badge {
+    height: 28px; margin: 0; padding: 0 10px; gap: 6px; animation: none;
+    background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+    color: var(--text2); font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: 0;
+  }
+  body .pj-offline-badge .pj-offline-label { display: inline; }
+  body .pj-offline-dot { width: 8px; height: 8px; background: var(--fg-amber); box-shadow: none; animation: none; }
+
+  /* 4. Barra de baixo (todas as telas): branca, sem vidro; aba ativa = pílula grafite */
+  body .fg-mnav {
+    background: var(--card) !important; border-top: 1px solid var(--border) !important;
+    border-radius: 0 !important; box-shadow: none !important;
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+    padding: 0 calc(4px + env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) calc(4px + env(safe-area-inset-left, 0px)) !important;
+  }
+  body .fg-mnav__i {
+    position: relative; height: 60px; min-height: 60px !important;
+    justify-content: flex-start !important; padding: 11px 0 0 !important; gap: 9px !important;
+    color: var(--text2) !important; font-size: 11px !important; font-weight: 500 !important;
+    letter-spacing: 0 !important; line-height: 14px;
+  }
+  body .fg-mnav__i svg { position: relative; z-index: 1; width: 22px; height: 22px; stroke-width: 1.75 !important; }
+  body .fg-mnav__i::before, body .fg-mnav__i.active::before {
+    content: ''; position: absolute; top: 6px; left: 50%; width: 56px; height: 32px; margin-left: -28px;
+    transform: none; border-radius: 16px; background: transparent; box-shadow: none; transition: background .15s;
+  }
+  body .fg-mnav__i:active { transform: none !important; }
+  body .fg-mnav__i:active::before { background: var(--bg2); }
+  body .fg-mnav__i.active { color: var(--text) !important; font-weight: 600 !important; }
+  body .fg-mnav__i.active::before { background: var(--ink); }
+  body .fg-mnav__i.active svg { color: var(--on-ink); stroke-width: 2 !important; }
+
+  /* 5. Botão + (só existe em Tarefas no celular): círculo na cor da ação */
+  body.at-projetos #pjFab {
+    width: 56px !important; height: 56px !important; border-radius: 50% !important;
+    background: var(--fg-acao) !important; color: var(--on-ink) !important; border: 0 !important;
+    box-shadow: var(--sh-float) !important;
+    right: calc(16px + env(safe-area-inset-right, 0px)) !important;
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  body.at-projetos #pjFab svg { width: 24px; height: 24px; stroke-width: 2; }
+  body.at-projetos #pjFab:active { background: var(--ink-press, var(--fg-acao)) !important; transform: scale(.96) !important; }
+  /* some com painel aberto e na Pergunte à IA (cobria o Enviar) */
+  body.at-projetos:has(.pj-notif-panel.open, .app-menu-panel.open, .pj-dash-customize-overlay, .pj-wa-modal, .pj-askai-input) #pjFab { display: none !important; }
+
+  /* 6. Gaveta de Tarefas: branca, escolhido grafite */
+  body.at-projetos .pj-drawer-backdrop { background: var(--dim) !important; }
+  body.at-projetos .pj-sidebar {
+    background: var(--card) !important; color: var(--text) !important;
+    border-right: 1px solid var(--border) !important; width: 300px !important; max-width: 86vw;
+    box-shadow: none !important;
+  }
+  body.at-projetos .pj-sidebar.open { box-shadow: 8px 0 24px rgba(16,24,40,.16) !important; }
+  /* uma rolagem só: Espaços logo depois das vistas, Admin e Novo Espaço/Templates no fim
+     (o rodapé entra na rolagem pelo mobile.js); o fim esmaece pra mostrar que continua */
+  body.at-projetos .pj-sidebar .pj-sidebar-scroll {
+    display: flex; flex-direction: column; gap: 2px; padding: 4px 0 0;
+    -webkit-mask-image: linear-gradient(#000 calc(100% - 28px), transparent); mask-image: linear-gradient(#000 calc(100% - 28px), transparent);
+  }
+  body.at-projetos .pj-sidebar .pj-sidebar-top { display: contents; }
+  body.at-projetos .pj-sidebar .pj-sidebar-top > * { width: auto !important; max-width: none !important; margin-left: 12px !important; margin-right: 12px !important; box-sizing: border-box; }
+  body.at-projetos .pj-sidebar :is(.pj-divider, #pjSpacesList) { order: 1; }
+  body.at-projetos .pj-sidebar .pj-sidebar-top > .pj-admin-only { order: 2; }
+  body.at-projetos .pj-sidebar .pj-sidebar-footer { order: 3; margin-top: 12px; }
+  body.at-projetos .pj-me-hero { padding: 4px 0 8px; animation: none !important; }
+  body.at-projetos .pj-me-hero-info { align-items: flex-start; }
+  body.at-projetos .pj-me-hero-card { text-align: left; padding: 10px 4px !important; gap: 12px; background: none !important; border: 0 !important; color: var(--text) !important; }
+  body.at-projetos :is(.pj-me-hero-glow, .pj-me-hero-hi, .pj-me-hero-role-dot, .pj-me-hero-actions) { display: none !important; }
+  body.at-projetos .pj-me-hero-avatar-wrap { width: 44px; height: 44px; }
+  body.at-projetos .pj-me-hero-avatar-ring { inset: -1px; animation: none !important; filter: none; background: var(--border) !important; }
+  body.at-projetos .pj-me-hero-avatar-ring::after { display: none; }
+  body.at-projetos .pj-me-hero-avatar { inset: 0; }
+  body.at-projetos .pj-me-hero-status { width: 12px; height: 12px; background: var(--success) !important; border: 2px solid var(--card) !important; box-shadow: none !important; animation: none !important; }
+  body.at-projetos .pj-me-hero-name { font-size: 16px; font-weight: 600; color: var(--text) !important; opacity: 1 !important; transform: none !important; animation: none !important; }
+  body.at-projetos .pj-me-hero-role { font-size: 13px; color: var(--text3) !important; opacity: 1 !important; transform: none !important; animation: none !important; }
+  body.at-projetos .pj-sidebar .pj-search-trigger {
+    min-height: 44px; margin-top: 4px; margin-bottom: 8px; padding: 0 12px; gap: 10px; border-radius: 12px;
+    background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text3) !important; font-size: 15px;
+  }
+  body.at-projetos .pj-sidebar .pj-search-trigger svg { width: 18px; height: 18px; color: var(--text2); flex-shrink: 0; }
+  body.at-projetos .pj-sidebar .pj-nav-btn {
+    min-height: 44px; padding: 0 12px !important; gap: 12px !important; border-radius: 10px;
+    background: none !important; color: var(--text) !important; font-size: 15px !important; font-weight: 500 !important;
+  }
+  body.at-projetos .pj-sidebar .pj-nav-btn .pj-nav-ic { width: 20px; height: 20px; background: none !important; border: 0 !important; color: var(--text2) !important; }
+  body.at-projetos .pj-sidebar .pj-nav-btn .pj-nav-ic svg { width: 20px; height: 20px; }
+  body.at-projetos .pj-sidebar .pj-nav-btn:active { background: var(--bg2) !important; }
+  body.at-projetos .pj-sidebar .pj-nav-btn.active { background: var(--ink) !important; color: var(--on-ink) !important; font-weight: 600 !important; }
+  body.at-projetos .pj-sidebar .pj-nav-btn.active::before { display: none; }
+  body.at-projetos .pj-sidebar .pj-nav-btn.active .pj-nav-ic { color: var(--on-ink) !important; }
+  body.at-projetos .pj-sidebar .pj-badge {
+    min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; line-height: 20px;
+    background: var(--danger) !important; color: #fff !important; box-shadow: none !important; font-size: 12px; font-weight: 700;
+  }
+  body.at-projetos .pj-sidebar .pj-nav-btn.active .pj-badge { background: var(--on-ink) !important; color: var(--ink) !important; }
+  body.at-projetos .pj-sidebar .pj-section-label { padding: 16px 12px 6px !important; color: var(--text3) !important; font-size: 12px !important; font-weight: 600; letter-spacing: .06em !important; }
+  body.at-projetos .pj-sidebar .pj-divider { margin: 8px 12px; background: var(--sep) !important; }
+  body.at-projetos .pj-sidebar .pj-askai-pill {
+    background: none !important; border: 1px solid var(--border); color: var(--text2) !important;
+    font-size: 11px; font-weight: 600; text-transform: none; letter-spacing: 0; padding: 1px 8px; border-radius: 999px;
+  }
+  body.at-projetos .pj-sidebar :is(.pj-space-row, .pj-folder-row, .pj-list-row) { min-height: 44px; margin: 0 8px; border-radius: 10px; }
+  body.at-projetos .pj-sidebar :is(.pj-space-row, .pj-folder-row, .pj-list-row):hover { background: none !important; }
+  body.at-projetos .pj-sidebar .pj-space-icon {
+    width: 24px; height: 24px; border-radius: 7px; font-size: 12px; box-shadow: none;
+    background: var(--card) !important; border: 1px solid var(--border); color: var(--text);
+  }
+  body.at-projetos .pj-sidebar .pj-space-name { color: var(--text) !important; font-size: 15px; font-weight: 600; }
+  body.at-projetos .pj-sidebar .pj-folder-name { color: var(--text) !important; font-size: 15px; }
+  body.at-projetos .pj-sidebar .pj-list-name { color: var(--text2) !important; font-size: 15px; }
+  body.at-projetos .pj-sidebar .pj-list-count {
+    background: var(--card) !important; border: 1px solid var(--border); color: var(--text2) !important;
+    font-size: 12px; padding: 0 7px; border-radius: 999px; line-height: 18px;
+  }
+  body.at-projetos .pj-sidebar .pj-list-row.active { background: var(--ink) !important; }
+  body.at-projetos .pj-sidebar .pj-list-row.active .pj-list-name { color: var(--on-ink) !important; }
+  body.at-projetos .pj-sidebar .pj-list-row.active .pj-list-count { background: var(--on-ink) !important; border-color: var(--on-ink); color: var(--ink) !important; }
+  body.at-projetos .pj-sidebar :is(.pj-space-chevron, .pj-icon-btn, .pj-row-ic) { color: var(--text3) !important; }
+  body.at-projetos .pj-sidebar .pj-sidebar-footer {
+    background: var(--card) !important; border-top: 1px solid var(--border) !important; box-shadow: none !important;
+    padding: 6px 12px calc(36px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  body.at-projetos #pjSidebarUserRow { display: none !important; }
+  body.at-projetos .pj-sidebar .pj-add-space-btn { min-height: 44px; padding: 0 12px; gap: 12px; border-radius: 10px; color: var(--text) !important; font-size: 15px; }
+  body.at-projetos .pj-sidebar .pj-add-space-btn svg { width: 18px; height: 18px; opacity: 1; color: var(--text2); }
+
+  /* 7. Painel da conta (todas as telas). No celular ele mora no body (mobile.js):
+        fica acima da gaveta e escurece a tela toda, sem levantar a barra de cima. */
+  body .app-menu-backdrop { z-index: 9990 !important; background: var(--dim) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  body .app-menu-panel {
+    z-index: 9991 !important;
+    top: calc(64px + env(safe-area-inset-top, 0px)) !important; left: 8px !important; right: 8px !important; width: auto !important; max-width: none !important;
+    max-height: calc(100dvh - 148px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    padding: 8px !important; border-radius: 16px !important;
+    background: var(--card) !important; color: var(--text) !important; border: 1px solid var(--border) !important;
+    box-shadow: var(--sh-pop) !important;
+  }
+  body .app-menu-user { margin: 0 0 8px; padding: 8px 4px 12px 8px; background: none; border: 0; border-bottom: 1px solid var(--sep); border-radius: 0; }
+  body :is(.app-menu-user-avatar, .app-menu-user-avatar.has-photo) { box-shadow: none !important; }
+  body .app-menu-user-name { color: var(--text); font-size: 16px; }
+  body .app-menu-user-email { color: var(--text3); font-size: 13px; }
+  body .app-menu-icon-btn { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--border); color: var(--text2); }
+  /* fila de avatares sem nome nem legenda */
+  body .app-menu-presence { display: none !important; }
+  body .app-menu-search { min-height: 44px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); color: var(--text3); font-size: 15px; }
+  body .app-menu-search-kbd { display: none; }
+  /* em Tarefas a busca já está na gaveta */
+  body.at-projetos .app-menu-search { display: none !important; }
+  body .app-menu-section-label { padding: 8px 4px 8px; color: var(--text2); font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+  body :is(.app-menu-section-label:has(+ .app-menu-grid), .app-menu-grid) { display: none !important; }
+  body .app-menu-action { min-height: 44px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); color: var(--text); font-size: 15px; }
+  body .app-menu-action:hover { background: var(--card); color: var(--text); border-color: var(--border); }
+  body .app-menu-action svg { color: var(--text2); }
+  /* WhatsApp: bolinha com o estado escrito do lado */
+  body .app-menu-action-dot { box-shadow: none !important; background: #9ca3af; }
+  body .app-menu-action-dot.connected { background: var(--fg-green); }
+  body .app-menu-action-dot.disconnected { background: var(--fg-red); }
+  body .app-menu-action-dot.warning { background: var(--fg-amber); }
+  body #appMenuUazapi::after { content: 'Sem status'; margin-left: auto; font-size: 13px; color: var(--text3); }
+  body #appMenuUazapi:has(.connected)::after { content: 'Conectado'; }
+  body #appMenuUazapi:has(.disconnected)::after { content: 'Desconectado'; }
+  body #appMenuUazapi:has(.warning)::after { content: 'Testando'; }
+
+  /* 8. Folha Mais (todas as telas): branca, 4 colunas, ícone de traço */
+  body .fg-more__bd { background: var(--dim) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  body .fg-more__pn {
+    background: var(--card) !important; border-radius: 20px 20px 0 0 !important;
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+    box-shadow: 0 -8px 24px rgba(16,24,40,.12) !important;
+    padding: 8px 16px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  body .fg-more__gr { width: 36px !important; height: 5px !important; margin: 4px auto 12px !important; background: var(--border) !important; opacity: 1 !important; }
+  body .fg-more__pn h3 { margin: 0 4px 12px !important; font-size: 17px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: -.01em !important; color: var(--text) !important; }
+  body .fg-more__gd { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 8px !important; }
+  body .fg-more__b {
+    min-height: 76px !important; padding: 12px 4px 10px !important; gap: 8px !important;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 14px !important;
+    box-shadow: var(--sh-card); color: var(--text) !important; font-size: 12px !important; font-weight: 500 !important;
+  }
+  body .fg-more__b svg { width: 24px; height: 24px; stroke-width: 1.75; }
+  body .fg-more__b:active { transform: none !important; background: var(--bg2) !important; }
+
+  /* 9. Painel do sino (todas as telas): cai da barra de cima e o resto escurece
+        (o toque no escuro cai no document e fecha o painel) */
+  body:has(.pj-notif-panel.open)::after { content: ''; position: fixed; inset: 0; z-index: 9998; background: var(--dim); }
+  body .pj-notif-panel {
+    position: fixed !important; z-index: 9999; top: calc(64px + env(safe-area-inset-top, 0px)) !important; left: 8px !important; right: 8px !important;
+    width: auto !important; max-height: calc(100dvh - 148px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 16px !important; border: 1px solid var(--border) !important; box-shadow: var(--sh-pop) !important;
+    background: var(--card) !important; overscroll-behavior: contain;
+  }
+  body .pj-notif-list { overscroll-behavior: contain; }
+  body .pj-notif-header { min-height: 52px; padding: 0 4px 0 16px !important; font-size: 15px !important; font-weight: 600; border-bottom: 1px solid var(--sep) !important; }
+  body .pj-notif-header button { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; color: var(--text2) !important; }
+  body .pj-notif-item { gap: 12px !important; padding: 12px 16px !important; border-bottom: 1px solid var(--sep) !important; background: none !important; border-left: 0 !important; }
+  body .pj-notif-item.unread::before { width: 8px !important; height: 8px !important; margin-top: 12px !important; background: var(--ink) !important; }
+  body :is(.pj-notif-icon, .pj-notif-icon.mention-icon) {
+    width: 32px !important; height: 32px !important; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    border-radius: 8px !important; background: var(--card) !important; border: 1px solid var(--border); color: var(--text2) !important;
+  }
+  body :is(.pj-notif-mention-badge, .pj-notif-mention-banner) { display: none !important; }
+  body .pj-notif-body { min-width: 0; }
+  body .pj-notif-body > div:first-child { font-size: 14px !important; line-height: 19px; white-space: normal !important; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  body .pj-notif-sub { margin-top: 2px; font-size: 13px !important; line-height: 18px; color: var(--text2) !important; white-space: normal !important; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  body .pj-notif-time { display: flex; margin-top: 4px; font-size: 12px !important; color: var(--text3) !important; white-space: nowrap; }
+  body .pj-notif-time > span { flex-shrink: 0; }
+  body .pj-notif-time > .pj-notif-task { flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  body .pj-notif-push { min-height: 56px; padding: 8px 12px 8px 16px !important; background: var(--card) !important; font-size: 14px !important; }
+  body .pj-notif-push b { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px !important; border-radius: 10px !important; background: var(--fg-acao) !important; color: var(--on-ink) !important; font-size: 13px !important; }
+
+  /* 10. Início de Tarefas */
+  /* a aba para em cima da barra de baixo (61 + área segura): nenhuma vista termina escondida atrás dela */
+  body.at-projetos #tab-projetos { height: calc(100dvh - 56px - 61px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important; }
+  body.at-projetos .pj-main { padding-top: 0 !important; }
+  body.at-projetos .pj-view-body { padding-bottom: 88px !important; } /* folga pro + */
+  body.at-projetos .pj-dash-wrap { padding: 16px 16px 88px !important; overflow: visible !important; animation: none !important; }
+  body.at-projetos .pj-dash-wrap::before { content: none !important; }
+  body.at-projetos .pj-dash-header { margin: 0 0 16px !important; gap: 12px !important; align-items: flex-start !important; }
+  body.at-projetos .pj-dash-greet { font-size: 22px !important; font-weight: 700 !important; letter-spacing: -.02em !important; line-height: 28px; }
+  body.at-projetos .pj-dash-date { margin-top: 2px !important; font-size: 13px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-dash-header > div:last-child { gap: 8px !important; }
+  body.at-projetos :is(.pj-dash-customize-btn, .pj-wa-trigger-btn) {
+    min-height: 44px; padding: 0 14px !important; gap: 8px !important; border-radius: 12px !important;
+    background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important;
+    box-shadow: none !important; transform: none !important; font-size: 14px !important; font-weight: 600 !important;
+  }
+  body.at-projetos .pj-dash-customize-btn { width: 44px; padding: 0 !important; justify-content: center; }
+  body.at-projetos .pj-dash-customize-btn .pj-dash-btn-label { display: none; }
+  body.at-projetos :is(.pj-dash-customize-btn, .pj-wa-trigger-btn) svg { width: 18px; height: 18px; color: var(--text2); flex-shrink: 0; }
+  body.at-projetos .pj-dash-widget { margin-bottom: 12px !important; }
+  /* números: um cartão só, 4 colunas com fio entre elas, sem ícone (o painel genérico 2x2 comia a tela) */
+  body.at-projetos .pj-dash-kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 0 !important; margin: 0 !important;
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--sh-card); overflow: hidden;
+  }
+  body.at-projetos .pj-dash-kpi {
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px;
+    min-height: 72px; padding: 12px 4px !important; text-align: center;
+    background: none !important; border: 0 !important; border-left: 1px solid var(--sep) !important; border-radius: 0 !important;
+    box-shadow: none !important; transform: none !important;
+  }
+  body.at-projetos .pj-dash-kpi:first-child { border-left: 0 !important; }
+  body.at-projetos .pj-dash-kpi::after { content: none !important; }
+  body.at-projetos .pj-dash-kpi:active { background: var(--bg2) !important; }
+  body.at-projetos .pj-dash-kpi-top { margin: 0 !important; justify-content: center !important; }
+  body.at-projetos :is(.pj-dash-kpi-icon, .pj-dash-kpi-sub, .pj-dash-kpi-spark, .pj-dash-kpi-arrow) { display: none !important; }
+  body.at-projetos .pj-dash-kpi-val { font-size: 22px !important; font-weight: 700 !important; line-height: 26px !important; letter-spacing: -.02em; color: var(--text) !important; font-variant-numeric: tabular-nums; }
+  body.at-projetos .pj-dash-kpi:has(.is-alert) .pj-dash-kpi-val { color: var(--danger) !important; }
+  body.at-projetos .pj-dash-kpi-label { font-size: 12px !important; line-height: 15px !important; font-weight: 500 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text2) !important; }
+  body.at-projetos :is(.pj-dash-st-ic, .pj-activity-icon) {
+    width: 28px !important; height: 28px !important; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; margin: 0;
+    border-radius: 8px !important; background: var(--card) !important; border: 1px solid var(--border); color: var(--text2);
+  }
+  body.at-projetos :is(.pj-dash-st-ic, .pj-activity-icon) svg { width: 16px; height: 16px; stroke-width: 1.75; }
+  body.at-projetos .pj-dash-st-ic.is-alert { background: var(--danger) !important; border-color: var(--danger); color: #fff; }
+  body.at-projetos .pj-dash-st-ic.is-alert svg { stroke-width: 2; }
+  body.at-projetos :is(.pj-dash-trio, .pj-dash-grid) { grid-template-columns: minmax(0, 1fr) !important; gap: 12px !important; }
+  /* Atrasadas vazia some: o número lá em cima já diz 0 */
+  body.at-projetos .pj-dash-trio > .pj-dash-col:first-child:has(.pj-dash-empty) { display: none !important; }
+  body.at-projetos :is(.pj-dash-col, .pj-dash-stale) {
+    padding: 0 !important; margin: 0 !important; overflow: hidden; border-radius: 16px !important;
+    background: var(--card) !important; border: 1px solid var(--border) !important; box-shadow: var(--sh-card) !important;
+  }
+  body.at-projetos .pj-dash-section-title {
+    min-height: 52px; margin: 0 !important; padding: 0 16px; border-bottom: 1px solid var(--sep);
+    font-size: 15px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text) !important;
+  }
+  body.at-projetos .pj-dash-section-title > span:first-child { display: inline-flex; align-items: center; gap: 10px; }
+  body.at-projetos .pj-dash-section-count {
+    padding: 0 8px !important; border-radius: 999px !important; line-height: 20px;
+    background: var(--card) !important; border: 1px solid var(--border) !important;
+    color: var(--text2) !important; font-size: 12px !important; font-weight: 600 !important;
+  }
+  body.at-projetos :is(.pj-dash-task-list, .pj-dash-stale-list) { gap: 0 !important; margin: 0 !important; }
+  /* linhas: o texto começa em 54px, na mesma coluna do título da seção; a bolinha fica embaixo do ícone */
+  body.at-projetos .pj-dash-task-row { position: relative; min-height: 56px; padding: 8px 16px 8px 54px !important; gap: 12px !important; border-radius: 0 !important; border-bottom: 1px solid var(--sep); transform: none !important; }
+  body.at-projetos .pj-dash-task-row:last-child { border-bottom: 0; }
+  body.at-projetos .pj-dash-task-row:active { background: var(--bg2) !important; }
+  body.at-projetos .pj-dash-task-dot { position: absolute; left: 26px; top: 50%; width: 8px !important; height: 8px !important; margin: -4px 0 0 !important; box-shadow: none !important; }
+  body.at-projetos .pj-dash-task-info { min-width: 0; flex: 1; }
+  body.at-projetos .pj-dash-task-title { font-size: 15px !important; font-weight: 500 !important; }
+  body.at-projetos :is(.pj-dash-task-meta, .pj-dash-task-sub) { margin-top: 2px; font-size: 13px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-dash-task-row .pj-avatar { width: 28px !important; height: 28px !important; min-width: 28px !important; min-height: 28px !important; }
+  /* "está vendo agora": entra na linha antes do avatar, em vez de cair por cima dele; bolinha parada */
+  body.at-projetos .pj-dash-task-row .pj-task-viewers { position: static; order: 2; flex-shrink: 0; }
+  body.at-projetos .pj-dash-task-row > div[style*="flex-shrink:0"] { order: 3; }
+  body.at-projetos .pj-dash-task-row .pj-viewer-pulse { animation: none; box-shadow: none; background: var(--success); margin-right: 8px; }
+  body.at-projetos .pj-dash-task-row .pj-viewer-dot { border-color: var(--card); }
+  body.at-projetos .pj-dash-empty { padding: 20px 16px 20px 54px !important; font-size: 14px !important; font-style: normal !important; color: var(--text3) !important; }
+  body.at-projetos .pj-dash-see-all {
+    min-height: 48px; display: flex; align-items: center; justify-content: center; margin: 0 !important;
+    border-top: 1px solid var(--sep); border-radius: 0 !important; font-size: 14px !important; font-weight: 600; color: var(--text) !important;
+  }
+  /* bolinha de prioridade: só urgente (vermelho) e alta (âmbar); normal e baixa somem. A cor vem inline do JS */
+  body.at-projetos .pj-dash-task-dot:is([style*="#6366f1"], [style*="#94a3b8"]) { visibility: hidden; }
+  body.at-projetos .pj-dash-task-dot[style*="#ef4444"] { background: var(--danger) !important; }
+  body.at-projetos .pj-dash-task-dot[style*="#f97316"] { background: var(--warning) !important; }
+  body.at-projetos .pj-dash-task-meta span[style*="#ef4444"] { color: var(--danger) !important; }
+  /* paradas: título em 54px e a pílula de dias à direita */
+  body.at-projetos .pj-dash-stale .pj-dash-task-row > span[style*="flex:1"] { display: none; }
+  body.at-projetos .pj-dash-stale .pj-dash-task-title { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  body.at-projetos .pj-dash-stale .pj-stale-pill { order: 2; }
+  body.at-projetos .pj-dash-stale .pj-task-assignees { order: 3; }
+  body.at-projetos .pj-dash-stale .pj-dash-task-sub { display: none; }
+  body.at-projetos .pj-stale-pill {
+    display: inline-flex; align-items: center; height: 24px; padding: 0 8px; gap: 6px; flex-shrink: 0; animation: none !important;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 999px !important;
+    color: var(--text) !important; font-size: 12px !important; font-weight: 600; line-height: 1 !important; box-shadow: none !important;
+  }
+  body.at-projetos .pj-stale-pill::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #9ca3af; }
+  body.at-projetos .pj-stale-pill.moderate::before { background: var(--warning); }
+  body.at-projetos .pj-stale-pill.severe::before { background: var(--danger); }
+  body.at-projetos .pj-activity-row { min-height: 56px; align-items: center; gap: 10px !important; padding: 10px 16px !important; border-radius: 0 !important; border-bottom: 1px solid var(--sep); }
+  body.at-projetos .pj-activity-row:last-child { border-bottom: 0; }
+  body.at-projetos .pj-activity-info { font-size: 14px !important; color: var(--text2) !important; }
+  body.at-projetos .pj-activity-row .pj-activity-time { display: block; margin-top: 2px; padding: 0 !important; background: none !important; border: 0 !important; border-radius: 0 !important; font-size: 12px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-dash-members { gap: 0 !important; margin: 0 !important; }
+  body.at-projetos .pj-dash-member {
+    padding: 14px 16px !important; border-radius: 0 !important; transform: none !important;
+    background: none !important; border: 0 !important; border-bottom: 1px solid var(--sep) !important; box-shadow: none !important;
+  }
+  body.at-projetos .pj-dash-member:last-child { border-bottom: 0 !important; }
+  body.at-projetos .pj-dash-member > div:last-child { margin-top: 6px !important; font-size: 12px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-dash-member-name { font-size: 15px !important; font-weight: 600; }
+  body.at-projetos .pj-dash-member-role { font-size: 13px !important; color: var(--text3) !important; }
+  body.at-projetos :is(.pj-dash-stat, .pj-dash-stat-red) {
+    display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px !important; border-radius: 999px !important;
+    background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; font-size: 12px !important; font-weight: 600 !important;
+  }
+  body.at-projetos .pj-dot { margin-right: 0; }
+  body.at-projetos .pj-dash-progress-wrap { height: 4px !important; background: var(--bg2) !important; }
+  body.at-projetos .pj-dash-progress-bar { background: var(--ink) !important; box-shadow: none !important; }
+  body.at-projetos .pj-dash-filter-chip { background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; }
+
+  /* 11. Cartão de avisos/instalar e toast (todas as telas) */
+  body .fg-push-nudge { padding: 16px; gap: 4px; border-radius: 16px; box-shadow: var(--sh-pop); }
+  body .fg-push-nudge b { font-size: 15px; font-weight: 600; }
+  body .fg-push-nudge span { font-size: 13px; line-height: 18px; }
+  body .fg-push-nudge__acts button { border-radius: 12px; font-size: 14px; }
+  body .fg-push-nudge__no { background: var(--card) !important; color: var(--text) !important; }
+  body .fg-push-nudge__yes { background: var(--fg-acao) !important; border-color: var(--fg-acao) !important; color: var(--on-ink) !important; }
+  body .toast { background: var(--card) !important; color: var(--text) !important; border: 1px solid var(--border) !important; border-radius: 14px !important; box-shadow: 0 8px 24px rgba(16,24,40,.14) !important; }
+
+  /* 12. Tarefas por dentro (listas, Todas, Caixa de Entrada): o mínimo pra não destoar do painel */
+  body.at-projetos :is(.pj-list-tr, .pj-task-row, .pj-card)::before { content: none !important; }
+  body.at-projetos :is(.pj-list-tr, .pj-task-row, .pj-card) { box-shadow: none !important; }
+  body.at-projetos .pj-task-row .pj-task-title-text { overflow: hidden !important; } /* a 3ª linha vazava pra fora do cartão */
+  body.at-projetos :is(.pj-priority, .pj-task-due) {
+    display: inline-flex !important; align-items: center; gap: 6px; height: 24px; padding: 0 10px !important;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 999px !important;
+    color: var(--text) !important; font-size: 12px !important; font-weight: 600 !important;
+    text-transform: none !important; letter-spacing: 0 !important; text-shadow: none !important; box-shadow: none !important; animation: none !important;
+  }
+  body.at-projetos :is(.pj-priority, .pj-task-due)::before {
+    content: '' !important; width: 8px; height: 8px; flex-shrink: 0; border-radius: 50%; background: #9ca3af; opacity: 1 !important;
+  }
+  body.at-projetos :is(.pj-priority.urgent, .pj-task-due.overdue)::before { background: var(--danger); }
+  body.at-projetos :is(.pj-priority.high, .pj-task-due.today)::before { background: var(--warning); }
+  body.at-projetos :is(.pj-status-pill, .pj-task-row-status-pill) {
+    height: 28px; padding: 0 10px !important; gap: 6px !important; border-radius: 999px !important;
+    background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; box-shadow: none !important;
+  }
+  body.at-projetos .pj-status-pill::before { content: none !important; }
+  body.at-projetos .pj-status-pill-dot { box-shadow: none !important; }
+  body.at-projetos .pj-status-group-header { background: var(--bg) !important; box-shadow: none !important; filter: none !important; }
+  body.at-projetos .pj-status-group-dot { width: 8px !important; height: 8px !important; background: var(--c, #9ca3af) !important; box-shadow: none !important; }
+  body.at-projetos .pj-status-group-name { color: var(--text) !important; font-size: 14px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; }
+  body.at-projetos :is(.pj-status-group-count, .pj-inbox-count-badge) {
+    background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text2) !important;
+    font-size: 12px !important; font-weight: 600 !important; padding: 0 8px !important; border-radius: 999px !important; line-height: 20px;
+  }
+  body.at-projetos .pj-inbox-section-title { font-size: 15px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text) !important; }
+  body.at-projetos .pj-inbox-section-title .dot { width: 8px !important; height: 8px !important; box-shadow: none !important; animation: none !important; }
+  body.at-projetos .pj-inbox-section-title .dot[style*="#ef4444"] { background: var(--danger) !important; }
+  body.at-projetos .pj-inbox-section-title .dot[style*="#f97316"] { background: var(--warning) !important; }
+  body.at-projetos .pj-inbox-section-title .dot[style*="#6366f1"] { background: #9ca3af !important; }
+  body.at-projetos .pj-inbox-section-title .dot[style*="#22c55e"] { background: var(--success) !important; }
+  body.at-projetos .pj-view-header .pj-icon-btn {
+    width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; color: var(--text) !important;
+  }
+  /* cabeçalho da lista: fica olho e ⋯ ao lado do nome. Status, Campos e Automações vão pro ⋯ (pjOpenListMenu),
+     o tema já está no painel da conta e o "+ Tarefa" repete o + flutuante, que cria direto nesta lista */
+  body.at-projetos .pj-view-header > :is(.pj-theme-toggle, .pj-btn-primary[onclick^="pjQuickCreateTask"]),
+  body.at-projetos .pj-view-header > .pj-icon-btn:is([onclick^="pjOpenStatusEditor"], [onclick^="pjOpenFieldsEditor"], [onclick^="pjOpenAutomationsEditor"]) { display: none !important; }
+  body.at-projetos .pj-view-header:has(> .pj-view-toggle) { flex-wrap: nowrap !important; padding: 8px 12px 8px 16px !important; }
+  body.at-projetos .pj-view-header::after { content: none; }
+  body.at-projetos .pj-view-title { flex-wrap: wrap; row-gap: 0; min-width: 0; line-height: 22px; }
+  body.at-projetos .pj-view-title .breadcrumb-parent { flex: 0 0 100%; font-size: 13px; line-height: 18px; color: var(--text3); }
+  body.at-projetos .pj-view-title .breadcrumb-sep { display: none; }
+  body.at-projetos .pj-popup-item { min-height: 44px; }
+  body.at-projetos .pj-filter-search {
+    min-height: 44px; padding-left: 40px !important; border-radius: 12px !important; font-size: 16px !important;
+    background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235a6272' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") no-repeat 12px center !important;
+  }
+  body.at-projetos .pj-filter-btn { min-height: 44px; border-radius: 12px !important; background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; }
+  body.at-projetos .pj-filter-btn.pj-filter-active-btn { background: var(--ink) !important; border-color: var(--ink) !important; color: var(--on-ink) !important; }
+
+  /* 13. Janelas que abrem do painel: Personalizar (folha de baixo) e Relatório do dia (cabeçalho branco) */
+  body.at-projetos .pj-dash-customize-overlay { align-items: flex-end !important; padding: 0 !important; background: var(--dim) !important; }
+  body.at-projetos .pj-dash-customize-modal {
+    max-width: none !important; max-height: 88dvh !important; border: 0 !important; border-radius: 20px 20px 0 0 !important;
+    background: var(--card) !important; box-shadow: 0 -8px 24px rgba(16,24,40,.12) !important; animation: none !important;
+  }
+  body.at-projetos .pj-dash-customize-head { padding: 16px 8px 12px 16px !important; border-bottom: 1px solid var(--sep) !important; }
+  body.at-projetos .pj-dash-customize-close { width: 44px !important; height: 44px !important; border-radius: 12px !important; color: var(--text2) !important; flex-shrink: 0; }
+  body.at-projetos .pj-dash-customize-list { padding: 0 16px !important; gap: 0 !important; }
+  body.at-projetos .pj-dash-customize-item { min-height: 60px; padding: 8px 0 !important; gap: 8px !important; background: none !important; border: 0 !important; border-bottom: 1px solid var(--sep) !important; border-radius: 0 !important; }
+  body.at-projetos .pj-dash-customize-item:last-child { border-bottom: 0 !important; }
+  body.at-projetos .pj-dash-customize-item.off { opacity: 1 !important; }
+  body.at-projetos .pj-dash-customize-item.off .pj-dash-customize-label { color: var(--text3) !important; }
+  body.at-projetos .pj-dash-customize-label { font-size: 15px !important; font-weight: 500 !important; }
+  body.at-projetos .pj-dash-customize-actions { gap: 4px !important; }
+  body.at-projetos .pj-dash-customize-actions button { width: 44px !important; height: 44px !important; border-radius: 12px !important; background: var(--card) !important; color: var(--text) !important; }
+  body.at-projetos .pj-dash-customize-actions button[disabled] { opacity: .35 !important; }
+  body.at-projetos .pj-dash-toggle { width: 48px !important; height: 28px !important; margin-left: 4px; }
+  body.at-projetos .pj-dash-toggle-slider { background: var(--border) !important; }
+  body.at-projetos .pj-dash-toggle-slider::before { width: 22px !important; height: 22px !important; box-shadow: 0 1px 2px rgba(16,24,40,.2) !important; }
+  body.at-projetos .pj-dash-toggle input:checked + .pj-dash-toggle-slider { background: var(--fg-acao) !important; }
+  body.at-projetos .pj-dash-toggle input:checked + .pj-dash-toggle-slider::before { transform: translateX(20px) !important; }
+  body.at-projetos .pj-dash-customize-footer { padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) !important; gap: 8px !important; border-top: 1px solid var(--sep) !important; }
+  body.at-projetos :is(.pj-dash-customize-reset, .pj-dash-customize-done) { flex: 1; min-height: 44px; border-radius: 12px !important; font-size: 15px !important; font-weight: 600 !important; transform: none !important; filter: none !important; }
+  body.at-projetos .pj-dash-customize-reset { background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; }
+  body.at-projetos .pj-dash-customize-done { background: var(--fg-acao) !important; border-color: var(--fg-acao) !important; color: var(--on-ink) !important; }
+  body.at-projetos .pj-wa-modal { padding: 16px !important; background: var(--dim) !important; }
+  body.at-projetos .pj-wa-card { border-radius: 16px !important; box-shadow: var(--sh-pop) !important; }
+  body.at-projetos .pj-wa-head { min-height: 56px; padding: 6px 6px 6px 16px !important; background: var(--card) !important; color: var(--text) !important; border-bottom: 1px solid var(--border) !important; }
+  body.at-projetos .pj-wa-head h3 { font-size: 17px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-wa-head .close-btn { width: 44px !important; height: 44px !important; border-radius: 12px !important; background: none !important; color: var(--text2) !important; }
+  body.at-projetos .pj-wa-actions { padding: 12px 16px !important; gap: 8px !important; }
+  body.at-projetos .pj-wa-actions button { min-height: 44px; padding: 0 12px !important; border-radius: 12px !important; font-size: 15px !important; font-weight: 600 !important; white-space: nowrap; transform: none !important; }
+  body.at-projetos .pj-wa-actions .copy { background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; }
+  body.at-projetos .pj-wa-actions .send { background: var(--fg-acao) !important; color: var(--on-ink) !important; }
+  /* janela da tarefa: WhatsApp neutro (cor forte só no principal) */
+  body.at-projetos .pj-modal-topbar .pj-btn-wa { background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; box-shadow: none !important; padding: 0 12px !important; border-radius: 12px !important; }
+}

@@ -61,6 +61,20 @@ function pjInitDrawerAutoClose() {
   const bd = document.getElementById('pjDrawerBackdrop');
   if (tg && tg.parentElement !== document.body) document.body.appendChild(tg);
   if (bd && bd.parentElement !== document.body) document.body.appendChild(bd);
+  // Celular: o sino fica na barra de cima, então o painel sai de dentro da aba
+  const np = document.getElementById('pjNotifPanel');
+  if (np && np.parentElement !== document.body && matchMedia('(max-width:640px)').matches) document.body.appendChild(np);
+  // Celular: o painel da conta também sai do topo, pra ficar acima da gaveta e escurecer a tela toda
+  if (matchMedia('(max-width:640px)').matches) {
+    ['appMenuBackdrop', 'appMenuPanel'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.parentElement !== document.body) document.body.appendChild(el);
+    });
+    // Gaveta com uma rolagem só: o rodapé (Novo Espaço, Templates) vai pro fim da lista
+    const ft = document.getElementById('pjSidebarFooter');
+    const sc = sb.querySelector('.pj-sidebar-scroll');
+    if (ft && sc && ft.parentElement !== sc) sc.appendChild(ft);
+  }
   // Esconde toggle quando não está na aba projetos
   function syncDrawerVisibility() {
     const onProjetos = document.getElementById('tab-projetos')?.classList.contains('active');

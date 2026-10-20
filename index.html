@@ -4,19 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.68.2">
+<link rel="stylesheet" href="styles.css?v=3.69.0">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0f1117" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#0f1117" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#ffffff">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Fogo & Gestão">
 <meta name="mobile-web-app-capable" content="yes">
 <script src="mobile.js" defer></script>
@@ -234,10 +233,11 @@
     <div class="app-logo-text">Fogo &amp; Gestão</div>
   </div>
   <div class="app-header-right">
+    <div class="app-title" id="appTitle"></div>
     <div class="sync-dot syncing" id="syncStatus" title="Conectando..."></div>
-    <div id="pjOfflineBadge" class="pj-offline-badge" title="Sem conexão — alterações ficam em fila e sobem quando voltar" style="display:none;">
+    <div id="pjOfflineBadge" class="pj-offline-badge" title="Sem conexão. As alterações ficam na fila e sobem quando a internet voltar." style="display:none;">
       <span class="pj-offline-dot"></span>
-      <span class="pj-offline-label">offline</span>
+      <span class="pj-offline-label">Sem conexão</span>
     </div>
     <!-- Elementos legados: mantidos por scripts que ainda referenciam esses IDs -->
     <button id="tabProjetos" style="display:none" aria-hidden="true"></button>
@@ -259,6 +259,7 @@
     <button class="app-menu-trigger" id="appMenuTrigger" onclick="appMenuToggle(event)" title="Menu">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
+    <button class="app-bell" id="appBell" type="button" onclick="pjToggleNotifPanel(event)" aria-label="Notificações"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg><span class="pj-notif-count" style="display:none"></span></button>
   </div>
 
   <!-- Painel completo do app (abre pelo botão hambúrguer da topbar).
@@ -280,7 +281,7 @@
 
     <button class="app-menu-search" onclick="pjOpenSearch();appMenuClose()" title="Buscar tarefas em qualquer módulo (⌘K)">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <span class="app-menu-search-label">Buscar tarefas...</span>
+      <span class="app-menu-search-label">Buscar tarefas</span>
       <span class="app-menu-search-kbd">⌘K</span>
     </button>
 
@@ -2608,7 +2609,7 @@ ufw allow 3000/tcp</pre>
       <div class="pj-notif-panel" id="pjNotifPanel"></div>
       <!-- Hamburger (mobile only) -->
       <button class="pj-drawer-toggle" id="pjDrawerToggle" onclick="pjToggleDrawer()" aria-label="Menu" aria-expanded="false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" width="20" height="20"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
       </button>
       <div class="pj-drawer-backdrop" id="pjDrawerBackdrop" onclick="pjCloseDrawer()"></div>
       <!-- Sidebar -->
@@ -2649,70 +2650,70 @@ ufw allow 3000/tcp</pre>
 
             <!-- Busca global -->
             <button class="pj-search-trigger" onclick="pjOpenSearch()">
-              <span>🔍</span> Buscar tarefas...
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Buscar tarefas
               <span style="margin-left:auto;font-size:10px;opacity:.5;">⌘K</span>
             </button>
 
             <!-- Vistas principais -->
             <button class="pj-nav-btn" id="pjBtnDashboard" onclick="pjNavigate('dashboard')">
-              <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M2 4a1 1 0 011-1h3a1 1 0 011 1v4a1 1 0 01-1 1H3a1 1 0 01-1-1V4zm6 0a1 1 0 011-1h3a1 1 0 011 1v2a1 1 0 01-1 1H9a1 1 0 01-1-1V4zm7-1a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1V4a1 1 0 00-1-1h-2zM2 11a1 1 0 011-1h3a1 1 0 011 1v4a1 1 0 01-1 1H3a1 1 0 01-1-1v-4zm7 1a1 1 0 00-1 1v2a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 00-1-1H9zm5-1a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2a1 1 0 01-1-1v-4z"/></svg></span>
+              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg></span>
               Dashboard
             </button>
             <button class="pj-nav-btn" id="pjBtnInbox" onclick="pjNavigate('inbox')">
-              <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M3 3a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 13.846 4.632 16 6.414 16H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 5H6.28l-.31-1.243A1 1 0 005 3H3z"/><path fill-rule="evenodd" d="M16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd"/></svg></span>
+              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>
               Caixa de Entrada
               <span class="pj-badge" id="pjInboxCount" style="display:none">0</span>
             </button>
             <button class="pj-nav-btn" id="pjBtnAll" onclick="pjNavigate('all')">
-              <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg></span>
+              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></svg></span>
               Todas as tarefas
             </button>
             <button class="pj-nav-btn" id="pjBtnWorkload" onclick="pjNavigate('workload')">
-              <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg></span>
+              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
               Workload
             </button>
             <button class="pj-nav-btn" id="pjBtnByClient" onclick="pjNavigate('byclient')">
-              <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"/></svg></span>
+              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span>
               Por Cliente
             </button>
             <button class="pj-nav-btn" id="pjBtnCsHealth" onclick="pjNavigate('cshealth')" title="Saúde da carteira — só em Sucesso do Cliente">
-              <span class="pj-nav-ic">🚦</span>
+              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>
               Saúde da carteira
             </button>
             <button class="pj-nav-btn" id="pjBtnIfood" onclick="pjNavigate('ifood')" title="Vendas dos clientes no iFood">
-              <span class="pj-nav-ic">🛵</span>
+              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg></span>
               iFood
             </button>
             <button class="pj-nav-btn" id="pjBtnTimeline" onclick="pjNavigate('timeline')">
-              <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></span>
+              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h10"/><path d="M6 12h9"/><path d="M11 18h7"/></svg></span>
               Timeline
             </button>
             <button class="pj-nav-btn" id="pjBtnArchived" onclick="pjNavigate('archived')">
-              <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/><path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd"/></svg></span>
+              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
               Arquivadas
             </button>
 
             <!-- Admin section -->
             <div class="pj-section-label pj-admin-only">Admin</div>
             <button class="pj-nav-btn pj-admin-only" id="pjBtnTimeMetrics" onclick="pjNavigate('timemetrics')">
-              <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg></span>
+              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
               Tempo
             </button>
             <button class="pj-nav-btn pj-admin-only" id="pjBtnDigest" onclick="pjNavigate('digest')">
-              <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg></span>
+              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>
               Digest Semanal
             </button>
             <button class="pj-nav-btn pj-admin-only" id="pjBtnIntegracoes" onclick="pjNavigate('integracoes')">
-              <span class="pj-nav-ic"><svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"/></svg></span>
+              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
               Integrações
             </button>
             <button class="pj-nav-btn pj-admin-only pj-askai-nav" id="pjBtnAskAi" onclick="pjNavigate('askai')">
-              <span class="pj-nav-ic">🤖</span>
+              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span>
               Pergunte à IA
-              <span class="pj-askai-pill">novo</span>
+              <span class="pj-askai-pill">Novo</span>
             </button>
             <button class="pj-nav-btn pj-admin-only" id="pjBtnTags" onclick="pjOpenTagsManager()" title="Gerenciar tags do workspace">
-              <span class="pj-nav-ic">🏷️</span>
+              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg></span>
               Tags
             </button>
           </div>
@@ -2723,11 +2724,11 @@ ufw allow 3000/tcp</pre>
           <!-- User row (injected by pjRenderSidebarUser) -->
           <div id="pjSidebarUserRow"></div>
           <button class="pj-add-space-btn pj-admin-only" onclick="pjOpenSpaceForm()">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
             Novo Espaço
           </button>
           <button class="pj-add-space-btn pj-admin-only" onclick="pjOpenTemplatesModal()">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="7" x="3" y="3" rx="1"/><rect width="9" height="7" x="3" y="14" rx="1"/><rect width="5" height="7" x="16" y="14" rx="1"/></svg>
             Templates
           </button>
           <button class="pj-add-space-btn pj-admin-only pj-demo-btn" id="pjDemoBtn" onclick="pjToggleDemo()">
@@ -2783,7 +2784,7 @@ ufw allow 3000/tcp</pre>
   </button>
 
   <!-- Quick-add FAB (visível em todas as abas para usuários logados) -->
-  <button class="pj-fab" id="pjFab" onclick="pjOpenFabModal()" title="Criar tarefa rápida" style="display:none;">＋</button>
+  <button class="pj-fab" id="pjFab" onclick="pjOpenFabModal()" title="Criar tarefa" aria-label="Criar tarefa" style="display:none;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
   <div class="pj-fab-modal-overlay" id="pjFabModal" onclick="if(event.target===this)pjCloseFabModal()" onkeydown="if(event.key==='Escape')pjCloseFabModal()">
     <div class="pj-fab-modal">
       <h3>🪄 Nova tarefa</h3>
@@ -2840,16 +2841,16 @@ ufw allow 3000/tcp</pre>
   <div class="pj-modal-overlay" id="pjTaskOverlay" onclick="if(event.target===this)pjCloseTaskModal()">
     <div class="pj-task-modal" id="pjTaskModal">
       <div class="pj-modal-topbar" id="pjModalBreadcrumb">
-        <button class="pj-icon-btn" onclick="pjCloseTaskModal()" style="font-size:16px;margin-right:4px;">×</button>
+        <button class="pj-icon-btn" onclick="pjCloseTaskModal()" style="font-size:16px;margin-right:4px;" title="Fechar" aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
         <span id="pjModalSpaceName">—</span>
         <span class="sep">/</span>
         <span id="pjModalListName">—</span>
         <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
           <span style="font-size:11px;color:var(--text3);">Salvo automaticamente</span>
-          <button class="pj-icon-btn" title="Duplicar tarefa" onclick="pjDuplicateTask(pjCurrentTaskId)" style="font-size:14px;">⧉</button>
-          <button class="pj-icon-btn" title="Excluir tarefa" onclick="pjDeleteTaskModal(pjCurrentTaskId)" style="font-size:14px;color:var(--danger);">🗑</button>
-          <button class="pj-btn pj-btn-wa" onclick="pjSendTaskWhatsApp(pjCurrentTaskId, this)" title="Avisar responsável + grupo no WhatsApp" style="padding:6px 12px;font-size:12px;">📤 WhatsApp</button>
-          <button class="pj-btn pj-btn-primary" onclick="pjCloseTaskModal()" style="padding:6px 14px;font-size:12px;">✓ Salvar e fechar</button>
+          <button class="pj-icon-btn" title="Duplicar tarefa" aria-label="Duplicar tarefa" onclick="pjDuplicateTask(pjCurrentTaskId)" style="font-size:14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button>
+          <button class="pj-icon-btn" title="Excluir tarefa" aria-label="Excluir tarefa" onclick="pjDeleteTaskModal(pjCurrentTaskId)" style="font-size:14px;color:var(--danger);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+          <button class="pj-btn pj-btn-wa" onclick="pjSendTaskWhatsApp(pjCurrentTaskId, this)" title="Avisar responsável e grupo no WhatsApp" aria-label="Avisar no WhatsApp" style="padding:6px 12px;font-size:12px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg><span class="pj-btn-wa-label">WhatsApp</span></button>
+          <button class="pj-btn pj-btn-primary" onclick="pjCloseTaskModal()" style="padding:6px 14px;font-size:12px;">Salvar e fechar</button>
         </div>
       </div>
       <!-- Abas só no celular: Tarefa | Atividade (a coluna da direita do desktop) -->
@@ -2945,7 +2946,7 @@ ufw allow 3000/tcp</pre>
       <!-- Bottom action bar (visível só no mobile) — Fechar + Salvar e Fechar -->
       <div class="pj-modal-bottombar">
         <button class="pj-btn pj-btn-secondary" onclick="pjCloseTaskModal()">Fechar</button>
-        <button class="pj-btn pj-btn-primary" onclick="pjCloseTaskModal()">✓ Salvar e Fechar</button>
+        <button class="pj-btn pj-btn-primary" onclick="pjCloseTaskModal()">Salvar e fechar</button>
       </div>
     </div>
   </div>
@@ -2998,6 +2999,7 @@ function applyAppTheme(idx) {
   // light theme adjustments
   const isLight = t.bg.startsWith('#f');
   document.body.style.colorScheme = isLight ? 'light' : 'dark';
+  document.documentElement.classList.toggle('fg-noturno', !isLight);
   document.querySelectorAll('input,textarea').forEach(el => el.style.colorScheme = isLight ? 'light' : 'dark');
   activeAppTheme = idx;
   localStorage.setItem('app_theme_idx', idx);
@@ -6538,7 +6540,7 @@ function edClientStripUpdateArrows() {
   const r = document.getElementById('edClientStripArrowR');
   if (!strip || !l || !r) return;
   const overflow = strip.scrollWidth - strip.clientWidth > 4;
-  const atStart  = strip.scrollLeft <= 2;
+  const atStart  = strip.scrollLeft <= 8;
   const atEnd    = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 2;
   l.hidden = !overflow || atStart;
   r.hidden = !overflow || atEnd;
@@ -6809,6 +6811,8 @@ function appMenuOpen() {
   const panel = document.getElementById('appMenuPanel');
   const backdrop = document.getElementById('appMenuBackdrop');
   if (!panel) return;
+  // Celular: o painel da conta abre sozinho, sem a gaveta por baixo
+  if (window.matchMedia('(max-width: 640px)').matches && typeof pjCloseDrawer === 'function') pjCloseDrawer();
   appMenuSync();
   panel.classList.add('open');
   panel.setAttribute('aria-hidden', 'false');
@@ -6914,6 +6918,8 @@ function switchTab(tab, btn) {
   document.querySelectorAll('.main-tab,.main-tab-more-item').forEach(t => t.classList.remove('active'));
   const panel = document.getElementById('tab-' + tab);
   panel.classList.add('active');
+  // Aba nova abre no topo (sem herdar a rolagem da anterior e sem animar)
+  if (_prevTab !== tab) { const _h = document.documentElement, _sb = _h.style.scrollBehavior; _h.style.scrollBehavior = 'auto'; window.scrollTo(0, 0); _h.style.scrollBehavior = _sb; }
   // Marca no body qual módulo está ativo pra CSS reagir sem depender de :has
   document.body.className = document.body.className.replace(/\bat-[a-z]+\b/g, '').trim();
   document.body.classList.add('at-' + tab);
@@ -17002,6 +17008,43 @@ function pjDemoMentionMe() {
   if (pjCurrentView.type === 'inbox') pjRenderMain();
 }
 
+// Ícones lucide de traço (1.75) usados na gaveta, no painel e no sino
+const FG_ICO = {
+  folder: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+  folderopen: '<path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/>',
+  clipboard: '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+  alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  calendar: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+  calclock: '<path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.3V14"/><circle cx="16" cy="16" r="6"/>',
+  check: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+  hourglass: '<path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>',
+  activity: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  sliders: '<line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/>',
+  send: '<path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/>',
+  at: '<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>',
+  msg: '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+  clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  userplus: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/>',
+  trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  copy: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+  up: '<path d="m18 15-6-6-6 6"/>',
+  down: '<path d="m6 9 6 6 6-6"/>',
+  eye: '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>',
+  tag: '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>',
+  fields: '<path d="M11 12H3"/><path d="M16 6H3"/><path d="M16 18H3"/><path d="M18 9v6"/><path d="M21 12h-6"/>',
+  zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  pencil: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
+  more: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
+  contrast: '<circle cx="12" cy="12" r="10"/><path d="M12 18a6 6 0 0 0 0-12v12z"/>',
+  repeat: '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+  inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>'
+};
+function fgIco(k, s = 16, w = 1.75) {
+  return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${FG_ICO[k]}</svg>`;
+}
+
 // ── Sidebar ────────────────────────────────────────────
 function pjRenderSidebar() {
   pjRenderSidebarUser();
@@ -17044,7 +17087,7 @@ function pjRenderSidebar() {
           </div>` : '';
         html += `
         <div class="pj-folder-row" onclick="pjToggleFolder('${f.id}')">
-          <span style="color:var(--text3);font-size:13px;">${fOpen?'📂':'📁'}</span>
+          <span class="pj-row-ic" style="color:var(--text3);display:inline-flex;">${fgIco(fOpen ? 'folderopen' : 'folder')}</span>
           <span class="pj-folder-name">${escHtml(f.name)}</span>${folderActions}
         </div>`;
         if (fOpen) fLists.forEach(l => { html += pjListRowHtml(l, true, isAdmin); });
@@ -17249,6 +17292,7 @@ function pjNavigate(type, id = null) {
   } catch(_){}
   document.querySelectorAll('.pj-nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.pj-list-row').forEach(b => b.classList.remove('active'));
+  if (type === 'dashboard') document.getElementById('pjBtnDashboard')?.classList.add('active');
   if (type === 'inbox') document.getElementById('pjBtnInbox')?.classList.add('active');
   if (type === 'all')   document.getElementById('pjBtnAll')?.classList.add('active');
   if (type === 'workload') document.getElementById('pjBtnWorkload')?.classList.add('active');
@@ -17281,11 +17325,10 @@ function pjRenderSidebarMe(user) {
   if (!av || !nm) { console.log('[hero] av/nm null', !!av, !!nm); return; }
   console.log('[hero] render pra', user.email, 'authPhoto=', !!user.photoURL);
   const full = user.displayName || user.email?.split('@')[0] || 'Você';
-  const parts = full.split(/\s+/).filter(Boolean).slice(0, 2);
-  nm.textContent = parts.join(' ');
+  nm.textContent = full;
   if (roleTxt) {
     const isAdmin = (typeof userIsAdmin === 'function') ? userIsAdmin() : false;
-    roleTxt.textContent = isAdmin ? 'admin · online agora' : 'online agora';
+    roleTxt.textContent = isAdmin ? 'Admin' : 'Membro';
   }
   // Aplica avatar direto sem esperar onload (foto SVG dataURL renderiza imediato).
   // A silhueta genérica do HTML inicial é apagada aqui.
@@ -17450,9 +17493,9 @@ function pjBuildDashboard() {
   const last7 = pjLast7Completions(isAdminView ? null : uid);
 
   // ── KPI cards ──
-  const kpi = (icon, label, value, color, sub, filter, spark) => `
+  const kpi = (icon, label, value, color, sub, filter, spark, alert) => `
     <div class="pj-dash-kpi" style="border-top:3px solid ${color}" onclick="pjSetDashFilter('${filter||''}')" title="Clique para ver">
-      <div class="pj-dash-kpi-top"><span class="pj-dash-kpi-icon">${icon}</span>
+      <div class="pj-dash-kpi-top"><span class="pj-dash-kpi-icon${alert ? ' is-alert' : ''}">${icon}</span>
         <span style="display:flex;align-items:center;">
           <span class="pj-dash-kpi-val" style="color:${color}">${value}</span>
           <span class="pj-dash-kpi-arrow">→</span>
@@ -17479,13 +17522,13 @@ function pjBuildDashboard() {
           <div class="pj-avatar" style="${avatarStyle}width:36px;height:36px;border-radius:10px;font-size:14px;flex-shrink:0;"></div>
           <div class="pj-dash-member-info">
             <div class="pj-dash-member-name">${escHtml(m.name || m.email || '?')}</div>
-            <div class="pj-dash-member-role">${m.role === 'admin' ? '🔑 Admin' : '✏️ Membro'}</div>
+            <div class="pj-dash-member-role">${m.role === 'admin' ? 'Admin' : 'Membro'}</div>
           </div>
         </div>
         <div class="pj-dash-member-stats">
-          <span class="${mOverdue.length ? 'pj-dash-stat-red' : 'pj-dash-stat'}">🔴 ${mOverdue.length} atrasada${mOverdue.length !== 1 ? 's' : ''}</span>
-          <span class="pj-dash-stat">📋 ${mToday.length} hoje</span>
-          <span class="pj-dash-stat">✅ ${mDone.length} concluída${mDone.length !== 1 ? 's' : ''}</span>
+          <span class="${mOverdue.length ? 'pj-dash-stat-red' : 'pj-dash-stat'}"><i class="pj-dot${mOverdue.length ? ' r' : ''}"></i>${mOverdue.length} atrasada${mOverdue.length !== 1 ? 's' : ''}</span>
+          <span class="pj-dash-stat"><i class="pj-dot"></i>${mToday.length} hoje</span>
+          <span class="pj-dash-stat"><i class="pj-dot${mDone.length ? ' g' : ''}"></i>${mDone.length} concluída${mDone.length !== 1 ? 's' : ''}</span>
         </div>
         <div class="pj-dash-progress-wrap">
           <div class="pj-dash-progress-bar" style="width:${barW}%"></div>
@@ -17508,7 +17551,7 @@ function pjBuildDashboard() {
       </div>
       <div style="display:flex;gap:2px;flex-shrink:0;">${assignees}</div>
     </div>`;
-  }).join('') || '<div class="pj-dash-empty">🎉 Nenhuma tarefa atrasada!</div>';
+  }).join('') || '<div class="pj-dash-empty">Nenhuma tarefa atrasada</div>';
 
   // ── Tarefas de hoje ──
   const todayRows = todayT.slice(0, 8).map(t => {
@@ -17520,7 +17563,7 @@ function pjBuildDashboard() {
       <div class="pj-dash-task-dot" style="background:${dot}"></div>
       <div class="pj-dash-task-info">
         <div class="pj-dash-task-title">${escHtml(t.title||'Sem título')}</div>
-        <div class="pj-dash-task-meta">${escHtml(list?.name||'')}${t.dueTime ? ' · 🕐 ' + t.dueTime : ''}</div>
+        <div class="pj-dash-task-meta">${escHtml(list?.name||'')}${t.dueTime ? ' · ' + t.dueTime : ''}</div>
       </div>
       <div style="display:flex;gap:2px;flex-shrink:0;">${assignees}</div>
     </div>`;
@@ -17536,7 +17579,7 @@ function pjBuildDashboard() {
       <div class="pj-dash-task-dot" style="background:${dot}"></div>
       <div class="pj-dash-task-info">
         <div class="pj-dash-task-title">${escHtml(t.title||'Sem título')}</div>
-        <div class="pj-dash-task-meta">${escHtml(list?.name||'')}${t.dueTime ? ' · 🕐 ' + t.dueTime : ''}</div>
+        <div class="pj-dash-task-meta">${escHtml(list?.name||'')}${t.dueTime ? ' · ' + t.dueTime : ''}</div>
       </div>
       <div style="display:flex;gap:2px;flex-shrink:0;">${assignees}</div>
     </div>`;
@@ -17549,7 +17592,7 @@ function pjBuildDashboard() {
     const member = pjMembers.find(m => m.uid === aUid);
     const who = member?.name?.split(' ')[0] || 'Alguém';
     return `<div class="pj-activity-row" onclick="pjOpenTask('${task.id}')">
-      <div class="pj-activity-icon">✅</div>
+      <div class="pj-activity-icon">${fgIco('check')}</div>
       <div class="pj-activity-info">
         <div><b>${escHtml(who)}</b> concluiu <b>${escHtml(task.title||'tarefa')}</b></div>
         <div class="pj-activity-time">${pjRelativeTime(ts)}</div>
@@ -17559,19 +17602,19 @@ function pjBuildDashboard() {
 
   // ── Filter chip de cliente ativo ──
   const clientChip = (typeof activeRestaurante !== 'undefined' && activeRestaurante)
-    ? `<span class="pj-dash-filter-chip">🏪 ${escHtml(activeRestaurante)} <button onclick="setRestaurante(null)" title="Remover filtro">×</button></span>`
+    ? `<span class="pj-dash-filter-chip">${escHtml(activeRestaurante)} <button onclick="setRestaurante(null)" title="Remover filtro">×</button></span>`
     : '';
   // Chip indicando visão pessoal pra membros
-  const viewChip = isAdminView ? '' : `<span class="pj-dash-filter-chip" title="Mostrando apenas suas tarefas">👤 Visão pessoal</span>`;
+  const viewChip = isAdminView ? '' : `<span class="pj-dash-filter-chip" title="Mostrando apenas suas tarefas">Visão pessoal</span>`;
 
   // ── Widgets como blocos isolados (para layout customizável) ──
   const widgets = {};
   widgets.kpis = `<div class="pj-dash-widget" data-widget="kpis">
     <div class="pj-dash-kpis">
-      ${kpi('📋', isAdminView ? 'Tarefas ativas' : 'Suas ativas', allActive.length, 'var(--accent)', `${noDate.length} sem data`, 'all')}
-      ${kpi('🔴', isAdminView ? 'Atrasadas' : 'Suas atrasadas', overdue.length, overdue.length ? '#ef4444' : '#22c55e', overdue.length ? 'requer atenção' : 'tudo em dia!', 'overdue')}
-      ${kpi('📅', isAdminView ? 'Vencem hoje' : 'Suas pra hoje', todayT.length, '#f97316', `${todayT.filter(t=>t.dueTime).length} com horário`, 'today')}
-      ${kpi('✅', isAdminView ? 'Concluídas hoje' : 'Você concluiu hoje', doneToday.length, '#22c55e', `7 dias →`, 'doneToday', pjSparkline(last7, '#22c55e'))}
+      ${kpi(fgIco('clipboard'), isAdminView ? 'Tarefas ativas' : 'Suas ativas', allActive.length, 'var(--accent)', `${noDate.length} sem data`, 'all')}
+      ${kpi(fgIco('alert'), isAdminView ? 'Atrasadas' : 'Suas atrasadas', overdue.length, overdue.length ? '#ef4444' : '#22c55e', overdue.length ? 'Requer atenção' : 'Tudo em dia', 'overdue', '', overdue.length > 0)}
+      ${kpi(fgIco('calendar'), isAdminView ? 'Vencem hoje' : 'Suas pra hoje', todayT.length, '#f97316', `${todayT.filter(t=>t.dueTime).length} com horário`, 'today')}
+      ${kpi(fgIco('check'), isAdminView ? 'Concluídas hoje' : 'Você concluiu hoje', doneToday.length, '#22c55e', `${last7.reduce((a, b) => a + b, 0)} em 7 dias`, 'doneToday', pjSparkline(last7, '#22c55e'))}
     </div>
   </div>`;
 
@@ -17579,27 +17622,27 @@ function pjBuildDashboard() {
     <div class="pj-dash-trio">
       <div class="pj-dash-col">
         <div class="pj-dash-section-title">
-          <span>🔴 Atrasadas</span>
+          <span><i class="pj-dash-st-ic${overdue.length ? ' is-alert' : ''}">${fgIco('alert')}</i>Atrasadas</span>
           <span class="pj-dash-section-count">${overdue.length}</span>
         </div>
         <div class="pj-dash-task-list">${overdueRows}</div>
-        ${overdue.length > 8 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('overdue')">Ver todas (${overdue.length}) →</div>` : ''}
+        ${overdue.length > 8 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('overdue')">Ver todas (${overdue.length})</div>` : ''}
       </div>
       <div class="pj-dash-col">
         <div class="pj-dash-section-title">
-          <span>📅 Hoje</span>
+          <span><i class="pj-dash-st-ic">${fgIco('calendar')}</i>Hoje</span>
           <span class="pj-dash-section-count">${todayT.length}</span>
         </div>
         <div class="pj-dash-task-list">${todayRows}</div>
-        ${todayT.length > 8 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('today')">Ver todas (${todayT.length}) →</div>` : ''}
+        ${todayT.length > 8 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('today')">Ver todas (${todayT.length})</div>` : ''}
       </div>
       <div class="pj-dash-col">
         <div class="pj-dash-section-title">
-          <span>⏭ Próximas 24h</span>
+          <span><i class="pj-dash-st-ic">${fgIco('calclock')}</i>Amanhã</span>
           <span class="pj-dash-section-count">${next24.length}</span>
         </div>
         <div class="pj-dash-task-list">${next24Rows}</div>
-        ${next24.length > 8 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('next24')">Ver todas (${next24.length}) →</div>` : ''}
+        ${next24.length > 8 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('next24')">Ver todas (${next24.length})</div>` : ''}
       </div>
     </div>
   </div>`;
@@ -17607,8 +17650,8 @@ function pjBuildDashboard() {
   widgets.stale = stale.length ? `<div class="pj-dash-widget" data-widget="stale">
     <div class="pj-dash-stale" style="margin-top:18px;">
       <div class="pj-dash-section-title">
-        <span>🧊 Tarefas paradas</span>
-        <span class="pj-dash-section-count">${stale.length} sem mudança recente</span>
+        <span><i class="pj-dash-st-ic">${fgIco('hourglass')}</i>Tarefas paradas</span>
+        <span class="pj-dash-section-count">${stale.length}</span>
       </div>
       <div class="pj-dash-stale-list">
         ${stale.slice(0, 6).map(({t, info}) => {
@@ -17616,7 +17659,7 @@ function pjBuildDashboard() {
           const sub = list?.name || '';
           const assignees = (t.assignees||[]).slice(0,2).map(uid => pjAvatarHtml(uid)).join('');
           return `<div class="pj-dash-task-row" data-task-id="${t.id}" onclick="pjOpenTask('${t.id}')">
-            <span class="pj-stale-pill ${info.severity}">🧊 ${info.days}d</span>
+            <span class="pj-stale-pill ${info.severity}">${info.days}d</span>
             <span class="pj-dash-task-title">${escHtml(t.title || '(sem título)')}</span>
             <span class="pj-dash-task-sub">${escHtml(sub)}</span>
             <span style="flex:1"></span>
@@ -17624,15 +17667,15 @@ function pjBuildDashboard() {
           </div>`;
         }).join('')}
       </div>
-      ${stale.length > 6 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('stale')">Ver todas (${stale.length}) →</div>` : ''}
+      ${stale.length > 6 ? `<div class="pj-dash-see-all" onclick="pjSetDashFilter('stale')">Ver todas (${stale.length})</div>` : ''}
     </div>
   </div>` : '';
 
   widgets.activity = `<div class="pj-dash-widget" data-widget="activity">
     <div class="pj-dash-col">
       <div class="pj-dash-section-title">
-        <span>⚡ ${isAdminView ? 'Atividade recente' : 'Suas conclusões recentes'}</span>
-        <span class="pj-dash-section-count">últimas 24h</span>
+        <span><i class="pj-dash-st-ic">${fgIco('activity')}</i>${isAdminView ? 'Atividade recente' : 'Suas conclusões recentes'}</span>
+        <span class="pj-dash-section-count">Últimas 24h</span>
       </div>
       <div class="pj-dash-task-list">${recentRows}</div>
     </div>
@@ -17641,8 +17684,8 @@ function pjBuildDashboard() {
   widgets.team = isAdminView ? `<div class="pj-dash-widget" data-widget="team">
     <div class="pj-dash-col">
       <div class="pj-dash-section-title">
-        <span>👥 Equipe</span>
-        <span class="pj-dash-section-count">${pjMembers.filter(m=>m.uid).length} membros</span>
+        <span><i class="pj-dash-st-ic">${fgIco('users')}</i>Equipe</span>
+        <span class="pj-dash-section-count">${pjMembers.filter(m=>m.uid).length}</span>
       </div>
       <div class="pj-dash-members" style="grid-template-columns:1fr;">${memberCards || '<div class="pj-dash-empty">Nenhum membro encontrado</div>'}</div>
     </div>
@@ -17659,13 +17702,13 @@ function pjBuildDashboard() {
   <div class="pj-dash-wrap">
     <div class="pj-dash-header">
       <div>
-        <div class="pj-dash-greet">${greet}, ${escHtml(firstName)}! 👋 ${viewChip} ${clientChip}</div>
+        <div class="pj-dash-greet">${greet}, ${escHtml(firstName)} ${viewChip} ${clientChip}</div>
         <div class="pj-dash-date">${dateStr}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button class="pj-dash-customize-btn" onclick="pjOpenDashCustomize()" title="Personalizar dashboard">🎨 Personalizar</button>
+        <button class="pj-dash-customize-btn" onclick="pjOpenDashCustomize()" title="Personalizar painel" aria-label="Personalizar painel">${fgIco('sliders', 18)}<span class="pj-dash-btn-label">Personalizar</span></button>
         ${isAdminView ? `<button class="pj-wa-trigger-btn" onclick="pjOpenDailyReport()" style="font-size:12px;">
-          📱 Relatório do dia
+          ${fgIco('send', 18)}Relatório do dia
         </button>` : ''}
       </div>
     </div>
@@ -17675,11 +17718,11 @@ function pjBuildDashboard() {
 
 // ── Dashboard customizável: layout (ordem + visibilidade) ─────
 const PJ_DASH_DEFAULT_LAYOUT = [
-  { id:'kpis',     visible:true, label:'📊 Cards de KPIs (4 números no topo)' },
-  { id:'trio',     visible:true, label:'📋 Atrasadas / Hoje / Próximas 24h' },
-  { id:'stale',    visible:true, label:'🧊 Tarefas paradas (com IA)' },
-  { id:'activity', visible:true, label:'⚡ Atividade recente (últimas 24h)' },
-  { id:'team',     visible:true, label:'👥 Equipe (admin)' },
+  { id:'kpis',     visible:true, label:'Números do dia' },
+  { id:'trio',     visible:true, label:'Atrasadas, hoje e amanhã' },
+  { id:'stale',    visible:true, label:'Tarefas paradas' },
+  { id:'activity', visible:true, label:'Atividade recente' },
+  { id:'team',     visible:true, label:'Equipe' },
 ];
 
 function pjGetDashLayout() {
@@ -17689,7 +17732,7 @@ function pjGetDashLayout() {
   const merged = [];
   saved.forEach(w => {
     const def = PJ_DASH_DEFAULT_LAYOUT.find(d => d.id === w?.id);
-    if (def) merged.push({ ...def, ...w });
+    if (def) merged.push({ ...def, ...w, label: def.label });
   });
   PJ_DASH_DEFAULT_LAYOUT.forEach(d => { if (!known.has(d.id)) merged.push({ ...d }); });
   return merged;
@@ -17733,29 +17776,28 @@ function pjOpenDashCustomize() {
       <div class="pj-dash-customize-modal">
         <div class="pj-dash-customize-head">
           <div>
-            <h3 style="margin:0;font-size:16px;">🎨 Personalizar Dashboard</h3>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Mostrar/esconder widgets e reordenar. Salvo só no seu dispositivo.</div>
+            <h3 style="margin:0;font-size:17px;font-weight:600;">Personalizar painel</h3>
+            <div style="font-size:13px;color:var(--text2);margin-top:2px;">Escolha o que aparece e em que ordem. Fica salvo neste aparelho.</div>
           </div>
-          <button onclick="pjCloseDashCustomize()" class="pj-dash-customize-close" title="Fechar">×</button>
+          <button onclick="pjCloseDashCustomize()" class="pj-dash-customize-close" title="Fechar" aria-label="Fechar">${fgIco('x', 20)}</button>
         </div>
         <div class="pj-dash-customize-list">
           ${layout.map((w,i) => `
             <div class="pj-dash-customize-item${w.visible?'':' off'}">
-              <span class="pj-dash-customize-grip" title="Use as setas para reordenar">≡</span>
               <span class="pj-dash-customize-label">${w.label}</span>
               <div class="pj-dash-customize-actions">
-                <button onclick="pjMoveDashWidget('${w.id}',-1)" ${i===0?'disabled':''} title="Subir">↑</button>
-                <button onclick="pjMoveDashWidget('${w.id}',1)" ${i===layout.length-1?'disabled':''} title="Descer">↓</button>
-                <label class="pj-dash-toggle" title="Mostrar/esconder">
-                  <input type="checkbox" ${w.visible?'checked':''} onchange="pjToggleDashWidget('${w.id}')">
+                <button onclick="pjMoveDashWidget('${w.id}',-1)" ${i===0?'disabled':''} title="Subir" aria-label="Subir ${w.label}">${fgIco('up', 18)}</button>
+                <button onclick="pjMoveDashWidget('${w.id}',1)" ${i===layout.length-1?'disabled':''} title="Descer" aria-label="Descer ${w.label}">${fgIco('down', 18)}</button>
+                <label class="pj-dash-toggle" title="Mostrar ou esconder">
+                  <input type="checkbox" ${w.visible?'checked':''} onchange="pjToggleDashWidget('${w.id}')" aria-label="Mostrar ${w.label}">
                   <span class="pj-dash-toggle-slider"></span>
                 </label>
               </div>
             </div>`).join('')}
         </div>
         <div class="pj-dash-customize-footer">
-          <button onclick="pjResetDashLayout()" class="pj-dash-customize-reset">↺ Restaurar padrão</button>
-          <button onclick="pjCloseDashCustomize()" class="pj-dash-customize-done">✓ Concluído</button>
+          <button onclick="pjResetDashLayout()" class="pj-dash-customize-reset">Restaurar padrão</button>
+          <button onclick="pjCloseDashCustomize()" class="pj-dash-customize-done">Concluído</button>
         </div>
       </div>
     </div>`;
@@ -17811,7 +17853,7 @@ function pjBuildInbox() {
 
   const _inboxIsAdmin = (typeof userIsAdmin === 'function') ? userIsAdmin() : true;
   let h = `<div class="pj-view-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-    <div class="pj-view-title">📥 Caixa de Entrada</div>
+    <div class="pj-view-title">Caixa de Entrada</div>
     ${_inboxIsAdmin ? `<button class="pj-wa-trigger-btn" onclick="pjOpenDailyReport()" title="Visualizar relatório diário em formato WhatsApp">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.8-.7-1.4-1.6-1.6-1.9-.2-.3 0-.4.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4 0 1.4 1 2.8 1.2 3 .1.2 2 3.1 4.9 4.3 2.9 1.2 2.9.8 3.4.8.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3z"/><path d="M12 2C6.5 2 2 6.5 2 12c0 1.7.5 3.4 1.3 4.8L2 22l5.3-1.4C8.7 21.5 10.3 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.3c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3c-.9-1.4-1.3-3-1.3-4.6 0-4.6 3.7-8.3 8.3-8.3s8.3 3.7 8.3 8.3-3.7 8.5-8.2 8.5z"/></svg>
       Relatório do dia
@@ -17835,7 +17877,7 @@ function pjBuildInbox() {
       <div class="pj-inbox-section-body">${bodyContent}</div>
     </div>`;
   };
-  h += section('Atrasadas','#ef4444', overdue, 'Nenhuma tarefa atrasada 🎉', false);
+  h += section('Atrasadas','#ef4444', overdue, 'Nenhuma tarefa atrasada', false);
   h += section('Hoje','#f97316', todayT, 'Sem tarefas para hoje', false);
   h += section('Futuras','#6366f1', future, 'Sem tarefas futuras', true);
   if (done.length) h += section('Concluídas recentes','#22c55e', done, '', true);
@@ -17962,8 +18004,8 @@ function pjOpenDailyReport() {
   modal.innerHTML = `
     <div class="pj-wa-card">
       <div class="pj-wa-head">
-        <h3>📱 Preview · Relatório WhatsApp</h3>
-        <button class="close-btn" onclick="pjCloseDailyReport()">×</button>
+        <h3>Relatório do dia</h3>
+        <button class="close-btn" onclick="pjCloseDailyReport()" title="Fechar" aria-label="Fechar">${fgIco('x', 20)}</button>
       </div>
       <div class="pj-wa-body">
         <div class="pj-wa-bubble-wrap">
@@ -17971,8 +18013,8 @@ function pjOpenDailyReport() {
         </div>
       </div>
       <div class="pj-wa-actions">
-        <button class="copy" onclick="pjCopyDailyReport()">📋 Copiar texto</button>
-        <button class="send" onclick="pjSendDailyReport()">📤 Enviar pro grupo</button>
+        <button class="copy" onclick="pjCopyDailyReport()">${fgIco('copy', 18)}Copiar texto</button>
+        <button class="send" onclick="pjSendDailyReport()">${fgIco('send', 18)}Enviar pro grupo</button>
       </div>
     </div>`;
   document.body.appendChild(modal);
@@ -17985,7 +18027,7 @@ function pjCopyDailyReport() {
   const modal = document.getElementById('pjWaModal');
   const text = modal?._raw || pjGenerateDailyReport();
   navigator.clipboard.writeText(text).then(() => {
-    if (typeof showToast === 'function') showToast('ok', '✓', 'Texto copiado! Cole no WhatsApp.');
+    if (typeof showToast === 'function') showToast('ok', '✓', 'Texto copiado. Cole no grupo.');
   }).catch(() => alert('Não foi possível copiar.'));
 }
 // Envia o relatório direto via uazapi (sem n8n).
@@ -18046,7 +18088,7 @@ function pjBuildAll() {
   const titleSuffix = f && filterLabels[f]
     ? ` <span class="pj-dash-filter-chip">${filterLabels[f]} <button onclick="pjClearDashFilter()" title="Limpar">×</button></span>`
     : '';
-  let h = `<div class="pj-view-header"><div class="pj-view-title">☰ Todas as tarefas${titleSuffix}</div></div><div class="pj-view-body">`;
+  let h = `<div class="pj-view-header"><div class="pj-view-title">Todas as tarefas${titleSuffix}</div></div><div class="pj-view-body">`;
 
   let tasks;
   if (f === 'doneToday') {
@@ -18348,12 +18390,12 @@ function pjBuildListPage(listId) {
       <button class="${view==='kanban'?'active':''}" onclick="pjSetView('${listId}','kanban')">⊞ Kanban</button>
       ${(list.customFields||[]).some(f=>f.type==='address') ? `<button class="${view==='map'?'active':''}" onclick="pjSetView('${listId}','map')">📍 Mapa</button>` : ''}
     </div>
-    ${view==='list' ? `<button class="pj-icon-btn pj-icon-btn-lg" title="Mostrar/ocultar colunas" onclick="pjOpenColumnsMenu(event,'${listId}')">👁️</button>` : ''}
-    ${_viewIsAdmin ? `<button class="pj-icon-btn pj-icon-btn-lg" title="Editar status" onclick="pjOpenStatusEditor('${listId}')">🏷️</button>
-    <button class="pj-icon-btn pj-icon-btn-lg" title="Campos personalizados" onclick="pjOpenFieldsEditor('${listId}')">📋</button>
-    <button class="pj-icon-btn pj-icon-btn-lg" title="Automações" onclick="pjOpenAutomationsEditor('${listId}')">⚡</button>
-    <button class="pj-icon-btn pj-icon-btn-lg" title="Mais opções (renomear, excluir...)" onclick="pjOpenListMenu(event,'${listId}')">⋯</button>` : ''}
-    <button class="pj-icon-btn pj-icon-btn-lg pj-theme-toggle" title="Trocar tema (claro/escuro)" onclick="toggleNightMode()">🌗</button>
+    ${view==='list' ? `<button class="pj-icon-btn pj-icon-btn-lg" title="Mostrar ou ocultar colunas" aria-label="Colunas" onclick="pjOpenColumnsMenu(event,'${listId}')">${fgIco('eye', 18)}</button>` : ''}
+    ${_viewIsAdmin ? `<button class="pj-icon-btn pj-icon-btn-lg" title="Editar status" aria-label="Editar status" onclick="pjOpenStatusEditor('${listId}')">${fgIco('tag', 18)}</button>
+    <button class="pj-icon-btn pj-icon-btn-lg" title="Campos personalizados" aria-label="Campos personalizados" onclick="pjOpenFieldsEditor('${listId}')">${fgIco('fields', 18)}</button>
+    <button class="pj-icon-btn pj-icon-btn-lg" title="Automações" aria-label="Automações" onclick="pjOpenAutomationsEditor('${listId}')">${fgIco('zap', 18)}</button>
+    <button class="pj-icon-btn pj-icon-btn-lg" title="Mais opções (renomear, excluir)" aria-label="Mais opções" onclick="pjOpenListMenu(event,'${listId}')">${fgIco('more', 18)}</button>` : ''}
+    <button class="pj-icon-btn pj-icon-btn-lg pj-theme-toggle" title="Trocar tema (claro ou escuro)" aria-label="Trocar tema" onclick="toggleNightMode()">${fgIco('contrast', 18)}</button>
     <button class="pj-btn pj-btn-primary" style="font-size:14px;padding:10px 22px;font-weight:600;" onclick="pjQuickCreateTask('${listId}')">＋ Tarefa</button>
   </div>` + pjBuildFilterBar(list) + pjBuildBulkBar() + `<div class="pj-view-body" style="padding-top:8px;">`;
 
@@ -18442,7 +18484,7 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
   const prio = t.priority && t.priority !== 'low'
     ? `<span class="pj-priority ${t.priority}">${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}</span>`
     : `<span class="pj-cell-empty">—</span>`;
-  const recur = t.recurrence?.pattern ? `<span class="pj-recur-badge" title="${pjRecurrenceLabel(t.recurrence)}">🔁</span>` : '';
+  const recur = t.recurrence?.pattern ? `<span class="pj-recur-badge" title="${pjRecurrenceLabel(t.recurrence)}" aria-label="Recorrente">${fgIco('repeat', 14)}</span>` : '';
 
   const selected = pjSelected.has(t.id);
   // Célula Cliente — mostra logo/cor + nome (clique abre o picker)
@@ -18574,7 +18616,7 @@ function pjBuildFilterBar(list) {
     ((f.sort && f.sort!=='order')?1:0);
 
   return `<div class="pj-filter-bar">
-    <input class="pj-filter-search" placeholder="🔍 Buscar tarefas..." value="${escHtml(f.search||'')}"
+    <input class="pj-filter-search" placeholder="Buscar tarefas" value="${escHtml(f.search||'')}"
       oninput="pjSetFilter('search',this.value)">
     <!-- Filtros individuais (desktop) -->
     <span class="pj-filter-desktop-only">
@@ -18587,9 +18629,9 @@ function pjBuildFilterBar(list) {
     </span>
     <!-- Botão único agrupando filtros (mobile) -->
     <button class="pj-filter-btn pj-filter-mobile-only ${activeCount>0?'pj-filter-active-btn':''}" onclick="pjOpenFiltersSheet()">
-      ⚙ Filtros${activeCount>0?` <span class="pj-filter-badge">${activeCount}</span>`:''}
+      ${fgIco('sliders', 16)}Filtros${activeCount>0?` <span class="pj-filter-badge">${activeCount}</span>`:''}
     </button>
-    ${active ? `<button class="pj-filter-btn pj-filter-btn-danger" onclick="pjClearFilter()" title="Limpar filtros">✕ Limpar</button>` : ''}
+    ${active ? `<button class="pj-filter-btn pj-filter-btn-danger" onclick="pjClearFilter()" title="Limpar filtros">${fgIco('x', 14)}Limpar</button>` : ''}
   </div>`;
 }
 
@@ -19146,6 +19188,8 @@ async function pjAddNotification(notif) {
         forUid: notif.forUid,
         senderUid: notif.senderUid || currentUid || null,
         senderName: notif.senderName || null,
+        excerpt: notif.excerpt,
+        taskTitle: notif.taskTitle,
         ts: pjNow(),
         read: false,
       };
@@ -19245,12 +19289,12 @@ function pjUpdateNotifBell() {
   const bell = document.getElementById('pjNotifBell');
   if (!bell) return;
   const unread = pjNotifications.filter(n => !n.read).length;
-  const countEl = bell.querySelector('.pj-notif-count');
-  if (countEl) {
+  // Contador do sino da gaveta e do sino da barra de cima (celular)
+  document.querySelectorAll('#pjNotifBell .pj-notif-count, #appBell .pj-notif-count').forEach(countEl => {
     countEl.textContent = unread > 99 ? '99+' : unread;
     countEl.classList.toggle('has', unread > 0);
     countEl.style.display = unread > 0 ? '' : 'none';
-  }
+  });
   // 🔔 Aplica estado VISUAL de não-lidas (gradiente accent + pulse)
   bell.classList.toggle('has-unread', unread > 0);
 }
@@ -19291,6 +19335,16 @@ function pjToggleNotifPanel(ev) {
     panel.classList.remove('open');
   }
 }
+// "há 3 dias", igual ao resto do painel
+function pjNotifTime(ts) {
+  const m = Math.floor((Date.now() - ts) / 60000);
+  if (m < 1) return 'agora';
+  if (m < 60) return `há ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `há ${h} h`;
+  const d = Math.floor(h / 24);
+  return d === 1 ? 'há 1 dia' : `há ${d} dias`;
+}
 function pjRenderNotifPanel() {
   const panel = document.getElementById('pjNotifPanel'); if (!panel) return;
   const currentUid = _auth?.currentUser?.uid || _currentUser?.uid;
@@ -19298,15 +19352,23 @@ function pjRenderNotifPanel() {
   const visible = pjNotifications.filter(n => !n.forUid || n.forUid === currentUid);
   const mentions = visible.filter(n => n.type === 'mention' && !n.read);
   const items = visible.map(n => {
-    const time = pjRelTime(new Date(n.ts));
+    const time = pjNotifTime(n.ts);
     const isMention = n.type === 'mention';
-    const icon = isMention ? '@' : (n.type==='comment'?'💬':(n.type==='due'?'⏰':'📌'));
+    const icon = fgIco(isMention ? 'at' : n.type === 'comment' ? 'msg' : n.type === 'due' ? 'clock' : 'userplus');
+    // Menção: trecho do comentário e nome da tarefa em linhas próprias.
+    // As novas trazem excerpt/taskTitle; nas antigas sai do subtitle '"trecho…" em "tarefa"'.
+    let sub = n.subtitle || '', task = n.taskTitle || '';
+    if (n.excerpt != null) sub = n.excerpt;
+    else {
+      const m = sub.match(/^"([\s\S]*?)(…)?" em "([\s\S]*)"$/);
+      if (m) { sub = m[2] ? (m[1].replace(/\s+\S*$/, '') || m[1]) : m[1]; task = m[3]; }
+    }
     return `<div class="pj-notif-item ${n.read?'read':'unread'} ${isMention&&!n.read?'mention-highlight':''}" onclick="pjOpenNotif('${n.id}')">
       <span class="pj-notif-icon ${isMention?'mention-icon':''}">${icon}</span>
       <div class="pj-notif-body">
         <div class="${isMention&&!n.read?'bold':''}">${escHtml(n.title||'')}</div>
-        ${n.subtitle?`<div class="pj-notif-sub">${escHtml(n.subtitle)}</div>`:''}
-        <div class="pj-notif-time">${time}</div>
+        ${sub?`<div class="pj-notif-sub">${escHtml(sub)}</div>`:''}
+        <div class="pj-notif-time">${task ? `<span class="pj-notif-task">${escHtml(task)}</span><span>&nbsp;·&nbsp;</span>` : ''}<span>${time}</span></div>
       </div>
       ${isMention&&!n.read?'<span class="pj-notif-mention-badge">@</span>':''}
     </div>`;
@@ -19317,9 +19379,8 @@ function pjRenderNotifPanel() {
     </div>` : '';
   panel.innerHTML = `
     <div class="pj-notif-header">
-      <span>🔔 Notificações</span>
-      <button onclick="pjMarkAllRead()" title="Marcar todas como lidas">✓ lidas</button>
-      <button onclick="pjClearNotifs()" title="Limpar todas">🗑</button>
+      <span>Notificações</span>
+      <button onclick="pjClearNotifs()" title="Apagar todas" aria-label="Apagar todas">${fgIco('trash', 18)}</button>
     </div>
     ${pjPushRow()}
     ${mentionBanner}
@@ -19347,7 +19408,10 @@ function pjMarkAllRead() {
     try { pjC('pj_notifications').doc(id).update({ read: true }).catch(()=>{}); } catch(_) {}
   });
 }
-function pjClearNotifs() {
+async function pjClearNotifs() {
+  if (!pjNotifications.length) return;
+  const ok = await pjConfirmDanger({ title: 'Apagar notificações', message: 'Apagar todas as notificações? Não dá pra desfazer.', confirmLabel: 'Apagar' });
+  if (!ok) return;
   const ids = pjNotifications.map(n => n.id);
   pjNotifications = [];
   localStorage.setItem('pj_notif', JSON.stringify(pjNotifications));
@@ -20326,7 +20390,7 @@ function pjTaskRowHtml(t) {
   const assigneeHtml = (t.assignees||[]).slice(0,3).map(uid=>pjAvatarHtml(uid)).join('');
   // Recorrência: badge 🔁 com tooltip do padrão
   const recurBadge = t.recurrence?.pattern
-    ? `<span class="pj-recur-badge" title="${escHtml(typeof pjRecurrenceLabel==='function' ? pjRecurrenceLabel(t.recurrence) : 'Recorrente')}">🔁</span>`
+    ? `<span class="pj-recur-badge" title="${escHtml(typeof pjRecurrenceLabel==='function' ? pjRecurrenceLabel(t.recurrence) : 'Recorrente')}" aria-label="Recorrente">${fgIco('repeat', 14)}</span>`
     : '';
   // Cliente (logo / cor da BD)
   const clientName = (typeof pjResolveTaskClient === 'function') ? pjResolveTaskClient(t) : (t.client || null);
@@ -27027,37 +27091,39 @@ function pjGetFirstName() {
 // Diálogo de confirmação destrutivo (vermelho). Retorna Promise<boolean>.
 // Estilo inline pra não depender de styles.css cacheado velho.
 function pjConfirmDanger(opts) {
-  const { icon='⚠️', title='Confirmar', message='Tem certeza?', confirmLabel='Sim', cancelLabel='Cancelar' } = opts || {};
+  // Cartão branco com quadradinho vermelho sólido (ícone de traço), sem emoji e sem brilho.
+  // O "icon" antigo continua aceito mas não é mais usado.
+  const { title='Confirmar', message='Tem certeza?', confirmLabel='Sim', cancelLabel='Cancelar' } = opts || {};
   return new Promise(resolve => {
     document.querySelectorAll('[data-pj-confirm-danger]').forEach(n => n.remove());
     const overlay = document.createElement('div');
     overlay.setAttribute('data-pj-confirm-danger', '1');
     overlay.style.cssText = [
       'position:fixed','inset:0','z-index:2147483647',
-      'display:flex','align-items:center','justify-content:center',
-      'background:rgba(20,6,6,.68)','backdrop-filter:blur(6px)',
-      '-webkit-backdrop-filter:blur(6px)',
+      'display:flex','align-items:center','justify-content:center','padding:16px',
+      'background:rgba(17,19,24,.4)',
       'animation:pjCdFade .18s ease-out',
-      'font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif',
+      'font-family:var(--font,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif)',
     ].join(';');
     const box = document.createElement('div');
     box.setAttribute('role','alertdialog');
     box.setAttribute('aria-modal','true');
     box.style.cssText = [
-      'position:relative','width:min(92vw,420px)','max-width:420px',
-      'background:#ffffff','color:#18181b',
-      'border:2px solid #dc2626','border-radius:16px',
-      'box-shadow:0 24px 60px -20px rgba(220,38,38,.45),0 12px 30px rgba(0,0,0,.25)',
-      'padding:24px 22px 20px','text-align:center',
-      'animation:pjCdIn .22s cubic-bezier(.2,.9,.3,1.2)',
+      'position:relative','width:100%','max-width:400px',
+      'background:var(--card,#fff)','color:var(--text,#1a1d23)',
+      'border:1px solid var(--border,#d8dde6)','border-radius:16px',
+      'box-shadow:0 16px 40px rgba(16,24,40,.16),0 2px 6px rgba(16,24,40,.06)',
+      'padding:20px','text-align:left',
+      'animation:pjCdIn .18s ease-out',
     ].join(';');
+    const _ic = typeof fgIco === 'function' ? fgIco('alert', 20, 2) : '!';
     box.innerHTML = `
-      <div style="font-size:34px;line-height:1;margin-bottom:8px;">${icon}</div>
-      <div style="font-size:13px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:1.4px;margin-bottom:12px;">${escHtml(title)}</div>
-      <div style="font-size:15px;line-height:1.5;color:#18181b;margin-bottom:22px;">${escHtml(message)}</div>
-      <div style="display:flex;gap:10px;justify-content:center;">
-        <button type="button" data-pj-cancel style="padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid #e4e4e7;background:#f4f4f5;color:#52525b;">${escHtml(cancelLabel)}</button>
-        <button type="button" data-pj-confirm style="padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:1.5px solid transparent;background:#dc2626;color:#fff;box-shadow:0 4px 12px rgba(220,38,38,.3);">${escHtml(confirmLabel)}</button>
+      <div style="width:40px;height:40px;border-radius:10px;background:#c9353a;color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">${_ic}</div>
+      <div style="font-size:17px;line-height:22px;font-weight:600;margin-bottom:6px;">${escHtml(title)}</div>
+      <div style="font-size:15px;line-height:21px;color:var(--text2,#5a6272);margin-bottom:20px;">${escHtml(message)}</div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button type="button" data-pj-cancel style="min-height:44px;padding:0 18px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:1px solid var(--border,#d8dde6);background:var(--card,#fff);color:var(--text,#1a1d23);font-family:inherit;">${escHtml(cancelLabel)}</button>
+        <button type="button" data-pj-confirm style="min-height:44px;padding:0 20px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:1px solid #c9353a;background:#c9353a;color:#fff;font-family:inherit;">${escHtml(confirmLabel)}</button>
       </div>`;
     overlay.appendChild(box);
     // Keyframes injetadas 1x
@@ -27641,6 +27707,8 @@ function pjProcessMentionNotifs(text, senderName, senderUid) {
       type: 'mention',
       title: `${senderName} te mencionou`,
       subtitle: `"${text.slice(0,60)}${text.length>60?'…':''}" em "${taskTitle}"`,
+      excerpt: text.slice(0, 200),
+      taskTitle,
       taskId: pjCurrentTaskId,
       forUid: targetUid,
       senderUid,
@@ -28412,7 +28480,9 @@ async function pjSendTaskWhatsApp(taskId, btn) {
   if (!uid) { showToast('warn','⚠️','Atribua um responsável antes de mandar'); return; }
   const m = pjMembers.find(x => x.uid === uid);
   if (!m?.email) { showToast('warn','⚠️','Responsável sem e-mail cadastrado'); return; }
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando…'; }
+  // Guarda o conteúdo do botão (ícone + rótulo) pra devolver depois
+  const _btnHtml = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando'; }
   try {
     await fgNotifyWhatsAppTaskAssigned(uid, task);
     // Se estiver em status análise/revisão, avisa no grupo com o formato de análise
@@ -28427,7 +28497,7 @@ async function pjSendTaskWhatsApp(taskId, btn) {
     console.warn('[pjSendTaskWhatsApp]', e);
     showToast('error','❌','Falha ao enviar: '+(e?.message||'erro'));
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '📤 WhatsApp'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = _btnHtml; }
   }
 }
 
@@ -29031,14 +29101,25 @@ async function pjSaveStatuses(listId) {
 function pjOpenListMenu(ev, listId) {
   ev.stopPropagation();
   const list = pjLists.find(l => l.id === listId); if (!list) return;
+  // No celular, Status, Campos e Automações saem do cabeçalho da lista e moram aqui
+  const mob = window.matchMedia('(max-width: 640px)').matches;
   const items = [
-    { id:'edit',     label:'Renomear lista',  icon:'✏️' },
-    { id:'duplicate',label:'Duplicar lista',  icon:'⧉' },
+    ...(mob ? [
+      { id:'status',   label:'Editar status',         icon: fgIco('tag') },
+      { id:'fields',   label:'Campos personalizados', icon: fgIco('fields') },
+      { id:'autos',    label:'Automações',            icon: fgIco('zap') },
+      { divider: true },
+    ] : []),
+    { id:'edit',     label:'Renomear lista',  icon: fgIco('pencil') },
+    { id:'duplicate',label:'Duplicar lista',  icon: fgIco('copy') },
     { divider: true },
-    { id:'delete',   label:'Excluir lista',   icon:'🗑️' },
+    { id:'delete',   label:'Excluir lista',   icon: fgIco('trash') },
   ];
   pjShowPopupMenu(ev, items, null, (id) => {
-    if (id === 'edit')      pjOpenListForm(null, null, listId);
+    if (id === 'status')      pjOpenStatusEditor(listId);
+    else if (id === 'fields') pjOpenFieldsEditor(listId);
+    else if (id === 'autos')  pjOpenAutomationsEditor(listId);
+    else if (id === 'edit')   pjOpenListForm(null, null, listId);
     else if (id === 'delete') pjDeleteList(listId);
     else if (id === 'duplicate') {
       if (typeof pjDuplicateList === 'function') pjDuplicateList(listId);
@@ -29532,7 +29613,7 @@ function pjStalePillHtml(task) {
   const info = pjStaleInfo(task);
   if (!info) return '';
   const label = info.days === 1 ? '1d sem mudança' : `parada há ${info.days}d`;
-  return `<span class="pj-stale-pill ${info.severity}" title="Última mudança há ${info.days} dias — talvez precise de atenção">🧊 ${label}</span>`;
+  return `<span class="pj-stale-pill ${info.severity}" title="Última mudança há ${info.days} dias. Talvez precise de atenção.">${label}</span>`;
 }
 
 function pjDueCls(dateStr, dueTime) {
@@ -33215,6 +33296,7 @@ document.addEventListener('input', (e) => {
   function enhance(select) {
     if (!(select instanceof HTMLSelectElement)) return;
     if (select.hasAttribute('data-fx-skip')) return;
+    if (select.hidden) return;
     if (select.classList.contains(CLASS_HIDDEN)) return;
     if (select.multiple || select.size > 1) return;
 
@@ -34426,7 +34508,7 @@ const POP = (() => {
     <span>Tarefas</span>
   </button>
   <button type="button" class="fg-mnav__i" onclick="fgMoreOpen()">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
     <span>Mais</span>
   </button>
 </nav>
@@ -34436,15 +34518,16 @@ const POP = (() => {
   <div class="fg-more__bd" onclick="fgMoreClose()"></div>
   <div class="fg-more__pn" role="dialog" aria-modal="true">
     <div class="fg-more__gr"></div>
-    <h3>Ferramentas</h3>
+    <h3>Mais</h3>
     <div class="fg-more__gd">
-      <button onclick="switchTab('entrada');fgMoreClose()" class="fg-more__b"><span>✏️</span>Criar post</button>
-      <button onclick="switchTab('lives');fgMoreClose()" class="fg-more__b"><span>📡</span>Ao Vivo</button>
-      <button onclick="switchTab('pop');fgMoreClose()" class="fg-more__b"><span>📖</span>POPs</button>
-      <button onclick="switchTab('gmb');fgMoreClose()" class="fg-more__b"><span>📍</span>Google</button>
-      <button onclick="switchTab('metricas');fgMoreClose()" class="fg-more__b"><span>📊</span>Métricas</button>
-      <button onclick="switchTab('base');fgMoreClose()" class="fg-more__b"><span>🏢</span>Clientes</button>
-      <button onclick="if(typeof openAppSettings==='function')openAppSettings();fgMoreClose()" class="fg-more__b"><span>⚙️</span>Config</button>
+      <button data-tab="entrada" onclick="switchTab('entrada');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>Criar post</button>
+      <button data-tab="lives" onclick="switchTab('lives');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>Ao vivo</button>
+      <button data-tab="pop" onclick="switchTab('pop');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>POPs</button>
+      <button data-tab="gmb" onclick="switchTab('gmb');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>Google</button>
+      <button data-tab="metricas" onclick="switchTab('metricas');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>Métricas</button>
+      <button data-tab="base" onclick="switchTab('base');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>Clientes</button>
+      <button data-tab="contratos" onclick="switchTab('contratos');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></svg>Contratos</button>
+      <button id="fgMoreCfg" onclick="if(typeof openAppSettings==='function')openAppSettings();fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Config</button>
     </div>
   </div>
 </div>
@@ -35743,6 +35826,10 @@ window.fgHaptic = function(kind) {
   const isMobile = window.matchMedia('(max-width: 640px)').matches;
   window.fgMoreOpen = function() {
     const m = document.getElementById('fgMore'); if (!m) return;
+    // Mesmas regras do painel do ☰: some o que a pessoa não pode abrir; Config só pra admin
+    m.querySelectorAll('.fg-more__b[data-tab]').forEach(b => { b.style.display = (typeof userCanSeeTab !== 'function' || userCanSeeTab(b.dataset.tab)) ? '' : 'none'; });
+    const cfg = document.getElementById('fgMoreCfg');
+    if (cfg) cfg.style.display = (typeof userIsAdmin === 'function' && !userIsAdmin()) ? 'none' : '';
     m.hidden = false;
     fgHaptic('light');
   };
@@ -35794,11 +35881,18 @@ document.addEventListener('click', e => {
   const nav = document.getElementById('fgMnav');
   if (!nav) return;
   const orig = window.switchTab;
+  // Nome de cada tela na barra de cima (só aparece no celular)
+  const FG_TITULOS = { projetos:'Tarefas', visualizar:'Calendário', social:'Publipost', entrada:'Criar post', lives:'Ao vivo', pop:'POPs', gmb:'Google', metricas:'Métricas', base:'Clientes', contratos:'Contratos', acesso:'Acessos' };
+  // O botão Mais (sem data-tab) acende em qualquer tela que não seja Calendário, Publipost ou Tarefas
+  const marca = (tab) => {
+    nav.querySelectorAll('.fg-mnav__i').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab ? b.dataset.tab === tab : !['visualizar','social','projetos'].includes(tab));
+    });
+    const t = document.getElementById('appTitle'); if (t) t.textContent = FG_TITULOS[tab] || '';
+  };
   const wrapped = function(tab, ...args) {
     const r = orig ? orig(tab, ...args) : null;
-    nav.querySelectorAll('.fg-mnav__i').forEach(b => {
-      b.classList.toggle('active', b.dataset.tab === tab);
-    });
+    marca(document.body.dataset.activeTab || tab);
     return r;
   };
   wrapped._navWrapped = true;
@@ -35807,10 +35901,7 @@ document.addEventListener('click', e => {
   // Inicializa marcador com aba atual
   const active = document.querySelector('.tab-panel.active');
   if (active) {
-    const id = (active.id || '').replace(/^tab-/, '');
-    nav.querySelectorAll('.fg-mnav__i').forEach(b => {
-      b.classList.toggle('active', b.dataset.tab === id);
-    });
+    marca((active.id || '').replace(/^tab-/, ''));
   }
 })();
 </script>
