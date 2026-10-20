@@ -2130,8 +2130,8 @@ ufw allow 3000/tcp</pre>
     <div class="ctr-wrap">
       <header class="ctr-header">
         <div>
-          <h1 class="ctr-title">📄 Contratos</h1>
-          <p class="ctr-sub">Assinatura eletrônica com validade jurídica (Lei 14.063/2020) — selfie tirada na hora + trilha de auditoria.</p>
+          <h1 class="ctr-title">Contratos</h1>
+          <p class="ctr-sub">Assinatura eletrônica com validade jurídica. A pessoa tira uma selfie na hora e cada passo fica registrado.</p>
         </div>
         <button type="button" class="btn-primary" onclick="ctrOpenCreate()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -2221,7 +2221,7 @@ ufw allow 3000/tcp</pre>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         </div>
         <div>
-          <div class="gmb-page-title">Google Negócio</div>
+          <div class="gmb-page-title">Perfil no Google</div>
           <div class="gmb-page-sub">Avaliações, posts e métricas do seu perfil local</div>
         </div>
       </div>
@@ -2235,7 +2235,7 @@ ufw allow 3000/tcp</pre>
           </div>
         </div>
         <div class="gmb-preanalise-search">
-          <input class="gmb-preanalise-input" id="gmbPreInput" placeholder="Ex: Pizzaria Bella Napoli, São Paulo" onkeydown="if(event.key==='Enter')gmbPreAnalise()">
+          <input class="gmb-preanalise-input" id="gmbPreInput" placeholder="Negócio e cidade" aria-label="Nome do negócio e cidade" onkeydown="if(event.key==='Enter')gmbPreAnalise()">
           <button class="gmb-preanalise-btn" onclick="gmbPreAnalise()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             Pesquisar
@@ -2243,7 +2243,7 @@ ufw allow 3000/tcp</pre>
         </div>
         <div id="gmbPreLoading" style="display:none;text-align:center;padding:20px;color:var(--text3);font-size:13px;">
           <div class="gmb-rank-spinner" style="margin:0 auto 10px;width:24px;height:24px;border-width:2px;"></div>
-          Buscando informações...
+          Buscando informações
         </div>
         <div id="gmbPreResult" style="display:none"></div>
       </div>
@@ -2254,7 +2254,7 @@ ufw allow 3000/tcp</pre>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         </div>
         <div class="gmb-connect-text">
-          <div class="gmb-connect-title">Google Meu Negócio</div>
+          <div class="gmb-connect-title">Perfil no Google</div>
           <div class="gmb-connect-sub" id="gmbConnectSub">Conecte sua conta Google para gerenciar avaliações e posts.</div>
         </div>
         <button class="gmb-connect-btn" id="gmbConnectBtn" onclick="gmbConnect()">
@@ -2262,16 +2262,16 @@ ufw allow 3000/tcp</pre>
           Conectar com Google
         </button>
         <button class="gmb-demo-btn" id="gmbDemoBtn" onclick="gmbLoadDemo()" title="Carregar dados de exemplo para testar a interface">
-          Modo Demo
+          Modo demo
         </button>
       </div>
 
       <!-- Location selector bar -->
       <div class="gmb-loc-bar" id="gmbLocBar" style="display:none">
         <select class="gmb-loc-select" id="gmbLocSelect" onchange="gmbOnLocationChange()">
-          <option value="">— Selecione o perfil —</option>
+          <option value="">Escolha o perfil</option>
         </select>
-        <button class="gmb-refresh-btn" onclick="gmbLoadLocation()">↻ Atualizar</button>
+        <button class="gmb-refresh-btn" onclick="gmbLoadLocation()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>Atualizar</button>
       </div>
 
       <!-- Multi-location overview -->
@@ -2291,11 +2291,11 @@ ufw allow 3000/tcp</pre>
 
         <div class="gmb-charts-row">
           <div class="gmb-chart-card">
-            <div class="gmb-chart-title">⭐ Evolução da Nota</div>
+            <div class="gmb-chart-title">Evolução da nota</div>
             <div class="gmb-chart-wrap"><canvas id="gmbRatingChart"></canvas></div>
           </div>
           <div class="gmb-chart-card">
-            <div class="gmb-chart-title">💚 Histórico de Saúde</div>
+            <div class="gmb-chart-title">Histórico de saúde</div>
             <div class="gmb-chart-wrap"><canvas id="gmbHealthChart"></canvas></div>
           </div>
         </div>
@@ -2305,13 +2305,13 @@ ufw allow 3000/tcp</pre>
           <div class="gmb-posts-head">
             <div class="gmb-posts-title">Criar postagem</div>
             <div class="gmb-post-types">
-              <button class="gmb-post-type-btn active" data-type="STANDARD" onclick="gmbSelectPostType('STANDARD',this)">📰 Novidade</button>
-              <button class="gmb-post-type-btn" data-type="EVENT" onclick="gmbSelectPostType('EVENT',this)">📅 Evento</button>
-              <button class="gmb-post-type-btn" data-type="OFFER" onclick="gmbSelectPostType('OFFER',this)">🏷️ Oferta</button>
+              <button class="gmb-post-type-btn active" data-type="STANDARD" onclick="gmbSelectPostType('STANDARD',this)">Novidade</button>
+              <button class="gmb-post-type-btn" data-type="EVENT" onclick="gmbSelectPostType('EVENT',this)">Evento</button>
+              <button class="gmb-post-type-btn" data-type="OFFER" onclick="gmbSelectPostType('OFFER',this)">Oferta</button>
             </div>
           </div>
           <div class="gmb-post-form">
-            <textarea id="gmbPostText" class="gmb-post-textarea" placeholder="Escreva o conteúdo da postagem (até 1500 caracteres)..." maxlength="1500"></textarea>
+            <textarea id="gmbPostText" class="gmb-post-textarea" placeholder="Texto do post (até 1500 caracteres)" maxlength="1500"></textarea>
             <input type="url" id="gmbPostMedia" class="gmb-post-input" placeholder="URL da imagem (opcional, JPG ou PNG)">
 
             <!-- EVENT-specific fields -->
@@ -2342,20 +2342,20 @@ ufw allow 3000/tcp</pre>
             <!-- CTA -->
             <div class="gmb-post-cta-row">
               <select id="gmbPostCta" class="gmb-post-input">
-                <option value="">— Sem botão CTA —</option>
-                <option value="BOOK">📅 Reservar</option>
-                <option value="ORDER">🛒 Fazer pedido</option>
-                <option value="SHOP">🏪 Comprar</option>
-                <option value="LEARN_MORE">ℹ️ Saiba mais</option>
-                <option value="SIGN_UP">✍️ Inscrever-se</option>
-                <option value="CALL">📞 Ligar</option>
+                <option value="">Sem botão</option>
+                <option value="BOOK">Reservar</option>
+                <option value="ORDER">Fazer pedido</option>
+                <option value="SHOP">Comprar</option>
+                <option value="LEARN_MORE">Saiba mais</option>
+                <option value="SIGN_UP">Inscrever-se</option>
+                <option value="CALL">Ligar</option>
               </select>
               <input type="url" id="gmbPostCtaUrl" class="gmb-post-input" placeholder="URL do botão (se aplicável)">
             </div>
 
             <div class="gmb-post-actions">
-              <button class="gmb-ai-btn" onclick="gmbSuggestPost()">✨ Sugerir com IA</button>
-              <button class="gmb-publish-btn" onclick="gmbPublishPost()">Publicar Postagem</button>
+              <button class="gmb-ai-btn" onclick="gmbSuggestPost()">Sugerir com IA</button>
+              <button class="gmb-publish-btn" onclick="gmbPublishPost()">Publicar post</button>
             </div>
           </div>
         </div>
@@ -2395,9 +2395,9 @@ ufw allow 3000/tcp</pre>
         <div class="gmb-rank-biz-row" id="gmbRankBizRow">
           <div class="gmb-rank-biz-wrap" style="position:relative;flex-direction:column;align-items:stretch;gap:0;padding:0;">
             <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;">
-              <span style="font-size:16px;flex-shrink:0">📍</span>
+              <span class="gmb-rank-biz-ic" style="display:inline-flex;flex-shrink:0;color:var(--text2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg></span>
               <input class="gmb-rank-biz-input" id="gmbRankBizInput"
-                placeholder="Digite o nome do negócio..."
+                placeholder="Nome do negócio" aria-label="Nome do negócio"
                 oninput="gmbRankBizAutocomplete(this.value)"
                 onkeydown="gmbRankBizKeydown(event)"
                 autocomplete="off" />
@@ -2410,21 +2410,21 @@ ufw allow 3000/tcp</pre>
         <!-- Toolbar -->
         <div class="gmb-rank-toolbar">
           <div class="gmb-rank-keyword-wrap">
-            <span class="gmb-rank-quote">"</span>
-            <input class="gmb-rank-keyword" id="gmbRankKeyword" placeholder="Palavra-Chave" />
+            <span class="gmb-rank-quote" style="display:inline-flex;color:var(--text2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+            <input class="gmb-rank-keyword" id="gmbRankKeyword" placeholder="Palavra-chave" aria-label="Palavra-chave" />
             <button class="gmb-rank-btn" onclick="gmbRankScan()">Analisar</button>
           </div>
           <div class="gmb-rank-sep"></div>
           <input type="range" class="gmb-rank-slider" id="gmbRankGridSlider" min="3" max="21" step="2" value="11" oninput="gmbRankSliderUpdate(this.value)">
           <div class="gmb-rank-sep"></div>
           <div class="gmb-rank-pill" onclick="gmbRankCycleKm(this)">
-            <span>📍</span><span id="gmbRankKmLabel">2 km</span><span class="gmb-rank-chevron">⌄</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg><span id="gmbRankKmLabel">2 km</span><span class="gmb-rank-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span>
           </div>
           <div class="gmb-rank-pill" onclick="gmbRankCycleGrid(this)">
-            <span>⊞</span><span id="gmbRankGridLabel">Grade 11×11</span><span class="gmb-rank-chevron">⌄</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg><span id="gmbRankGridLabel">Grade 11×11</span><span class="gmb-rank-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span>
           </div>
           <div class="gmb-rank-pill" onclick="gmbRankCycleAccuracy(this)">
-            <span>🎯</span><span id="gmbRankAccLabel">Médio</span><span class="gmb-rank-chevron">⌄</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg><span id="gmbRankAccLabel">Médio</span><span class="gmb-rank-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span>
           </div>
         </div>
 
@@ -2434,7 +2434,7 @@ ufw allow 3000/tcp</pre>
           <canvas id="gmbRankCanvas" class="gmb-rank-canvas"></canvas>
           <div id="gmbRankLoading" class="gmb-rank-loading" style="display:none">
             <div class="gmb-rank-spinner"></div>
-            <div id="gmbRankLoadingText">Analisando posições...</div>
+            <div id="gmbRankLoadingText">Analisando posições</div>
           </div>
         </div>
 
@@ -2448,7 +2448,7 @@ ufw allow 3000/tcp</pre>
 
         <!-- Histórico -->
         <div class="gmb-rank-history" id="gmbRankHistory" style="display:none">
-          <div class="gmb-rank-history-title">📈 Histórico de scans</div>
+          <div class="gmb-rank-history-title">Histórico de análises</div>
           <div id="gmbRankHistoryList" class="gmb-rank-history-list"></div>
         </div>
       </div>
@@ -2479,20 +2479,20 @@ ufw allow 3000/tcp</pre>
           </div>
           <div class="mtr-sources">
             <select class="mtr-select" id="mtrAccountSelect" onchange="mtrOnAccountChange()" title="Conta do Instagram">
-              <option value="">📷 Instagram...</option>
+              <option value="">Conta do Instagram</option>
             </select>
             <select class="mtr-select" id="mtrAdAccountSelect" onchange="mtrOnAdAccountChange()" title="Conta de anúncios">
-              <option value="">📢 Meta Ads...</option>
+              <option value="">Conta de anúncios</option>
             </select>
-            <select class="mtr-select" id="mtrGmbSelect" onchange="mtrOnGmbChange()" title="Perfil Google Meu Negócio">
-              <option value="">📍 Google Negócio...</option>
+            <select class="mtr-select" id="mtrGmbSelect" onchange="mtrOnGmbChange()" title="Perfil no Google">
+              <option value="">Perfil no Google</option>
             </select>
           </div>
           <div class="mtr-quick-actions">
-            <button class="mtr-quick-btn" onclick="mtrLoadDemo()" title="Carregar dados de exemplo">🎭</button>
-            <button class="mtr-quick-btn" onclick="mtrEnterPresentation()" title="Modo apresentação">🎤</button>
-            <button class="mtr-refresh-btn" id="mtrRefreshBtn" onclick="loadMetrics()" title="Atualizar">
-              <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+            <button class="mtr-quick-btn" onclick="mtrLoadDemo()" title="Carregar dados de exemplo" aria-label="Carregar dados de exemplo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"/><path d="M6.453 15h11.094"/><path d="M8.5 2h7"/></svg></button>
+            <button class="mtr-quick-btn" onclick="mtrEnterPresentation()" title="Modo apresentação" aria-label="Modo apresentação"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/></svg></button>
+            <button class="mtr-refresh-btn" id="mtrRefreshBtn" onclick="loadMetrics()" title="Atualizar" aria-label="Atualizar">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
               Atualizar
             </button>
           </div>
@@ -2527,11 +2527,11 @@ ufw allow 3000/tcp</pre>
           </div>
           <div class="mtr-tools-group">
             <button class="mtr-tool-btn" id="mtrPctBtn" onclick="mtrTogglePct()" title="Alternar variação %">
-              <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/></svg>
-              % Variação
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+              Variação
             </button>
             <button class="mtr-tool-btn mtr-tool-primary" id="mtrCustBtn" onclick="mtrOpenSidebar()">
-              <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></svg>
               Personalizar
             </button>
           </div>
@@ -2542,14 +2542,14 @@ ufw allow 3000/tcp</pre>
       <!-- Personalizar: painel colapsível inline -->
       <aside class="mtr-side" id="mtrSide">
         <div class="mtr-side-head">
-          <div class="mtr-side-title">⚙️ Personalizar métricas</div>
-          <button class="mtr-side-close" onclick="mtrCloseSidebar()">×</button>
+          <div class="mtr-side-title">Personalizar métricas</div>
+          <button class="mtr-side-close" onclick="mtrCloseSidebar()" aria-label="Fechar">×</button>
         </div>
         <div class="mtr-side-body">
           <div class="mtr-side-client-info" id="mtrSideClientInfo" style="display:none;">
-            💡 Configurações salvas <strong>por cliente</strong> — cada conta IG tem suas próprias métricas.
+            Configurações salvas <strong>por cliente</strong>: cada conta do Instagram tem as próprias métricas.
           </div>
-          <div class="mtr-side-hint">Marque as métricas que deseja exibir e arraste para reordenar.</div>
+          <div class="mtr-side-hint">Marque as métricas que quer ver<span class="mtr-hint-drag"> e arraste pra mudar a ordem</span>.</div>
           <div id="mtrCatList"></div>
         </div>
         <div class="mtr-side-foot">
@@ -2571,7 +2571,7 @@ ufw allow 3000/tcp</pre>
     <div class="mtr-ai-history-modal" id="mtrAiHistoryModal" onclick="if(event.target===this)mtrCloseAiHistory()">
       <div class="mtr-ai-history-card">
         <div class="mtr-ai-history-head">
-          <div class="mtr-ai-history-title">📚 Histórico de análises IA</div>
+          <div class="mtr-ai-history-title">Histórico de análises da IA</div>
           <button class="mtr-side-close" onclick="mtrCloseAiHistory()">×</button>
         </div>
         <div class="mtr-ai-history-list" id="mtrAiHistoryList"></div>
@@ -2582,7 +2582,7 @@ ufw allow 3000/tcp</pre>
     <div class="mtr-cmp-modal" id="mtrCmpModal" onclick="if(event.target===this)mtrCloseCompare()">
       <div class="mtr-cmp-card">
         <div class="mtr-cmp-head">
-          <div class="mtr-cmp-title">⚖️ Comparação de campanhas</div>
+          <div class="mtr-cmp-title">Comparação de campanhas</div>
           <button class="mtr-side-close" onclick="mtrCloseCompare()">×</button>
         </div>
         <div class="mtr-cmp-body" id="mtrCmpBody"></div>
@@ -2592,8 +2592,8 @@ ufw allow 3000/tcp</pre>
     <!-- Modal: Compartilhar -->
     <div class="mtr-share-modal" id="mtrShareModal" onclick="if(event.target===this)mtrCloseShare()">
       <div class="mtr-share-card">
-        <div class="mtr-share-title">🔗 Compartilhar painel</div>
-        <div class="mtr-share-desc">Gera um link público read-only com um snapshot das métricas atuais. Qualquer pessoa com o link pode ver — não compartilhe dados sensíveis.</div>
+        <div class="mtr-share-title">Compartilhar painel</div>
+        <div class="mtr-share-desc">Gera um link público, só de leitura, com uma foto das métricas de agora. Quem tiver o link consegue ver, então não compartilhe dados sensíveis.</div>
         <div id="mtrShareContent"></div>
       </div>
     </div>
@@ -2762,18 +2762,18 @@ ufw allow 3000/tcp</pre>
       <!-- Sidebar: busca + lista -->
       <div class="bd-sidebar">
         <div class="bd-search-wrap">
-          <input type="text" class="bd-search-input" id="bdSearchInput" placeholder="🔍 Buscar nome, prato, endereço, sócio..." oninput="bdSearch(this.value)">
+          <input type="text" class="bd-search-input" id="bdSearchInput" placeholder="Buscar cliente, prato ou sócio" aria-label="Buscar cliente" oninput="bdSearch(this.value)">
         </div>
         <div class="bd-list-actions">
-          <button class="bd-add-btn" onclick="bdNewCliente()">＋ Novo Cliente</button>
+          <button class="bd-add-btn" onclick="bdNewCliente()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Novo cliente</button>
         </div>
         <div class="bd-list" id="bdList"></div>
       </div>
       <!-- Main: ficha do cliente -->
       <div class="bd-main" id="bdMain">
         <div class="bd-empty">
-          <div class="bd-empty-icon">📚</div>
-          <div class="bd-empty-text">Base de Clientes</div>
+          <div class="bd-empty-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></div>
+          <div class="bd-empty-text">Clientes</div>
           <div class="bd-empty-sub">Selecione um cliente ao lado ou crie um novo</div>
         </div>
       </div>
@@ -7035,17 +7035,17 @@ function switchTab(tab, btn) {
     const sel = document.getElementById('mtrAccountSelect');
     const t = getSpToken ? getSpToken() : null;
     if (!t) {
-      if (sel) sel.innerHTML = '<option value="">⚠️ Nenhuma conta conectada</option><option value="__connect">➕ Conectar com Facebook</option>';
+      if (sel) sel.innerHTML = '<option value="">Nenhuma conta conectada</option><option value="__connect">Conectar com Facebook</option>';
       mtrRenderConn();
     } else if (spAccounts.length === 0) {
-      if (sel) sel.innerHTML = '<option value="">⏳ Carregando contas...</option>';
+      if (sel) sel.innerHTML = '<option value="">Carregando contas</option>';
       loadSpAccounts().then(() => {
         if (spAccounts.length === 0 && sel) {
-          sel.innerHTML = '<option value="">❌ Conexão expirada</option><option value="__connect">➕ Conectar com Facebook</option>';
+          sel.innerHTML = '<option value="">Conexão expirada</option><option value="__connect">Conectar com Facebook</option>';
         }
         mtrPopulateAccounts();
       }).catch(err => {
-        if (sel) sel.innerHTML = `<option value="">❌ ${(err.message||'erro').slice(0,60)}</option><option value="__connect">➕ Conectar com Facebook</option>`;
+        if (sel) sel.innerHTML = `<option value="">Erro: ${(err.message||'erro').slice(0,60)}</option><option value="__connect">Conectar com Facebook</option>`;
         mtrRenderConn(true);
       });
     } else {
@@ -10849,20 +10849,20 @@ function _mtrIsCampActive(c) {
 const MTR_CATALOG = [
   // Instagram — Insights diários (period=day)
   { id:'ig_reach', source:'ig', icon:'👁️', label:'Alcance', fmt:'num', daily:true },
-  { id:'ig_follower_count', source:'ig', icon:'🔄', label:'Ganho de Seguidores', fmt:'num', daily:true },
+  { id:'ig_follower_count', source:'ig', icon:'🔄', label:'Ganho de seguidores', fmt:'num', daily:true },
   // Instagram — Totais (metric_type=total_value)
-  { id:'ig_accounts_engaged', source:'ig', icon:'💬', label:'Contas Engajadas', fmt:'num' },
-  { id:'ig_total_interactions', source:'ig', icon:'🔥', label:'Total de Interações', fmt:'num' },
+  { id:'ig_accounts_engaged', source:'ig', icon:'💬', label:'Contas engajadas', fmt:'num' },
+  { id:'ig_total_interactions', source:'ig', icon:'🔥', label:'Total de interações', fmt:'num' },
   { id:'ig_likes', source:'ig', icon:'❤️', label:'Curtidas', fmt:'num' },
   { id:'ig_comments', source:'ig', icon:'💭', label:'Comentários', fmt:'num' },
   { id:'ig_shares', source:'ig', icon:'🔁', label:'Compartilhamentos', fmt:'num' },
   { id:'ig_saves', source:'ig', icon:'🔖', label:'Salvamentos', fmt:'num' },
   { id:'ig_views', source:'ig', icon:'📺', label:'Visualizações', fmt:'num' },
-  { id:'ig_profile_views', source:'ig', icon:'👤', label:'Visitas ao Perfil', fmt:'num' },
-  { id:'ig_website_clicks', source:'ig', icon:'🔗', label:'Cliques no Site', fmt:'num' },
+  { id:'ig_profile_views', source:'ig', icon:'👤', label:'Visitas ao perfil', fmt:'num' },
+  { id:'ig_website_clicks', source:'ig', icon:'🔗', label:'Cliques no site', fmt:'num' },
   // Instagram — Perfil
-  { id:'ig_followers_count', source:'ig', icon:'👥', label:'Seguidores Totais', fmt:'num', noSeries:true },
-  { id:'ig_media_count', source:'ig', icon:'📷', label:'Total de Posts', fmt:'num', noSeries:true },
+  { id:'ig_followers_count', source:'ig', icon:'👥', label:'Seguidores totais', fmt:'num', noSeries:true },
+  { id:'ig_media_count', source:'ig', icon:'📷', label:'Total de posts', fmt:'num', noSeries:true },
   // Anúncios — Métricas básicas
   { id:'ad_spend', source:'ad', icon:'💰', label:'Gasto (Ads)', fmt:'currency' },
   { id:'ad_reach', source:'ad', icon:'👀', label:'Alcance (Ads)', fmt:'num' },
@@ -10872,15 +10872,15 @@ const MTR_CATALOG = [
   { id:'ad_cpc', source:'ad', icon:'💵', label:'CPC', fmt:'currency', invert:true },
   { id:'ad_cpm', source:'ad', icon:'📉', label:'CPM', fmt:'currency', invert:true },
   { id:'ad_frequency', source:'ad', icon:'📡', label:'Frequência', fmt:'decimal' },
-  { id:'ad_inline_link_clicks', source:'ad', icon:'🔗', label:'Cliques em Link', fmt:'num' },
-  { id:'ad_unique_clicks', source:'ad', icon:'🎯', label:'Cliques Únicos', fmt:'num' },
+  { id:'ad_inline_link_clicks', source:'ad', icon:'🔗', label:'Cliques em link', fmt:'num' },
+  { id:'ad_unique_clicks', source:'ad', icon:'🎯', label:'Cliques únicos', fmt:'num' },
   // Anúncios — Conversões
   { id:'ad_purchases', source:'ad', icon:'🛒', label:'Compras', fmt:'num' },
   { id:'ad_revenue', source:'ad', icon:'💎', label:'Receita', fmt:'currency' },
   { id:'ad_roas', source:'ad', icon:'🏆', label:'ROAS', fmt:'roas' },
-  { id:'ad_cpp', source:'ad', icon:'🎫', label:'Custo por Compra', fmt:'currency', invert:true },
+  { id:'ad_cpp', source:'ad', icon:'🎫', label:'Custo por compra', fmt:'currency', invert:true },
   { id:'ad_leads', source:'ad', icon:'🧲', label:'Leads', fmt:'num' },
-  { id:'ad_cpl', source:'ad', icon:'💼', label:'Custo por Lead', fmt:'currency', invert:true },
+  { id:'ad_cpl', source:'ad', icon:'💼', label:'Custo por lead', fmt:'currency', invert:true },
   { id:'ad_landing_page_views', source:'ad', icon:'📄', label:'Visualizações de LP', fmt:'num' },
   { id:'ad_add_to_cart', source:'ad', icon:'🛍️', label:'Adicionar ao carrinho', fmt:'num' },
   { id:'ad_initiate_checkout', source:'ad', icon:'🧾', label:'Iniciar checkout', fmt:'num' },
@@ -10889,7 +10889,7 @@ const MTR_CATALOG = [
   { id:'ad_messaging_started', source:'ad', icon:'💬', label:'Conversas iniciadas', fmt:'num' },
   { id:'ad_instagram_profile_visits', source:'ad', icon:'👤', label:'Visitas ao perfil IG', fmt:'num' },
   { id:'ad_followers', source:'ad', icon:'➕', label:'Seguidores via Ads (só engaj.)', fmt:'num' },
-  { id:'ad_page_likes', source:'ad', icon:'👍', label:'Curtidas da Página', fmt:'num' },
+  { id:'ad_page_likes', source:'ad', icon:'👍', label:'Curtidas da página', fmt:'num' },
   { id:'ad_post_engagement', source:'ad', icon:'🔥', label:'Engaj. do post', fmt:'num' },
   { id:'ad_post_reactions', source:'ad', icon:'❤️', label:'Reações no post', fmt:'num' },
   { id:'ad_post_saves', source:'ad', icon:'🔖', label:'Salvamentos', fmt:'num' },
@@ -10918,13 +10918,13 @@ const MTR_CATALOG = [
   // Anúncios — ROAS
   { id:'ad_website_roas', source:'ad', icon:'🌐', label:'ROAS site', fmt:'roas' },
   // Google Meu Negócio
-  { id:'gmb_rating', source:'gmb', icon:'⭐', label:'Nota Média (Google)', fmt:'decimal' },
-  { id:'gmb_total_reviews', source:'gmb', icon:'💬', label:'Total Avaliações', fmt:'num' },
-  { id:'gmb_unanswered', source:'gmb', icon:'⚠️', label:'Sem Resposta', fmt:'num', invert:true },
-  { id:'gmb_response_rate', source:'gmb', icon:'✅', label:'Taxa de Resposta', fmt:'percent' },
-  { id:'gmb_negative', source:'gmb', icon:'👎', label:'Avaliações Negativas', fmt:'num', invert:true },
-  { id:'gmb_score', source:'gmb', icon:'💚', label:'Score de Saúde (GMB)', fmt:'num' },
-  { id:'gmb_new_reviews', source:'gmb', icon:'🆕', label:'Novas Avaliações (período)', fmt:'num' },
+  { id:'gmb_rating', source:'gmb', icon:'⭐', label:'Nota média (Google)', fmt:'decimal' },
+  { id:'gmb_total_reviews', source:'gmb', icon:'💬', label:'Total de avaliações', fmt:'num' },
+  { id:'gmb_unanswered', source:'gmb', icon:'⚠️', label:'Sem resposta', fmt:'num', invert:true },
+  { id:'gmb_response_rate', source:'gmb', icon:'✅', label:'Taxa de resposta', fmt:'percent' },
+  { id:'gmb_negative', source:'gmb', icon:'👎', label:'Avaliações negativas', fmt:'num', invert:true },
+  { id:'gmb_score', source:'gmb', icon:'💚', label:'Saúde do perfil (Google)', fmt:'num' },
+  { id:'gmb_new_reviews', source:'gmb', icon:'🆕', label:'Novas avaliações (período)', fmt:'num' },
   // Google Meu Negócio — Insights de Desempenho
   { id:'gmb_views_search', source:'gmb', icon:'🔍', label:'Visualizações na Busca', fmt:'num' },
   { id:'gmb_views_maps', source:'gmb', icon:'🗺️', label:'Visualizações no Maps', fmt:'num' },
@@ -10974,13 +10974,13 @@ function mtrSaveUserKpis() {
    Salvos por cliente (mtrKpiTemplates_<igId>).
    Modelos globais (factory) ficam em MTR_FACTORY_TEMPLATES e sempre aparecem. */
 const MTR_FACTORY_TEMPLATES = [
-  { id:'_factory_ig_basic', name:'Instagram — Básico', scope:'ig', factory:true,
+  { id:'_factory_ig_basic', name:'Instagram: básico', scope:'ig', factory:true,
     kpis:['ig_reach','ig_accounts_engaged','ig_total_interactions','ig_followers_count','ig_follower_count','ig_profile_views','ig_website_clicks'] },
-  { id:'_factory_ig_engagement', name:'Instagram — Engajamento', scope:'ig', factory:true,
+  { id:'_factory_ig_engagement', name:'Instagram: engajamento', scope:'ig', factory:true,
     kpis:['ig_likes','ig_comments','ig_shares','ig_saves','ig_views','ig_total_interactions','ig_accounts_engaged'] },
-  { id:'_factory_ad_basic', name:'Meta Ads — Performance', scope:'ad', factory:true,
+  { id:'_factory_ad_basic', name:'Meta Ads: desempenho', scope:'ad', factory:true,
     kpis:['ad_spend','ad_reach','ad_impressions','ad_clicks','ad_ctr','ad_cpc','ad_cpm','ad_frequency'] },
-  { id:'_factory_ad_conv', name:'Meta Ads — Conversão', scope:'ad', factory:true,
+  { id:'_factory_ad_conv', name:'Meta Ads: conversão', scope:'ad', factory:true,
     kpis:['ad_spend','ad_purchases','ad_revenue','ad_roas','ad_cpp','ad_leads','ad_cpl','ad_landing_page_views'] },
 ];
 
@@ -11169,23 +11169,23 @@ function mtrGetDateRange(days, offset = 0) {
 }
 
 function mtrFmtNum(n) {
-  if (n === null || n === undefined || isNaN(n)) return '—';
-  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
-  if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+  if (n === null || n === undefined || isNaN(n)) return 'Sem dado';
+  if (n >= 1000000) return (n/1000000).toFixed(1).replace('.', ',') + ' mi';
+  if (n >= 1000) return (n/1000).toFixed(1).replace('.', ',') + ' mil';
   return Math.round(n).toLocaleString('pt-BR');
 }
 
 function mtrFmtCurrency(n) {
-  if (n === null || n === undefined || isNaN(n)) return '—';
+  if (n === null || n === undefined || isNaN(n)) return 'Sem dado';
   return 'R$ ' + parseFloat(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function mtrFmtValue(metric, v) {
-  if (v === null || v === undefined || isNaN(v)) return '—';
+  if (v === null || v === undefined || isNaN(v)) return 'Sem dado';
   if (metric.fmt === 'currency') return mtrFmtCurrency(v);
-  if (metric.fmt === 'percent') return parseFloat(v).toFixed(2) + '%';
-  if (metric.fmt === 'decimal') return parseFloat(v).toFixed(2);
-  if (metric.fmt === 'roas') return v > 0 ? v.toFixed(2) + 'x' : '—';
+  if (metric.fmt === 'percent') return parseFloat(v).toFixed(2).replace('.', ',') + '%';
+  if (metric.fmt === 'decimal') return parseFloat(v).toFixed(2).replace('.', ',');
+  if (metric.fmt === 'roas') return v > 0 ? v.toFixed(2).replace('.', ',') + 'x' : 'Sem dado';
   return mtrFmtNum(v);
 }
 
@@ -11196,7 +11196,7 @@ function mtrDelta(curr, prev) {
 
 function mtrDeltaHtml(curr, prev, invert = false) {
   const d = mtrDelta(curr, prev);
-  if (d === null) return '<div class="mtr-kpi-delta neutral">— sem dados anteriores</div>';
+  if (d === null) return '<div class="mtr-kpi-delta neutral">Sem dados anteriores</div>';
   const up = invert ? parseFloat(d) < 0 : parseFloat(d) >= 0;
   const cls = parseFloat(d) === 0 ? 'neutral' : (up ? 'up' : 'down');
   const arrow = parseFloat(d) >= 0 ? '↑' : '↓';
@@ -11240,7 +11240,7 @@ async function loadMetrics() {
   if (!token) { document.getElementById('mtrBody').innerHTML = '<div class="mtr-empty">Configure o Token Meta na aba Social primeiro.</div>'; return; }
 
   const btn = document.getElementById('mtrRefreshBtn');
-  btn.disabled = true; btn.textContent = '⏳ Carregando...';
+  btn.disabled = true; btn.innerHTML = `${fgFerrIco('refresh', 14)} Carregando`;
   document.getElementById('mtrBody').innerHTML = mtrSkeletonHtml();
 
   const compare = document.getElementById('mtrCompare').checked;
@@ -11259,7 +11259,7 @@ async function loadMetrics() {
     if (document.getElementById('mtrMainSince')) document.getElementById('mtrMainSince').value = mainSince;
     if (document.getElementById('mtrMainUntil')) document.getElementById('mtrMainUntil').value = mainUntil;
   } else if (!mainSince || !mainUntil) {
-    btn.disabled = false; btn.textContent = '↻ Atualizar';
+    btn.disabled = false; btn.innerHTML = `${fgFerrIco('refresh', 14)} Atualizar`;
     document.getElementById('mtrBody').innerHTML = '<div class="mtr-empty" style="padding:24px 20px;">Termine de preencher as datas antes de atualizar.</div>';
     return;
   }
@@ -11304,8 +11304,8 @@ async function loadMetrics() {
   ]);
 
   if (!igCurrR.ok) {
-    document.getElementById('mtrBody').innerHTML = `<div class="mtr-empty">❌ Instagram: ${igCurrR.error}</div>`;
-    btn.disabled = false; btn.textContent = '↻ Atualizar';
+    document.getElementById('mtrBody').innerHTML = `<div class="mtr-empty">Erro no Instagram: ${escHtml(String(igCurrR.error || ''))}</div>`;
+    btn.disabled = false; btn.innerHTML = `${fgFerrIco('refresh', 14)} Atualizar`;
     return;
   }
 
@@ -11354,7 +11354,7 @@ async function loadMetrics() {
     demographics: mtrDemoCache, dailyAds: mtrDailyAdsCache, health };
 
   renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, warnings, campaigns, health);
-  btn.disabled = false; btn.textContent = '↻ Atualizar';
+  btn.disabled = false; btn.innerHTML = `${fgFerrIco('refresh', 14)} Atualizar`;
 }
 
 // IG limita janela a 30 dias (2592000 s) por chamada de insights.
@@ -11681,16 +11681,14 @@ let mtrCampCols = mtrLoadCampCols();
 
 function mtrFmtCampCell(col, c) {
   const v = col.getValue(c);
-  if (v === '—' || v === null || v === undefined) return '—';
+  if (v === '—' || v === null || v === undefined || v === '' || Number.isNaN(v)) return 'Sem dado';
   if (col.fmt === 'text') return escHtml(String(v));
   if (typeof v === 'string') return escHtml(v);
-  if (!v && v !== 0) return '—';
-  if (v === 0) return '—';
   switch (col.fmt) {
     case 'currency': return mtrFmtCurrency(v);
-    case 'percent':  return parseFloat(v).toFixed(2) + '%';
-    case 'decimal':  return parseFloat(v).toFixed(2);
-    case 'roas':     return parseFloat(v).toFixed(2) + 'x';
+    case 'percent':  return parseFloat(v).toFixed(2).replace('.', ',') + '%';
+    case 'decimal':  return parseFloat(v).toFixed(2).replace('.', ',');
+    case 'roas':     return v > 0 ? parseFloat(v).toFixed(2).replace('.', ',') + 'x' : 'Sem dado';
     case 'num':      return mtrFmtNum(parseInt(v));
     default:         return String(v);
   }
@@ -11847,7 +11845,7 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
     // Aviso de cobertura parcial (só follower_count quando histórico não cobre o período todo)
     const rawFollower = id === 'ig_follower_count' ? igCurr?.follower_count : null;
     const coverageNote = rawFollower?._partial
-      ? `<div class="mtr-kpi-coverage">⚠️ ${rawFollower._histDays > 0 ? rawFollower._histDays + 'd' : '≤30d'} de ${rawFollower._reqDays}d</div>`
+      ? `<div class="mtr-kpi-coverage">${rawFollower._histDays > 0 ? rawFollower._histDays + 'd' : '≤30d'} de ${rawFollower._reqDays}d</div>`
       : '';
     return `
       <div class="mtr-kpi" data-source="${m.source}" data-kpi-id="${id}" draggable="true"
@@ -11897,7 +11895,7 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
   const customCards = showCustom ? mtrCustomMetrics.map(cm => `
     <div class="mtr-kpi" style="cursor:default;">
       <button class="mtr-kpi-del" onclick="event.stopPropagation();mtrDeleteCustomMetric('${cm.id}')" title="Remover">✕</button>
-      <div class="mtr-kpi-icon">📌</div>
+      <div class="mtr-kpi-icon">${fgFerrIco('pin')}</div>
       <div class="mtr-kpi-label">${escHtml(cm.label)}</div>
       <div class="mtr-kpi-value">${escHtml(String(cm.value))}</div>
       <div style="font-size:10px;color:var(--text3);margin-top:4px;">Manual</div>
@@ -11909,9 +11907,9 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
   const allCount = igCount + adCount;
   const sourceTabsHtml = showTabs ? `
     <div class="mtr-source-tabs">
-      <button class="mtr-source-tab ${activeTab==='all'?'active':''}" onclick="mtrSwitchSourceTab('all')">🌐 Geral <span class="mtr-source-tab-count">${allCount}</span></button>
-      <button class="mtr-source-tab ${activeTab==='ig'?'active':''}" onclick="mtrSwitchSourceTab('ig')">📷 Instagram <span class="mtr-source-tab-count">${igCount}</span></button>
-      <button class="mtr-source-tab ${activeTab==='ad'?'active':''}" onclick="mtrSwitchSourceTab('ad')">📢 Meta Ads <span class="mtr-source-tab-count">${adCount}</span></button>
+      <button class="mtr-source-tab ${activeTab==='all'?'active':''}" onclick="mtrSwitchSourceTab('all')">Geral <span class="mtr-source-tab-count">${allCount}</span></button>
+      <button class="mtr-source-tab ${activeTab==='ig'?'active':''}" onclick="mtrSwitchSourceTab('ig')">Instagram <span class="mtr-source-tab-count">${igCount}</span></button>
+      <button class="mtr-source-tab ${activeTab==='ad'?'active':''}" onclick="mtrSwitchSourceTab('ad')">Anúncios <span class="mtr-source-tab-count">${adCount}</span></button>
     </div>` : '';
 
   const adAcctLabel = mtrCurrentAdAcc ? mtrCurrentAdAcc.name : '';
@@ -11923,7 +11921,7 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
   const warnHtml = (warnings && warnings.length) ? `
     <div class="mtr-section" style="margin-bottom:16px;">
       <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:10px 14px;font-size:12px;color:#f59e0b;">
-        ⚠️ ${warnings.join(' &nbsp;•&nbsp; ')}
+        ${warnings.join(' &nbsp;·&nbsp; ')}
       </div>
     </div>` : '';
 
@@ -11931,8 +11929,8 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
   const filteredCamp = mtrCampaignFilter && campaigns ? campaigns.find(c => c.id === mtrCampaignFilter) : null;
   const filterBar = filteredCamp ? `
     <div class="mtr-camp-filter-bar">
-      <div>🎯 Filtrando por campanha: <strong>${escHtml(filteredCamp.name)}</strong></div>
-      <button onclick="mtrClearCampaignFilter()">✕ Ver conta inteira</button>
+      <div>Filtrando por campanha: <strong>${escHtml(filteredCamp.name)}</strong></div>
+      <button onclick="mtrClearCampaignFilter()">Ver conta inteira</button>
     </div>` : '';
 
   // ⭐ Bloco de métricas das campanhas FIXADAS (cards individuais)
@@ -11945,8 +11943,8 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
   // Tabela de campanhas com checkbox de comparação + botão IA por linha + drill-down
   const cmpToolbar = (mtrCurrentAdAcc && campaigns && campaigns.length) ? `
     <div class="mtr-cmp-toolbar">
-      <span class="mtr-cmp-toolbar-info">${mtrCmpSelected.length>0 ? '<strong>'+mtrCmpSelected.length+'</strong> selecionada(s)' : 'Marque até 3 para comparar lado-a-lado'}</span>
-      <button class="mtr-cmp-btn" ${mtrCmpSelected.length<2?'disabled':''} onclick="mtrOpenCompare()">⚖️ Comparar (${mtrCmpSelected.length})</button>
+      <span class="mtr-cmp-toolbar-info">${mtrCmpSelected.length>0 ? '<strong>'+mtrCmpSelected.length+'</strong> '+(mtrCmpSelected.length>1?'marcadas':'marcada') : 'Marque até 3 pra comparar.'}</span>
+      <button class="mtr-cmp-btn" ${mtrCmpSelected.length<2?'disabled':''} onclick="mtrOpenCompare()">${fgFerrIco('scale', 16)} Comparar (${mtrCmpSelected.length})</button>
       ${mtrCmpSelected.length>0 ? '<button class="mtr-cmp-clear" onclick="mtrClearCmp()">Limpar</button>' : ''}
     </div>` : '';
 
@@ -11959,18 +11957,18 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
     ? campaigns.filter(_mtrIsCampActive)
     : campaigns;
   const filterLabel = mtrCampStatusFilter === 'active'
-    ? `${activeCount} ativa(s) de ${totalCount}`
-    : `${totalCount} no total · ${activeCount} ativa(s)`;
+    ? `${activeCount} ${activeCount===1?'ativa':'ativas'} de ${totalCount}.`
+    : `${totalCount} no total, ${activeCount} ${activeCount===1?'ativa':'ativas'}.`;
   const filterToggleLabel = mtrCampStatusFilter === 'active'
-    ? `👁️ Ver todas (${totalCount})`
-    : `✓ Só ativas (${activeCount})`;
+    ? `${fgFerrIco('eye', 16)} Ver todas (${totalCount})`
+    : `${fgFerrIco('ok', 16)} Só ativas (${activeCount})`;
   const campaignsHtml = (mtrCurrentAdAcc && campaigns && campaigns.length) ? `
     <div class="mtr-section">
       <div class="mtr-section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-        <span>📢 Campanhas do anúncio &nbsp;<span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">${filterLabel} · clique para filtrar · use ⊕ para drill-down</span></span>
+        <span>Campanhas &nbsp;<span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">${filterLabel} Escolha uma campanha pra filtrar.</span></span>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           <button class="mtr-camp-cols-btn" onclick="mtrToggleCampStatusFilter()" title="Alternar entre só ativas e todas">${filterToggleLabel}</button>
-          <button class="mtr-camp-cols-btn" onclick="mtrOpenCampColsModal()" title="Escolher colunas">⚙️ Colunas (${cols.length})</button>
+          <button class="mtr-camp-cols-btn" onclick="mtrOpenCampColsModal()" title="Escolher colunas">${fgFerrIco('sliders', 16)} Colunas (${cols.length})</button>
         </div>
       </div>
       ${cmpToolbar}
@@ -12015,15 +12013,15 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
     <div class="mtr-section">
       <div class="mtr-ai-card">
         <div class="mtr-ai-head">
-          <div class="mtr-ai-title">💬 Pergunte à IA <span style="font-size:11px;font-weight:400;color:var(--text2);">— Claude Haiku</span></div>
+          <div class="mtr-ai-title">Pergunte à IA <span style="font-size:11px;font-weight:400;color:var(--text2);">Claude Haiku</span></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="mtr-ai-history-btn" onclick="mtrOpenAiHistory()">📚 Histórico</button>
-            <button class="mtr-ai-train-toggle" onclick="mtrToggleAiTraining()">🎓 Treinar a IA</button>
+            <button class="mtr-ai-history-btn" onclick="mtrOpenAiHistory()">Histórico</button>
+            <button class="mtr-ai-train-toggle" onclick="mtrToggleAiTraining()">Treinar a IA</button>
           </div>
         </div>
 
         <div class="mtr-ai-train-box" id="mtrAiTrainBox">
-          <div class="mtr-ai-train-label">Contexto do negócio (treinar a IA) — salvo por cliente</div>
+          <div class="mtr-ai-train-label">Contexto do negócio, salvo por cliente</div>
           <div class="mtr-ai-train-hint">Descreva o negócio, público-alvo, produtos, objetivos, tom de voz e metas. Esta configuração é única para <strong>@${escHtml(mtrCurrentAcc.igUsername)}</strong>.</div>
           <textarea class="mtr-ai-train-input" id="mtrAiTrainInput" placeholder="Ex.: Restaurante de comida japonesa em São Paulo, ticket médio R$ 80, foco em delivery via iFood. Público: classe média, 25-45 anos. Meta: ROAS mínimo 3x, CPC máximo R$ 1,50...">${escHtml(aiTraining)}</textarea>
           <div class="mtr-ai-train-foot">
@@ -12046,7 +12044,7 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
             <button class="mtr-ai-chat-suggestion" onclick="mtrAiChatAsk('Como meu engajamento orgânico se compara com a média do setor?')">Vs. setor</button>
           </div>
           <div class="mtr-ai-chat-input-row">
-            <input class="mtr-ai-chat-input" id="mtrAiChatInput" placeholder="Pergunte algo sobre os dados..." onkeydown="if(event.key==='Enter'){mtrAiChatSend();}" />
+            <input class="mtr-ai-chat-input" id="mtrAiChatInput" placeholder="Pergunte sobre os dados" aria-label="Pergunte sobre os dados" onkeydown="if(event.key==='Enter'){mtrAiChatSend();}" />
             <button class="mtr-ai-chat-send" id="mtrAiChatSend" onclick="mtrAiChatSend()">Enviar</button>
           </div>
         </div>
@@ -12059,7 +12057,7 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
     ${filterBar}
     ${notesHtml}
     <div class="mtr-section">
-      <div class="mtr-section-title">📊 Visão geral &nbsp;<span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">@${mtrCurrentAcc.igUsername} ${adAcctLabel ? '· '+adAcctLabel : ''} ${filteredCamp ? '· campanha: '+escHtml(filteredCamp.name) : ''} · ${curr.since} → ${curr.until}</span></div>
+      <div class="mtr-section-title">Visão geral &nbsp;<span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">@${mtrCurrentAcc.igUsername} ${adAcctLabel ? '· '+adAcctLabel : ''} ${filteredCamp ? '· campanha: '+escHtml(filteredCamp.name) : ''} · ${curr.since.split('-').reverse().join('/')} a ${curr.until.split('-').reverse().join('/')}</span></div>
       ${sourceTabsHtml}
       <div class="mtr-kpi-grid">${cards}${customCards}${addCardHtml}</div>
     </div>
@@ -12076,6 +12074,10 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
   if (mtrAiChatHistory.length) mtrRenderAiChatMsgs();
 }
 
+/* Status da campanha em português (a Meta manda ACTIVE, PAUSED...) */
+function _mtrCampStatusTxt(st) {
+  return ({ ACTIVE:'Ativa', PAUSED:'Pausada', CAMPAIGN_PAUSED:'Pausada', ADSET_PAUSED:'Pausada', ARCHIVED:'Arquivada', DELETED:'Apagada', IN_PROCESS:'Processando', WITH_ISSUES:'Com problema', PENDING_REVIEW:'Em análise', DISAPPROVED:'Reprovada' })[st] || (st ? 'Outro' : 'Sem status');
+}
 /* Linha da tabela de campanhas (extraída para reuso no drill-down) */
 function mtrCampaignRowHtml(c) {
   const isSel = c.id === mtrCampaignFilter;
@@ -12088,7 +12090,7 @@ function mtrCampaignRowHtml(c) {
   const cols = mtrCampCols.map(id => MTR_CAMP_COLS.find(x => x.id === id)).filter(Boolean);
   const totalCols = 3 + cols.length;
   const aiResultRow = aiResult ? `<tr><td colspan="${totalCols}"><div class="mtr-camp-ai-result">${aiResult}</div></td></tr>` : '';
-  const colCells = cols.map(col => `<td class="num" onclick="mtrSelectCampaign('${c.id}')">${mtrFmtCampCell(col, c)}</td>`).join('');
+  const colCells = cols.map(col => `<td class="num" data-label="${escHtml(col.label)}" onclick="mtrSelectCampaign('${c.id}')">${mtrFmtCampCell(col, c)}</td>`).join('');
   // ★ Estrelinha pra fixar como card de métricas no topo (visão por campanha)
   const isPinned = (mtrPinnedCampaigns||[]).includes(c.id);
   return `<tr class="clickable ${isSel?'selected':''}" data-cid="${c.id}">
@@ -12096,13 +12098,13 @@ function mtrCampaignRowHtml(c) {
       <input type="checkbox" class="cmp-check" ${isCmp?'checked':''} ${(!isCmp&&mtrCmpSelected.length>=3)?'disabled':''} onchange="mtrToggleCmp('${c.id}',this.checked)" title="Comparar">
     </td>
     <td onclick="mtrSelectCampaign('${c.id}')">
-      <button class="mtr-drill-toggle ${drillOpen?'expanded':''}" onclick="event.stopPropagation();mtrToggleDrill('${c.id}')" title="Drill-down: conjuntos & anúncios">${drillOpen?'▼':'▶'}</button>
-      <button class="mtr-camp-pin-btn ${isPinned?'active':''}" onclick="event.stopPropagation();mtrTogglePinCampaign('${c.id}')" title="${isPinned?'Remover dos cards do topo':'Fixar como cards no topo'}">${isPinned?'★':'☆'}</button>
-      <span class="mtr-camp-name">${escHtml(c.name || '—')}<span class="mtr-camp-status ${statusCls}">${c.status||'—'}</span></span>
+      <button class="mtr-drill-toggle ${drillOpen?'expanded':''}" onclick="event.stopPropagation();mtrToggleDrill('${c.id}')" title="Ver conjuntos e anúncios" aria-label="Ver conjuntos e anúncios" aria-expanded="${drillOpen?'true':'false'}">${fgFerrIco(drillOpen?'down':'right', 16)}</button>
+      <button class="mtr-camp-pin-btn ${isPinned?'active':''}" onclick="event.stopPropagation();mtrTogglePinCampaign('${c.id}')" title="${isPinned?'Tirar do topo':'Fixar no topo'}" aria-label="${isPinned?'Tirar do topo':'Fixar no topo'}" aria-pressed="${isPinned?'true':'false'}">${fgFerrIco('star', 16)}</button>
+      <span class="mtr-camp-name">${escHtml(c.name || 'Sem nome')}<span class="mtr-camp-status ${statusCls}">${_mtrCampStatusTxt(c.status)}</span></span>
     </td>
     ${colCells}
     <td class="actions" onclick="event.stopPropagation()">
-      <button class="mtr-camp-ai-btn" ${aiBusy?'disabled':''} onclick="mtrAnalyzeCampaignWithAI('${c.id}')">${aiBusy?'⏳':'✨'} IA</button>
+      <button class="mtr-camp-ai-btn" ${aiBusy?'disabled':''} onclick="mtrAnalyzeCampaignWithAI('${c.id}')" aria-label="Analisar campanha com IA">${fgFerrIco('sparkles', 14)} ${aiBusy?'Analisando':'IA'}</button>
     </td>
   </tr>
   ${aiResultRow}
@@ -12239,7 +12241,7 @@ function mtrRenderPinnedCampaignsBlock(campaigns) {
              ondrop="mtrPinnedKpiDrop(event,'${c.id}','${id}')"
              title="Arraste pra reordenar dentro desta campanha"
              style="cursor:grab;">
-          <button class="mtr-kpi-del" onclick="event.stopPropagation();mtrPinnedCampRemoveKpi('${c.id}','${id}')" title="Remover este card">✕</button>
+          <button class="mtr-kpi-del" onclick="event.stopPropagation();mtrPinnedCampRemoveKpi('${c.id}','${id}')" title="Remover este card" aria-label="Remover este card">${fgFerrIco('x', 14)}</button>
           <div class="mtr-kpi-icon">${m.icon}</div>
           <div class="mtr-kpi-label">${m.label}</div>
           <div class="mtr-kpi-value">${mtrFmtValue(m, v)}</div>
@@ -12257,13 +12259,13 @@ function mtrRenderPinnedCampaignsBlock(campaigns) {
       <div class="mtr-pinned-camp">
         <div class="mtr-pinned-camp-head">
           <div class="mtr-pinned-camp-title">
-            <span class="mtr-pinned-camp-star">⭐</span>
-            <span class="mtr-pinned-camp-name">${escHtml(c.name || '—')}</span>
-            <span class="mtr-camp-status ${statusCls}">${c.status||'—'}</span>
+            <span class="mtr-pinned-camp-star">${fgFerrIco('star', 16)}</span>
+            <span class="mtr-pinned-camp-name">${escHtml(c.name || 'Sem nome')}</span>
+            <span class="mtr-camp-status ${statusCls}">${_mtrCampStatusTxt(c.status)}</span>
           </div>
           <div style="display:flex;gap:6px;align-items:center;">
-            <button class="mtr-pinned-camp-remove" onclick="mtrPinnedCampShowRaw('${c.id}')" title="Ver action_types crus (debug)" style="font-size:13px;">🔍</button>
-            <button class="mtr-pinned-camp-remove" onclick="mtrTogglePinCampaign('${c.id}')" title="Remover dos cards do topo">×</button>
+            <button class="mtr-pinned-camp-remove" onclick="mtrPinnedCampShowRaw('${c.id}')" title="Ver action_types crus (debug)" aria-label="Ver dados crus da campanha">${fgFerrIco('search', 16)}</button>
+            <button class="mtr-pinned-camp-remove" onclick="mtrTogglePinCampaign('${c.id}')" title="Tirar do topo" aria-label="Tirar do topo">${fgFerrIco('x', 16)}</button>
           </div>
         </div>
         <div class="mtr-kpi-grid mtr-pinned-camp-grid">
@@ -12276,8 +12278,8 @@ function mtrRenderPinnedCampaignsBlock(campaigns) {
   return `
     <div class="mtr-pinned-section">
       <div class="mtr-section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-        <span>⭐ Métricas por campanha fixada</span>
-        <span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">${pinned.length} campanha${pinned.length>1?'s':''} · cada uma tem suas próprias métricas</span>
+        <span>Campanhas fixadas</span>
+        <span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">${pinned.length} campanha${pinned.length>1?'s':''}, cada uma com as próprias métricas</span>
       </div>
       ${cards}
     </div>`;
@@ -12368,14 +12370,14 @@ function mtrOpenSidebar() {
   if (isOpen) { mtrCloseSidebar(); return; }
   mtrRenderSidebar();
   side.classList.add('open');
-  document.getElementById('mtrCustBtn').textContent = '⚙️ Fechar';
+  document.getElementById('mtrCustBtn').innerHTML = `${fgFerrIco('sliders', 14)} Fechar`;
   const clientInfo = document.getElementById('mtrSideClientInfo');
   if (clientInfo) clientInfo.style.display = mtrCurrentAcc ? 'block' : 'none';
 }
 function mtrCloseSidebar() {
   document.getElementById('mtrSide').classList.remove('open');
   const btn = document.getElementById('mtrCustBtn');
-  if (btn) btn.textContent = '⚙️ Personalizar';
+  if (btn) btn.innerHTML = `${fgFerrIco('sliders', 14)} Personalizar`;
 }
 
 function mtrRenderSidebar() {
@@ -12398,7 +12400,7 @@ function mtrRenderSidebar() {
 
   const customList = mtrCustomMetrics.map(cm => `
     <div class="mtr-cat-item active" style="justify-content:space-between;">
-      <span class="mtr-cat-icon">📌</span>
+      <span class="mtr-cat-icon">${fgFerrIco('pin', 14)}</span>
       <span class="mtr-cat-label">${escHtml(cm.label)}</span>
       <input type="text" value="${escHtml(String(cm.value))}" style="width:70px;background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:2px 6px;color:var(--text1);font-size:12px;" onchange="mtrUpdateCustomMetric('${cm.id}',this.value)">
       <button onclick="mtrDeleteCustomMetric('${cm.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;">✕</button>
@@ -12412,25 +12414,25 @@ function mtrRenderSidebar() {
     const adN = tpl.kpis.filter(id => { const m = MTR_CATALOG.find(x=>x.id===id); return m && m.source==='ad'; }).length;
     const gmbN = tpl.kpis.filter(id => { const m = MTR_CATALOG.find(x=>x.id===id); return m && m.source==='gmb'; }).length;
     const parts = [];
-    if (igN) parts.push(`<span class="mtr-tpl-count ig">📷 ${igN}</span>`);
-    if (adN) parts.push(`<span class="mtr-tpl-count ad">📢 ${adN}</span>`);
-    if (gmbN) parts.push(`<span class="mtr-tpl-count gmb">📍 ${gmbN}</span>`);
+    if (igN) parts.push(`<span class="mtr-tpl-count ig">Instagram ${igN}</span>`);
+    if (adN) parts.push(`<span class="mtr-tpl-count ad">Anúncios ${adN}</span>`);
+    if (gmbN) parts.push(`<span class="mtr-tpl-count gmb">Google ${gmbN}</span>`);
     return parts.join('');
   };
   const tplItem = (tpl) => `
     <div class="mtr-tpl-item ${tpl.factory?'factory':''}">
       <div class="mtr-tpl-info" onclick="mtrApplyTemplate('${tpl.id}')" title="Aplicar este modelo">
-        <div class="mtr-tpl-name">${tpl.factory?'⭐ ':''}${escHtml(tpl.name)}</div>
+        <div class="mtr-tpl-name">${escHtml(tpl.name)}</div>
         <div class="mtr-tpl-meta">${tplBadge(tpl)} ${tpl.scope==='ig'?'<span class="mtr-tpl-scope">IG</span>':tpl.scope==='ad'?'<span class="mtr-tpl-scope">Ads</span>':'<span class="mtr-tpl-scope all">Todas</span>'}</div>
       </div>
       <div class="mtr-tpl-actions">
-        <button class="mtr-tpl-apply" onclick="mtrApplyTemplate('${tpl.id}')" title="Aplicar">▶</button>
+        <button class="mtr-tpl-apply" onclick="mtrApplyTemplate('${tpl.id}')" title="Aplicar" aria-label="Aplicar ${escHtml(tpl.name)}">${fgFerrIco('ok', 16)}</button>
         ${tpl.factory ? `
-          <button class="mtr-tpl-rename" onclick="mtrCloneFactory('${tpl.id}')" title="Editar cópia">✎</button>
-          <button class="mtr-tpl-del" onclick="mtrHideFactory('${tpl.id}')" title="Ocultar">✕</button>
+          <button class="mtr-tpl-rename" onclick="mtrCloneFactory('${tpl.id}')" title="Editar cópia" aria-label="Editar cópia de ${escHtml(tpl.name)}">${fgFerrIco('pencil', 16)}</button>
+          <button class="mtr-tpl-del" onclick="mtrHideFactory('${tpl.id}')" title="Ocultar" aria-label="Ocultar ${escHtml(tpl.name)}">${fgFerrIco('x', 16)}</button>
         ` : `
-          <button class="mtr-tpl-rename" onclick="mtrRenameTemplate('${tpl.id}')" title="Renomear">✎</button>
-          <button class="mtr-tpl-del" onclick="mtrDeleteTemplate('${tpl.id}')" title="Excluir">✕</button>
+          <button class="mtr-tpl-rename" onclick="mtrRenameTemplate('${tpl.id}')" title="Renomear" aria-label="Renomear ${escHtml(tpl.name)}">${fgFerrIco('pencil', 16)}</button>
+          <button class="mtr-tpl-del" onclick="mtrDeleteTemplate('${tpl.id}')" title="Excluir" aria-label="Excluir ${escHtml(tpl.name)}">${fgFerrIco('x', 16)}</button>
         `}
       </div>
     </div>`;
@@ -12444,12 +12446,12 @@ function mtrRenderSidebar() {
 
   document.getElementById('mtrCatList').innerHTML = `
     <div class="mtr-side-section">
-      <div class="mtr-side-section-title">📋 Modelos</div>
-      <div class="mtr-tpl-hint">Salve a configuração atual para reutilizar depois. Clique em um modelo para aplicar.</div>
+      <div class="mtr-side-section-title">Modelos</div>
+      <div class="mtr-tpl-hint">Salve a configuração atual pra usar depois. Escolha um modelo pra aplicar.</div>
       <div class="mtr-tpl-save-row">
-        <button class="mtr-tpl-save-btn all" onclick="mtrSaveCurrentAsTemplate('all')" title="Salva todas as métricas em uso">💾 Salvar atual</button>
-        <button class="mtr-tpl-save-btn ig" onclick="mtrSaveCurrentAsTemplate('ig')" title="Salva apenas as métricas do Instagram">📷 Só IG</button>
-        <button class="mtr-tpl-save-btn ad" onclick="mtrSaveCurrentAsTemplate('ad')" title="Salva apenas as métricas de Meta Ads">📢 Só Ads</button>
+        <button class="mtr-tpl-save-btn all" onclick="mtrSaveCurrentAsTemplate('all')" title="Salva todas as métricas em uso">Salvar atual</button>
+        <button class="mtr-tpl-save-btn ig" onclick="mtrSaveCurrentAsTemplate('ig')" title="Salva apenas as métricas do Instagram">Só Instagram</button>
+        <button class="mtr-tpl-save-btn ad" onclick="mtrSaveCurrentAsTemplate('ad')" title="Salva apenas as métricas de Meta Ads">Só anúncios</button>
       </div>
       <div class="mtr-tpl-subtitle">Modelos prontos</div>
       <div class="mtr-tpl-list">${factoryHtml || `<div style="font-size:11px;color:var(--text3);padding:4px 0 2px;font-style:italic;">Todos os modelos estão ocultos.</div><button class="mtr-tpl-restore-btn" onclick="mtrRestoreFactories()">↺ Restaurar modelos prontos</button>`}</div>
@@ -12457,7 +12459,7 @@ function mtrRenderSidebar() {
       <div class="mtr-tpl-list">${userHtml}</div>
     </div>
     <div class="mtr-side-section">
-      <div class="mtr-side-section-title">Em uso (arraste para reordenar)</div>
+      <div class="mtr-side-section-title">Em uso<span class="mtr-hint-drag"> (arraste pra mudar a ordem)</span></div>
       <div class="mtr-cat-list" id="mtrCatSelected">
         ${selected.length ? selected.map(itemHtml).join('') : '<div style="font-size:11px;color:var(--text3);padding:6px;">Nenhuma métrica selecionada.</div>'}
       </div>
@@ -12469,7 +12471,7 @@ function mtrRenderSidebar() {
       </div>
     </div>
     <div class="mtr-side-section">
-      <div class="mtr-side-section-title">📌 Métricas personalizadas</div>
+      <div class="mtr-side-section-title">Métricas personalizadas</div>
       ${customList || '<div style="font-size:11px;color:var(--text3);padding:4px 0 8px;">Nenhuma ainda.</div>'}
       <div class="mtr-custom-metric-form">
         <div style="font-size:11px;color:var(--text2);font-weight:600;">Adicionar métrica manual</div>
@@ -12582,9 +12584,9 @@ function mtrPopulateAccounts() {
   const sel = document.getElementById('mtrAccountSelect');
   if (sel) {
     const savedIg = localStorage.getItem('mtrSelectedIg');
-    sel.innerHTML = '<option value="">📷 Selecione conta IG...</option>' +
+    sel.innerHTML = '<option value="">Conta do Instagram</option>' +
       spAccounts.map((a,i) => `<option value="${i}" ${savedIg===a.igId?'selected':''}>${escHtml(a.pageName||a.igUsername)}</option>`).join('') +
-      '<option value="__connect">➕ Conectar mais contas</option>';
+      '<option value="__connect">Conectar mais contas</option>';
     if (sel.value !== '' && !mtrCurrentAcc) {
       mtrCurrentAcc = spAccounts[parseInt(sel.value)];
     }
@@ -12601,11 +12603,11 @@ async function mtrLoadAdAccounts() {
   try {
     mtrAdAccounts = await mtrFetchAdAccounts(token);
     const savedAd = localStorage.getItem('mtrSelectedAd');
-    sel.innerHTML = '<option value="">📢 Sem anúncios</option>' +
+    sel.innerHTML = '<option value="">Conta de anúncios</option>' +
       mtrAdAccounts.map((a,i) => `<option value="${i}" ${savedAd===a.id?'selected':''}>${a.name} (${a.currency})</option>`).join('');
     if (sel.value !== '') mtrCurrentAdAcc = mtrAdAccounts[parseInt(sel.value)];
   } catch(e) {
-    sel.innerHTML = `<option value="">📢 Erro: ${e.message.slice(0,40)}</option>`;
+    sel.innerHTML = `<option value="">Erro: ${e.message.slice(0,40)}</option>`;
   }
 }
 
@@ -13168,7 +13170,7 @@ function mtrRenderHealth(h, warnings) {
     let cls = 'ok';
     if (h.tokenExpDays != null && h.tokenExpDays >= 0 && h.tokenExpDays <= 7) cls = 'warn';
     if (h.tokenExpDays != null && h.tokenExpDays < 0) cls = 'err';
-    const exp = h.tokenExpiresIn ? ` · expira em ${h.tokenExpiresIn}` : '';
+    const exp = h.tokenExpiresIn === 'nunca' ? ' sem validade' : h.tokenExpiresIn === 'expirado' ? ' vencido' : h.tokenExpiresIn ? ` vence em ${parseInt(h.tokenExpiresIn)} ${parseInt(h.tokenExpiresIn)===1?'dia':'dias'}` : '';
     pills.push(`<span class="mtr-health-pill ${cls}"><span class="mtr-health-dot"></span>Token Meta${exp}</span>`);
   } else {
     pills.push(`<span class="mtr-health-pill err"><span class="mtr-health-dot"></span>Token Meta inválido</span>`);
@@ -13176,7 +13178,7 @@ function mtrRenderHealth(h, warnings) {
   if (mtrCurrentAcc) pills.push(`<span class="mtr-health-pill ok"><span class="mtr-health-dot"></span>IG @${escHtml(mtrCurrentAcc.igUsername)}</span>`);
   if (mtrCurrentAdAcc) pills.push(`<span class="mtr-health-pill ok"><span class="mtr-health-dot"></span>${escHtml(mtrCurrentAdAcc.name)} (${mtrCurrentAdAcc.currency})</span>`);
   else pills.push(`<span class="mtr-health-pill warn"><span class="mtr-health-dot"></span>Sem conta de anúncios</span>`);
-  if (warnings && warnings.length) pills.push(`<span class="mtr-health-pill warn"><span class="mtr-health-dot"></span>${warnings.length} aviso(s)</span>`);
+  if (warnings && warnings.length) pills.push(`<span class="mtr-health-pill warn"><span class="mtr-health-dot"></span>${warnings.length} ${warnings.length===1?'aviso':'avisos'}</span>`);
   return `<div class="mtr-health-bar">${pills.join('')}</div>`;
 }
 
@@ -13350,8 +13352,8 @@ function mtrRenderNotes(curr) {
   }).join('') : '<div class="mtr-notes-empty">Nenhuma anotação neste período. Adicione marcos importantes (lançamentos, campanhas, datas) para correlacionar com as métricas.</div>';
   return `<div class="mtr-notes-card">
     <div class="mtr-notes-head">
-      <div class="mtr-notes-title">📝 Anotações do período <span style="font-size:10px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(salvas por cliente)</span></div>
-      <button class="mtr-notes-add-btn" onclick="document.getElementById('mtrNotesForm').style.display='flex';document.getElementById('mtrNoteText').focus();">+ Adicionar</button>
+      <div class="mtr-notes-title">Anotações do período <span style="font-size:10px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(salvas por cliente)</span></div>
+      <button class="mtr-notes-add-btn" onclick="document.getElementById('mtrNotesForm').style.display='flex';document.getElementById('mtrNoteText').focus();">${fgFerrIco('plus', 16)} Adicionar</button>
     </div>
     <div class="mtr-notes-list">${list}</div>
     <div class="mtr-notes-form" id="mtrNotesForm" style="display:none;">
@@ -13400,12 +13402,13 @@ function mtrRenderFunnel(adsData, igCurr) {
     const m = MTR_CATALOG.find(x => x.id === id);
     if (!m) return null;
     const v = mtrGetValue(id, igCurr, adsData);
-    return { id, label: `${m.icon} ${m.label}`, value: parseFloat(v) || 0 };
+    return { id, label: m.label, value: parseFloat(v) || 0 };
   }).filter(Boolean);
   const has = stages.some(s => s.value > 0);
   const max = Math.max(1, ...stages.map(s => s.value));
   const N = stages.length;
-  const stagesHtml = stages.length ? stages.map((s,i) => {
+  const stagesHtml = (stages.length && !has) ? `<div class="mtr-funnel-empty">${mtrCurrentAdAcc ? 'Sem dado no período.' : 'Escolha a conta de anúncios pra ver o funil.'}</div>`
+  : stages.length ? stages.map((s,i) => {
     // Largura híbrida: mistura proporção real (sqrt p/ suavizar) com queda por rank.
     // Garante shape de funil mesmo com ratios enormes (ex: 455K → 103).
     const prop = s.value > 0 ? Math.sqrt(s.value/max) : 0;          // 0..1
@@ -13421,22 +13424,22 @@ function mtrRenderFunnel(adsData, igCurr) {
               ondragleave="mtrFunnelStageDragLeave(event)"
               ondrop="mtrFunnelStageDrop(event,${i})"
               style="width:${w.toFixed(2)}%;align-self:center;">
-        <span class="mtr-funnel-stage-label">⋮⋮ ${s.label}</span>
+        <span class="mtr-funnel-stage-label"><span class="mtr-funnel-grip">⋮⋮</span> ${s.label}</span>
         <span style="display:flex;align-items:center;">
-          <span class="mtr-funnel-stage-value">${s.value > 0 ? mtrFmtNum(s.value) : '—'}</span>
-          <button class="mtr-funnel-stage-remove" onclick="event.stopPropagation();mtrFunnelRemove('${s.id}')" title="Remover">✕</button>
+          <span class="mtr-funnel-stage-value">${mtrFmtNum(s.value)}</span>
+          <button class="mtr-funnel-stage-remove" onclick="event.stopPropagation();mtrFunnelRemove('${s.id}')" title="Remover" aria-label="Tirar ${escHtml(s.label)} do funil">${fgFerrIco('x', 16)}</button>
         </span>
       </div>${rate ? `<div class="mtr-funnel-rate">↓ <strong>${rate}</strong> de conversão</div>` : ''}`;
-  }).join('') : `<div class="mtr-funnel-empty">Arraste KPIs ou clique em Personalizar para montar o funil</div>`;
+  }).join('') : `<div class="mtr-funnel-empty">Use Personalizar pra montar o funil.</div>`;
   return `<div class="mtr-funnel-card" id="mtrFunnelCard"
             ondragover="mtrFunnelDropOver(event)"
             ondragleave="mtrFunnelDropLeave(event)"
             ondrop="mtrFunnelDrop(event)">
     <div class="mtr-funnel-toolbar">
-      <div class="mtr-funnel-title" style="margin:0;">🎯 Funil de conversão</div>
+      <div class="mtr-funnel-title" style="margin:0;">Funil de conversão</div>
       <div style="display:flex;gap:6px;align-items:center;">
         <span class="mtr-funnel-hint">Arraste KPIs aqui</span>
-        <button onclick="mtrOpenFunnelModal()">⚙️ Personalizar</button>
+        <button onclick="mtrOpenFunnelModal()">Personalizar</button>
       </div>
     </div>
     <div class="mtr-funnel-stages">${stagesHtml}</div>
@@ -13653,7 +13656,7 @@ function mtrRenderFunnelModal() {
     const g = grouped[c.source] || grouped.other;
     g.push(c);
   });
-  const groupLabel = { ad:'📊 Anúncios (Meta)', ig:'📱 Instagram', gmb:'📍 Google Meu Negócio', other:'Outros' };
+  const groupLabel = { ad:'Anúncios (Meta)', ig:'Instagram', gmb:'Perfil no Google', other:'Outros' };
   const addHtml = Object.entries(grouped).filter(([_,v]) => v.length).map(([k, v]) => {
     return `<div style="margin-top:14px;"><div style="font-size:11px;color:var(--text2);font-weight:700;margin-bottom:6px;">${groupLabel[k]}</div>
       <div class="mtr-funnel-add-grid">
@@ -13967,16 +13970,16 @@ async function mtrFetchDemographics(igId, token) {
 function mtrRenderDemographics() {
   if (!mtrDemoCache) return '';
   const tabs = [
-    { id:'age', label:'👤 Idade', key:'age' },
-    { id:'gender', label:'⚧ Gênero', key:'gender' },
-    { id:'city', label:'🏙️ Cidades', key:'city' },
-    { id:'country', label:'🌎 País', key:'country' }
+    { id:'age', label:'Idade', key:'age' },
+    { id:'gender', label:'Gênero', key:'gender' },
+    { id:'city', label:'Cidades', key:'city' },
+    { id:'country', label:'País', key:'country' }
   ];
   const tabBtns = tabs.map(t => `<button class="mtr-demo-tab ${mtrDemoTab===t.id?'active':''}" onclick="mtrSetDemoTab('${t.id}')">${t.label}</button>`).join('');
   const data = mtrDemoCache[mtrDemoTab] || [];
   const max = data.length ? Math.max(...data.map(x => x.value)) : 1;
   const total = data.reduce((s, d) => s + d.value, 0) || 1;
-  const tabDesc = { age:'Faixa etária de quem mais engajou com seu conteúdo.', gender:'Divisão por gênero do público engajado.', city:'Cidades com mais engajamento — útil para segmentar anúncios.', country:'Países de origem do público engajado.' };
+  const tabDesc = { age:'Faixa etária de quem mais engajou com seu conteúdo.', gender:'Divisão por gênero do público engajado.', city:'Cidades com mais engajamento, úteis pra segmentar anúncios.', country:'Países de origem do público engajado.' };
   const rows = data.length ? data.map(d => {
     const w = ((d.value/max)*100).toFixed(1);
     const pct = ((d.value/total)*100).toFixed(0);
@@ -13987,8 +13990,8 @@ function mtrRenderDemographics() {
     </div>`;
   }).join('') : '<div class="mtr-demo-empty">Sem dados — requer permissão <code>instagram_manage_insights</code> com audiência mínima.</div>';
   return `<div class="mtr-demo-card">
-    <div class="mtr-section-title" style="margin-bottom:4px;">👥 Quem engajou com seu conteúdo</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">${tabDesc[mtrDemoTab]||''} Barras mostram proporção relativa — números são % do total.</div>
+    <div class="mtr-section-title" style="margin-bottom:4px;">Quem engajou com o conteúdo</div>
+    <div class="mtr-demo-desc" style="font-size:11px;color:var(--text3);margin-bottom:10px;">${tabDesc[mtrDemoTab]||''} As barras mostram a proporção e os números são % do total.</div>
     <div class="mtr-demo-tabs">${tabBtns}</div>
     <div class="mtr-demo-block">${rows}</div>
   </div>`;
@@ -14072,11 +14075,11 @@ function mtrRenderPosts() {
   const top = sorted.slice(0, 8);
 
   const tabs = [
-    { id:'top_eng', label:'🔥 Top engajamento' },
-    { id:'bot_eng', label:'❄️ Menor engajamento' },
-    { id:'top_reach', label:'👁️ Maior alcance' },
-    { id:'top_saves', label:'🔖 Mais salvos' },
-    { id:'top_shares', label:'↗️ Mais compartilhados' }
+    { id:'top_eng', label:'Mais engajamento' },
+    { id:'bot_eng', label:'Menos engajamento' },
+    { id:'top_reach', label:'Mais alcance' },
+    { id:'top_saves', label:'Mais salvos' },
+    { id:'top_shares', label:'Mais compartilhados' }
   ];
   const tabBtns = tabs.map(t => `<button class="mtr-posts-tab ${mtrPostsTab===t.id?'active':''}" onclick="mtrSetPostsTab('${t.id}')">${t.label}</button>`).join('');
 
@@ -14102,10 +14105,10 @@ function mtrRenderPosts() {
       <div class="mtr-post-info">
         <div class="mtr-post-caption">${escHtml(cap)}${(p.caption||'').length>90?'…':''}</div>
         <div class="mtr-post-stats">
-          <span class="mtr-post-stat"><span class="mtr-post-stat-icon">❤️</span>${mtrFmtNum(p.like_count||0)}</span>
-          <span class="mtr-post-stat"><span class="mtr-post-stat-icon">💬</span>${mtrFmtNum(p.comments_count||0)}</span>
-          ${i_.shares ? `<span class="mtr-post-stat"><span class="mtr-post-stat-icon">🔁</span>${mtrFmtNum(i_.shares)}</span>` : ''}
-          ${i_.saved ? `<span class="mtr-post-stat"><span class="mtr-post-stat-icon">🔖</span>${mtrFmtNum(i_.saved)}</span>` : ''}
+          <span class="mtr-post-stat" title="Curtidas"><span class="mtr-post-stat-icon">${fgFerrIco('heart', 14)}</span>${mtrFmtNum(p.like_count||0)}</span>
+          <span class="mtr-post-stat" title="Comentários"><span class="mtr-post-stat-icon">${fgFerrIco('msg', 14)}</span>${mtrFmtNum(p.comments_count||0)}</span>
+          ${i_.shares ? `<span class="mtr-post-stat" title="Compartilhamentos"><span class="mtr-post-stat-icon">${fgFerrIco('repeat', 14)}</span>${mtrFmtNum(i_.shares)}</span>` : ''}
+          ${i_.saved ? `<span class="mtr-post-stat" title="Salvos"><span class="mtr-post-stat-icon">${fgFerrIco('bookmark', 14)}</span>${mtrFmtNum(i_.saved)}</span>` : ''}
         </div>
         <div class="mtr-post-date">${dStr}</div>
       </div>
@@ -14114,7 +14117,7 @@ function mtrRenderPosts() {
   }).join('');
 
   return `<div class="mtr-posts-card">
-    <div class="mtr-section-title" style="margin-bottom:10px;">📸 Top posts do período</div>
+    <div class="mtr-section-title" style="margin-bottom:10px;">Posts do período</div>
     <div class="mtr-posts-tabs">${tabBtns}</div>
     <div class="mtr-posts-grid">${cards}</div>
   </div>`;
@@ -14237,21 +14240,21 @@ function _mtrDrillTotalCols() {
 }
 function _mtrDrillCells(item) {
   const cols = mtrCampCols.map(id => MTR_CAMP_COLS.find(x => x.id === id)).filter(Boolean);
-  return cols.map(col => `<td class="num">${mtrFmtCampCell(col, item)}</td>`).join('');
+  return cols.map(col => `<td class="num" data-label="${escHtml(col.label)}">${mtrFmtCampCell(col, item)}</td>`).join('');
 }
 function mtrRenderDrillRows(campId) {
   const st = mtrDrillState[campId];
   if (!st || !st.open) return '';
   const tc = _mtrDrillTotalCols();
-  if (st.loading) return `<tr class="mtr-drill-row"><td colspan="${tc}"><div class="mtr-drill-loading">Carregando conjuntos de anúncios…</div></td></tr>`;
-  if (st.error) return `<tr class="mtr-drill-row"><td colspan="${tc}"><div class="mtr-drill-loading" style="color:#ef4444;">❌ ${escHtml(st.error)}</div></td></tr>`;
+  if (st.loading) return `<tr class="mtr-drill-row"><td colspan="${tc}"><div class="mtr-drill-loading">Carregando conjuntos de anúncios</div></td></tr>`;
+  if (st.error) return `<tr class="mtr-drill-row"><td colspan="${tc}"><div class="mtr-drill-loading" style="color:#ef4444;">${escHtml(st.error)}</div></td></tr>`;
   if (!st.adsets?.length) return `<tr class="mtr-drill-row"><td colspan="${tc}"><div class="mtr-drill-loading">Nenhum conjunto encontrado.</div></td></tr>`;
   return st.adsets.map(a => {
     const sub = a.open ? mtrRenderAdRows(campId, a) : '';
     return `<tr class="mtr-drill-row adset">
       <td></td>
-      <td><button class="mtr-drill-toggle ${a.open?'expanded':''}" onclick="mtrToggleAdsetDrill('${campId}','${a.id}')">${a.open?'▼':'▶'}</button>
-        <span class="mtr-drill-name">${escHtml(a.name||'—')}</span></td>
+      <td><button class="mtr-drill-toggle ${a.open?'expanded':''}" onclick="mtrToggleAdsetDrill('${campId}','${a.id}')" aria-label="Ver anúncios do conjunto" aria-expanded="${a.open?'true':'false'}">${fgFerrIco(a.open?'down':'right', 16)}</button>
+        <span class="mtr-drill-name">${escHtml(a.name||'Sem nome')}</span></td>
       ${_mtrDrillCells(a)}
       <td></td>
     </tr>${sub}`;
@@ -14259,13 +14262,13 @@ function mtrRenderDrillRows(campId) {
 }
 function mtrRenderAdRows(campId, adset) {
   const tc = _mtrDrillTotalCols();
-  if (adset.loading) return `<tr class="mtr-drill-row ad"><td colspan="${tc}"><div class="mtr-drill-loading">Carregando anúncios…</div></td></tr>`;
-  if (adset.error) return `<tr class="mtr-drill-row ad"><td colspan="${tc}"><div class="mtr-drill-loading" style="color:#ef4444;">❌ ${escHtml(adset.error)}</div></td></tr>`;
+  if (adset.loading) return `<tr class="mtr-drill-row ad"><td colspan="${tc}"><div class="mtr-drill-loading">Carregando anúncios</div></td></tr>`;
+  if (adset.error) return `<tr class="mtr-drill-row ad"><td colspan="${tc}"><div class="mtr-drill-loading" style="color:#ef4444;">${escHtml(adset.error)}</div></td></tr>`;
   if (!adset.ads?.length) return `<tr class="mtr-drill-row ad"><td colspan="${tc}"><div class="mtr-drill-loading">Nenhum anúncio.</div></td></tr>`;
   return adset.ads.map(a => {
     return `<tr class="mtr-drill-row ad">
       <td></td>
-      <td>${a.thumb ? `<img class="mtr-drill-thumb" src="${a.thumb}" loading="lazy">` : ''}<span class="mtr-drill-name">${escHtml(a.name||'—')}</span></td>
+      <td>${a.thumb ? `<img class="mtr-drill-thumb" src="${a.thumb}" loading="lazy">` : ''}<span class="mtr-drill-name">${escHtml(a.name||'Sem nome')}</span></td>
       ${_mtrDrillCells(a)}
       <td></td>
     </tr>`;
@@ -14412,7 +14415,7 @@ async function mtrTryLoadSharedSnapshot() {
 function mtrTogglePct() {
   mtrShowPct = !mtrShowPct;
   const btn = document.getElementById('mtrPctBtn');
-  if (btn) { btn.classList.toggle('active', mtrShowPct); btn.textContent = mtrShowPct ? '% Variação ✓' : '% Variação'; }
+  if (btn) { btn.classList.toggle('active', mtrShowPct); btn.innerHTML = `${fgFerrIco('percent', 14)} Variação`; btn.setAttribute('aria-pressed', String(mtrShowPct)); }
   if (mtrLastSnapshot) {
     const s = mtrLastSnapshot;
     renderMetrics(s.igCurr, s.igPrev, s.adsData, s.adsPrev, s.curr, s.prev, s.compare, [], s.campaigns, s.health);
@@ -14451,7 +14454,7 @@ const MTR_DEFINITIONS = {
   gmb_views_total: 'Total de visualizações somando Google Search + Google Maps.',
   gmb_direction_requests: 'Quantas pessoas pediram rota até o estabelecimento. Indica intenção real de visita.',
   gmb_call_clicks: 'Quantas pessoas clicaram em "Ligar" diretamente no perfil do Google.',
-  gmb_website_clicks: 'Cliques no link do site a partir do perfil do Google Meu Negócio.',
+  gmb_website_clicks: 'Cliques no link do site a partir do perfil no Google.',
   gmb_bookings: 'Reservas feitas diretamente pelo Google (requer integração com sistema de reservas).',
   gmb_food_orders: 'Pedidos de comida iniciados pelo Google (requer integração com sistema de delivery).',
   gmb_menu_clicks: 'Cliques para visualizar o cardápio no perfil do Google.',
@@ -15577,8 +15580,8 @@ async function gmbConnect() {
 }
 
 async function gmbOnConnected() {
-  document.getElementById('gmbConnectBtn').textContent = '✅ Conectado';
-  document.getElementById('gmbConnectSub').textContent = 'Carregando perfis...';
+  document.getElementById('gmbConnectBtn').textContent = 'Conectado';
+  document.getElementById('gmbConnectSub').textContent = 'Carregando perfis';
   document.getElementById('gmbEmpty').style.display = 'none';
   await gmbLoadAccounts();
 }
@@ -15588,26 +15591,26 @@ function gmbLoadDemo() {
   if (_gmbDemoMode) { gmbExitDemo(); return; }
   _gmbDemoMode = true;
   _gmbLocations = gmbBuildDemoLocations();
-  document.getElementById('gmbConnectBtn').textContent = '🧪 Demo Ativo';
+  document.getElementById('gmbConnectBtn').textContent = 'Demo ativo';
   const dBtn = document.getElementById('gmbDemoBtn');
-  if (dBtn) { dBtn.textContent = '✕ Sair do Demo'; dBtn.style.opacity = '1'; }
+  if (dBtn) { dBtn.textContent = 'Sair do demo'; dBtn.style.opacity = '1'; }
   document.getElementById('gmbEmpty').style.display = 'none';
   gmbPopulateSelector();
   gmbShowMultiGrid();
-  document.getElementById('gmbConnectSub').innerHTML = `Modo demonstração — ${_gmbLocations.length} perfis fictícios <span class="gmb-demo-badge">DEMO</span>`;
+  document.getElementById('gmbConnectSub').innerHTML = `Modo demonstração: ${_gmbLocations.length} perfis fictícios <span class="gmb-demo-badge">Demo</span>`;
   const _gb = document.getElementById('globalDemoBanner'); if (_gb) _gb.style.display = 'block';
-  showToast('success','🧪','Modo demo carregado — dados fictícios');
+  showToast('success','🧪','Modo demo carregado com dados fictícios');
 }
 function gmbExitDemo() {
   _gmbDemoMode = false;
   _gmbLocations = []; _gmbCurrentLoc = null; _gmbReviews = [];
   document.getElementById('gmbConnectBtn').innerHTML = `<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.58-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Conectar com Google`;
-  document.getElementById('gmbConnectSub').textContent = 'Conecte sua conta Google com acesso ao Google Meu Negócio';
+  document.getElementById('gmbConnectSub').textContent = 'Conecte a conta Google que administra o perfil.';
   document.getElementById('gmbEmpty').style.display = '';
   const locBar = document.getElementById('gmbLocBar'); if (locBar) locBar.style.display = 'none';
   const grid = document.getElementById('gmbMultiGrid'); if (grid) grid.style.display = 'none';
   const detail = document.getElementById('gmbDetail'); if (detail) detail.style.display = 'none';
-  const dBtn = document.getElementById('gmbDemoBtn'); if (dBtn) { dBtn.textContent = '🧪 Modo Demo'; }
+  const dBtn = document.getElementById('gmbDemoBtn'); if (dBtn) { dBtn.textContent = 'Modo demo'; }
   const _gb = document.getElementById('globalDemoBanner'); if (_gb) _gb.style.display = 'none';
   showToast('info','✕','Demo encerrado');
 }
@@ -15790,7 +15793,7 @@ async function gmbLoadAccounts() {
 
 function gmbPopulateSelector() {
   const sel = document.getElementById('gmbLocSelect');
-  sel.innerHTML = '<option value="">— Selecione o perfil —</option>' +
+  sel.innerHTML = '<option value="">Escolha o perfil</option>' +
     _gmbLocations.map((l,i) => `<option value="${i}">${l.title || l.name}</option>`).join('');
   document.getElementById('gmbLocBar').style.display = 'flex';
   document.getElementById('gmbConnectSub').textContent = `${_gmbLocations.length} perfil(is) encontrado(s)`;
@@ -15814,18 +15817,18 @@ function gmbShowMultiGrid() {
     const reviews = l._demoReviews || null;
     const score = gmbCalcScore(l, reviews);
     const scoreColor = score >= 75 ? '#22c55e' : score >= 50 ? '#f59e0b' : '#ef4444';
-    const addr = l.storefrontAddress ? [l.storefrontAddress.locality, l.storefrontAddress.administrativeArea].filter(Boolean).join(', ') : '—';
+    const addr = l.storefrontAddress ? [l.storefrontAddress.locality, l.storefrontAddress.administrativeArea].filter(Boolean).join(', ') : '';
     let ratingStat = '';
     if (reviews && reviews.length) {
       const ratings = reviews.filter(r=>r.starRating).map(r=>({ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5}[r.starRating]||0));
-      const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : '—';
-      ratingStat = `<div class="gmb-loc-stat"><div class="gmb-loc-stat-val">${avg}⭐</div><div class="gmb-loc-stat-lbl">${reviews.length} avaliações</div></div>`;
+      const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1).replace('.', ',') : 'Sem nota';
+      ratingStat = `<div class="gmb-loc-stat"><div class="gmb-loc-stat-val">${avg}</div><div class="gmb-loc-stat-lbl">Nota em ${reviews.length} ${reviews.length===1?'avaliação':'avaliações'}</div></div>`;
     }
     return `<div class="gmb-loc-card" onclick="gmbSelectLocation(${i})">
       <div class="gmb-loc-card-name">${escHtml(l.title||'Perfil')}</div>
-      <div class="gmb-loc-card-addr">${escHtml(addr)}</div>
+      ${addr ? `<div class="gmb-loc-card-addr">${escHtml(addr)}</div>` : ''}
       <div class="gmb-loc-card-stats">
-        <div class="gmb-loc-stat"><div class="gmb-loc-stat-val">${score}</div><div class="gmb-loc-stat-lbl">Score</div></div>
+        <div class="gmb-loc-stat"><div class="gmb-loc-stat-val">${score}</div><div class="gmb-loc-stat-lbl"><span class="gmb-nivel gmb-nivel--${score >= 75 ? 'green' : score >= 50 ? 'yellow' : 'red'}"></span>Saúde</div></div>
         ${ratingStat}
       </div>
       <div class="gmb-loc-score-bar"><div class="gmb-loc-score-fill" style="width:${score}%;background:${scoreColor}"></div></div>
@@ -15901,28 +15904,28 @@ function gmbRenderKpis() {
   const answered = reviews.filter(r => r.reviewReply).length;
   const unanswered = total - answered;
   const ratings = reviews.filter(r => r.starRating).map(r => ({ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5}[r.starRating]||0));
-  const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : '—';
+  const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1).replace('.', ',') : 'Sem nota';
   const negatives = reviews.filter(r => ['ONE','TWO'].includes(r.starRating)).length;
   document.getElementById('gmbKpiRow').innerHTML = `
-    <div class="gmb-kpi"><div class="gmb-kpi-val">${avg}</div><div class="gmb-kpi-lbl">Nota Média</div><div class="gmb-kpi-sub">⭐ no Google</div></div>
-    <div class="gmb-kpi"><div class="gmb-kpi-val">${total}</div><div class="gmb-kpi-lbl">Total Avaliações</div></div>
-    <div class="gmb-kpi" style="${unanswered>0?'border-color:#ef4444;':''}""><div class="gmb-kpi-val" style="${unanswered>0?'color:#ef4444;':''}">${unanswered}</div><div class="gmb-kpi-lbl">Sem Resposta</div></div>
+    <div class="gmb-kpi"><div class="gmb-kpi-val">${avg}</div><div class="gmb-kpi-lbl">Nota média</div><div class="gmb-kpi-sub">no Google</div></div>
+    <div class="gmb-kpi"><div class="gmb-kpi-val">${total}</div><div class="gmb-kpi-lbl">Avaliações</div></div>
+    <div class="gmb-kpi ${unanswered>0?'gmb-kpi--alerta':''}"><div class="gmb-kpi-val">${unanswered}</div><div class="gmb-kpi-lbl">Sem resposta</div></div>
     <div class="gmb-kpi"><div class="gmb-kpi-val">${negatives}</div><div class="gmb-kpi-lbl">Negativas</div><div class="gmb-kpi-sub">1-2 estrelas</div></div>
-    <div class="gmb-kpi"><div class="gmb-kpi-val">${total?Math.round(answered/total*100):0}%</div><div class="gmb-kpi-lbl">Taxa Resposta</div></div>`;
+    <div class="gmb-kpi"><div class="gmb-kpi-val">${total?Math.round(answered/total*100):0}%</div><div class="gmb-kpi-lbl">Taxa de resposta</div></div>`;
 }
 
 function gmbRenderScore() {
   const loc = _gmbCurrentLoc;
   const score = gmbCalcScore(loc, _gmbReviews);
   const cls = score >= 75 ? 'green' : score >= 50 ? 'yellow' : 'red';
-  const label = score >= 75 ? '🟢 Perfil Saudável' : score >= 50 ? '🟡 Precisa de Atenção' : '🔴 Perfil Fraco';
+  const label = score >= 75 ? 'Perfil saudável' : score >= 50 ? 'Precisa de atenção' : 'Perfil fraco';
   const items = [
     { ok: !!loc.primaryPhone, label: 'Telefone cadastrado' },
     { ok: !!loc.websiteUri, label: 'Site vinculado' },
     { ok: !!(loc.regularHours?.periods?.length), label: 'Horários configurados' },
     { ok: !!(loc.profile?.description), label: 'Descrição preenchida' },
     { ok: !!(loc.storefrontAddress), label: 'Endereço cadastrado' },
-    { ok: _gmbReviews.length > 0 && (_gmbReviews.filter(r=>r.reviewReply).length/_gmbReviews.length) >= 0.8, label: 'Taxa resposta ≥ 80%' },
+    { ok: _gmbReviews.length > 0 && (_gmbReviews.filter(r=>r.reviewReply).length/_gmbReviews.length) >= 0.8, label: 'Responde 80% ou mais' },
   ];
   document.getElementById('gmbScoreCard').innerHTML = `
     <div class="gmb-score-head">
@@ -15931,8 +15934,8 @@ function gmbRenderScore() {
         <div class="gmb-score-max">/100</div>
       </div>
       <div class="gmb-score-info">
-        <div class="gmb-score-title">${label}</div>
-        <div class="gmb-score-desc">${escHtml(loc.title||'Perfil')} · Score de saúde do Google Meu Negócio</div>
+        <div class="gmb-score-title gmb-score-title--${cls}">${label}</div>
+        <div class="gmb-score-desc">${escHtml(loc.title||'Perfil')} · Saúde do perfil no Google</div>
       </div>
     </div>
     <div class="gmb-score-items">
@@ -15968,7 +15971,7 @@ function gmbGetHistory() {
 async function gmbRenderCharts() {
   await ensureChartJs();
   const history = gmbGetHistory();
-  const labels = history.map(h => h.date.slice(5)); // MM-DD
+  const labels = history.map(h => h.date.slice(8, 10) + '/' + h.date.slice(5, 7)); // DD/MM
   const ratings = history.map(h => h.rating);
   const scores  = history.map(h => h.score);
 
@@ -15976,17 +15979,22 @@ async function gmbRenderCharts() {
   if (_gmbRatingChart) { _gmbRatingChart.destroy(); _gmbRatingChart = null; }
   if (_gmbHealthChart) { _gmbHealthChart.destroy(); _gmbHealthChart = null; }
 
+  // celular: linha grafite fina, sem área pastel e sem bolinha em cada ponto (igual à linha das Métricas)
+  const cel = matchMedia('(max-width: 640px)').matches;
+  const linha = cel ? (getComputedStyle(document.body).getPropertyValue('--text2').trim() || '#5a6272') : null;
   const chartOpts = (label, data, color) => ({
     type: 'line',
     data: {
       labels,
-      datasets: [{ label, data, borderColor: color, backgroundColor: color + '22', fill: true, tension: 0.4, pointRadius: 3, borderWidth: 2 }]
+      datasets: [cel
+        ? { label, data, borderColor: linha, fill: false, tension: 0.3, pointRadius: 0, pointHitRadius: 12, borderWidth: 2 }
+        : { label, data, borderColor: color, backgroundColor: color + '22', fill: true, tension: 0.4, pointRadius: 3, borderWidth: 2 }]
     },
     options: {
       responsive: true, maintainAspectRatio: false, animation: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: '#888', font: { size: 9 } }, grid: { color: 'rgba(128,128,128,.1)' } },
+        x: { ticks: cel ? { color: '#888', font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 5 } : { color: '#888', font: { size: 9 } }, grid: { color: 'rgba(128,128,128,.1)' } },
         y: { ticks: { color: '#888', font: { size: 9 } }, grid: { color: 'rgba(128,128,128,.1)' } }
       }
     }
@@ -15994,8 +16002,8 @@ async function gmbRenderCharts() {
 
   const ctx1 = document.getElementById('gmbRatingChart').getContext('2d');
   const ctx2 = document.getElementById('gmbHealthChart').getContext('2d');
-  _gmbRatingChart = new Chart(ctx1, chartOpts('Nota Média', ratings, '#f59e0b'));
-  _gmbHealthChart = new Chart(ctx2, chartOpts('Score de Saúde', scores, '#22c55e'));
+  _gmbRatingChart = new Chart(ctx1, chartOpts('Nota média', ratings, '#f59e0b'));
+  _gmbHealthChart = new Chart(ctx2, chartOpts('Saúde do perfil', scores, '#22c55e'));
 }
 
 function gmbRenderReviews() {
@@ -16033,7 +16041,7 @@ function gmbRenderReviews() {
       ${text ? `<div class="gmb-review-text">${escHtml(text)}</div>` : '<div class="gmb-review-text" style="font-style:italic;color:var(--text3);">Sem texto na avaliação</div>'}
       ${reply ? `<div class="gmb-review-reply-existing"><div class="gmb-review-reply-label">Sua resposta</div>${escHtml(reply)}</div>` : ''}
       <div class="gmb-review-actions">
-        <button class="gmb-ai-btn" id="gmbAiBtn_${idx}" onclick="gmbSuggestReply(${idx})">✨ Sugerir Resposta com IA</button>
+        <button class="gmb-ai-btn" id="gmbAiBtn_${idx}" onclick="gmbSuggestReply(${idx})">${fgFerrIco('sparkles', 16)} Sugerir resposta com IA</button>
       </div>
       <textarea class="gmb-reply-area" id="gmbReplyTxt_${idx}" placeholder="A resposta aparecerá aqui..." style="display:none"></textarea>
       <div style="display:none;margin-top:8px;gap:8px;flex-wrap:wrap;" id="gmbReplyActions_${idx}">
@@ -16063,10 +16071,10 @@ async function gmbSuggestReply(idx) {
   const tone = stars >= 4 ? 'positiva' : stars >= 3 ? 'neutra' : 'negativa';
 
   btn.disabled = true;
-  btn.textContent = '⏳ Gerando...';
+  btn.textContent = 'Gerando resposta';
 
   const apiKey = getClaudeKey();
-  if (!apiKey) { showToast('warn','⚠️','Configure a Claude API Key em Configurações (⚙️ no cabeçalho).'); btn.disabled=false; btn.innerHTML='✨ Sugerir Resposta com IA'; return; }
+  if (!apiKey) { showToast('warn','⚠️','Configure a Claude API Key em Configurações (⚙️ no cabeçalho).'); btn.disabled=false; btn.innerHTML=`${fgFerrIco('sparkles', 16)} Sugerir resposta com IA`; return; }
 
   const prompt = `Você é um gerente de restaurante respondendo avaliações do Google Meu Negócio.
 Cliente: ${name}
@@ -16094,13 +16102,13 @@ Retorne APENAS o texto da resposta, sem explicações.`;
       txt.value = reply;
       txt.style.display = 'block';
       actions.style.display = 'flex';
-      btn.textContent = '↺ Gerar novamente';
+      btn.innerHTML = `${fgFerrIco('refresh', 16)} Gerar de novo`;
       btn.disabled = false;
     }
   } catch(e) {
     showToast('error','❌','Erro ao chamar IA: ' + e.message);
     btn.disabled = false;
-    btn.innerHTML = '✨ Sugerir Resposta com IA';
+    btn.innerHTML = `${fgFerrIco('sparkles', 16)} Sugerir resposta com IA`;
   }
 }
 
@@ -16145,7 +16153,7 @@ function gmbClearReply(idx) {
   const btn = document.getElementById(`gmbAiBtn_${idx}`);
   if (txt) { txt.value=''; txt.style.display='none'; }
   if (actions) actions.style.display='none';
-  if (btn) { btn.disabled=false; btn.innerHTML='✨ Sugerir Resposta com IA'; }
+  if (btn) { btn.disabled=false; btn.innerHTML=`${fgFerrIco('sparkles', 16)} Sugerir resposta com IA`; }
 }
 
 // ─── GMB POSTS ───────────────────────────────────────────
@@ -16266,7 +16274,7 @@ async function gmbPublishPost() {
       const err = await res.json().catch(()=>({}));
       throw new Error(err.error?.message || 'Erro ao publicar');
     }
-    showToast('success','✅','Postagem publicada no Google Meu Negócio!');
+    showToast('success','✅','Post publicado no perfil do Google');
     gmbResetPostForm();
   } catch(e) {
     showToast('error','❌','Erro: ' + e.message.slice(0,80));
@@ -16287,8 +16295,8 @@ function gmbResetPostForm() {
   if (!_gmbToken) return;
   const sub = document.getElementById('gmbConnectSub');
   const btn = document.getElementById('gmbConnectBtn');
-  if (sub) sub.textContent = 'Token salvo — carregue a aba para sincronizar';
-  if (btn) btn.textContent = '↻ Reconectar';
+  if (sub) sub.textContent = 'Conta salva. Abra a tela pra sincronizar.';
+  if (btn) btn.textContent = 'Reconectar';
 })();
 
 /* ─── GMB in Métricas ────────────────────────────────── */
@@ -16301,18 +16309,18 @@ function mtrPopulateGmbSelect() {
   if (!_gmbLocations || !_gmbLocations.length) {
     if (_gmbToken && !window._mtrGmbAttempted && !window._mtrGmbFailed) {
       window._mtrGmbAttempted = true;
-      sel.innerHTML = '<option value="">⏳ Carregando GMB...</option>';
+      sel.innerHTML = '<option value="">Carregando perfis do Google</option>';
       gmbLoadAccounts()
         .then(() => { window._mtrGmbAttempted = false; mtrPopulateGmbSelect(); })
-        .catch(() => { window._mtrGmbFailed = true; sel.innerHTML = '<option value="">⚠️ GMB indisponível (quota/erro)</option>'; });
+        .catch(() => { window._mtrGmbFailed = true; sel.innerHTML = '<option value="">Perfil no Google indisponível</option>'; });
     } else if (!_gmbToken) {
-      sel.innerHTML = '<option value="">📍 Conecte na aba Google</option>';
+      sel.innerHTML = '<option value="">Conecte na tela Google</option>';
     } else if (window._mtrGmbFailed) {
-      sel.innerHTML = '<option value="">⚠️ GMB indisponível — recarregue para tentar de novo</option>';
+      sel.innerHTML = '<option value="">Perfil no Google indisponível. Recarregue a página</option>';
     }
     return;
   }
-  sel.innerHTML = '<option value="">📍 Google Meu Negócio...</option>' +
+  sel.innerHTML = '<option value="">Perfil no Google</option>' +
     _gmbLocations.map((l,i) => `<option value="${i}">${escHtml(l.title||'Perfil '+(i+1))}</option>`).join('');
   if (_mtrGmbLocIdx !== null) sel.value = _mtrGmbLocIdx;
 }
@@ -29755,6 +29763,51 @@ function pjRelTime(date) {
    BASE DE DADOS — Cadastro de Restaurantes (clientes)
    Coleção Firestore: 'clientes_base'
    ════════════════════════════════════════════════════════════════ */
+// Ícones de traço (lucide) das telas Google, Métricas, Clientes e Contratos.
+// Mapa próprio pra não mexer no FG_ICO compartilhado; cai no FG_ICO quando a chave já existe lá.
+const FG_FERR_ICO = {
+  search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  file: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>',
+  filecheck: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/>',
+  external: '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+  window: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 4v4"/><path d="M2 8h20"/><path d="M6 4v4"/>',
+  right: '<path d="m9 18 6-6-6-6"/>',
+  ok: '<path d="M20 6 9 17l-5-5"/>',
+  pin: '<path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>',
+  bell: '<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>',
+  image: '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
+  phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  smartphone: '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>',
+  target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  utensils: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+  gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/>',
+  book: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  star: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
+  bulb: '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+  coins: '<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/>',
+  bike: '<circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>',
+  palette: '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
+  wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+  penline: '<path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/>',
+  building2: '<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>',
+  heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+  bookmark: '<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>',
+  refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+  percent: '<line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+  timer: '<line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/>',
+  sparkles: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>',
+  eyeoff: '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
+  scale: '<path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>',
+  megaphone: '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+};
+function fgFerrIco(k, s = 16, w = 1.75) {
+  const p = FG_FERR_ICO[k] || (typeof FG_ICO !== 'undefined' && FG_ICO[k]) || '';
+  return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+}
+
 let _bdClientes = [];
 let _bdSelectedId = null;
 let _bdUnsub = null;
@@ -29856,7 +29909,7 @@ function bdRenderList() {
   if (!list) return;
   const filtered = _bdClientes.filter(c => _bdMatchesSearch(c, _bdSearchQuery));
   if (filtered.length === 0) {
-    list.innerHTML = `<div class="bd-list-empty">${_bdSearchQuery ? 'Nenhum resultado' : 'Nenhum cliente cadastrado.<br>Clique em "Novo Cliente"'}</div>`;
+    list.innerHTML = `<div class="bd-list-empty">${_bdSearchQuery ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado.<br>Use o botão Novo cliente'}</div>`;
     return;
   }
   list.innerHTML = filtered.map(c => {
@@ -30014,16 +30067,16 @@ function _bdHealthScore(c) {
 
 function _bdCopyHtml(value) {
   const safe = (value||'').replace(/`/g,'\\`').replace(/'/g,"\\'");
-  return `<button class="bd-copy-btn" onclick="bdCopy(this,'${safe}')" title="Copiar">📎</button>`;
+  return `<button class="bd-copy-btn" onclick="bdCopy(this,'${safe}')" title="Copiar" aria-label="Copiar">${fgFerrIco('copy')}</button>`;
 }
 
 window.bdCopy = function(btn, text) {
   if (!text) return;
   navigator.clipboard.writeText(text).then(() => {
     btn.classList.add('ok');
-    const old = btn.textContent;
-    btn.textContent = '✓';
-    setTimeout(() => { btn.classList.remove('ok'); btn.textContent = old; }, 1200);
+    const old = btn.innerHTML;
+    btn.innerHTML = fgFerrIco('ok');
+    setTimeout(() => { btn.classList.remove('ok'); btn.innerHTML = old; }, 1200);
   });
 };
 
@@ -30079,7 +30132,7 @@ function bdRenderDetail(id) {
   const main = document.getElementById('bdMain');
   if (!main) return;
   if (!id) {
-    main.innerHTML = `<div class="bd-empty"><div class="bd-empty-icon">📚</div><div class="bd-empty-text">Base de Clientes</div><div class="bd-empty-sub">Selecione um cliente ao lado ou crie um novo</div></div>`;
+    main.innerHTML = `<div class="bd-empty"><div class="bd-empty-icon">${fgFerrIco('building2', 26)}</div><div class="bd-empty-text">Clientes</div><div class="bd-empty-sub">Selecione um cliente ao lado ou crie um novo</div></div>`;
     return;
   }
   const c = _bdClientes.find(x => x.id === id);
@@ -30097,10 +30150,10 @@ function bdRenderDetail(id) {
   main.innerHTML = `
     <button class="bd-back-mobile" onclick="bdBackToList()" aria-label="Voltar para lista">
       <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd"/></svg>
-      Voltar à lista
+      Voltar
     </button>
     <div class="bd-header" style="--bd-color:${cor};background:linear-gradient(135deg,${cor} 0%,rgba(0,0,0,.35) 100%);">
-      <div class="bd-health-bar">Ficha ${health}% completa <div class="bd-health-bar-fill"><div style="width:${health}%"></div></div></div>
+      <div class="bd-health-bar"><span>Ficha ${health}% completa</span><div class="bd-health-bar-fill"><div style="width:${health}%"></div></div></div>
       <div class="bd-header-inner">
         <label class="bd-photo-upload" style="${avatarStyle}background-color:rgba(255,255,255,.15);width:80px;height:80px;border:3px solid rgba(255,255,255,.4);">
           ${c.fotoUrl ? '' : `<span style="font-size:32px;font-weight:700;color:#fff;">${initial}</span>`}
@@ -30110,18 +30163,18 @@ function bdRenderDetail(id) {
           <div class="bd-cliente-name">${_bdEsc(c.nome)}</div>
           <div class="bd-cliente-meta">${_bdEsc([c.tipoCozinha,c.cidade,c.ig?'@'+c.ig.replace('@',''):''].filter(Boolean).join(' · '))}</div>
           <div class="bd-header-actions">
-            <button class="bd-action-btn primary" onclick='bdAIBrief(${JSON.stringify(c).replace(/'/g,"&#39;")})'>✨ Copiar contexto pra IA</button>
-            <button class="bd-action-btn" onclick='bdOpenAll(${JSON.stringify(c).replace(/'/g,"&#39;")})'>🔗 Abrir tudo</button>
-            <button class="bd-action-btn" onclick="bdOpenPortalDialog('${c.id}')" title="Portal do parceiro (dono do restaurante abre no celular)">🪟 Portal</button>
-            ${waLink?`<a class="bd-action-btn" href="${waLink}" target="_blank" style="text-decoration:none;">💬 WhatsApp</a>`:''}
-            <button class="bd-action-btn" onclick="bdOpenFieldsConfig()" title="Configurar campos da ficha">⚙️ Campos</button>
-            <button class="bd-action-btn" onclick="bdDelete('${c.id}')" style="margin-left:auto;">🗑️ Excluir</button>
+            <button class="bd-action-btn primary" onclick='bdAIBrief(${JSON.stringify(c).replace(/'/g,"&#39;")})'>${fgFerrIco('copy')} Copiar contexto pra IA</button>
+            <button class="bd-action-btn" onclick='bdOpenAll(${JSON.stringify(c).replace(/'/g,"&#39;")})'>${fgFerrIco('external')} Abrir tudo</button>
+            <button class="bd-action-btn" onclick="bdOpenPortalDialog('${c.id}')" title="Portal do parceiro (dono do restaurante abre no celular)">${fgFerrIco('window')} Portal</button>
+            ${waLink?`<a class="bd-action-btn" href="${waLink}" target="_blank" style="text-decoration:none;">${fgFerrIco('msg')} WhatsApp</a>`:''}
+            <button class="bd-action-btn" onclick="bdOpenFieldsConfig()" title="Configurar campos da ficha">${fgFerrIco('sliders')} Campos</button>
+            <button class="bd-action-btn bd-action-btn--danger" onclick="bdDelete('${c.id}')" style="margin-left:auto;">${fgFerrIco('trash')} Excluir</button>
           </div>
         </div>
       </div>
     </div>
 
-    ${c.pinNote ? `<div class="bd-pin-note">📌 ${_bdEsc(c.pinNote)} <button onclick="bdSaveField('${c.id}','pinNote','')" title="Remover">✕</button></div>` : ''}
+    ${c.pinNote ? `<div class="bd-pin-note">${fgFerrIco('pin')}<span>${_bdEsc(c.pinNote)}</span><button onclick="bdSaveField('${c.id}','pinNote','')" title="Remover" aria-label="Remover anotação">${fgFerrIco('x')}</button></div>` : ''}
 
     <div class="bd-content">
       ${_bdRenderAvisosBox(c)}
@@ -30231,23 +30284,41 @@ window.bdManageFields = function(ev, secId, fieldsJson) {
   setTimeout(() => document.addEventListener('mousedown', close), 0);
 };
 
+const _BD_SEC_ICO = {
+  'anotacao-fixada-aparece-no-topo': 'pin', 'identificacao': 'clipboard', 'contato-endereco': 'phone',
+  'redes-presenca': 'smartphone', 'estrategia-de-marca': 'target', 'documentos-drive': 'folder',
+  'acessos-senhas': 'lock', 'operacao-do-restaurante': 'utensils', 'datas-chave': 'calendar',
+  'promocoes-combos': 'gift', 'cardapio-restricoes': 'book', 'reputacao': 'star',
+  'inspiracoes-restricoes-de-conteudo': 'image', 'historico-o-que-funcionou': 'bulb', 'avisos-configurados': 'bell',
+  'notas-livres': 'pencil', 'vendas-cardapio-web': 'coins', 'ifood': 'bike', 'identificacao-visual': 'palette',
+};
+// nome que aparece na ficha; o id (e o que já está oculto ou configurado) continua vindo do título original
+const _BD_SEC_NOME = {
+  'contato-endereco': 'Contato e endereço', 'redes-presenca': 'Redes e presença', 'estrategia-de-marca': 'Estratégia de marca',
+  'documentos-drive': 'Documentos e Drive', 'acessos-senhas': 'Acessos e senhas', 'operacao-do-restaurante': 'Operação do restaurante',
+  'promocoes-combos': 'Promoções e combos', 'cardapio-restricoes': 'Cardápio e restrições',
+  'inspiracoes-restricoes-de-conteudo': 'Inspirações e restrições de conteúdo', 'historico-o-que-funcionou': 'Histórico: o que funcionou',
+};
 function _bdSec(title, body, opts={}) {
   const open = opts.open ? 'open' : '';
   const secId = opts.id || _bdSecId(title);
   // Se a seção está oculta, não renderiza
   if (_bdGetHiddenSections().includes(secId)) return '';
-  const safeName = String(title).replace(/'/g,"\\'");
+  // título sem o emoji da frente e sem travessão; o ícone de traço vem do id da seção
+  const label = _BD_SEC_NOME[secId] || String(title).replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s]+/u, '').replace(/\s+[—–]\s+/g, ': ').replace(/ & /g, ' e ');
+  const ico = _BD_SEC_ICO[secId] || (/^🔧/.test(String(title)) ? 'wrench' : '');
+  const safeName = label.replace(/'/g,"\\'");
   // Botão de gerenciar campos (opcional)
   const fieldsBtn = opts.fields
-    ? `<button class="bd-sec-hide-btn" title="Gerenciar campos" onclick="bdManageFields(event,'${secId}',${_bdEsc(JSON.stringify(opts.fields))})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px;border-radius:6px;line-height:1;">⚙️</button>`
+    ? `<button class="bd-sec-hide-btn" title="Gerenciar campos" aria-label="Gerenciar campos" onclick="bdManageFields(event,'${secId}',${_bdEsc(JSON.stringify(opts.fields))})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px;border-radius:6px;line-height:1;">${fgFerrIco('sliders')}</button>`
     : '';
   return `<div class="bd-section ${open}" data-sec-id="${secId}">
     <div class="bd-section-head" onclick="if(event.target.closest('.bd-sec-hide-btn'))return; this.parentElement.classList.toggle('open')">
-      <div class="bd-section-title">${title}</div>
+      <div class="bd-section-title">${ico ? `<span class="bd-sec-ic">${fgFerrIco(ico)}</span>` : ''}${label}</div>
       <div style="display:flex;align-items:center;gap:8px;">
         ${fieldsBtn}
-        <button class="bd-sec-hide-btn" title="Ocultar esta seção" onclick="event.stopPropagation();bdHideSection('${secId}','${safeName}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px;border-radius:6px;line-height:1;">🗑️</button>
-        <div class="bd-section-toggle">▶</div>
+        <button class="bd-sec-hide-btn" title="Ocultar esta seção" aria-label="Ocultar esta seção" onclick="event.stopPropagation();bdHideSection('${secId}','${safeName}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px;border-radius:6px;line-height:1;">${fgFerrIco('eyeoff')}</button>
+        <div class="bd-section-toggle">${fgFerrIco('right')}</div>
       </div>
     </div>
     <div class="bd-section-body">${body}</div>
@@ -30285,7 +30356,7 @@ function _bdSub(id, label, body) {
   return `<div class="bd-subblock" data-sub-id="${id}">
     <div class="bd-subblock-head">
       <div class="bd-subblock-label">${label}</div>
-      <button class="bd-subblock-del" title="Ocultar este bloco" onclick="bdHideSubblock('${id}','${safeLabel}')">🗑️</button>
+      <button class="bd-subblock-del" title="Ocultar este bloco" aria-label="Ocultar este bloco" onclick="bdHideSubblock('${id}','${safeLabel}')">${fgFerrIco('trash')}</button>
     </div>
     ${body}
   </div>`;
@@ -30674,17 +30745,17 @@ function _bdSectionAvisos(c) {
   const rows = avs.map((a,i) => {
     const dueClass = _bdAvisoIsDue(c, a) ? 'due' : '';
     return `<div class="bd-aviso ${dueClass}">
-      <div class="bd-aviso-text">🔔 Avisar <b>${a.dias||0} dia(s)</b> antes de <b>${_bdEsc(a.evento||'')}</b> ${a.data?'('+a.data+')':''}</div>
-      <button class="bd-aprendizado-x" onclick="bdAvisoDel('${c.id}',${i})">✕</button>
+      <div class="bd-aviso-text">Avisar <b>${a.dias||0} ${(a.dias||0)===1?'dia':'dias'}</b> antes de <b>${_bdEsc(a.evento||'')}</b> ${a.data?'('+a.data+')':''}</div>
+      <button class="bd-aprendizado-x" onclick="bdAvisoDel('${c.id}',${i})" aria-label="Apagar aviso">${fgFerrIco('x', 14)}</button>
     </div>`;
   }).join('');
   return _bdSec('🔔 Avisos configurados', `
     ${rows||'<div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Nenhum aviso. Adicione lembretes pra contratos, aniversários, datas comemorativas.</div>'}
-    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
-      <input id="bdAvN-${c.id}" class="bd-field-input" placeholder="Evento (ex: Vencimento contrato)" style="flex:2;min-width:180px;">
-      <input id="bdAvD-${c.id}" class="bd-field-input" placeholder="DD/MM/AAAA" style="flex:1;min-width:100px;">
-      <input id="bdAvDi-${c.id}" type="number" class="bd-field-input" placeholder="Dias antes" value="7" style="flex:1;min-width:80px;">
-      <button class="bd-add-row-btn" onclick="bdAvisoAdd('${c.id}')" style="padding:7px 12px;">＋ adicionar</button>
+    <div class="bd-aviso-form" style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:flex-end;">
+      <label class="bd-field" style="flex:2;min-width:180px;"><span class="bd-field-label">Evento</span><input id="bdAvN-${c.id}" class="bd-field-input" placeholder="Ex.: vencimento do contrato"></label>
+      <label class="bd-field" style="flex:1;min-width:100px;"><span class="bd-field-label">Data</span><input id="bdAvD-${c.id}" class="bd-field-input" placeholder="DD/MM/AAAA" inputmode="numeric"></label>
+      <label class="bd-field" style="flex:1;min-width:80px;"><span class="bd-field-label">Quantos dias antes</span><input id="bdAvDi-${c.id}" type="number" class="bd-field-input" value="7" inputmode="numeric"></label>
+      <button class="bd-add-row-btn" onclick="bdAvisoAdd('${c.id}')" style="padding:7px 12px;align-self:flex-end;">${fgFerrIco('plus', 16)} Adicionar</button>
     </div>
   `);
 }
@@ -30718,9 +30789,12 @@ window.bdAvisoDel = (id, i) => {
 function _bdRenderAvisosBox(c) {
   const due = (c.avisos||[]).filter(a => _bdAvisoIsDue(c, a));
   if (due.length === 0) return '';
-  return `<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:8px;padding:12px;margin-bottom:14px;">
-    <div style="font-size:13px;font-weight:600;color:#dc2626;margin-bottom:6px;">🔔 Avisos próximos</div>
-    ${due.map(a=>`<div style="font-size:12px;color:var(--text);">→ ${_bdEsc(a.evento)} em ${a.data}</div>`).join('')}
+  return `<div class="bd-avisos-box" style="display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px;">
+    <span style="width:28px;height:28px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:#c9353a;color:#fff;">${fgFerrIco('bell', 16)}</span>
+    <div style="min-width:0;">
+      <div style="font-size:14px;font-weight:600;line-height:20px;color:var(--text);margin-bottom:2px;">Avisos próximos</div>
+      ${due.map(a=>`<div style="font-size:13px;line-height:18px;color:var(--text2);">${_bdEsc(a.evento)} em ${a.data}</div>`).join('')}
+    </div>
   </div>`;
 }
 
@@ -31078,7 +31152,7 @@ window.bdUploadPhoto = async function(id, input, field) {
   const file = input.files?.[0]; if (!file) return;
   if (file.size > 4 * 1024 * 1024) { alert('Imagem muito grande (máx 4MB).'); return; }
   const btn = input.closest('.bd-img-upload-wrap')?.querySelector('.bd-img-upload-btn');
-  const setBusy = (busy) => { if (btn) { btn.disabled = !!busy; btn.style.opacity = busy ? '.6' : ''; btn.textContent = busy ? '⏳ Enviando…' : '📎 Anexar arquivo'; } };
+  const setBusy = (busy) => { if (btn) { btn.disabled = !!busy; btn.style.opacity = busy ? '.6' : ''; btn.textContent = busy ? 'Enviando' : 'Anexar arquivo'; } };
   setBusy(true);
   try {
     // Upload via ImgBB se chave configurada
@@ -31107,7 +31181,7 @@ function _bdImageInput(c, field, label) {
   const inputId = `bd-img-file-${safeId}-${field}`;
   const preview = v
     ? `<img src="${_bdEsc(v)}" alt="" style="width:36px;height:36px;border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;">`
-    : `<div style="width:36px;height:36px;border-radius:8px;background:var(--bg2);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text3);flex-shrink:0;">🖼️</div>`;
+    : `<div style="width:36px;height:36px;border-radius:8px;background:var(--bg2);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text3);flex-shrink:0;">${fgFerrIco('image')}</div>`;
   return `<div class="bd-field">
     <div class="bd-field-label">${label}</div>
     <div class="bd-img-upload-wrap" style="display:flex;flex-direction:column;gap:6px;">
@@ -31116,7 +31190,7 @@ function _bdImageInput(c, field, label) {
         <input class="bd-field-input" type="text" value="${_bdEsc(v)}" placeholder="Cole uma URL ou anexe um arquivo" onchange="bdSaveField('${c.id}','${field}',this.value)" style="flex:1;">
         ${_bdCopyHtml(v)}
       </div>
-      <label class="bd-img-upload-btn" for="${inputId}" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2);cursor:pointer;align-self:flex-start;font-weight:500;">📎 Anexar arquivo</label>
+      <label class="bd-img-upload-btn" for="${inputId}" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2);cursor:pointer;align-self:flex-start;font-weight:500;">Anexar arquivo</label>
       <input id="${inputId}" type="file" accept="image/*" data-field="${field}" style="display:none;" onchange="bdUploadPhoto('${c.id}',this,'${field}')">
     </div>
   </div>`;
@@ -34761,7 +34835,7 @@ const POP = (() => {
         </div>
         <div class="ctr-search">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          <input id="ctrSearch" type="search" placeholder="Buscar por título ou cliente…" value="${escHtml(_ctrQuery)}" oninput="ctrSearchInput(this.value)">
+          <input id="ctrSearch" type="search" placeholder="Buscar por título ou cliente" aria-label="Buscar contrato" value="${escHtml(_ctrQuery)}" oninput="ctrSearchInput(this.value)">
         </div>
       </div>`;
     const list = filtered.length ? '<div class="ctr-grid">' + filtered.map(r => `
@@ -34801,7 +34875,7 @@ const POP = (() => {
   window.ctrBuildList = function(){
     const el = document.getElementById('ctrList');
     if (!el || !_db) return;
-    el.innerHTML = '<div style="padding:24px;color:var(--text3);text-align:center;">Carregando…</div>';
+    el.innerHTML = '<div style="padding:24px;color:var(--text3);text-align:center;">Carregando</div>';
     try { _ctrUnsub && _ctrUnsub(); } catch(_){}
     _ctrUnsub = _db.collection('contratos').orderBy('createdAt','desc').limit(100).onSnapshot(snap => {
       _ctrRows = snap.docs.map(d => ({ id:d.id, ...d.data() }));
@@ -34833,13 +34907,12 @@ const POP = (() => {
       <div id="ctrWizardBody">
         <div id="ctrStep1">
           <h2>Envie o PDF do contrato</h2>
-          <p class="ctr-modal-sub">Arraste o arquivo aqui ou clique pra selecionar. Só PDF, até 5MB.</p>
+          <p class="ctr-modal-sub">Só PDF, até 5 MB.</p>
           <label class="ctr-drop" id="ctrDrop">
             <input type="file" id="ctrPdfInput" accept="application/pdf" hidden>
             <div class="ctr-drop-empty">
               <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <b>Clique ou arraste o PDF</b>
-              <span>até 5 MB</span>
+              <b>Escolher PDF</b>
             </div>
             <div class="ctr-drop-file" id="ctrDropFile" hidden>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:#dc2626"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -34859,17 +34932,17 @@ const POP = (() => {
           </div>
           <div class="ctr-modal-actions">
             <button type="button" class="btn-ghost" onclick="ctrCloseModal()">Cancelar</button>
-            <button type="button" class="btn-primary" id="ctrNext1" disabled onclick="ctrWizardStep(2)">Próximo →</button>
+            <button type="button" class="btn-primary" id="ctrNext1" disabled onclick="ctrWizardStep(2)">Próximo</button>
           </div>
         </div>
         <div id="ctrStep2" hidden>
           <h2>Quem é o Contratante?</h2>
-          <p class="ctr-modal-sub">A pessoa/empresa que está contratando seu serviço. O link único vai pra ela assinar.</p>
+          <p class="ctr-modal-sub">A pessoa ou empresa que está contratando seu serviço. O link único vai pra ela assinar.</p>
           <label class="ctr-field"><span>Título do contrato <em>*</em></span>
-            <input id="ctrfTitle" type="text" placeholder="Ex: Prestação de serviços — Palhoça">
+            <input id="ctrfTitle" type="text" placeholder="Ex.: Prestação de serviços, Palhoça">
           </label>
           <label class="ctr-field"><span>Nome completo do Contratante <em>*</em></span>
-            <input id="ctrfClientName" type="text" placeholder="Ex: João da Silva">
+            <input id="ctrfClientName" type="text" placeholder="Ex.: João da Silva">
           </label>
           <div class="ctr-field-row">
             <label class="ctr-field"><span>E-mail</span>
@@ -34880,8 +34953,8 @@ const POP = (() => {
             </label>
           </div>
           <div class="ctr-modal-actions">
-            <button type="button" class="btn-ghost" onclick="ctrWizardStep(1)">← Voltar</button>
-            <button type="button" class="btn-primary" onclick="ctrWizardStep(3)">Próximo →</button>
+            <button type="button" class="btn-ghost" onclick="ctrWizardStep(1)">Voltar</button>
+            <button type="button" class="btn-primary" onclick="ctrWizardStep(3)">Próximo</button>
           </div>
         </div>
         <div id="ctrStep3" hidden>
@@ -34904,13 +34977,13 @@ const POP = (() => {
               </div>
             </div>
             <div class="csign-cam-actions" style="margin-top:10px;">
-              <button type="button" class="csign-btn csign-btn--ghost" id="ctrIntCamStartBtn" onclick="ctrIntCamStart()">📷 Ligar câmera</button>
+              <button type="button" class="csign-btn csign-btn--ghost" id="ctrIntCamStartBtn" onclick="ctrIntCamStart()">Ligar câmera</button>
               <button type="button" class="csign-btn csign-btn--primary" id="ctrIntCamShootBtn" onclick="ctrIntCamCapture()" hidden>Capturar</button>
               <button type="button" class="csign-btn csign-btn--ghost" id="ctrIntCamRedoBtn" onclick="ctrIntCamStart()" hidden>Tirar outra</button>
             </div>
           </div>
           <div class="ctr-modal-actions">
-            <button type="button" class="btn-ghost" onclick="ctrWizardStep(2)">← Voltar</button>
+            <button type="button" class="btn-ghost" onclick="ctrWizardStep(2)">Voltar</button>
             <button type="button" class="btn-primary" id="ctrSaveBtn" onclick="ctrSave()" disabled>Gerar link de assinatura</button>
           </div>
         </div>
@@ -35114,10 +35187,10 @@ const POP = (() => {
     const link = location.origin + location.pathname + '#assinar?id=' + id;
     // Timeline de eventos
     const events = [];
-    if (c.createdAt) events.push({ i:'📤', t:'Enviado', d:c.createdAt });
-    if (c.firstViewedAt) events.push({ i:'👁️', t:`Cliente abriu${c.viewCount>1?` (${c.viewCount}×)`:''}`, d:c.firstViewedAt });
-    if (c.signedAt) events.push({ i:'✍️', t:'Assinado', d:c.signedAt });
-    if (c.status === 'expired' && c.expiresAt) events.push({ i:'⏱', t:'Expirado', d:c.expiresAt });
+    if (c.createdAt) events.push({ i:fgFerrIco('send', 14), t:'Enviado', d:c.createdAt });
+    if (c.firstViewedAt) events.push({ i:fgFerrIco('eye', 14), t:`Cliente abriu${c.viewCount>1?` (${c.viewCount}×)`:''}`, d:c.firstViewedAt });
+    if (c.signedAt) events.push({ i:fgFerrIco('penline', 14), t:'Assinado', d:c.signedAt });
+    if (c.status === 'expired' && c.expiresAt) events.push({ i:fgFerrIco('timer', 14), t:'Expirado', d:c.expiresAt });
     const timelineHtml = events.length ? `
       <ol class="ctr-timeline">
         ${events.map(e => `<li><span class="ctr-tl-icon">${e.i}</span><span class="ctr-tl-text"><b>${e.t}</b><em>${fmtDate(e.d)}</em></span></li>`).join('')}
@@ -35126,7 +35199,7 @@ const POP = (() => {
       <h2>${escHtml(c.title)}</h2>
       <div class="ctr-detail-meta">
         <span class="ctr-badge ctr-badge--${c.status||'pending'}">${c.status==='signed'?'Assinado':c.status==='expired'?'Expirado':'Aguardando'}</span>
-        <span>Cliente: <b>${escHtml(c.clientName||'—')}</b></span>
+        ${c.clientName ? `<span>Cliente: <b>${escHtml(c.clientName)}</b></span>` : ''}
         ${c.clientEmail ? `<span>${escHtml(c.clientEmail)}</span>` : ''}
         <span>Criado ${fmtDate(c.createdAt)}</span>
         ${c.signedAt ? `<span>Assinado ${fmtDate(c.signedAt)}</span>` : ''}
@@ -35144,7 +35217,7 @@ const POP = (() => {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               WhatsApp
             </a>` : ''}
-            ${c.clientEmail ? `<a class="ctr-send-btn ctr-send-btn--email" href="mailto:${encodeURIComponent(c.clientEmail)}?subject=${encodeURIComponent('Contrato para assinatura — '+(c.title||''))}&body=${encodeURIComponent('Olá '+(c.clientName||'')+',\n\nSegue o link do contrato para assinatura:\n'+link+'\n\nQualquer dúvida estou à disposição.')}">
+            ${c.clientEmail ? `<a class="ctr-send-btn ctr-send-btn--email" href="mailto:${encodeURIComponent(c.clientEmail)}?subject=${encodeURIComponent('Contrato para assinatura: '+(c.title||''))}&body=${encodeURIComponent('Olá '+(c.clientName||'')+',\n\nSegue o link do contrato para assinatura:\n'+link+'\n\nQualquer dúvida estou à disposição.')}">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
               E-mail
             </a>` : ''}
@@ -35155,12 +35228,12 @@ const POP = (() => {
         <div class="ctr-signed-panel ctr-signed-panel--internal">
           <div class="ctr-signed-selfie">
             ${c.internalSig.selfieDataUrl ? `<img src="${c.internalSig.selfieDataUrl}" alt="Selfie do Contratado">` : ''}
-            <span class="ctr-signed-badge">✓ Você</span>
+            <span class="ctr-signed-badge">Assinado por você</span>
           </div>
           <div class="ctr-signed-info">
             <div class="ctr-signed-line"><b>Contratado</b><span>${escHtml(c.internalSig.name||'')}</span></div>
             <div class="ctr-signed-line"><b>Data/hora</b><span>${fmtDate(c.internalSig.signedAt)}</span></div>
-            <div class="ctr-signed-line"><b>IP</b><span>${escHtml(c.internalSig.ip || '—')}</span></div>
+            <div class="ctr-signed-line"><b>IP</b><span>${escHtml(c.internalSig.ip || 'Não registrado')}</span></div>
             ${c.internalSig.cpf ? `<div class="ctr-signed-line"><b>CPF</b><span>${escHtml(c.internalSig.cpf)}</span></div>` : ''}
           </div>
         </div>
@@ -35169,16 +35242,16 @@ const POP = (() => {
         <div class="ctr-signed-panel">
           <div class="ctr-signed-selfie">
             ${c.selfieDataUrl ? `<img src="${c.selfieDataUrl}" alt="Selfie do Contratante">` : ''}
-            <span class="ctr-signed-badge">✓ Contratante</span>
+            <span class="ctr-signed-badge">Assinado pelo contratante</span>
           </div>
           <div class="ctr-signed-info">
             <div class="ctr-signed-line"><b>Contratante</b><span>${escHtml(c.signatureText || c.clientName || '')}</span></div>
             <div class="ctr-signed-line"><b>Data/hora</b><span>${fmtDate(c.signedAt)}</span></div>
-            <div class="ctr-signed-line"><b>IP</b><span>${escHtml(c.signIp || '—')}</span></div>
-            <div class="ctr-signed-line"><b>Hash</b><code>${escHtml((c.bodyHash||'').slice(0,32))}…</code></div>
+            <div class="ctr-signed-line"><b>IP</b><span>${escHtml(c.signIp || 'Não registrado')}</span></div>
+            <div class="ctr-signed-line"><b>Hash</b><code>${escHtml(c.bodyHash || 'Não registrado')}</code></div>
           </div>
         </div>
-        <button class="btn-primary btn-primary--lg" onclick="ctrDownloadPdf('${id}')" style="width:100%;margin-top:12px;">📄 Baixar PDF assinado</button>
+        <button class="btn-primary btn-primary--lg" onclick="ctrDownloadPdf('${id}')" style="width:100%;margin-top:12px;">${fgFerrIco('download', 18)} Baixar PDF assinado</button>
       ` : ''}
       <div class="ctr-preview-wrap">
         <div class="ctr-preview-label">Documento</div>
