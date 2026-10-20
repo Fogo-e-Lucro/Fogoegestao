@@ -8936,7 +8936,7 @@ body.pj-task-open .pj-modal-body { touch-action:pan-y; }
 
 /* Estado focus mode ATIVO ───────────────────────────────────── */
 /* Desktop: colapsa largura da sidebar para liberar o flexbox */
-body.pj-focus .pj-sidebar {
+body.pj-focus.at-projetos .pj-sidebar {
   width: 0 !important;
   min-width: 0 !important;
   border-right: 0 !important;
@@ -18151,86 +18151,82 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   /* some com painel aberto e na Pergunte à IA (cobria o Enviar) */
   body.at-projetos:has(.pj-notif-panel.open, .app-menu-panel.open, .pj-dash-customize-overlay, .pj-wa-modal, .pj-askai-input) #pjFab { display: none !important; }
 
-  /* 6. Gaveta de Tarefas: branca, escolhido grafite */
-  body.at-projetos .pj-drawer-backdrop { background: var(--dim) !important; }
-  body.at-projetos .pj-sidebar {
+  /* 6. Gaveta do menu (todas as telas): branca, escolhido grafite */
+  body.fg-menu .pj-drawer-backdrop { background: var(--dim) !important; }
+  body.fg-menu .pj-sidebar {
     background: var(--card) !important; color: var(--text) !important;
     border-right: 1px solid var(--border) !important; width: 300px !important; max-width: 86vw;
     box-shadow: none !important;
   }
-  body.at-projetos .pj-sidebar.open { box-shadow: 8px 0 24px rgba(16,24,40,.16) !important; }
-  /* uma rolagem só: Espaços logo depois das vistas, Admin e Novo Espaço/Templates no fim
-     (o rodapé entra na rolagem pelo mobile.js); o fim esmaece pra mostrar que continua */
-  body.at-projetos .pj-sidebar .pj-sidebar-scroll {
+  body.fg-menu .pj-sidebar.open { box-shadow: 8px 0 24px rgba(16,24,40,.16) !important; }
+  /* uma rolagem só: a conta sobe pro topo e o rodapé entra no fim (mobile.js); o fim esmaece pra mostrar que continua */
+  body.fg-menu .pj-sidebar .pj-sidebar-scroll {
     display: flex; flex-direction: column; gap: 2px; padding: 4px 0 0;
     -webkit-mask-image: linear-gradient(#000 calc(100% - 28px), transparent); mask-image: linear-gradient(#000 calc(100% - 28px), transparent);
   }
-  body.at-projetos .pj-sidebar .pj-sidebar-top { display: contents; }
-  body.at-projetos .pj-sidebar .pj-sidebar-top > * { width: auto !important; max-width: none !important; margin-left: 12px !important; margin-right: 12px !important; box-sizing: border-box; }
-  body.at-projetos .pj-sidebar :is(.pj-divider, #pjSpacesList) { order: 1; }
-  body.at-projetos .pj-sidebar .pj-sidebar-top > .pj-admin-only { order: 2; }
-  body.at-projetos .pj-sidebar .pj-sidebar-footer { order: 3; margin-top: 12px; }
-  body.at-projetos .pj-me-hero { padding: 4px 0 8px; animation: none !important; }
-  body.at-projetos .pj-me-hero-info { align-items: flex-start; }
-  body.at-projetos .pj-me-hero-card { text-align: left; padding: 10px 4px !important; gap: 12px; background: none !important; border: 0 !important; color: var(--text) !important; }
-  body.at-projetos :is(.pj-me-hero-glow, .pj-me-hero-hi, .pj-me-hero-role-dot, .pj-me-hero-actions) { display: none !important; }
-  body.at-projetos .pj-me-hero-avatar-wrap { width: 44px; height: 44px; }
-  body.at-projetos .pj-me-hero-avatar-ring { inset: -1px; animation: none !important; filter: none; background: var(--border) !important; }
-  body.at-projetos .pj-me-hero-avatar-ring::after { display: none; }
-  body.at-projetos .pj-me-hero-avatar { inset: 0; }
-  body.at-projetos .pj-me-hero-status { width: 12px; height: 12px; background: var(--success) !important; border: 2px solid var(--card) !important; box-shadow: none !important; animation: none !important; }
-  body.at-projetos .pj-me-hero-name { font-size: 16px; font-weight: 600; color: var(--text) !important; opacity: 1 !important; transform: none !important; animation: none !important; }
-  body.at-projetos .pj-me-hero-role { font-size: 13px; color: var(--text3) !important; opacity: 1 !important; transform: none !important; animation: none !important; }
-  body.at-projetos .pj-sidebar .pj-search-trigger {
+  body.fg-menu .pj-sidebar .pj-sidebar-top { display: contents; }
+  body.fg-menu .pj-sidebar .pj-sidebar-top > * { width: auto !important; max-width: none !important; margin-left: 12px !important; margin-right: 12px !important; box-sizing: border-box; }
+  body.fg-menu .pj-sidebar .pj-sidebar-footer { order: 3; margin-top: 12px; }
+  body.fg-menu .pj-me-hero { padding: 4px 0 8px; animation: none !important; }
+  body.fg-menu .pj-me-hero-info { align-items: flex-start; }
+  body.fg-menu .pj-me-hero-card { text-align: left; padding: 10px 4px !important; gap: 12px; background: none !important; border: 0 !important; color: var(--text) !important; }
+  body.fg-menu :is(.pj-me-hero-glow, .pj-me-hero-hi, .pj-me-hero-role-dot, .pj-me-hero-actions) { display: none !important; }
+  body.fg-menu .pj-me-hero-avatar-wrap { width: 44px; height: 44px; }
+  body.fg-menu .pj-me-hero-avatar-ring { inset: -1px; animation: none !important; filter: none; background: var(--border) !important; }
+  body.fg-menu .pj-me-hero-avatar-ring::after { display: none; }
+  body.fg-menu .pj-me-hero-avatar { inset: 0; }
+  body.fg-menu .pj-me-hero-status { width: 12px; height: 12px; background: var(--success) !important; border: 2px solid var(--card) !important; box-shadow: none !important; animation: none !important; }
+  body.fg-menu .pj-me-hero-name { font-size: 16px; font-weight: 600; color: var(--text) !important; opacity: 1 !important; transform: none !important; animation: none !important; }
+  body.fg-menu .pj-me-hero-role { font-size: 13px; color: var(--text3) !important; opacity: 1 !important; transform: none !important; animation: none !important; }
+  body.fg-menu .pj-sidebar .pj-search-trigger {
     min-height: 44px; margin-top: 4px; margin-bottom: 8px; padding: 0 12px; gap: 10px; border-radius: 12px;
     background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text3) !important; font-size: 15px;
   }
-  body.at-projetos .pj-sidebar .pj-search-trigger svg { width: 18px; height: 18px; color: var(--text2); flex-shrink: 0; }
-  body.at-projetos .pj-sidebar .pj-nav-btn {
+  body.fg-menu .pj-sidebar .pj-search-trigger svg { width: 18px; height: 18px; color: var(--text2); flex-shrink: 0; }
+  body.fg-menu .pj-sidebar .pj-nav-btn {
     min-height: 44px; padding: 0 12px !important; gap: 12px !important; border-radius: 10px;
     background: none !important; color: var(--text) !important; font-size: 15px !important; font-weight: 500 !important;
   }
-  body.at-projetos .pj-sidebar .pj-nav-btn .pj-nav-ic { width: 20px; height: 20px; background: none !important; border: 0 !important; color: var(--text2) !important; }
-  body.at-projetos .pj-sidebar .pj-nav-btn .pj-nav-ic svg { width: 20px; height: 20px; }
-  body.at-projetos .pj-sidebar .pj-nav-btn:active { background: var(--bg2) !important; }
-  body.at-projetos .pj-sidebar .pj-nav-btn.active { background: var(--ink) !important; color: var(--on-ink) !important; font-weight: 600 !important; }
-  body.at-projetos .pj-sidebar .pj-nav-btn.active::before { display: none; }
-  body.at-projetos .pj-sidebar .pj-nav-btn.active .pj-nav-ic { color: var(--on-ink) !important; }
-  body.at-projetos .pj-sidebar .pj-badge {
+  body.fg-menu .pj-sidebar .pj-nav-btn .pj-nav-ic { width: 20px; height: 20px; background: none !important; border: 0 !important; color: var(--text2) !important; }
+  body.fg-menu .pj-sidebar .pj-nav-btn .pj-nav-ic svg { width: 20px; height: 20px; }
+  body.fg-menu .pj-sidebar .pj-nav-btn:active { background: var(--bg2) !important; }
+  body.fg-menu .pj-sidebar .pj-nav-btn.active { background: var(--ink) !important; color: var(--on-ink) !important; font-weight: 600 !important; }
+  body.fg-menu .pj-sidebar .pj-nav-btn.active::before { display: none; }
+  body.fg-menu .pj-sidebar .pj-nav-btn.active .pj-nav-ic { color: var(--on-ink) !important; }
+  body.fg-menu .pj-sidebar .pj-badge {
     min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; line-height: 20px;
     background: var(--danger) !important; color: #fff !important; box-shadow: none !important; font-size: 12px; font-weight: 700;
   }
-  body.at-projetos .pj-sidebar .pj-nav-btn.active .pj-badge { background: var(--on-ink) !important; color: var(--ink) !important; }
-  body.at-projetos .pj-sidebar .pj-section-label { padding: 16px 12px 6px !important; color: var(--text3) !important; font-size: 12px !important; font-weight: 600; letter-spacing: .06em !important; }
-  body.at-projetos .pj-sidebar .pj-divider { margin: 8px 12px; background: var(--sep) !important; }
-  body.at-projetos .pj-sidebar .pj-askai-pill {
+  body.fg-menu .pj-sidebar .pj-nav-btn.active .pj-badge { background: var(--on-ink) !important; color: var(--ink) !important; }
+  body.fg-menu .pj-sidebar .pj-section-label { padding: 16px 12px 6px !important; color: var(--text3) !important; font-size: 12px !important; font-weight: 600; letter-spacing: .06em !important; }
+  body.fg-menu .pj-sidebar .pj-divider { margin: 8px 12px; background: var(--sep) !important; }
+  body.fg-menu .pj-sidebar .pj-askai-pill {
     background: none !important; border: 1px solid var(--border); color: var(--text2) !important;
     font-size: 11px; font-weight: 600; text-transform: none; letter-spacing: 0; padding: 1px 8px; border-radius: 999px;
   }
-  body.at-projetos .pj-sidebar :is(.pj-space-row, .pj-folder-row, .pj-list-row) { min-height: 44px; margin: 0 8px; border-radius: 10px; }
-  body.at-projetos .pj-sidebar :is(.pj-space-row, .pj-folder-row, .pj-list-row):hover { background: none !important; }
-  body.at-projetos .pj-sidebar .pj-space-icon {
+  body.fg-menu .pj-sidebar :is(.pj-space-row, .pj-folder-row, .pj-list-row) { min-height: 44px; margin: 0 8px; border-radius: 10px; }
+  body.fg-menu .pj-sidebar :is(.pj-space-row, .pj-folder-row, .pj-list-row):hover { background: none !important; }
+  body.fg-menu .pj-sidebar .pj-space-icon {
     width: 24px; height: 24px; border-radius: 7px; font-size: 12px; box-shadow: none;
     background: var(--card) !important; border: 1px solid var(--border); color: var(--text);
   }
-  body.at-projetos .pj-sidebar .pj-space-name { color: var(--text) !important; font-size: 15px; font-weight: 600; }
-  body.at-projetos .pj-sidebar .pj-folder-name { color: var(--text) !important; font-size: 15px; }
-  body.at-projetos .pj-sidebar .pj-list-name { color: var(--text2) !important; font-size: 15px; }
-  body.at-projetos .pj-sidebar .pj-list-count {
+  body.fg-menu .pj-sidebar .pj-space-name { color: var(--text) !important; font-size: 15px; font-weight: 600; }
+  body.fg-menu .pj-sidebar .pj-folder-name { color: var(--text) !important; font-size: 15px; }
+  body.fg-menu .pj-sidebar .pj-list-name { color: var(--text2) !important; font-size: 15px; }
+  body.fg-menu .pj-sidebar .pj-list-count {
     background: var(--card) !important; border: 1px solid var(--border); color: var(--text2) !important;
     font-size: 12px; padding: 0 7px; border-radius: 999px; line-height: 18px;
   }
-  body.at-projetos .pj-sidebar .pj-list-row.active { background: var(--ink) !important; }
-  body.at-projetos .pj-sidebar .pj-list-row.active .pj-list-name { color: var(--on-ink) !important; }
-  body.at-projetos .pj-sidebar .pj-list-row.active .pj-list-count { background: var(--on-ink) !important; border-color: var(--on-ink); color: var(--ink) !important; }
-  body.at-projetos .pj-sidebar :is(.pj-space-chevron, .pj-icon-btn, .pj-row-ic) { color: var(--text3) !important; }
-  body.at-projetos .pj-sidebar .pj-sidebar-footer {
+  body.fg-menu .pj-sidebar .pj-list-row.active { background: var(--ink) !important; }
+  body.fg-menu .pj-sidebar .pj-list-row.active .pj-list-name { color: var(--on-ink) !important; }
+  body.fg-menu .pj-sidebar .pj-list-row.active .pj-list-count { background: var(--on-ink) !important; border-color: var(--on-ink); color: var(--ink) !important; }
+  body.fg-menu .pj-sidebar :is(.pj-space-chevron, .pj-icon-btn, .pj-row-ic) { color: var(--text3) !important; }
+  body.fg-menu .pj-sidebar .pj-sidebar-footer {
     background: var(--card) !important; border-top: 1px solid var(--border) !important; box-shadow: none !important;
     padding: 6px 12px calc(36px + env(safe-area-inset-bottom, 0px)) !important;
   }
-  body.at-projetos #pjSidebarUserRow { display: none !important; }
-  body.at-projetos .pj-sidebar .pj-add-space-btn { min-height: 44px; padding: 0 12px; gap: 12px; border-radius: 10px; color: var(--text) !important; font-size: 15px; }
-  body.at-projetos .pj-sidebar .pj-add-space-btn svg { width: 18px; height: 18px; opacity: 1; color: var(--text2); }
+  body.fg-menu .pj-sidebar .pj-add-space-btn { min-height: 44px; padding: 0 12px; gap: 12px; border-radius: 10px; color: var(--text) !important; font-size: 15px; }
+  body.fg-menu .pj-sidebar .pj-add-space-btn svg { width: 18px; height: 18px; opacity: 1; color: var(--text2); }
 
   /* 7. Painel da conta (todas as telas). No celular ele mora no body (mobile.js):
         fica acima da gaveta e escurece a tela toda, sem levantar a barra de cima. */
@@ -18253,7 +18249,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   body .app-menu-search { min-height: 44px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); color: var(--text3); font-size: 15px; }
   body .app-menu-search-kbd { display: none; }
   /* em Tarefas a busca já está na gaveta */
-  body.at-projetos .app-menu-search { display: none !important; }
+  body .app-menu-search { display: none !important; }
   body .app-menu-section-label { padding: 8px 4px 8px; color: var(--text2); font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; }
   body :is(.app-menu-section-label:has(+ .app-menu-grid), .app-menu-grid) { display: none !important; }
   body .app-menu-action { min-height: 44px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); color: var(--text); font-size: 15px; }
@@ -21301,7 +21297,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   /* Caixa de entrada: "Só as suas tarefas" embaixo do nome */
   body.at-projetos .pj-view-title .pj-view-sub { order: 2; flex: 0 0 100%; margin: 0; font-size: 13px; line-height: 18px; color: var(--text3); }
   /* gaveta: chevron de traço no lugar do ▶ */
-  body.at-projetos .pj-sidebar .pj-space-chevron { padding: 0; }
+  body.fg-menu .pj-sidebar .pj-space-chevron { padding: 0; }
 
   /* 25. Folhas (Filtros, Personalizar, Relatório do dia e Nova tarefa): presas embaixo, topo de raio 20, alça de 36 × 5,
         título 17/600 à esquerda, X de 44 à direita e rodapé na área segura. A do Mais é igual (casca) */
@@ -21337,3 +21333,93 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
 
 
 /* ─── fim do espalhar ─── */
+
+/* ═══ Menu do app: barra lateral em grupos (2026-10-20) ═══
+   A .pj-sidebar mora no body e serve todas as telas. Computador (>900px): fixa à esquerda,
+   escura, e o conteúdo anda pro lado (--fg-side). Celular e tablet: gaveta do ☰ (mobile.js).
+   Grupos abrem um por vez (fgNavToggle); subitens ficam num traço fino embaixo do ícone do grupo. */
+.fg-off { display: none !important; }
+.fg-grp-head { position: relative; }
+.fg-grp-head > .pj-nav-btn { width: 100%; }
+.fg-chev { margin-left: auto; flex-shrink: 0; opacity: .55; transition: transform .2s ease; }
+.fg-grp.open .fg-chev { transform: rotate(180deg); }
+.fg-grp-chev .fg-chev { margin: 0; }
+.fg-grp[data-grp="gc"] .fg-grp-head > .pj-nav-btn { padding-right: 44px; }
+.fg-grp-chev {
+  position: absolute; top: 0; right: 0; bottom: 0; width: 40px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 8px; background: none; color: inherit; cursor: pointer;
+}
+.fg-grp-sub { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .2s ease-out; }
+.fg-grp.open > .fg-grp-sub { grid-template-rows: 1fr; }
+.fg-grp-in { min-height: 0; overflow: hidden; }
+.fg-grp-line { display: flex; flex-direction: column; gap: 1px; margin-left: 26px; padding: 2px 0 6px; border-left: 1px solid var(--fg-line, var(--border)); }
+.fg-grp-line > :is(.pj-nav-btn, .pj-add-space-btn) { margin-left: 8px; width: calc(100% - 8px); }
+.pj-sidebar .pj-nav-btn.fg-sub { padding: 7px 10px 7px 16px; font-size: 13px; }
+.pj-sidebar .pj-nav-btn.fg-sub.active::before { left: -10px; top: 0; bottom: 0; width: 3px; border-radius: 2px; }
+.fg-grp-line > .pj-add-space-btn { padding-left: 16px; }
+.fg-grp-line > .pj-section-label { padding-left: 24px; }
+/* árvore de espaços dentro do traço: mesma escada de antes, puxada pra caber */
+.fg-grp-line :is(.pj-space-row, .pj-folder-row, .pj-list-row) { margin: 1px 0 1px 6px; }
+.fg-grp-line .pj-space-row { padding-left: 8px; }
+.fg-grp-line .pj-folder-row { padding-left: 24px; }
+.fg-grp-line .pj-list-row { padding-left: 36px; }
+.fg-grp-line .pj-list-row.indent2 { padding-left: 50px; }
+/* modo foco é de Tarefas: fora dela o olho some do rodapé */
+body:not(.at-projetos) #pjFocusToggle { display: none; }
+/* fora de Tarefas a lista de espaços pode estar vazia até carregar */
+.fg-grp-line > .pj-section-label:has(+ #pjSpacesList:empty) { display: none; }
+/* o painel da conta não repete o que o menu já tem (módulos e busca) */
+.app-menu-section-label:has(+ .app-menu-grid), .app-menu-grid, .app-menu-search { display: none !important; }
+@media (prefers-reduced-motion: reduce) { .fg-grp-sub, .fg-chev { transition: none; } }
+
+/* Computador: barra fixa à esquerda em todas as telas, o ☰ flutuante sai */
+@media (min-width: 901px) {
+  body.fg-menu { --fg-side: 256px; padding-left: var(--fg-side); }
+  body.fg-menu:is(.ctr-sign-mode, .mtr-presenting), body.fg-menu.pj-focus.at-projetos { --fg-side: 0px; }
+  body:is(.ctr-sign-mode, .mtr-presenting) #pjSidebar { display: none !important; }
+  #pjSidebar {
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 40;
+    width: var(--fg-side) !important; min-width: 0 !important; padding-top: 0;
+    --fg-line: rgba(255, 255, 255, .12);
+  }
+  #pjSidebar .pj-sidebar-top { padding-top: 12px; }
+  #appMenuTrigger { display: none !important; }
+  #pjSidebar .pj-sidebar-footer { padding: 10px 8px 12px; }
+  /* painel da conta abre ao lado do rodapé, não mais no canto de cima */
+  .app-menu-panel { top: auto; right: auto; left: calc(var(--fg-side, 0px) + 12px); bottom: 12px; max-height: calc(100vh - 24px); }
+}
+
+/* Computador e tablet: conta no rodapé, mais baixa que o cartão do topo de antes (no celular ela sobe pro topo da gaveta) */
+@media (min-width: 641px) {
+  #pjSidebar .pj-me-hero { padding: 0; gap: 6px; animation: none; }
+  #pjSidebar .pj-me-hero-card { padding: 8px 10px; gap: 10px; }
+  #pjSidebar .pj-me-hero-avatar-wrap { width: 36px; height: 36px; }
+  #pjSidebar .pj-me-hero-hi { display: none; }
+  #pjSidebar .pj-me-hero-name { font-size: 14px; }
+}
+/* fundo da gaveta sem vidro em qualquer tela (em Tarefas no celular já era assim) */
+body.fg-menu .pj-drawer-backdrop { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+
+/* Celular: mesma estrutura na gaveta branca, escolhido grafite, toque de 44px */
+@media (max-width: 640px) {
+  body.fg-menu .pj-sidebar { --fg-line: var(--border); }
+  body.fg-menu .pj-sidebar-scroll > .pj-me-hero { margin: 0 12px; }
+  body.fg-menu .fg-grp-line { margin-left: 22px; }
+  body.fg-menu .pj-sidebar .pj-nav-btn.fg-sub { padding-left: 13px !important; font-size: 15px !important; }
+  body.fg-menu .pj-sidebar .fg-grp-line > .pj-add-space-btn { padding-left: 13px; }
+  body.fg-menu .pj-sidebar .fg-grp-line > .pj-section-label { padding-left: 21px !important; }
+  body.fg-menu .pj-sidebar .fg-grp-line :is(.pj-space-row, .pj-folder-row, .pj-list-row) { margin: 0 0 0 8px; }
+  body.fg-menu .fg-grp-line .pj-space-row { padding-left: 13px; }
+  body.fg-menu .fg-grp-line .pj-folder-row { padding-left: 29px; }
+  body.fg-menu .fg-grp-line .pj-list-row { padding-left: 41px; }
+  body.fg-menu .fg-grp-line .pj-list-row.indent2 { padding-left: 55px; }
+  body.fg-menu .fg-grp-chev { width: 44px; right: -2px; border-radius: 10px; }
+  body.fg-menu .pj-sidebar .fg-grp[data-grp="gc"] .fg-grp-head > .pj-nav-btn { padding-right: 52px !important; }
+  /* rodapé sem a conta (ela sobe pro topo): só o Instalar app quando existe, e o respiro do fim */
+  body.fg-menu .pj-sidebar .pj-sidebar-footer { border-top: 0 !important; margin-top: 0; padding-top: 0 !important; }
+  body.fg-menu .fg-grp-chev:active { background: var(--bg2); }
+  body.fg-menu .fg-grp-head:has(> .pj-nav-btn.active) .fg-grp-chev { color: var(--on-ink); }
+  body.fg-menu .fg-chev { opacity: 1; color: var(--text3); }
+  body.fg-menu .pj-nav-btn.active .fg-chev, body.fg-menu .fg-grp-head:has(> .pj-nav-btn.active) .fg-chev { color: var(--on-ink); }
+}

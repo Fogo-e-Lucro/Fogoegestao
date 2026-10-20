@@ -111,7 +111,7 @@
   })();
 </script>
 </head>
-<body>
+<body class="fg-menu">
 <script>
   // Remove a barra global de Cliente em runtime (caso HTML antigo venha do cache).
   // Preserva o stub oficial #restBar (aria-hidden) que outros scripts consultam.
@@ -256,7 +256,7 @@
     <button id="appUazapiStatusBtn" style="display:none" aria-hidden="true"><span id="appUazapiDot"></span></button>
     <button id="appSettingsBtn" style="display:none" aria-hidden="true"></button>
     <!-- Fim dos elementos legados -->
-    <button class="app-menu-trigger" id="appMenuTrigger" onclick="appMenuToggle(event)" title="Menu">
+    <button class="app-menu-trigger" id="appMenuTrigger" onclick="event.stopPropagation();pjToggleDrawer()" title="Menu" aria-label="Menu">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <button class="app-bell" id="appBell" type="button" onclick="pjToggleNotifPanel(event)" aria-label="Notificações"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg><span class="pj-notif-count" style="display:none"></span></button>
@@ -826,6 +826,154 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
       <button class="btn-secondary" onclick="closeConfirm()">Cancelar</button>
       <button class="btn-danger" id="confirmDeleteBtn">Excluir</button>
     </div>
+  </div>
+</div>
+
+<!-- MENU DO APP: barra lateral em grupos. Mora no body e aparece em todas as telas
+     (computador: fixa à esquerda; celular e tablet: gaveta do ☰). Um grupo aberto por vez;
+     o grupo da tela atual abre sozinho (fgNavSync). -->
+<div class="pj-notif-panel" id="pjNotifPanel"></div>
+<div class="pj-sidebar" id="pjSidebar">
+  <div class="pj-sidebar-scroll">
+    <div class="pj-sidebar-top">
+      <button class="pj-search-trigger" onclick="pjOpenSearch()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Buscar tarefas
+        <span style="margin-left:auto;font-size:10px;opacity:.5;">⌘K</span>
+      </button>
+
+      <!-- Gestão Central: o nome abre o Painel; a setinha mostra as vistas e os espaços -->
+      <div class="fg-grp" data-grp="gc" data-tab="projetos">
+        <div class="fg-grp-head">
+          <button class="pj-nav-btn" onclick="fgGoView('dashboard');fgNavToggle('gc',true)">
+            <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></svg></span>
+            Gestão Central
+          </button>
+          <button class="fg-grp-chev" onclick="fgNavToggle('gc')" aria-expanded="false" aria-label="Mostrar vistas e espaços da Gestão Central">
+            <svg class="fg-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </div>
+        <div class="fg-grp-sub"><div class="fg-grp-in">
+          <div class="fg-grp-line">
+            <button class="pj-nav-btn fg-sub" id="pjBtnDashboard" data-nav="v:dashboard" onclick="fgGoView('dashboard')">Painel</button>
+            <button class="pj-nav-btn fg-sub" id="pjBtnInbox" data-nav="v:inbox" onclick="fgGoView('inbox')">Caixa de entrada <span class="pj-badge" id="pjInboxCount" style="display:none">0</span></button>
+            <button class="pj-nav-btn fg-sub" id="pjBtnAll" data-nav="v:all" onclick="fgGoView('all')">Todas as tarefas</button>
+            <button class="pj-nav-btn fg-sub" id="pjBtnArchived" data-nav="v:archived" onclick="fgGoView('archived')">Arquivadas</button>
+            <div class="pj-section-label fg-spaces-label">Espaços</div>
+            <div id="pjSpacesList"></div>
+            <button class="pj-add-space-btn pj-admin-only" onclick="fgNoProjetos(() => pjOpenSpaceForm())">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              Novo espaço
+            </button>
+          </div>
+        </div></div>
+      </div>
+
+      <button class="pj-nav-btn" data-tab="visualizar" data-nav="t:visualizar" onclick="switchTab('visualizar')">
+        <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg></span>
+        Calendário
+      </button>
+      <button class="pj-nav-btn" data-tab="entrada" data-nav="t:entrada" onclick="switchTab('entrada')">
+        <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg></span>
+        Criar post
+      </button>
+      <button class="pj-nav-btn" data-tab="social" data-nav="t:social" onclick="switchTab('social')">
+        <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span>
+        Publipost
+      </button>
+      <button class="pj-nav-btn" data-tab="lives" data-nav="t:lives" onclick="switchTab('lives')">
+        <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg></span>
+        Ao vivo
+      </button>
+      <button class="pj-nav-btn" data-tab="base" data-nav="t:base" onclick="switchTab('base')">
+        <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span>
+        Clientes
+      </button>
+      <button class="pj-nav-btn" data-tab="contratos" data-nav="t:contratos" onclick="switchTab('contratos')">
+        <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></svg></span>
+        Contratos
+      </button>
+
+      <!-- Relatórios: números e vistas de acompanhamento -->
+      <div class="fg-grp" data-grp="rel">
+        <div class="fg-grp-head">
+          <button class="pj-nav-btn" onclick="fgNavToggle('rel')" aria-expanded="false">
+            <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>
+            Relatórios
+            <svg class="fg-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </div>
+        <div class="fg-grp-sub"><div class="fg-grp-in"><div class="fg-grp-line">
+          <button class="pj-nav-btn fg-sub" data-tab="metricas" data-nav="t:metricas" onclick="switchTab('metricas')">Métricas</button>
+          <button class="pj-nav-btn fg-sub" data-tab="gmb" data-nav="t:gmb" onclick="switchTab('gmb')">Google</button>
+          <button class="pj-nav-btn fg-sub" id="pjBtnCsHealth" data-tab="projetos" data-nav="v:cshealth" onclick="fgGoView('cshealth')">Saúde da carteira</button>
+          <button class="pj-nav-btn fg-sub" id="pjBtnIfood" data-tab="projetos" data-nav="v:ifood" onclick="fgGoView('ifood')">iFood</button>
+          <button class="pj-nav-btn fg-sub" id="pjBtnByClient" data-tab="projetos" data-nav="v:byclient" onclick="fgGoView('byclient')">Por cliente</button>
+          <button class="pj-nav-btn fg-sub" id="pjBtnWorkload" data-tab="projetos" data-nav="v:workload" onclick="fgGoView('workload')">Carga da semana</button>
+          <button class="pj-nav-btn fg-sub" id="pjBtnTimeline" data-tab="projetos" data-nav="v:timeline" onclick="fgGoView('timeline')">Linha do tempo</button>
+          <button class="pj-nav-btn fg-sub pj-admin-only" id="pjBtnTimeMetrics" data-tab="projetos" data-nav="v:timemetrics" onclick="fgGoView('timemetrics')">Métricas de tempo</button>
+          <button class="pj-nav-btn fg-sub pj-admin-only" id="pjBtnDigest" data-tab="projetos" data-nav="v:digest" onclick="fgGoView('digest')">Resumo semanal</button>
+          <button class="pj-nav-btn fg-sub pj-admin-only pj-askai-nav" id="pjBtnAskAi" data-tab="projetos" data-nav="v:askai" onclick="fgGoView('askai')">Pergunte à IA <span class="pj-askai-pill">Novo</span></button>
+        </div></div></div>
+      </div>
+
+      <button class="pj-nav-btn" data-tab="pop" data-nav="t:pop" onclick="switchTab('pop')">
+        <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg></span>
+        POPs
+      </button>
+
+      <!-- Ajustes (só admin) -->
+      <div class="fg-grp pj-admin-only" data-grp="cfg">
+        <div class="fg-grp-head">
+          <button class="pj-nav-btn" onclick="fgNavToggle('cfg')" aria-expanded="false">
+            <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span>
+            Ajustes
+            <svg class="fg-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </div>
+        <div class="fg-grp-sub"><div class="fg-grp-in"><div class="fg-grp-line">
+          <button class="pj-nav-btn fg-sub" onclick="openAppSettings();setTimeout(()=>appSettingsTab('equipe'),50)">Acesso</button>
+          <button class="pj-nav-btn fg-sub" id="pjBtnIntegracoes" data-nav="v:integracoes" onclick="fgGoView('integracoes')">Integrações</button>
+          <button class="pj-nav-btn fg-sub" id="pjBtnTags" onclick="fgNoProjetos(pjOpenTagsManager)">Tags</button>
+          <button class="pj-nav-btn fg-sub" onclick="fgNoProjetos(pjOpenTemplatesModal)">Templates</button>
+          <button class="pj-nav-btn fg-sub" onclick="openAppSettings()">Config</button>
+          <button class="pj-nav-btn fg-sub pj-demo-btn" id="pjDemoBtn" onclick="fgNoProjetos(pjToggleDemo)">Carregar demo</button>
+        </div></div></div>
+      </div>
+    </div>
+  </div>
+  <!-- Rodapé: a conta (abre o painel com tema, WhatsApp, configurações e sair) -->
+  <div class="pj-sidebar-footer" id="pjSidebarFooter">
+    <div class="pj-me-hero" id="pjMeHero">
+      <button class="pj-me-hero-card" id="pjSidebarMe" onclick="appMenuToggle(event)" title="Sua conta" aria-label="Sua conta">
+        <span class="pj-me-hero-glow"></span>
+        <span class="pj-me-hero-avatar-wrap">
+          <span class="pj-me-hero-avatar-ring"></span>
+          <span class="pj-me-hero-avatar" id="pjSidebarMeAvatar"></span>
+          <span class="pj-me-hero-status"></span>
+        </span>
+        <span class="pj-me-hero-info">
+          <span class="pj-me-hero-hi">Bem-vindo</span>
+          <span class="pj-me-hero-name" id="pjSidebarMeName">…</span>
+          <span class="pj-me-hero-role" id="pjSidebarMeRole">
+            <span class="pj-me-hero-role-dot"></span>
+            <span id="pjSidebarMeRoleText">online agora</span>
+          </span>
+        </span>
+      </button>
+      <div class="pj-me-hero-actions">
+        <button class="pj-me-hero-action" id="pjFocusToggle" onclick="pjToggleFocus()" title="Modo foco (Shift+F)" aria-label="Modo foco">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button class="pj-me-hero-action pj-me-hero-action-bell" id="pjNotifBell" onclick="pjToggleNotifPanel(event)" title="Notificações" aria-label="Notificações">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
+          <span class="pj-notif-count" id="pjNotifCount">0</span>
+        </button>
+      </div>
+    </div>
+    <button class="pj-add-space-btn pj-install-btn" id="pjInstallBtn" onclick="pjTriggerInstall()" style="display:none;" title="Instalar como app">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+      Instalar app
+    </button>
   </div>
 </div>
 
@@ -2614,141 +2762,11 @@ ufw allow 3000/tcp</pre>
   <!-- ══ PROJETOS ══════════════════════════════════════ -->
   <div class="tab-panel active" id="tab-projetos">
     <div class="pj-wrap">
-      <div class="pj-notif-panel" id="pjNotifPanel"></div>
       <!-- Hamburger (mobile only) -->
       <button class="pj-drawer-toggle" id="pjDrawerToggle" onclick="pjToggleDrawer()" aria-label="Menu" aria-expanded="false">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
       </button>
       <div class="pj-drawer-backdrop" id="pjDrawerBackdrop" onclick="pjCloseDrawer()"></div>
-      <!-- Sidebar -->
-      <div class="pj-sidebar" id="pjSidebar">
-        <div class="pj-sidebar-scroll">
-          <div class="pj-sidebar-top">
-            <!-- Hero do usuário logado -->
-            <div class="pj-me-hero" id="pjMeHero">
-              <button class="pj-me-hero-card" id="pjSidebarMe" onclick="appMenuToggle(event)" title="Sua conta" aria-label="Menu do app">
-                <span class="pj-me-hero-glow"></span>
-                <span class="pj-me-hero-avatar-wrap">
-                  <span class="pj-me-hero-avatar-ring"></span>
-                  <span class="pj-me-hero-avatar" id="pjSidebarMeAvatar"></span>
-                  <span class="pj-me-hero-status"></span>
-                </span>
-                <span class="pj-me-hero-info">
-                  <span class="pj-me-hero-hi">Bem-vindo</span>
-                  <span class="pj-me-hero-name" id="pjSidebarMeName">…</span>
-                  <span class="pj-me-hero-role" id="pjSidebarMeRole">
-                    <span class="pj-me-hero-role-dot"></span>
-                    <span id="pjSidebarMeRoleText">online agora</span>
-                  </span>
-                </span>
-              </button>
-              <div class="pj-me-hero-actions">
-                <button class="pj-me-hero-action" onclick="appMenuToggle(event)" title="Menu do app">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-                </button>
-                <button class="pj-me-hero-action" id="pjFocusToggle" onclick="pjToggleFocus()" title="Modo foco (Shift+F)">
-                  <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
-                </button>
-                <button class="pj-me-hero-action pj-me-hero-action-bell" id="pjNotifBell" onclick="pjToggleNotifPanel(event)" title="Notificações">
-                  <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path d="M10 2a6 6 0 00-6 6v2.586l-.707.707A1 1 0 003 13h14a1 1 0 00.707-1.707L17 10.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
-                  <span class="pj-notif-count" id="pjNotifCount">0</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Busca global -->
-            <button class="pj-search-trigger" onclick="pjOpenSearch()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Buscar tarefas
-              <span style="margin-left:auto;font-size:10px;opacity:.5;">⌘K</span>
-            </button>
-
-            <!-- Vistas principais -->
-            <button class="pj-nav-btn" id="pjBtnDashboard" onclick="pjNavigate('dashboard')">
-              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg></span>
-              Painel
-            </button>
-            <button class="pj-nav-btn" id="pjBtnInbox" onclick="pjNavigate('inbox')">
-              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>
-              Caixa de entrada
-              <span class="pj-badge" id="pjInboxCount" style="display:none">0</span>
-            </button>
-            <button class="pj-nav-btn" id="pjBtnAll" onclick="pjNavigate('all')">
-              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></svg></span>
-              Todas as tarefas
-            </button>
-            <button class="pj-nav-btn" id="pjBtnWorkload" onclick="pjNavigate('workload')">
-              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-              Carga da semana
-            </button>
-            <button class="pj-nav-btn" id="pjBtnByClient" onclick="pjNavigate('byclient')">
-              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span>
-              Por cliente
-            </button>
-            <button class="pj-nav-btn" id="pjBtnCsHealth" onclick="pjNavigate('cshealth')" title="Saúde da carteira — só em Sucesso do Cliente">
-              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>
-              Saúde da carteira
-            </button>
-            <button class="pj-nav-btn" id="pjBtnIfood" onclick="pjNavigate('ifood')" title="Vendas dos clientes no iFood">
-              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg></span>
-              iFood
-            </button>
-            <button class="pj-nav-btn" id="pjBtnTimeline" onclick="pjNavigate('timeline')">
-              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h10"/><path d="M6 12h9"/><path d="M11 18h7"/></svg></span>
-              Linha do tempo
-            </button>
-            <button class="pj-nav-btn" id="pjBtnArchived" onclick="pjNavigate('archived')">
-              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></span>
-              Arquivadas
-            </button>
-
-            <!-- Admin section -->
-            <div class="pj-section-label pj-admin-only">Admin</div>
-            <button class="pj-nav-btn pj-admin-only" id="pjBtnTimeMetrics" onclick="pjNavigate('timemetrics')">
-              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-              Métricas de tempo
-            </button>
-            <button class="pj-nav-btn pj-admin-only" id="pjBtnDigest" onclick="pjNavigate('digest')">
-              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>
-              Resumo semanal
-            </button>
-            <button class="pj-nav-btn pj-admin-only" id="pjBtnIntegracoes" onclick="pjNavigate('integracoes')">
-              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
-              Integrações
-            </button>
-            <button class="pj-nav-btn pj-admin-only pj-askai-nav" id="pjBtnAskAi" onclick="pjNavigate('askai')">
-              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span>
-              Pergunte à IA
-              <span class="pj-askai-pill">Novo</span>
-            </button>
-            <button class="pj-nav-btn pj-admin-only" id="pjBtnTags" onclick="pjOpenTagsManager()" title="Gerenciar tags do workspace">
-              <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg></span>
-              Tags
-            </button>
-          </div>
-          <div class="pj-divider"></div>
-          <div id="pjSpacesList"></div>
-        </div>
-        <div class="pj-sidebar-footer" id="pjSidebarFooter">
-          <!-- User row (injected by pjRenderSidebarUser) -->
-          <div id="pjSidebarUserRow"></div>
-          <button class="pj-add-space-btn pj-admin-only" onclick="pjOpenSpaceForm()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-            Novo espaço
-          </button>
-          <button class="pj-add-space-btn pj-admin-only" onclick="pjOpenTemplatesModal()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="7" x="3" y="3" rx="1"/><rect width="9" height="7" x="3" y="14" rx="1"/><rect width="5" height="7" x="16" y="14" rx="1"/></svg>
-            Templates
-          </button>
-          <button class="pj-add-space-btn pj-admin-only pj-demo-btn" id="pjDemoBtn" onclick="pjToggleDemo()">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
-            Carregar Demo
-          </button>
-          <button class="pj-add-space-btn pj-install-btn" id="pjInstallBtn" onclick="pjTriggerInstall()" style="display:none;" title="Instalar como app">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 9.293a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-            Instalar app
-          </button>
-        </div>
-      </div>
       <!-- Main -->
       <div class="pj-main" id="pjMain">
         <div class="pj-main-initial">
@@ -4681,6 +4699,7 @@ function applyTabVisibility() {
   document.querySelectorAll('.pj-admin-only').forEach(el => {
     el.style.display = isAdmin ? '' : 'none';
   });
+  if (typeof fgNavSync === 'function') fgNavSync();
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -7006,6 +7025,7 @@ function switchTab(tab, btn) {
   }
   document.body.dataset.activeTab = tab;
   try { localStorage.setItem('fg_active_tab', tab); } catch(_) {}
+  try { fgNavSync(); } catch(_) {}
 
   // Reveal imediato dos elementos da aba que acabou de ficar ativa
   requestAnimationFrame(() => {
@@ -7080,7 +7100,7 @@ function switchTab(tab, btn) {
   }
   if (tab === 'projetos') {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (typeof pjInit === 'function') pjInit();
+    if (typeof pjInit === 'function') window._pjInitP = pjInit(); // fgNoProjetos espera o carregamento
   }
 }
 
@@ -17210,14 +17230,79 @@ function pjRenderSidebar() {
   if (typeof applyTabVisibility === 'function') applyTabVisibility();
 }
 
+/* ── Menu do app (barra lateral em grupos) ─────────────
+   A barra mora no body e serve todas as telas. Itens com data-nav="t:aba" ou "v:vista"
+   acendem pela tela atual; data-tab esconde o que a pessoa não pode ver.
+   Um grupo aberto por vez; ao trocar de tela, o grupo dela abre sozinho. */
+let _fgNavOpen = null, _fgNavGrp;
+function fgNavPaint() {
+  document.querySelectorAll('#pjSidebar .fg-grp').forEach(g => {
+    const open = g.dataset.grp === _fgNavOpen;
+    g.classList.toggle('open', open);
+    g.querySelector('[aria-expanded]')?.setAttribute('aria-expanded', open);
+    g.querySelector('.fg-grp-sub').inert = !open;
+    // grupo fechado com a tela atual dentro acende, pra não perder onde está
+    g.querySelector('.fg-grp-head > .pj-nav-btn').classList.toggle('active', g.dataset.grp === _fgNavGrp && !open);
+  });
+}
+function fgNavToggle(grp, force) {
+  _fgNavOpen = (force ?? _fgNavOpen !== grp) ? grp : null;
+  fgNavPaint();
+  if (_fgNavOpen === 'gc') fgNavLoadSpaces();
+}
+function fgNavSync() {
+  const sb = document.getElementById('pjSidebar');
+  if (!sb) return;
+  const tab = document.body.dataset.activeTab;
+  const view = tab === 'projetos' ? pjCurrentView?.type : null;
+  sb.querySelectorAll('[data-tab]').forEach(el => el.classList.toggle('fg-off', !userCanSeeTab(el.dataset.tab)));
+  sb.querySelectorAll('.fg-grp:not([data-tab])').forEach(g => g.classList.toggle('fg-off',
+    ![...g.querySelectorAll('[data-nav]')].some(b => !b.classList.contains('fg-off') && b.style.display !== 'none')));
+  sb.querySelectorAll('[data-nav]').forEach(b => {
+    const on = b.dataset.nav === 't:' + tab || (!!view && b.dataset.nav === 'v:' + view);
+    b.classList.toggle('active', on);
+    if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
+  if (tab !== 'projetos') sb.querySelectorAll('.pj-list-row.active').forEach(r => r.classList.remove('active'));
+  const grp = sb.querySelector('[data-nav].active')?.closest('.fg-grp')?.dataset.grp || (tab === 'projetos' ? 'gc' : null);
+  if (grp !== _fgNavGrp) { _fgNavGrp = grp; _fgNavOpen = grp; }
+  fgNavPaint();
+}
+// Vista da Gestão Central vinda de qualquer tela: fora de Tarefas, guarda a vista e o pjInit abre nela
+function fgGoView(type, id = null) {
+  if (document.body.dataset.activeTab === 'projetos') return pjNavigate(type, id);
+  try { localStorage.setItem('pj_current_view', JSON.stringify({ type, id })); } catch (_) {}
+  pjCurrentView = { type, id };
+  switchTab('projetos');
+}
+// Janelas que dependem dos dados de Tarefas (tags, templates, espaço novo): entra em Tarefas e abre depois de carregar
+function fgNoProjetos(fn) {
+  if (document.body.dataset.activeTab !== 'projetos') switchTab('projetos');
+  Promise.resolve(window._pjInitP).then(() => fn());
+}
+// Fora de Tarefas a árvore de espaços ainda não foi lida: lê só espaços, pastas e listas pro menu
+let _fgSpacesP = null;
+function fgNavLoadSpaces() {
+  if (pjSpaces.length || _fgSpacesP || !(_auth?.currentUser || _currentUser)) return;
+  _fgSpacesP = Promise.all([pjC('pj_spaces').orderBy('order').get(), pjC('pj_folders').get(), pjC('pj_lists').get()])
+    .then(([s, f, l]) => {
+      if (pjSpaces.length) return;
+      const rows = (snap) => snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      pjSpaces = rows(s); pjFolders = rows(f); pjLists = rows(l);
+      pjRenderSidebar();
+    })
+    .catch(() => {})
+    .finally(() => { _fgSpacesP = null; });
+}
+
 function pjListRowHtml(l, indent, isAdmin) {
   if (typeof isAdmin === 'undefined') isAdmin = (typeof userIsAdmin === 'function') ? userIsAdmin() : true;
   const count = (pjTasks[l.id]||[]).filter(t => !pjIsDone(t)).length;
   const active = pjCurrentView.id === l.id ? 'active' : '';
   const actions = '';
   return `
-  <div class="pj-list-row ${indent?'indent2':''} ${active}"
-    onclick="pjNavigate('list','${l.id}')"
+  <div class="pj-list-row ${indent?'indent2':''} ${active}" title="${escHtml(l.name)}"
+    onclick="fgGoView('list','${l.id}')"
     ondragover="pjSidebarListDragOver(event,'${l.id}')"
     ondragleave="pjSidebarListDragLeave(event)"
     ondrop="pjSidebarListDrop(event,'${l.id}')">
@@ -17346,7 +17431,7 @@ function pjLoadDemo() {
   pjRenderSidebar();
   pjNavigate('dashboard');
   const dBtn = document.getElementById('pjDemoBtn');
-  if (dBtn) dBtn.textContent = '✕ Sair do Demo';
+  if (dBtn) dBtn.textContent = 'Sair do demo';
   const _gb = document.getElementById('globalDemoBanner'); if (_gb) _gb.style.display = 'block';
   if (typeof showToast === 'function') showToast('🎭 Demo carregado! Explore a sidebar e clique nas tarefas.', 'success');
 }
@@ -17362,7 +17447,7 @@ function pjExitDemo() {
   pjTasks = {}; pjAllTasks = []; pjInitialized = false;
   pjCurrentView = { type:'inbox', id:null };
   const dBtn = document.getElementById('pjDemoBtn');
-  if (dBtn) dBtn.textContent = '🎭 Carregar Demo';
+  if (dBtn) dBtn.textContent = 'Carregar demo';
   const _gb = document.getElementById('globalDemoBanner'); if (_gb) _gb.style.display = 'none';
   // Reinicia do Firestore se usuário logado
   if (typeof pjInit === 'function' && (_auth?.currentUser || _currentUser)) {
@@ -17401,27 +17486,13 @@ function pjNavigate(type, id = null) {
       localStorage.setItem('pj_current_view', JSON.stringify({ type, id }));
     }
   } catch(_){}
-  document.querySelectorAll('.pj-nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.pj-list-row').forEach(b => b.classList.remove('active'));
-  if (type === 'dashboard') document.getElementById('pjBtnDashboard')?.classList.add('active');
-  if (type === 'inbox') document.getElementById('pjBtnInbox')?.classList.add('active');
-  if (type === 'all')   document.getElementById('pjBtnAll')?.classList.add('active');
-  if (type === 'workload') document.getElementById('pjBtnWorkload')?.classList.add('active');
-  if (type === 'byclient') document.getElementById('pjBtnByClient')?.classList.add('active');
-  if (type === 'cshealth') document.getElementById('pjBtnCsHealth')?.classList.add('active');
-  if (type === 'ifood') document.getElementById('pjBtnIfood')?.classList.add('active');
-  if (type === 'timeline') document.getElementById('pjBtnTimeline')?.classList.add('active');
-  if (type === 'gantt')    document.getElementById('pjBtnGantt')?.classList.add('active');
-  if (type === 'archived') document.getElementById('pjBtnArchived')?.classList.add('active');
-  if (type === 'timemetrics') document.getElementById('pjBtnTimeMetrics')?.classList.add('active');
-  if (type === 'digest') document.getElementById('pjBtnDigest')?.classList.add('active');
-  if (type === 'integracoes') document.getElementById('pjBtnIntegracoes')?.classList.add('active');
-  if (type === 'askai') document.getElementById('pjBtnAskAi')?.classList.add('active');
   if (type === 'list' || type === 'kanban') {
     document.querySelectorAll('.pj-list-row').forEach(r => {
       if (r.getAttribute('onclick')?.includes(id)) r.classList.add('active');
     });
   }
+  fgNavSync(); // marca a vista no menu (data-nav) e abre o grupo dela
   pjRenderMain();
 }
 

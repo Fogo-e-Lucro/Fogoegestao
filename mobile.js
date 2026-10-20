@@ -74,6 +74,9 @@ function pjInitDrawerAutoClose() {
     const ft = document.getElementById('pjSidebarFooter');
     const sc = sb.querySelector('.pj-sidebar-scroll');
     if (ft && sc && ft.parentElement !== sc) sc.appendChild(ft);
+    // No celular a conta fica no topo da gaveta (no computador ela mora no rodapé da barra)
+    const hero = document.getElementById('pjMeHero');
+    if (hero && sc && hero.parentElement !== sc) sc.prepend(hero);
   }
   // Esconde toggle quando não está na aba projetos
   function syncDrawerVisibility() {
@@ -89,7 +92,8 @@ function pjInitDrawerAutoClose() {
   sb.addEventListener('click', (e) => {
     if (!matchMedia('(max-width:900px)').matches) return;
     const t = e.target.closest('.pj-nav-btn, .pj-list-row, .pj-add-space-btn');
-    if (t) setTimeout(pjCloseDrawer, 80);
+    // o que só abre ou fecha um grupo do menu (aria-expanded) deixa a gaveta aberta
+    if (t && !t.hasAttribute('aria-expanded')) setTimeout(pjCloseDrawer, 80);
   });
   // Edge swipe pra abrir (touch da borda esquerda)
   let sx = 0, sy = 0, edge = false;
