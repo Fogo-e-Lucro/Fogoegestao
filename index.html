@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.70.0">
+<link rel="stylesheet" href="styles.css?v=3.71.2">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -198,28 +198,75 @@
   </div>
 </div>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN SCREEN (2026-10-20: foto + formulário no padrão do Cheflist e do BDN, com movimento) -->
 <div class="login-screen" id="loginScreen">
-  <div class="login-orb3"></div>
-  <div class="login-box">
-    <div class="login-logo"><img src="logo.png" alt="Fogo e Lucro" style="width:88px;height:88px;object-fit:contain;display:block;margin:0 auto;"></div>
-    <div class="login-brand">Fogo e Lucro</div>
-    <div class="login-title">Fogo &amp; Gestão</div>
-    <div class="login-sub">Faça login para acessar o sistema</div>
+  <aside class="login-hero">
+    <div class="login-hero__foto" aria-hidden="true"></div>
+    <div class="login-hero__desfoque" aria-hidden="true"></div>
+    <div class="login-hero__brasa" aria-hidden="true"></div>
+    <div class="login-faiscas" aria-hidden="true">
+      <i style="--x:6%;--s:3px;--d:9.5s;--t:0s;--dx:24px"></i>
+      <i style="--x:15%;--s:2px;--d:7.5s;--t:2.2s;--dx:-18px"></i>
+      <i style="--x:24%;--s:3px;--d:11s;--t:4.6s;--dx:30px"></i>
+      <i style="--x:33%;--s:2px;--d:8.5s;--t:1.1s;--dx:-26px"></i>
+      <i style="--x:41%;--s:3px;--d:10s;--t:6.2s;--dx:20px"></i>
+      <i style="--x:52%;--s:2px;--d:9s;--t:3.4s;--dx:-14px"></i>
+      <i style="--x:61%;--s:3px;--d:12s;--t:7.6s;--dx:28px"></i>
+      <i style="--x:72%;--s:2px;--d:8s;--t:5.1s;--dx:-22px"></i>
+    </div>
+    <div class="login-hero__texto">
+      <h2>A agência inteira num lugar só.</h2>
+      <p>Onde a equipe da Fogo &amp; Lucro trabalha todo dia.</p>
+      <ul class="login-hero__provas">
+        <li style="--i:0"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></svg></span>Tarefas da equipe</li>
+        <li style="--i:1"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>Métricas dos clientes</li>
+        <li style="--i:2"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg></span>Calendário de posts</li>
+      </ul>
+    </div>
+  </aside>
 
-    <button class="login-google-btn" onclick="signInWithGoogle()">
-      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.58-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
-      Entrar com Google
-    </button>
+  <div class="login-painel">
+    <div class="login-box">
+      <div class="login-marca">
+        <div class="login-chama" aria-hidden="true">
+          <span class="login-chama__luz"></span>
+          <img src="logo-chama.png" alt="" width="211" height="240">
+        </div>
+        <strong>Fogo &amp; Gestão</strong>
+      </div>
+      <h1 class="login-titulo">Que bom te ver de novo</h1>
+      <p class="login-sub">Entre com a sua conta da agência.</p>
 
-    <div class="login-divider">ou entre com e-mail e senha</div>
+      <form class="login-form" id="loginForm" onsubmit="event.preventDefault(); signInWithEmail();" novalidate>
+        <label class="login-campo" style="--i:0">
+          <span>E-mail</span>
+          <input class="login-input" type="email" id="loginEmail" name="email" autocomplete="username" placeholder="voce@email.com">
+        </label>
+        <label class="login-campo" style="--i:1">
+          <span>Senha</span>
+          <input class="login-input" type="password" id="loginPassword" name="password" autocomplete="current-password" placeholder="••••••••">
+        </label>
+        <div class="login-esqueci">
+          <button type="button" class="login-link" id="loginEsqueci" onclick="fgLoginEsqueci()"><span class="login-btn__txt">Esqueci a senha</span></button>
+        </div>
+        <p class="login-error" id="loginError" role="alert"></p>
+        <p class="login-info" id="loginInfo" role="status"></p>
+        <button type="submit" class="login-btn login-btn--principal" id="loginEntrar"><span class="login-btn__txt">Entrar</span></button>
+      </form>
 
-    <input class="login-input" type="email" id="loginEmail" placeholder="seu@email.com">
-    <input class="login-input" type="password" id="loginPassword" placeholder="Senha" onkeydown="if(event.key==='Enter')signInWithEmail()">
-    <button class="login-email-btn" onclick="signInWithEmail()">Entrar</button>
+      <div class="login-divider">ou</div>
 
-    <div class="login-error" id="loginError"></div>
-    <div class="login-footer">Acesso restrito à equipe Fogo e Lucro</div>
+      <button type="button" class="login-btn login-btn--google" id="loginGoogle" onclick="signInWithGoogle()">
+        <svg width="20" height="20" aria-hidden="true" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.58-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+        <span class="login-btn__txt">Entrar com o Google</span>
+      </button>
+
+      <footer class="login-footer">
+        <a href="privacidade/">Privacidade</a>
+        <a href="termos/">Termos</a>
+        <span>Fogo &amp; Gestão · Fogo &amp; Lucro</span>
+      </footer>
+    </div>
   </div>
 </div>
 
@@ -4728,7 +4775,11 @@ async function signInWithEmail() {
   const password = document.getElementById('loginPassword').value;
   const errEl = document.getElementById('loginError');
   errEl.textContent = '';
-  if (!email || !password) { errEl.textContent = 'Preencha email e senha.'; return; }
+  fgLoginInfo('');
+  if (!email || !password) { fgLoginErro('Preencha e-mail e senha.'); return; }
+  const entrar = document.getElementById('loginEntrar');
+  if (entrar && entrar.disabled) return; // já está entrando
+  fgLoginBusy('loginEntrar', true, 'Entrando');
   pjMarkFreshLogin();
   try {
     await _auth.signInWithEmailAndPassword(email, password);
@@ -4749,23 +4800,112 @@ async function signInWithEmail() {
           }
         }
       } catch(_) {}
-      errEl.textContent = 'Email ou senha incorretos.';
+      fgLoginErro('E-mail ou senha incorretos.');
     } else if (e.code === 'auth/wrong-password') {
-      errEl.textContent = 'Senha incorreta.';
+      fgLoginErro('Senha incorreta.');
+    } else if (e.code === 'auth/too-many-requests') {
+      fgLoginErro('Muitas tentativas seguidas. Espere uns minutos e tente de novo.');
+    } else if (e.code === 'auth/network-request-failed') {
+      fgLoginErro('Sem conexão. Confira a internet e tente de novo.');
     } else {
-      errEl.textContent = 'Erro ao entrar. Tente novamente.';
+      fgLoginErro('Erro ao entrar. Tente novamente.');
     }
+    fgLoginBusy('loginEntrar', false);
   }
 }
 
+// Login: botão em "carregando" (girando + texto) sem deixar clicar de novo.
+function fgLoginBusy(id, busy, texto) {
+  const b = document.getElementById(id);
+  if (!b) return;
+  const t = b.querySelector('.login-btn__txt');
+  if (t && !b.dataset.txt) b.dataset.txt = t.textContent;
+  b.disabled = !!busy;
+  b.classList.toggle('is-busy', !!busy);
+  b.setAttribute('aria-busy', busy ? 'true' : 'false');
+  let spin = b.querySelector('.login-spin');
+  if (busy && !spin) {
+    spin = document.createElement('span');
+    spin.className = 'login-spin';
+    spin.setAttribute('aria-hidden', 'true');
+    b.insertBefore(spin, b.firstChild);
+  }
+  if (!busy && spin) spin.remove();
+  if (t) t.textContent = busy ? texto : (b.dataset.txt || t.textContent);
+}
+function fgLoginLibera() {
+  fgLoginBusy('loginEntrar', false);
+  fgLoginBusy('loginGoogle', false);
+  fgLoginBusy('loginEsqueci', false);
+}
+// Erro em vermelho e o formulário treme (igual ao BDN).
+function fgLoginErro(msg) {
+  const el = document.getElementById('loginError');
+  if (el) el.textContent = msg || '';
+  const f = document.getElementById('loginForm');
+  if (f && msg) { f.classList.remove('is-erro'); void f.offsetWidth; f.classList.add('is-erro'); }
+}
+function fgLoginInfo(msg) {
+  const el = document.getElementById('loginInfo');
+  if (el) el.textContent = msg || '';
+}
+
 function signInWithGoogle() {
-  document.getElementById('loginError').textContent = '';
+  const g = document.getElementById('loginGoogle');
+  if (g && g.disabled) return;
+  fgLoginErro('');
+  fgLoginInfo('');
   const provider = new firebase.auth.GoogleAuthProvider();
   pjMarkFreshLogin();
+  fgLoginBusy('loginGoogle', true, 'Abrindo o Google');
   _auth.signInWithPopup(provider).catch(e => {
-    document.getElementById('loginError').textContent = 'Erro ao entrar. Tente novamente.';
+    fgLoginBusy('loginGoogle', false);
+    const code = e && e.code;
+    // Fechar a janela do Google não é erro: o botão só volta ao normal.
+    if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return;
+    fgLoginErro(code === 'auth/popup-blocked'
+      ? 'O navegador bloqueou a janela do Google. Libere as janelas deste site e tente de novo.'
+      : code === 'auth/network-request-failed'
+        ? 'Sem conexão. Confira a internet e tente de novo.'
+        : 'Erro ao entrar. Tente novamente.');
   });
 }
+
+// "Esqueci a senha": o Firebase manda o link pra criar senha nova no e-mail digitado.
+async function fgLoginEsqueci() {
+  const campo = document.getElementById('loginEmail');
+  const email = ((campo && campo.value) || '').trim().toLowerCase();
+  fgLoginErro('');
+  fgLoginInfo('');
+  if (!email) {
+    fgLoginErro('Digite seu e-mail primeiro. O link pra criar uma senha nova vai pra ele.');
+    if (campo) campo.focus();
+    return;
+  }
+  fgLoginBusy('loginEsqueci', true, 'Enviando');
+  try {
+    try { _auth.useDeviceLanguage(); } catch(_) {}
+    await _auth.sendPasswordResetEmail(email);
+    fgLoginInfo('Se esse e-mail tiver acesso, você vai receber um link pra criar uma senha nova.');
+  } catch(e) {
+    const code = e && e.code;
+    if (code === 'auth/invalid-email') fgLoginErro('Esse e-mail não parece certo. Confira e tente de novo.');
+    else if (code === 'auth/user-not-found') fgLoginErro('Esse e-mail não tem senha cadastrada. Entre com o Google ou fale com o administrador.');
+    else if (code === 'auth/network-request-failed') fgLoginErro('Sem conexão. Confira a internet e tente de novo.');
+    else fgLoginErro('Não deu pra enviar o link agora. Tente de novo daqui a pouco.');
+  } finally {
+    fgLoginBusy('loginEsqueci', false);
+  }
+}
+
+// Luz que segue o mouse nos botões do login (mesmo efeito do BDN).
+document.querySelectorAll('#loginScreen .login-btn').forEach(b => {
+  b.addEventListener('pointermove', e => {
+    const r = b.getBoundingClientRect();
+    b.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+    b.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
+  });
+});
 
 async function signOutUser() {
   if (!confirm('Sair da conta?')) return;
@@ -5825,13 +5965,14 @@ _auth.onAuthStateChanged(async user => {
     try { if (typeof pjCleanupListeners === 'function') pjCleanupListeners(); } catch(_){}
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('userChip').style.display = 'none';
+    try { fgLoginLibera(); } catch(_) {}
     return;
   }
   // Force-logout check: se admin subiu forceLogout depois do último login local
   if (await _checkForceLogout(user)) return;
   const allowed = await checkAccess(user.email);
   if (!allowed) {
-    document.getElementById('loginError').textContent = `${user.email} não tem acesso. Fale com o administrador.`;
+    fgLoginErro(`${user.email} não tem acesso. Fale com o administrador.`);
     _auth.signOut();
     return;
   }
