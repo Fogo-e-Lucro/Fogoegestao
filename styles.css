@@ -1611,7 +1611,7 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 #loginScreen .login-hero__desfoque { display: none; }
 #loginScreen .login-hero::after {
   content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
-  background: linear-gradient(to top, rgba(20,12,7,.95) 0%, rgba(20,12,7,.62) 34%, rgba(20,12,7,.10) 64%, rgba(20,12,7,.38) 100%);
+  background: linear-gradient(to top, rgba(20,12,7,.95) 0%, rgba(20,12,7,.62) 34%, rgba(20,12,7,.10) 64%, rgba(20,12,7,.12) 100%);
 }
 #loginScreen .login-hero__brasa {
   position: absolute; z-index: 2; left: -12%; bottom: -24%; width: 72%; height: 62%; pointer-events: none;
@@ -1624,16 +1624,6 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
   background: radial-gradient(circle, #ffe2a8 0%, #fb923c 55%, rgba(249,115,22,0) 72%);
   box-shadow: 0 0 6px 1px rgba(249,115,22,.55);
   opacity: 0; animation: fgFaisca var(--d, 9s) linear var(--t, 0s) infinite;
-}
-#loginScreen .login-hero__marca {
-  position: absolute; z-index: 3; top: 0; left: 0; display: flex; align-items: center; gap: 12px;
-  padding: 32px 40px; color: #fff; font-size: 18px; font-weight: 800; letter-spacing: -.01em;
-  animation: fgLoginAparece .9s ease .2s both;
-}
-#loginScreen .login-hero__marca img {
-  width: 30px; height: auto; transform-origin: 50% 92%;
-  filter: drop-shadow(0 2px 10px rgba(249,115,22,.55));
-  animation: fgChama 2.2s ease-in-out infinite;
 }
 #loginScreen .login-hero__texto { position: absolute; z-index: 3; left: 0; right: 0; bottom: 0; max-width: 760px; padding: 0 56px 52px; color: #fff; }
 #loginScreen .login-hero__texto h2 {
@@ -1781,17 +1771,15 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
   }
   #loginScreen .login-hero::after {
     background: linear-gradient(to bottom,
-      rgba(20,12,7,.50) 0%, rgba(20,12,7,0) 22%,
+      rgba(20,12,7,.12) 0%, rgba(20,12,7,0) 18%,
       rgba(248,247,245,0) 62%, rgba(248,247,245,.75) 82%, var(--lg-papel) 100%);
   }
   #loginScreen .login-hero__texto, #loginScreen .login-hero__brasa, #loginScreen .login-faiscas { display: none; }
-  #loginScreen .login-hero__marca { padding: calc(16px + env(safe-area-inset-top, 0px)) 20px 0; font-size: 17px; }
   #loginScreen .login-painel {
-    position: relative; z-index: 4; margin-top: -30px; justify-content: flex-start;
+    position: relative; z-index: 4; margin-top: -56px; justify-content: flex-start;
     padding: 0 22px calc(24px + env(safe-area-inset-bottom, 0px));
   }
-  #loginScreen .login-marca { display: none; }
-  #loginScreen .login-titulo { margin-top: 0; font-size: 26px; }
+  #loginScreen .login-titulo { margin-top: 16px; font-size: 26px; }
   #loginScreen .login-sub { font-size: 14.5px; }
   #loginScreen .login-form { margin-top: 20px; gap: 14px; }
   #loginScreen .login-divider { margin: 16px 0; }
