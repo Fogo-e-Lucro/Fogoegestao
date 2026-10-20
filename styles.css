@@ -20737,7 +20737,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-projetos .pj-status-pill .pj-status-pill-label { font-size: 12px; font-weight: 600; }
   /* a pílula de status (toque pra trocar) tem 26px: área de toque de 44 sem mudar o desenho (::before já é a bolinha do prazo) */
   body.at-projetos :is(.pj-list-tr, .pj-task-row) :is(.pj-status-pill, .pj-task-row-status-pill) { position: relative; }
-  body.at-projetos :is(.pj-list-tr, .pj-task-row) :is(.pj-status-pill, .pj-task-row-status-pill)::after { content: ''; position: absolute; inset: -9px -2px; }
+  body.at-projetos :is(.pj-list-tr, .pj-task-row) :is(.pj-status-pill, .pj-task-row-status-pill)::after { content: ''; position: absolute; inset: -10px -2px; }
   body.at-projetos .pj-status-pill .pj-status-pill-dot { width: 8px; height: 8px; background: var(--c, #9ca3af) !important; }
   body.at-projetos .pj-status-pill { padding: 0 10px !important; }
   body.at-projetos .pj-status-pill .pj-status-pill-arrow { display: none; }
