@@ -18547,6 +18547,16 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
 .vitrine15 :is(.estudio-ig-play, .estudio-ig-audio, .estudio-ig-dots-carr, .estudio-ig-gancho)[hidden] { display: none; }
 /* Criar post: no Story a mídia 9:16 não enchia a tela do celular de mentira e sobrava uma faixa preta embaixo */
 .vitrine15 .estudio-mock[data-tipo="STORY"] .estudio-ig-media { aspect-ratio: auto; }
+/* Lupa da busca: só existe no celular */
+.ed-search-toggle { display: none; }
+/* a busca virou type="search": o × do navegador aparecia ao lado do nosso */
+.ed-search::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+/* ícones de traço no aviso e no botão de IA girando */
+.toast-icon svg { display: block; }
+.estudio-ai .ai-spin { display: inline-flex; animation: spin .8s linear infinite; }
+.estudio-ai:disabled { cursor: wait; }
+/* opções de gancho que a IA sugere: cada uma é um botão que vai pro campo */
+.ai-opcao { display: block; width: 100%; margin: 0 0 8px; padding: 10px 14px; text-align: left; font: inherit; line-height: 1.4; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; }
 
 @media (max-width: 640px) {
 
@@ -18645,9 +18655,9 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
 
   /* 8. Semana vira agenda num cartão: um dia por linha (dia à esquerda, posts à direita), sem rolar de lado.
         O HTML tem 7 cabeçalhos e depois 7 colunas; com display: contents, a grade em coluna põe cada um na sua linha */
-  body.at-visualizar .week-view { display: grid; grid-template-columns: 64px minmax(0, 1fr); grid-template-rows: repeat(7, auto); grid-auto-flow: column; gap: 0; padding: 0; overflow: hidden; border: 1px solid; border-radius: 16px; }
+  body.at-visualizar .week-view { display: grid; grid-template-columns: 64px minmax(0, 1fr); grid-template-rows: repeat(7, auto); grid-auto-flow: column; gap: 0; padding: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 16px; }
   body.at-visualizar :is(.week-header, .week-posts) { display: contents; }
-  body.at-visualizar :is(.week-day-header, .week-day-posts) { border: 0; border-top: 1px solid; border-radius: 0; }
+  body.at-visualizar :is(.week-day-header, .week-day-posts) { border: 0; border-top: 1px solid var(--border); border-radius: 0; }
   body.at-visualizar :is(.week-day-header, .week-day-posts):first-child { border-top: 0; }
   body.at-visualizar .week-day-header { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 60px; padding: 8px 0; transform: none !important; }
   body.at-visualizar .week-day-name { font-size: 12px; font-weight: 600; text-transform: none; }
@@ -18685,7 +18695,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   body.at-visualizar #postsBlock .collapsible-icon svg { width: 16px; height: 16px; stroke-width: 1.75; }
   body.at-visualizar #postsBlock .collapsible-head-title { font-size: 15px; font-weight: 600; }
   body.at-visualizar #postsBlock .collapsible-head-sub { font-size: 13px; }
-  body.at-visualizar .posts-inner-tabs { gap: 3px; margin: 12px 16px 0; padding: 3px; border: 1px solid; border-radius: 12px; }
+  body.at-visualizar .posts-inner-tabs { gap: 3px; margin: 12px 16px 0; padding: 3px; border: 1px solid var(--border); border-radius: 12px; }
   body.at-visualizar .posts-inner-tabs::after { content: none; }
   body.at-visualizar .posts-inner-tab { min-height: 40px; padding: 0 8px; border-radius: 9px; font-size: 14px; font-weight: 600; }
   body.at-visualizar .posts-count-badge { min-width: 20px; padding: 0 6px; line-height: 18px; font-size: 12px; }
@@ -18711,7 +18721,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-header { gap: 8px; padding: 12px 16px; }
   :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-badges { gap: 6px; }
   :is(body.at-visualizar #tab-visualizar, #dayPanel) :is(.badge, .post-rest-pill) {
-    display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border: 1px solid; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border: 1px solid var(--border); border-radius: 999px;
     font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none;
   }
   :is(body.at-visualizar #tab-visualizar, #dayPanel) .badge .post-tipo-dot { width: 8px; height: 8px; margin: 0; }
@@ -18721,7 +18731,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-body { padding: 12px 16px 4px; }
   :is(body.at-visualizar #tab-visualizar, #dayPanel) :is(.post-prato, .pcc-prato) { margin-bottom: 4px; font-size: 13px !important; font-weight: 500 !important; }
   :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-gancho { margin-bottom: 12px; font-size: 15px; font-weight: 600; line-height: 1.35; }
-  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-field { margin: 0; padding: 12px 44px 12px 0; border: 0; border-top: 1px solid; border-radius: 0; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-field { margin: 0; padding: 12px 44px 12px 0; border: 0; border-top: 1px solid var(--border); border-radius: 0; }
   :is(body.at-visualizar #tab-visualizar, #dayPanel) :is(.post-field-label, .pcc-label) { margin-bottom: 2px !important; font-size: 13px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; }
   :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-field-text { font-size: 14px; line-height: 1.45; }
   :is(body.at-visualizar #tab-visualizar, #dayPanel) .copy-btn { top: 4px !important; right: -10px !important; width: 44px; height: 44px; border: 0; border-radius: 12px; }
@@ -18731,7 +18741,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-footer { gap: 8px; padding: 8px 12px; }
   :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-footer :is(.btn-secondary, .btn-danger) {
     min-width: 44px; min-height: 44px; padding: 0 14px !important; justify-content: center; gap: 8px;
-    border: 1px solid; border-radius: 12px; font-size: 14px !important; font-weight: 600; transform: none !important;
+    border: 1px solid var(--border); border-radius: 12px; font-size: 14px !important; font-weight: 600; transform: none !important;
   }
   :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card-footer svg { width: 18px; height: 18px; }
   html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .post-card,
@@ -18796,7 +18806,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   /* blocos: cartão branco; ícone num quadradinho neutro */
   body.at-entrada .estudio-block { border-radius: 16px; }
   body.at-entrada .estudio-block-head { grid-template-columns: 28px minmax(0, 1fr) auto 16px; gap: 12px; min-height: 56px; padding: 12px 16px; }
-  body.at-entrada .estudio-block-icon { width: 28px; height: 28px; border: 1px solid; border-radius: 8px; }
+  body.at-entrada .estudio-block-icon { width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 8px; }
   body.at-entrada .estudio-block-icon svg { width: 16px; height: 16px; stroke-width: 1.75; }
   body.at-entrada .estudio-block-title { font-size: 15px; font-weight: 600; }
   body.at-entrada .estudio-block-value { max-width: 150px; font-size: 13px; }
@@ -18827,7 +18837,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   html:not(.fg-noturno) body.at-entrada .estudio-field-hint { color: var(--text3); }
 
   /* botões pequenos (IA, Copiar, Adicionar): brancos, 44 */
-  body.at-entrada :is(button.estudio-ai, button.estudio-mini) { min-height: 44px; padding: 0 14px; border: 1px solid; border-radius: 12px; font-size: 14px; font-weight: 600; }
+  body.at-entrada :is(button.estudio-ai, button.estudio-mini) { min-height: 44px; padding: 0 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; font-weight: 600; }
   body.at-entrada button.estudio-mini + button.estudio-mini, body.at-entrada button.estudio-ai + button.estudio-mini { margin-left: 0; }
   body.at-entrada .estudio-legenda-toolbar { right: 8px; bottom: 8px; gap: 8px; }
   html:not(.fg-noturno) body.at-entrada :is(button.estudio-ai, button.estudio-ai:hover, button.estudio-mini) { background: var(--card); border-color: var(--border); color: var(--text); }
@@ -18851,7 +18861,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   html:not(.fg-noturno) body.at-entrada .estudio-format-card.active :is(.estudio-format-name, .estudio-format-sub) { color: var(--on-ink); }
 
   /* objetivo escolhido: explicação em linhas, sem caixa colorida */
-  body.at-entrada .estudio-obj-desc { margin-top: 4px; padding: 12px 0 0; border: 0; border-top: 1px solid; border-radius: 0; animation: none; }
+  body.at-entrada .estudio-obj-desc { margin-top: 4px; padding: 12px 0 0; border: 0; border-top: 1px solid var(--border); border-radius: 0; animation: none; }
   body.at-entrada .estudio-obj-desc-title { font-size: 15px; font-weight: 600; }
   body.at-entrada :is(.estudio-obj-desc-funnel, .estudio-obj-desc-examples-label) { margin-top: 2px; font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; }
   body.at-entrada .estudio-obj-desc-hint { font-size: 14px; }
@@ -18888,6 +18898,57 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   html:not(.fg-noturno) body.at-entrada .estudio-media-drop:hover { background: var(--card); border-color: var(--border); color: var(--text3); }
   html:not(.fg-noturno) body.at-entrada .estudio-media-drop.drag { border-color: var(--ink); }
   html:not(.fg-noturno) body.at-entrada .estudio-media-drop-icon { color: var(--text2); }
+
+  /* 14. Ajustes da revisão */
+  /* Dia: os cartões vêm um embaixo do outro, com respiro */
+  body.at-visualizar .day-view .posts-grid { gap: 12px; }
+  /* Mês: a caixa tinha altura de 6 semanas fixas e sobrava um vão antes de Todos os posts */
+  body.at-visualizar #tab-visualizar .calendar-body-inner { min-height: 0; }
+  /* topo: o cliente escolhido já aparece no chip */
+  body.at-visualizar .ed-hero-cli { display: none; }
+  /* busca atrás da lupa, ao lado de Mês/Semana/Dia; abre embaixo da linha do mês */
+  body.at-visualizar .ed-controls { flex-direction: row; align-items: center; gap: 8px; }
+  body.at-visualizar .ed-view-switch { flex: 1; min-width: 0; }
+  body.at-visualizar .ed-search-toggle { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 48px; height: 48px; padding: 0; border: 1px solid var(--border); border-radius: 12px; background: var(--card); color: var(--text); cursor: pointer; }
+  body.at-visualizar .ed-search-toggle[aria-expanded="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  body.at-visualizar .ed-nav-row:not(.busca-aberta) .ed-filter-mini { display: none; }
+  html:not(.fg-noturno) body.at-visualizar .ed-search-toggle { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-visualizar .ed-search-toggle:active { background: var(--bg2); }
+  html:not(.fg-noturno) body.at-visualizar .ed-search-toggle[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+  /* painel do dia: link com alvo de 44; aviso de mídia só em texto, sem caixa */
+  #dayPanel .post-card a[href] { display: inline-flex !important; align-items: center; min-height: 44px; font-size: 14px !important; }
+  :is(body.at-visualizar #tab-visualizar, #dayPanel) .pcc-midia { margin: 8px 0 0 !important; padding: 0 !important; background: none !important; border: 0 !important; border-radius: 0 !important; font-size: 13px !important; }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .pcc-midia { color: var(--text3) !important; }
+  html:not(.fg-noturno) :is(body.at-visualizar #tab-visualizar, #dayPanel) .pcc-midia-erro { color: var(--text2) !important; }
+  html:not(.fg-noturno) #dayPanel .post-card a[href] { color: var(--text) !important; }
+
+  /* Criar post: setas do mini calendário em traço; IA com retorno (girando e caixa de resposta) */
+  body.at-entrada .estudio-mini-cal-nav svg { display: block; }
+  body.at-entrada button.estudio-ai { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  body.at-entrada button.estudio-ai:disabled { opacity: 1; }
+  body.at-entrada .ai-result-box { margin: 0; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 15px; line-height: 1.5; box-shadow: none; }
+  body.at-entrada .ai-rendered .ai-section { margin: 0 0 12px; padding: 0; border: 0; border-radius: 0; background: none; }
+  body.at-entrada .ai-rendered h3 { margin: 0 0 4px; font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+  body.at-entrada .ai-rendered :is(p, li) { font-size: 15px; }
+  body.at-entrada .ai-rendered blockquote { margin: 8px 0; padding: 0 0 0 12px; border-left: 2px solid var(--border); border-radius: 0; background: none; font-style: normal; }
+  body.at-entrada .ai-result-actions { gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  body.at-entrada :is(.ai-use-btn, .ai-discard-btn) { flex: 1; min-height: 44px; padding: 0 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 15px; font-weight: 600; }
+  html:not(.fg-noturno) body.at-entrada button.estudio-ai:disabled { color: var(--text2); }
+  html:not(.fg-noturno) body.at-entrada .ai-result-box { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-entrada .ai-rendered h3 { color: var(--text2); }
+  html:not(.fg-noturno) body.at-entrada .ai-rendered :is(p, li, strong) { color: var(--text); }
+  html:not(.fg-noturno) body.at-entrada .ai-rendered blockquote { border-left-color: var(--border); color: var(--text2); }
+  html:not(.fg-noturno) body.at-entrada .ai-result-actions { border-top-color: var(--sep); }
+  html:not(.fg-noturno) body.at-entrada .ai-use-btn { background: var(--fg-acao); border-color: var(--fg-acao); color: var(--on-ink); }
+  html:not(.fg-noturno) body.at-entrada .ai-discard-btn { background: var(--card); border-color: var(--border); color: var(--text); }
+  body.at-entrada .ai-opcao { min-height: 48px; padding: 12px 14px; border-radius: 12px; font-size: 15px; font-weight: 500; }
+  html:not(.fg-noturno) body.at-entrada .ai-opcao { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-entrada .ai-opcao:active { background: var(--bg2); }
+  /* × do cliente escolhido: alvo de 44, igual ao da busca do Calendário */
+  body.at-entrada .estudio-combo-clear { right: 0; width: 44px; height: 44px; border-radius: 12px; font-size: 20px; }
+  body.at-entrada .estudio-combo:has(.estudio-combo-clear:not([hidden])) .estudio-combo-input { padding-right: 44px; }
+  html:not(.fg-noturno) body.at-entrada .estudio-combo-clear,
+  html:not(.fg-noturno) body.at-entrada .estudio-combo-clear:hover { background: none; color: var(--text2); }
 }
 
 
