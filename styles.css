@@ -18529,3 +18529,27 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   /* janela da tarefa: WhatsApp neutro (cor forte só no principal) */
   body.at-projetos .pj-modal-topbar .pj-btn-wa { background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; box-shadow: none !important; padding: 0 12px !important; border-radius: 12px !important; }
 }
+
+
+/* ═══ Celular v2, espalhar: cada grupo escreve logo abaixo do seu marcador ═══ */
+
+/* ─── Celular v2: calendario ─── */
+
+
+
+/* ─── Celular v2: publipost ─── */
+
+
+
+/* ─── Celular v2: ferramentas ─── */
+
+
+
+/* ─── Celular v2: tarefa-janela ─── */
+
+
+
+/* ─── Celular v2: tarefa-listas ─── */
+
+
+/* ─── fim do espalhar ─── */
