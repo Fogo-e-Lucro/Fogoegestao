@@ -18954,6 +18954,494 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
 
 
 /* ─── Celular v2: publipost ─── */
+/* Publipost (aba social), Ao vivo (aba lives) e POPs (aba pop) no "papel e grafite" do início de Tarefas.
+   Estilo só no celular; fora da media ficam só defeitos que também aparecem no computador.
+   Cor sempre atrás de html:not(.fg-noturno): o Modo Noturno segue como era. */
+/* Ao vivo: a trilha de áudio aparecia com "Vídeo" escolhido ([hidden] perdia pro display:flex do .lv-field) */
+#tab-lives .lv-field[hidden] { display: none !important; }
+/* Ao vivo: o menu ⋮ do cartão ficava sempre aberto ([hidden] perdia pro display:flex do .menu) */
+#tab-lives .menu[hidden] { display: none !important; }
+/* Ao vivo: o selo do destino (Instagram) não tinha posição e caía por cima do "AO VIVO" */
+.live-card__overlay--br { right: 10px; bottom: 10px; }
+/* POPs: o + de criar cadeira aparecia pra quem não é admin ([hidden] perdia pro display:grid) */
+.pop-add-btn[hidden] { display: none !important; }
+/* Publipost: "Escolher arquivo" ficava claro sobre o branco quando o sistema estava no escuro e o app no claro */
+html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(--card); }
+
+@media (max-width: 640px) {
+
+  /* foco: só a borda grafite, sem anel nem fundo cinza (o input:focus global pinta --bg2 e anel) */
+  html:not(.fg-noturno) body:is(.at-social, .at-lives, .at-pop) :is(input, textarea, select):focus { border-color: var(--ink) !important; box-shadow: none !important; outline: none !important; }
+  html:not(.fg-noturno) body:is(.at-social, .at-lives, .at-pop) :is(input[type="text"], input[type="url"], input[type="search"], input[type="password"], textarea):focus { background: var(--card); }
+  html:not(.fg-noturno) body.at-social .sp2-caption:focus { background: transparent; }
+  html:not(.fg-noturno) body:is(.at-social, .at-lives, .at-pop) :is(button, a, [role="button"]):focus-visible { outline: 2px solid var(--ink) !important; outline-offset: 2px; }
+
+  /* ── Publipost ── */
+  /* margem lateral de 16: o .app-content somava 10px aos 16 do .sp2-app */
+  body.at-social .app-content:has(> #tab-social.active) { padding: 0 !important; }
+  body.at-social .sp2-app { padding: 16px 16px 24px; gap: 12px; }
+  /* o nome já está na barra de cima: sai a marca "F Publipost"; ficam a fila de hoje e a engrenagem */
+  body.at-social .sp2-brand { display: none; }
+  body.at-social .sp2-header-actions { flex: 1; justify-content: space-between; }
+  body.at-social .sp2-kpi { height: 32px; padding: 0 12px; gap: 8px; font-size: 13px; }
+  body.at-social .sp2-kpi-dot { width: 8px; height: 8px; box-shadow: none; }
+  body.at-social .sp2-header-icon-btn { width: 44px; height: 44px; border-radius: 12px; }
+  body.at-social .sp2-header-icon-btn svg { width: 20px; height: 20px; stroke-width: 1.75; }
+  html:not(.fg-noturno) body.at-social .sp2-header-icon-btn { background: var(--card); border-color: var(--border); color: var(--text); }
+  body.at-social .sp2-auth { padding: 14px 16px; border-radius: 16px; }
+  body.at-social .sp2-auth-hint { font-size: 13px; line-height: 18px; color: var(--text2); }
+  body.at-social .sp2-fb-btn { min-height: 44px; padding: 0 16px !important; gap: 8px; border-radius: 12px; font-size: 15px !important; justify-content: center; }
+  html:not(.fg-noturno) body.at-social .sp2-fb-btn { background: var(--fg-acao); color: var(--on-ink); }
+  body.at-social .sp2-acc.empty { font-size: 14px; color: var(--text2); }
+
+  /* contas: escolhida com anel grafite (era o degradê do Instagram) */
+  body.at-social .sp2-accounts { gap: 8px; padding: 2px 2px 4px; }
+  body.at-social .sp2-acc { min-width: 68px; gap: 6px; }
+  body.at-social .sp2-acc-ring { width: 56px; height: 56px; padding: 2px; transform: none !important; }
+  html:not(.fg-noturno) body.at-social .sp2-acc.active .sp2-acc-ring { background: var(--ink); }
+  body.at-social .sp2-acc-name { max-width: 68px; font-size: 12px; color: var(--text2); }
+  html:not(.fg-noturno) body.at-social .sp2-acc.active .sp2-acc-name { color: var(--text); }
+
+  /* Post / Story: segmentado com o escolhido em grafite */
+  body.at-social .sp2-segment { padding: 3px; border-radius: 12px; }
+  html:not(.fg-noturno) body.at-social .sp2-segment { background: var(--card); border-color: var(--border); }
+  body.at-social .sp2-seg-btn { min-height: 40px; border-radius: 9px; font-size: 14px; }
+  body.at-social .sp2-seg-btn svg { width: 16px; height: 16px; stroke-width: 1.75; }
+  html:not(.fg-noturno) body.at-social .sp2-seg-btn { color: var(--text2); }
+  html:not(.fg-noturno) body.at-social .sp2-seg-btn.on { background: var(--ink); color: var(--on-ink); box-shadow: none; }
+
+  /* foto, carrossel, tipo e legenda moram num div em bloco: o gap da coluna não chegava neles (0 px entre um e outro).
+     O JS deixa o display vazio no modo Post e "none" no Story */
+  body.at-social .sp2-editor-col { gap: 12px; }
+  body.at-social #sp2PostMode { display: flex; flex-direction: column; gap: 12px; }
+  body.at-social .sp2-carousel-wrap { gap: 4px; }
+  body.at-social .sp2-carousel-strip { padding: 0 0 4px; }
+
+  /* área da foto: vazia fica do tamanho do conteúdo (era um quadrado de 55% da tela); com foto mantém a proporção */
+  body.at-social .sp2-drop { padding: 28px 16px; border-width: 1.5px; border-radius: 16px; }
+  body.at-social .sp2-drop:has(> #spUploadPlaceholder:not([style*="none"])) { aspect-ratio: auto; max-height: none; }
+  body.at-social .sp2-drop-glyph { width: 56px; height: 56px; margin-bottom: 14px; border-radius: 14px; }
+  html:not(.fg-noturno) body.at-social .sp2-drop-glyph { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  body.at-social .sp2-drop-glyph svg { width: 26px; height: 26px; stroke-width: 1.75; }
+  body.at-social .sp2-drop-title { margin-bottom: 4px; font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+  body.at-social .sp2-drop-sub { max-width: 280px; margin-bottom: 16px; font-size: 14px; line-height: 20px; }
+  body.at-social .sp2-drop-cta { gap: 8px; }
+  body.at-social :is(.sp2-btn-pick, .sp2-btn-carousel) {
+    min-height: 44px; padding: 0 16px; gap: 8px; border-radius: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 600; box-shadow: none; transform: none !important;
+  }
+  body.at-social :is(.sp2-btn-pick, .sp2-btn-carousel) svg { width: 16px; height: 16px; stroke-width: 1.75; }
+  html:not(.fg-noturno) body.at-social .sp2-btn-pick { background: var(--fg-acao); color: var(--on-ink); }
+  html:not(.fg-noturno) body.at-social .sp2-btn-carousel { background: var(--card); border-color: var(--border); color: var(--text); }
+  body.at-social .sp2-remove-media { top: 8px; right: 8px; width: 44px; height: 44px; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  html:not(.fg-noturno) body.at-social .sp2-remove-media { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  body.at-social .sp2-ratio-badge { top: 8px; left: 8px; min-height: 44px; padding: 0 14px 0 12px; font-size: 13px; font-weight: 600; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  body.at-social .sp2-ratio-badge:has(button) { padding-right: 0; }
+  html:not(.fg-noturno) body.at-social .sp2-ratio-badge { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-social .sp2-ratio-badge.ok svg { color: var(--fg-green); }
+  html:not(.fg-noturno) body.at-social .sp2-ratio-badge.warn svg { color: var(--fg-amber); }
+  body.at-social .sp2-ratio-badge button { align-self: stretch; min-height: 44px; margin: -1px -1px -1px 6px; padding: 0 16px; font-size: 13px; font-weight: 600; }
+  html:not(.fg-noturno) body.at-social .sp2-ratio-badge button { background: var(--fg-acao); color: var(--on-ink); }
+  html:not(.fg-noturno) body.at-social .sp2-carousel-add { background: var(--card); color: var(--text2); }
+  body.at-social .sp2-carousel-add-label { font-size: 12px; }
+  body.at-social .sp2-carousel-hint { font-size: 13px; color: var(--text2); }
+
+  /* tipo detectado: ícone de traço, caixa branca */
+  body.at-social .sp2-type-badge { min-height: 52px; padding: 4px 4px 4px 14px; border-radius: 12px; font-size: 13px; }
+  html:not(.fg-noturno) body.at-social .sp2-type-badge { background: var(--card); border-color: var(--border); }
+  body.at-social .sp2-type-badge-icon { display: inline-flex; color: var(--text2); }
+  body.at-social .sp2-type-badge-label { font-weight: 600; }
+  body.at-social .sp2-type-swap { min-height: 44px; padding: 0 12px; border-radius: 10px; font-size: 14px; }
+  html:not(.fg-noturno) body.at-social .sp2-type-swap { color: var(--text); }
+  body.at-social .sp2-type-swap-menu { padding: 3px; border-radius: 12px; }
+  body.at-social .sp2-type-swap-menu button { min-height: 44px; border-radius: 9px; font-size: 14px; }
+  html:not(.fg-noturno) body.at-social .sp2-type-swap-menu button.on { background: var(--ink); color: var(--on-ink); }
+
+  /* legenda: chips de 44 numa linha, contador embaixo à direita; texto 16 (o iOS não dá zoom) */
+  body.at-social .sp2-editor { border-radius: 16px; box-shadow: var(--sh-card); }
+  body.at-social .sp2-caption { min-height: 96px; padding: 14px 16px 6px; font-size: 16px; }
+  body.at-social .sp2-editor-bar { flex-direction: column-reverse; align-items: stretch; gap: 6px; padding: 4px 12px 12px; }
+  body.at-social .sp2-counter { align-self: flex-end; padding: 0 4px; font-size: 12px; }
+  body.at-social .sp2-chips { flex-wrap: nowrap; gap: 6px; }
+  body.at-social .sp2-chip { flex: 1 1 auto; justify-content: center; min-height: 44px; padding: 0 10px; gap: 6px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  body.at-social .sp2-chip svg { width: 16px; height: 16px; stroke-width: 1.75; }
+  html:not(.fg-noturno) body.at-social :is(.sp2-chip, .sp2-chip-primary) { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-social .sp2-chip svg { color: var(--text2); }
+  html:not(.fg-noturno) body.at-social .sp2-chip[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+  html:not(.fg-noturno) body.at-social .sp2-chip[aria-expanded="true"] svg { color: var(--on-ink); }
+  html:not(.fg-noturno) body.at-social .sp2-collab-body { background: var(--card); border-top-color: var(--sep); }
+  body.at-social .sp2-collab-body { padding: 4px 16px 12px; }
+  body.at-social .sp2-collab-inputs { flex-direction: column; }
+  body.at-social :is(.sp2-input, .sp2-input-mini) { min-height: 44px; padding: 0 14px; border-radius: 12px; font-size: 16px; }
+  html:not(.fg-noturno) body.at-social :is(.sp2-input, .sp2-input-mini) { background: var(--card); }
+  html:not(.fg-noturno) body.at-social :is(.sp2-input, .sp2-input-mini):focus { border-color: var(--ink); box-shadow: none; outline: none; }
+  /* primeiro comentário em coluna, sem alça de redimensionar */
+  body.at-social .sp2-first-comment { margin-top: 0; padding: 12px 16px 14px; gap: 8px; border-top: 1px solid var(--sep); }
+  body.at-social .sp2-first-comment-label { flex-direction: column; align-items: flex-start; gap: 2px; font-size: 14px; }
+  body.at-social .sp2-first-comment-label span { font-size: 13px; line-height: 18px; color: var(--text2); }
+  body.at-social .sp2-first-comment-input { min-height: 72px; padding: 10px 14px; border-radius: 12px; font-size: 16px; resize: none; }
+  html:not(.fg-noturno) body.at-social .sp2-first-comment-input { background: var(--card); }
+  html:not(.fg-noturno) body.at-social .sp2-first-comment-input:focus { border-color: var(--ink); }
+  body.at-social .sp2-first-comment-foot { justify-content: flex-end; font-size: 12px; }
+
+  /* Story: rótulos sem caixa alta, cores do sticker com 44 */
+  body.at-social .sp2-phone { width: 220px; height: 424px; border-radius: 28px; box-shadow: none; }
+  body.at-social .sp2-phone-screen { border-radius: 22px; }
+  body.at-social .sp2-story-form { gap: 8px; }
+  body.at-social .sp2-field-label { margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--text); text-transform: none; letter-spacing: 0; }
+  body.at-social .sp2-color-row { gap: 8px; }
+  body.at-social .sp2-color-row .sp-color-dot { width: 44px; height: 44px; transform: none !important; }
+  html:not(.fg-noturno) body.at-social .sp2-color-row .sp-color-dot.active { border-color: var(--card); box-shadow: 0 0 0 2px var(--ink); }
+
+  html:not(.fg-noturno) body.at-social .sp2-story-wrap:has(#spPhoneEmpty[style*="none"]) .sp2-btn-fullw { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+
+  /* Agora / Agendar: caixa branca, rádio grafite de 44 */
+  body.at-social .sp2-schedule { min-height: 52px; padding: 0 14px; gap: 4px 20px; border-radius: 12px; }
+  html:not(.fg-noturno) body.at-social .sp2-schedule { background: var(--card); border: 1px solid var(--border); }
+  body.at-social .sp2-radio-label { min-height: 44px; gap: 10px; font-size: 15px; color: var(--text); }
+  body.at-social .sp2-radio-label input { width: 20px; height: 20px; margin: 0; accent-color: var(--ink); }
+  body.at-social #spScheduleRow { flex: 1 1 100% !important; padding-bottom: 12px; }
+  body.at-social #spScheduleRow .sp2-input { width: 100%; box-sizing: border-box; }
+
+  /* publicar: sólido na cor da ação (era o degradê do Instagram com brilho) */
+  body.at-social .sp2-cta { min-height: 48px; padding: 0 16px; gap: 8px; border-radius: 12px; font-size: 15px; font-weight: 600; box-shadow: none !important; transform: none !important; }
+  html:not(.fg-noturno) body.at-social .sp2-cta { background: var(--fg-acao); color: var(--on-ink); border: 0; }
+  html:not(.fg-noturno) body.at-social .sp2-cta:active:not(:disabled) { background: var(--ink-press, var(--fg-acao)); }
+  html:not(.fg-noturno) body.at-social .sp2-cta:disabled { background: var(--bg2); color: var(--text2); border: 1px solid var(--border); }
+  body.at-social .sp2-cta-acc { padding: 0; background: none; font-size: 14px; font-weight: 500; }
+  body.at-social .sp2-cta-acc-av { border: 1px solid var(--on-ink); }
+  body.at-social .sp2-status { font-size: 13px; }
+  html:not(.fg-noturno) body.at-social .sp2-status .sp-status-ok { color: var(--text); }
+  body.at-social .sp2-status :is(.sp-status-ok, .sp-status-err) { font-size: 13px; }
+  body.at-social .sp2-status .sp-status-dot { width: 8px; height: 8px; }
+  html:not(.fg-noturno) body.at-social .sp2-status .sp-status-ok .sp-status-dot { background: var(--fg-green); }
+  html:not(.fg-noturno) body.at-social .sp2-status .sp-status-err { color: var(--fg-red); }
+
+  /* Hoje e próximos: cartão do padrão, ícone em quadradinho, fila em linhas com pílula de status */
+  body.at-social .sp2-today { margin-top: 0; border-radius: 16px; box-shadow: var(--sh-card); }
+  body.at-social .sp2-today-head { min-height: 52px; padding: 0 16px; gap: 10px; }
+  body.at-social .sp2-today-title { gap: 10px; font-size: 15px; }
+  body.at-social .sp2-today-title svg { width: 28px; height: 28px; padding: 5px; box-sizing: border-box; border-radius: 8px; stroke-width: 1.75; }
+  html:not(.fg-noturno) body.at-social .sp2-today-title svg { background: var(--card); border: 1px solid var(--border); color: var(--text2); }
+  body.at-social .sp2-today-count { padding: 0 8px; line-height: 18px; font-size: 12px; font-weight: 600; }
+  html:not(.fg-noturno) body.at-social .sp2-today-count { background: var(--card); border: 1px solid var(--border); color: var(--text2); }
+  body.at-social .sp2-today-chev { width: 16px; height: 16px; }
+  body.at-social .sp2-today-pills { padding: 0 16px 14px 54px; }
+  body.at-social .sp2-today-empty { font-size: 14px; color: var(--text3); }
+  body.at-social .sp2-today-pill { height: 28px; padding: 0 10px; font-size: 12px; }
+  html:not(.fg-noturno) body.at-social .sp2-today-pill { background: var(--card); }
+  body.at-social .sp2-today-drawer { padding: 0; }
+  html:not(.fg-noturno) body.at-social .sp2-today-drawer { background: var(--card); border-top-color: var(--sep); }
+  body.at-social .sp2-today-drawer-head { margin: 0; padding: 0 4px 0 16px; font-size: 13px; font-weight: 600; color: var(--text2); text-transform: none; letter-spacing: 0; }
+  body.at-social .sp2-today-clear { min-height: 44px; padding: 0 12px; font-size: 14px; }
+  html:not(.fg-noturno) body.at-social .sp2-today-clear { color: var(--fg-red); }
+  body.at-social .sp2-queue-list { gap: 0; max-height: none; }
+  body.at-social .sp2-queue-list > .sp2-today-empty { padding: 4px 16px 16px; }
+  body.at-social .sp-queue-item { min-height: 56px; align-items: center; gap: 12px; padding: 8px 16px; }
+  html:not(.fg-noturno) body.at-social .sp-queue-item { border-bottom-color: var(--sep); background: none; }
+  body.at-social .sp-queue-thumb { width: 40px; height: 40px; border-radius: 8px; }
+  body.at-social .sp-queue-account { font-size: 15px; font-weight: 500; }
+  body.at-social :is(.sp-queue-caption, .sp-queue-meta) { font-size: 13px; color: var(--text3); }
+  body.at-social .sp-queue-badge { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: 0; }
+  html:not(.fg-noturno) body.at-social .sp-queue-badge { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  body.at-social .sp-queue-badge::before { content: ''; width: 8px; height: 8px; flex-shrink: 0; border-radius: 50%; background: #9ca3af; }
+  body.at-social .sp-queue-badge.published::before { background: var(--fg-green); }
+  body.at-social .sp-queue-badge.pending::before { background: var(--fg-amber); }
+  body.at-social .sp-queue-badge.failed::before { background: var(--fg-red); }
+
+  /* Packs e Recorte: folha de baixo */
+  body.at-social :is(.sp2-packs-backdrop, .sp2-cropper-backdrop) { align-items: flex-end; padding: 0; background: var(--dim); }
+  body.at-social :is(.sp2-packs-modal, .sp2-cropper-modal) { max-width: none; max-height: 88dvh; border: 0; border-radius: 20px 20px 0 0; box-shadow: 0 -8px 24px rgba(16,24,40,.12); }
+  body.at-social :is(.sp2-packs-head, .sp2-cropper-head) { align-items: center; padding: 12px 8px 12px 16px; border-bottom-color: var(--sep); }
+  body.at-social :is(.sp2-packs-title, .sp2-cropper-title) { font-size: 17px; font-weight: 600; }
+  body.at-social :is(.sp2-packs-sub, .sp2-cropper-sub) { font-size: 13px; color: var(--text2); }
+  body.at-social :is(.sp2-packs-close, .sp2-cropper-close) { width: 44px; height: 44px; padding: 0; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; }
+  body.at-social .sp2-packs-body { padding: 12px 16px; }
+  body.at-social .sp2-packs-empty { font-size: 14px; color: var(--text2); }
+  body.at-social :is(.sp2-packs-foot, .sp2-cropper-actions) { padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); border-top-color: var(--sep); }
+  body.at-social :is(.sp2-packs-foot, .sp2-cropper-actions, .sp2-pack-form-buttons) .sp2-cropper-btn { flex: 1; }
+  body.at-social .sp2-cropper-btn { min-height: 44px; padding: 0 16px; justify-content: center; border-radius: 12px; font-size: 15px; }
+  html:not(.fg-noturno) body.at-social .sp2-cropper-btn.primary { background: var(--fg-acao); color: var(--on-ink); }
+  html:not(.fg-noturno) body.at-social .sp2-cropper-btn.secondary { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-social .sp2-cropper-canvas-wrap { background: var(--bg); }
+  body.at-social .sp2-cropper-ratios { gap: 8px; padding: 12px 16px 4px; }
+  body.at-social .sp2-cropper-ratio { min-height: 44px; border-radius: 10px; font-size: 13px; }
+  html:not(.fg-noturno) body.at-social .sp2-cropper-ratio.on { background: var(--ink); color: var(--on-ink); }
+  body.at-social .sp2-cropper-zoom { padding: 8px 16px 12px; font-size: 13px; color: var(--text2); }
+  body.at-social .sp2-cropper-zoom input[type=range] { accent-color: var(--ink); }
+  body.at-social .sp2-pack-item { gap: 8px; padding: 12px 14px; border-radius: 12px; transform: none !important; }
+  html:not(.fg-noturno) body.at-social .sp2-pack-item { background: var(--card); border-color: var(--border); }
+  body.at-social .sp2-pack-name { font-size: 15px; }
+  body.at-social .sp2-pack-scope { padding: 0 8px; border-radius: 999px; font-size: 12px; line-height: 20px; text-transform: none; letter-spacing: 0; }
+  body.at-social .sp2-pack-tags { font-size: 13px; }
+  body.at-social .sp2-pack-actions { gap: 8px; }
+  body.at-social .sp2-pack-actions button { min-height: 44px; border-radius: 10px; font-size: 14px; font-weight: 600; }
+  /* um botão grafite por tela: o "Criar pack" do pé; nos packs, Aplicar fica secundário e Excluir em vermelho */
+  html:not(.fg-noturno) body.at-social .sp2-pack-actions button { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-social .sp2-pack-actions button[onclick^="sp2DeletePack"] { color: var(--fg-red); }
+  body.at-social .sp2-pack-form { padding: 12px; border-style: solid; border-radius: 12px; }
+  html:not(.fg-noturno) body.at-social .sp2-pack-form { background: var(--card); }
+  body.at-social .sp2-pack-form :is(input, textarea) { min-height: 44px; padding: 10px 14px; border-radius: 12px; font-size: 16px; }
+  body.at-social .sp2-pack-scope-row { gap: 16px; font-size: 14px; }
+  body.at-social .sp2-pack-scope-row label { min-height: 44px; gap: 8px; }
+  body.at-social .sp2-pack-scope-row input { accent-color: var(--ink); }
+
+
+  /* ── Ao vivo ── */
+  body.at-lives #tab-lives.tab-panel.liv { padding: 16px 16px 24px; }
+  /* o nome já está na barra de cima: sai "Studio de lives"; a engrenagem vira botão de 44 no canto */
+  body.at-lives .studio-title { display: none; }
+  body.at-lives .studio-header { position: relative; gap: 12px; margin-bottom: 16px; padding-bottom: 0; border-bottom: 0; }
+  body.at-lives .studio-header__left { min-height: 44px; padding-right: 52px; align-items: center; }
+  body.at-lives .studio-meta { flex-wrap: wrap; }
+  body.at-lives .studio-meta__chip { height: 32px; padding: 0 12px; font-size: 13px; font-weight: 500; }
+  html:not(.fg-noturno) body.at-lives .studio-meta__chip { background: var(--card); border-color: var(--border); color: var(--text2); }
+  body.at-lives .host-dot { width: 8px; height: 8px; }
+  body.at-lives #tab-lives #btn-studio-config { position: absolute; top: 0; right: 0; width: 44px; height: 44px; padding: 0; border-radius: 12px; }
+  html:not(.fg-noturno) body.at-lives #tab-lives #btn-studio-config { background: var(--card); border-color: var(--border); color: var(--text); }
+  body.at-lives #tab-lives #btn-studio-config svg { width: 20px; height: 20px; }
+  body.at-lives .studio-header__right { gap: 8px; }
+  /* sem live no ar: filtros e o "Nova live" do topo somem, fica o botão do vazio */
+  body.at-lives #tab-lives:has(#studio-empty:not([hidden])) :is(.studio-filters, #btn-open-drawer) { display: none; }
+  body.at-lives .studio-filters { display: flex; width: 100%; padding: 3px; border-radius: 12px; }
+  body.at-lives .studio-filters .pill { flex: 1; min-height: 40px; border-radius: 9px; font-size: 14px; font-weight: 600; letter-spacing: 0; }
+  html:not(.fg-noturno) body.at-lives .studio-filters .pill { color: var(--text2); }
+  html:not(.fg-noturno) body.at-lives .studio-filters .pill.is-active { background: var(--ink); color: var(--on-ink); box-shadow: none; }
+  body.at-lives #tab-lives .btn-primary { min-height: 44px; padding: 0 20px; gap: 8px; justify-content: center; border-radius: 12px; font-size: 15px; font-weight: 600; letter-spacing: 0; box-shadow: none; transform: none; }
+  html:not(.fg-noturno) body.at-lives #tab-lives .btn-primary { background: var(--fg-acao); color: var(--on-ink); }
+  html:not(.fg-noturno) body.at-lives #tab-lives .btn-primary:active { background: var(--ink-press, var(--fg-acao)); }
+  body.at-lives #btn-open-drawer { width: 100%; }
+  /* vazio: quadradinho de 56 com ícone de 26, um botão só */
+  body.at-lives .studio-empty { gap: 8px; margin-bottom: 0; padding: 32px 20px; border-radius: 16px; }
+  html:not(.fg-noturno) body.at-lives .studio-empty { background: var(--card); border: 1px solid var(--border); box-shadow: var(--sh-card); }
+  body.at-lives #tab-lives .studio-empty > svg { width: 56px; height: 56px; margin-bottom: 8px; padding: 15px; box-sizing: border-box; border-radius: 14px; opacity: 1; stroke-width: 1.75; }
+  html:not(.fg-noturno) body.at-lives #tab-lives .studio-empty > svg { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  body.at-lives .studio-empty h3 { font-size: 16px; font-weight: 600; }
+  body.at-lives .studio-empty p { max-width: 280px; margin-bottom: 8px; font-size: 14px; line-height: 20px; color: var(--text2); }
+  body.at-lives #tab-lives .studio-empty .btn-primary--lg { max-width: none; padding: 0 20px; font-size: 15px; }
+  /* cartão da live */
+  body.at-lives .studio-grid { gap: 12px; }
+  body.at-lives .live-card { border-radius: 16px; box-shadow: var(--sh-card); transform: none !important; }
+  /* miniatura de ponta a ponta (o cartão tinha padding de 18 e o texto ficava 16 px pra dentro dela).
+     Os selos ficam numa faixa em cima e o celular embaixo deles: no 1:1 o celular encolhia e cortava
+     "Enviar mensagem", e no 4:5 os selos caíam por cima dos cantos do celular */
+  body.at-lives .live-card { padding: 0; }
+  /* borda neutra em qualquer status: quem diz "reconectando" ou "caiu" é a bolinha do selo */
+  html:not(.fg-noturno) body.at-lives .live-card[data-status] { border-color: var(--border); }
+  body.at-lives .live-card__thumb { margin: 0; aspect-ratio: 3 / 4 !important; }
+  body.at-lives .live-mockup { padding: 44px 0 6px; }
+  body.at-lives .live-mockup__ig-icons { gap: 8px; }
+  body.at-lives .live-mockup__ig-input { min-width: 0; padding: 7px 10px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  /* selos: pílula branca; "Ao vivo" é status, então bolinha vermelha e não fundo vermelho.
+     O destino fica ao lado do cronômetro, que tem largura fixa */
+  body.at-lives .live-card__overlay--tl { top: 8px; left: 8px; }
+  body.at-lives .live-card__overlay--tr { top: 8px; right: 8px; }
+  body.at-lives .live-card__overlay--br { top: 8px; right: 98px; bottom: auto; }
+  body.at-lives .live-timer { min-width: 84px; justify-content: center; }
+  body.at-lives :is(.live-badge, .live-timer, .live-dest-chip) {
+    height: 28px; padding: 0 10px; gap: 6px; display: inline-flex; align-items: center; border-radius: 999px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; box-shadow: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+  html:not(.fg-noturno) body.at-lives :is(.live-badge, .live-timer, .live-dest-chip) { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  body.at-lives .live-badge__dot { width: 8px; height: 8px; animation: none; }
+  html:not(.fg-noturno) body.at-lives .live-badge__dot { background: var(--fg-red); }
+  html:not(.fg-noturno) body.at-lives .live-card[data-status="reconnecting"] .live-badge__dot { background: var(--fg-amber); }
+  body.at-lives .live-card[data-status="reconnecting"] .live-badge__label::after { content: "Reconectando"; font-size: 12px; }
+  body.at-lives .live-card[data-status="failed"] .live-badge__label::after { content: "Caiu"; font-size: 12px; }
+  /* o "AO VIVO" de dentro do celular repetia o selo do cartão e espremia o nome da conta */
+  body.at-lives .live-mockup__ig-live { display: none; }
+  body.at-lives .live-card__body { gap: 10px; padding: 12px 16px 16px; }
+  body.at-lives .live-card__title { min-height: 44px; font-size: 15px; font-weight: 600; }
+  body.at-lives .live-card__title svg { opacity: 1; }
+  body.at-lives .live-card__menu-btn { width: 44px; height: 44px; margin-right: -10px; border-radius: 12px; }
+  body.at-lives .live-card__meta { gap: 8px; padding: 0; background: none; font-size: 13px; }
+  body.at-lives .health-dot { width: 8px; height: 8px; box-shadow: none !important; }
+  body.at-lives .live-card__btn { min-height: 44px; border-radius: 12px; font-size: 14px; font-weight: 600; }
+  html:not(.fg-noturno) body.at-lives .live-card__btn { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-lives .live-card__btn--danger { color: var(--fg-red); }
+  html:not(.fg-noturno) body.at-lives .live-card__btn--danger.is-confirming { background: var(--fg-red); border-color: var(--fg-red); color: #fff; }
+  body.at-lives .menu.menu--card button { min-height: 44px; font-size: 15px; }
+
+  /* Nova live: tela cheia com X à esquerda, barra fixa embaixo */
+  body.at-lives .drawer__backdrop { background: var(--dim); }
+  body.at-lives .drawer__panel { width: 100vw; border-left: 0; }
+  body.at-lives .drawer__header { gap: 4px; min-height: calc(56px + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) 16px 0 8px; justify-content: flex-start; }
+  html:not(.fg-noturno) body.at-lives .drawer__header { background: var(--card); border-bottom-color: var(--border); }
+  body.at-lives .drawer__header h3 { font-size: 17px; font-weight: 600; }
+  body.at-lives #tab-lives .drawer__header .icon-btn { order: -1; width: 44px; height: 44px; border-radius: 12px; }
+  body.at-lives #tab-lives .drawer__header .icon-btn svg { width: 20px; height: 20px; stroke-width: 1.75; }
+  body.at-lives #tab-lives .drawer__body { gap: 20px !important; padding: 16px 16px 0 !important; }
+  body.at-lives #tab-lives .drawer__footer { position: sticky; bottom: 0; z-index: 2; gap: 8px; margin: 4px -16px 0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); }
+  html:not(.fg-noturno) body.at-lives #tab-lives .drawer__footer { background: var(--card); border-top: 1px solid var(--border); }
+  body.at-lives #tab-lives .drawer__footer > button { flex: 1; min-height: 48px; justify-content: center; border-radius: 12px; font-size: 15px; font-weight: 600; }
+  html:not(.fg-noturno) body.at-lives #tab-lives .drawer__footer .btn-ghost { background: var(--card); color: var(--text); }
+  body.at-lives #tab-lives .lv-field__label { font-size: 13px; font-weight: 600; letter-spacing: 0; color: var(--text); }
+  body.at-lives #tab-lives .lv-field__label svg { width: 16px; height: 16px; opacity: 1; color: var(--text2); }
+  body.at-lives #tab-lives .lv-field__hint { font-size: 13px; color: var(--text2); }
+  body.at-lives #tab-lives .lv-field :is(input[type="text"], input[type="password"], select) { min-height: 44px; padding: 0 14px; border-radius: 12px; font-size: 16px; }
+  html:not(.fg-noturno) body.at-lives #tab-lives .lv-field :is(input, select):focus { border-color: var(--ink); box-shadow: none; }
+  /* tipo de mídia: 3 colunas, escolhido em grafite */
+  body.at-lives #tab-lives .lv-type-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  body.at-lives #tab-lives .lv-type-card { min-height: 92px; justify-content: center; gap: 8px; padding: 12px 6px; border-width: 1px; border-radius: 12px; transform: none !important; }
+  body.at-lives #tab-lives .lv-type-card__icon { width: 32px; height: 32px; border-radius: 8px; }
+  html:not(.fg-noturno) body.at-lives #tab-lives :is(.lv-type-card__icon, .lv-type-card:has(input:checked) .lv-type-card__icon) { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  body.at-lives #tab-lives .lv-type-card__icon svg { width: 16px; height: 16px; stroke-width: 1.75; }
+  body.at-lives #tab-lives .lv-type-card__name { font-size: 13px; font-weight: 600; }
+  html:not(.fg-noturno) body.at-lives #tab-lives .lv-type-card:has(input:checked) { background: var(--ink); border-color: var(--ink); box-shadow: none; }
+  html:not(.fg-noturno) body.at-lives #tab-lives .lv-type-card:has(input:checked) .lv-type-card__name { color: var(--on-ink); }
+  /* arquivo */
+  body.at-lives #tab-lives .lv-drop { gap: 6px; padding: 20px 16px; border-width: 1.5px; border-radius: 16px; }
+  html:not(.fg-noturno) body.at-lives #tab-lives .lv-drop { background: var(--card); }
+  html:not(.fg-noturno) body.at-lives #tab-lives .lv-drop.has-file { background: var(--card); border-style: solid; border-color: var(--ink); }
+  body.at-lives #tab-lives .lv-drop__icon { width: 44px; height: 44px; border-radius: 12px; transform: none !important; }
+  html:not(.fg-noturno) body.at-lives #tab-lives :is(.lv-drop__icon, .lv-drop.has-file .lv-drop__icon) { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  body.at-lives #tab-lives .lv-drop__icon svg { width: 20px; height: 20px; stroke-width: 1.75; }
+  body.at-lives #tab-lives .lv-drop__title { font-size: 15px; font-weight: 600; }
+  body.at-lives #tab-lives .lv-drop__sub { font-size: 13px; color: var(--text2); }
+  /* interruptor à direita: ligado na cor da ação, desligado cinza */
+  body.at-lives #tab-lives .lv-toggle { grid-template-columns: minmax(0, 1fr) 48px; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; }
+  html:not(.fg-noturno) body.at-lives #tab-lives :is(.lv-toggle, .lv-toggle:has(input:checked)) { border-color: var(--border); }
+  body.at-lives #tab-lives .lv-toggle__switch { order: 2; width: 48px; height: 28px; margin: 0; border: 0; }
+  html:not(.fg-noturno) body.at-lives #tab-lives .lv-toggle__switch { background: var(--border); }
+  body.at-lives #tab-lives .lv-toggle__switch::after { top: 3px; left: 3px; width: 22px; height: 22px; background: #fff; box-shadow: 0 1px 2px rgba(16,24,40,.2); }
+  html:not(.fg-noturno) body.at-lives #tab-lives .lv-toggle:has(input:checked) .lv-toggle__switch { background: var(--fg-acao); }
+  body.at-lives #tab-lives .lv-toggle:has(input:checked) .lv-toggle__switch::after { transform: translateX(20px); }
+  body.at-lives #tab-lives .lv-toggle__title { font-size: 15px; font-weight: 600; }
+  body.at-lives #tab-lives .lv-toggle__sub { font-size: 13px; color: var(--text2); }
+  body.at-lives #tab-lives .lv-chip-row { gap: 8px; }
+  body.at-lives #tab-lives .lv-chip span { min-height: 44px; display: inline-flex; align-items: center; padding: 0 14px; font-size: 14px; }
+  html:not(.fg-noturno) body.at-lives #tab-lives .lv-chip:has(input:checked) span { background: var(--ink); border-color: var(--ink); color: var(--on-ink); box-shadow: none; }
+  /* bloco do Instagram: cartão branco; o passo a passo vira linhas com fio (sem cartão dentro de cartão) */
+  body.at-lives #tab-lives .lv-dest-block { gap: 16px; padding: 16px; border-radius: 16px; }
+  html:not(.fg-noturno) body.at-lives #tab-lives .lv-dest-block { background: var(--card); border: 1px solid var(--border); box-shadow: var(--sh-card); }
+  body.at-lives #tab-lives .lv-ig-badge__icon { width: 32px; height: 32px; border-radius: 8px; box-shadow: none; }
+  html:not(.fg-noturno) body.at-lives #tab-lives .lv-ig-badge__icon { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  body.at-lives #tab-lives .lv-ig-badge__icon svg { width: 16px; height: 16px; stroke-width: 1.75; }
+  body.at-lives #tab-lives .lv-ig-badge__label { font-size: 15px; font-weight: 600; }
+  body.at-lives #tab-lives .lv-ig-badge__sub { margin-top: 2px; font-size: 13px; color: var(--text2); }
+  body.at-lives #tab-lives :is(.lv-dest-paste, .lv-ig-howto__link) { min-height: 44px; padding: 0 14px; border-radius: 12px; font-size: 14px; font-weight: 600; box-shadow: none; transform: none !important; }
+  html:not(.fg-noturno) body.at-lives #tab-lives :is(.lv-dest-paste, .lv-ig-howto__link) { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  body.at-lives #tab-lives .lv-dest-paste svg { width: 16px; height: 16px; stroke-width: 1.75; }
+  body.at-lives #tab-lives .lv-ig-howto { gap: 8px; padding: 12px 0 0; border: 0; border-top: 1px solid var(--sep); border-radius: 0; font-size: 14px; line-height: 20px; }
+  html:not(.fg-noturno) body.at-lives #tab-lives .lv-ig-howto { background: none; color: var(--text2); }
+  html:not(.fg-noturno) body.at-lives #tab-lives .lv-ig-howto__step b:first-child { color: var(--text); }
+  body.at-lives #tab-lives .lv-input-wrap input { padding-right: 48px !important; }
+  body.at-lives #tab-lives .lv-input-toggle { right: 0; width: 44px; height: 44px; }
+
+  /* janela "Conectar VPS de Streaming" (engrenagem): folha de baixo branca; os estilos dela são inline */
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal { align-items: flex-end !important; padding: 0 !important; background: var(--dim) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal .lvs-card { max-width: none !important; max-height: 88dvh !important; border-radius: 20px 20px 0 0 !important; background: var(--card) !important; box-shadow: 0 -8px 24px rgba(16,24,40,.12) !important; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal .lvs-head { padding: 12px 60px 12px 16px !important; border-bottom-color: var(--sep) !important; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal .lvs-close { top: 8px !important; right: 8px !important; width: 44px !important; height: 44px !important; border-radius: 12px !important; background: none !important; color: var(--text2) !important; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal .lvs-ico { width: 32px !important; height: 32px !important; border-radius: 8px !important; background: var(--card) !important; border: 1px solid var(--border); color: var(--text) !important; box-shadow: none !important; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal .lvs-ico svg { width: 16px; height: 16px; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal .lvs-card > div:nth-child(2) { padding: 16px !important; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal .lvs-label { font-size: 13px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text) !important; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal .lvs-input { min-height: 44px; border-radius: 12px !important; background: var(--card) !important; border: 1px solid var(--border) !important; font-size: 16px !important; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal .lvs-input:focus { border-color: var(--ink) !important; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal .lvs-eye { right: 0 !important; width: 44px; height: 44px; padding: 0 !important; display: inline-flex; align-items: center; justify-content: center; border: 0 !important; background: none !important; color: var(--text2) !important; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal .lvs-foot { gap: 8px !important; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) !important; border-radius: 0 !important; background: var(--card) !important; border-top-color: var(--sep) !important; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal .lvs-foot > div { display: none; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal :is(.lvs-test, .lvs-cancel, .lvs-save) { flex: 1; min-height: 44px; justify-content: center; padding: 0 12px !important; border-radius: 12px !important; font-size: 15px !important; font-weight: 600 !important; box-shadow: none !important; transform: none !important; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal :is(.lvs-test, .lvs-cancel) { background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; }
+  html:not(.fg-noturno) body.at-lives #liveSettingsModal .lvs-save { background: var(--fg-acao) !important; color: var(--on-ink) !important; }
+
+
+  /* ── POPs ── */
+  /* o nome já está na barra de cima: saem "FOGO & LUCRO" e "Manual"; busca e + na mesma linha */
+  body.at-pop .pop-shell { min-height: 0; }
+  body.at-pop .pop-sidebar {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 8px;
+    max-height: none; padding: 12px 16px 0; border-right: 0; border-bottom: 1px solid var(--border);
+  }
+  body.at-pop .pop-sidebar:has(.pop-add-btn[hidden]) { grid-template-columns: minmax(0, 1fr); }
+  body.at-pop .pop-sidebar__head { display: contents; }
+  body.at-pop .pop-sidebar__head > div { display: none; }
+  body.at-pop .pop-add-btn { grid-column: 2; grid-row: 1; width: 44px; height: 44px; border-radius: 12px; transform: none !important; }
+  html:not(.fg-noturno) body.at-pop .pop-add-btn { background: var(--card); border-color: var(--border); color: var(--text); }
+  body.at-pop .pop-add-btn svg { width: 20px; height: 20px; stroke-width: 1.75; }
+  body.at-pop .pop-search { grid-column: 1; grid-row: 1; padding: 0; border-bottom: 0; }
+  body.at-pop .pop-search svg { left: 14px; width: 18px; height: 18px; stroke-width: 1.75; color: var(--text2); }
+  body.at-pop .pop-search input { min-height: 44px; padding: 0 14px 0 40px; border-radius: 12px; font-size: 16px; }
+  html:not(.fg-noturno) body.at-pop .pop-search input { background: var(--card); }
+  html:not(.fg-noturno) body.at-pop .pop-search input:focus { border-color: var(--ink); }
+  body.at-pop .pop-nav { grid-column: 1 / -1; max-height: 40vh; padding: 8px 0; overflow-y: auto; }
+  /* sem nenhuma cadeira a lista some: o vazio embaixo explica e tem o botão de criar */
+  body.at-pop .pop-sidebar:has(.pop-nav.is-vazio) { display: none; }
+  body.at-pop :is(.pop-nav__loading, .pop-nav__empty) { padding: 16px 0; font-size: 14px; color: var(--text2); }
+  body.at-pop .pop-cadeira { margin-bottom: 2px; }
+  body.at-pop .pop-cadeira__head { grid-template-columns: 16px 24px minmax(0, 1fr) auto; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 500; }
+  html:not(.fg-noturno) body.at-pop .pop-cadeira__head { color: var(--text); }
+  body.at-pop .pop-cadeira__chev { width: 16px; height: 16px; }
+  body.at-pop .pop-cadeira__ico { width: 24px; height: 24px; border-radius: 7px; }
+  html:not(.fg-noturno) body.at-pop :is(.pop-cadeira__ico, .pop-cadeira.selected > .pop-cadeira__head .pop-cadeira__ico) { background: var(--card); border: 1px solid var(--border); color: var(--text2); }
+  body.at-pop .pop-cadeira__ico svg { width: 14px; height: 14px; stroke-width: 1.75; }
+  body.at-pop .pop-cadeira__count { padding: 0 7px; line-height: 18px; font-size: 12px; }
+  html:not(.fg-noturno) body.at-pop .pop-cadeira__count { background: var(--card); border: 1px solid var(--border); color: var(--text2); }
+  html:not(.fg-noturno) body.at-pop .pop-cadeira.selected > .pop-cadeira__head { background: var(--bg2); }
+  body.at-pop .pop-cadeira__children { padding: 2px 0 4px 26px; }
+  body.at-pop .pop-item { grid-template-columns: 16px minmax(0, 1fr) auto; gap: 10px; min-height: 44px; padding: 0 4px 0 12px; border-left: 0; border-radius: 10px; font-size: 15px; }
+  html:not(.fg-noturno) body.at-pop .pop-item { color: var(--text2); }
+  html:not(.fg-noturno) body.at-pop .pop-item--playbook { color: var(--text); }
+  html:not(.fg-noturno) body.at-pop .pop-item--playbook svg { color: var(--text2); }
+  body.at-pop .pop-item svg { width: 16px; height: 16px; opacity: 1; stroke-width: 1.75; }
+  html:not(.fg-noturno) body.at-pop .pop-item.selected { background: var(--ink); color: var(--on-ink); }
+  html:not(.fg-noturno) body.at-pop .pop-item.selected svg { color: var(--on-ink); }
+  /* no toque não tem hover: o lápis de renomear aparece no item aberto */
+  body.at-pop .pop-item.selected .pop-item__actions { display: inline-flex; }
+  body.at-pop .pop-item__actions button { width: 44px; height: 44px; border-radius: 8px; color: inherit; }
+  body.at-pop .pop-item__actions svg { width: 16px; height: 16px; }
+  body.at-pop .pop-nav__add-pop { align-self: flex-start; min-height: 44px; margin: 4px 0 8px 0; padding: 0 14px; gap: 8px; border-style: solid; border-radius: 12px; font-size: 14px; font-weight: 600; }
+  html:not(.fg-noturno) body.at-pop .pop-nav__add-pop { background: var(--card); border-color: var(--border); color: var(--text); }
+  body.at-pop .pop-nav__add-pop svg { width: 16px; height: 16px; }
+  /* conteúdo: margem de 16; vazio com quadradinho neutro */
+  body.at-pop .pop-content { padding: 16px; }
+  body.at-pop .pop-home { margin: 8px auto 24px; }
+  body.at-pop .pop-home__icon { width: 56px; height: 56px; margin-bottom: 14px; border-radius: 14px; }
+  html:not(.fg-noturno) body.at-pop .pop-home__icon { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  body.at-pop .pop-home__icon svg { width: 26px; height: 26px; stroke-width: 1.75; }
+  body.at-pop .pop-home__title { margin-bottom: 6px; font-size: 17px; font-weight: 600; }
+  body.at-pop .pop-home__text { max-width: 300px; margin-bottom: 16px; font-size: 14px; line-height: 20px; }
+  body.at-pop .pop-home__cta:empty { display: none; }
+  body.at-pop .pop-home__cta { margin-bottom: 8px; }
+  body.at-pop .pop-home__stats { gap: 8px; margin: 16px 0; }
+  body.at-pop .pop-home__stat { border-radius: 16px; box-shadow: var(--sh-card); }
+  body.at-pop .pop-home__stat span { color: var(--text2); }
+  body.at-pop .pop-home__recent { margin-top: 12px; padding: 0; overflow: hidden; border-radius: 16px; box-shadow: var(--sh-card); }
+  body.at-pop .pop-home__recent-title { display: flex; align-items: center; min-height: 52px; margin: 0; padding: 0 16px; border-bottom: 1px solid var(--sep); font-size: 15px; font-weight: 600; color: var(--text); text-transform: none; letter-spacing: 0; }
+  body.at-pop .pop-home__recent-item { min-height: 56px; padding: 8px 16px; border-radius: 0; border-bottom: 1px solid var(--sep); }
+  body.at-pop .pop-home__recent-item:last-child { border-bottom: 0; }
+  body.at-pop .pop-home__recent-item strong { font-size: 15px; }
+  body.at-pop .pop-home__recent-item small { font-size: 13px; color: var(--text3); }
+  /* documento: título em cima, ações embaixo; Editar na cor da ação, Apagar em vermelho */
+  body.at-pop .pop-doc__crumb { font-size: 13px; }
+  body.at-pop .pop-doc__head { flex-direction: column; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; }
+  body.at-pop .pop-doc__title { margin-top: 4px; font-size: 22px; }
+  body.at-pop .pop-doc__meta { font-size: 13px; }
+  body.at-pop .pop-btn { min-height: 44px; padding: 0 16px; gap: 8px; justify-content: center; border-radius: 12px; font-size: 15px; transform: none !important; }
+  body.at-pop .pop-btn svg { width: 16px; height: 16px; stroke-width: 1.75; }
+  html:not(.fg-noturno) body.at-pop .pop-btn { background: var(--card); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-pop .pop-btn--primary { background: var(--fg-acao); border-color: var(--fg-acao); color: var(--on-ink); box-shadow: none; }
+  html:not(.fg-noturno) body.at-pop :is(.pop-btn--danger, #popDeleteDoc) { color: var(--fg-red); }
+  body.at-pop .pop-doc__actions { width: 100%; }
+  body.at-pop .pop-doc__actions .pop-btn { flex: 1; }
+  body.at-pop .pop-empty-doc { padding: 40px 16px; font-size: 14px; color: var(--text2); }
+  /* editor (admin): tela cheia, ações de 44 */
+  body.at-pop .pop-editor__scrim { background: var(--dim); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  body.at-pop .pop-editor__panel { inset: 0; border: 0; border-radius: 0; box-shadow: none; animation: none; }
+  body.at-pop .pop-editor__head { flex-wrap: wrap; gap: 12px; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px; }
+  body.at-pop .pop-editor__eyebrow { font-size: 13px; font-weight: 600; text-transform: none; letter-spacing: 0; }
+  body.at-pop .pop-editor__title { font-size: 17px; }
+  body.at-pop .pop-editor__actions { width: 100%; gap: 8px; }
+  body.at-pop .pop-editor__actions .pop-btn { flex: 1; }
+  body.at-pop .pop-editor__meta { padding: 12px 16px; }
+  body.at-pop .pop-editor__meta label { font-size: 13px; text-transform: none; letter-spacing: 0; color: var(--text); }
+  body.at-pop .pop-editor__meta input { min-height: 44px; border-radius: 12px; font-size: 16px; }
+  body.at-pop .pop-editor__label { font-size: 13px; font-weight: 600; text-transform: none; letter-spacing: 0; }
+  body.at-pop #popEditorHtml { font-size: 14px; }
+}
 
 
 
