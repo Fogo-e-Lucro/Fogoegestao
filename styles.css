@@ -20183,6 +20183,335 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
 
 
 /* ─── Celular v2: tarefa-janela ─── */
+/* Janela da tarefa, Pergunte à IA, Relatório do dia e bloco ativo da folha Mais (celular).
+   Escopo pelo id da janela: ela também abre fora de Tarefas (pelo sino). Cores por token, então o noturno se inverte. */
+/* avatares do chip Responsável lado a lado (no celular, sobrepostos) */
+.pj-meta-avs { display: inline-flex; align-items: center; flex-shrink: 0; }
+@media (min-width: 641px) {
+  /* o WhatsApp da barra de baixo é só do celular; no tablet a barra segue com Fechar */
+  #pjTaskModal .pj-modal-bottombar .pj-bb-wa { display: none !important; }
+}
+@media (max-width: 640px) {
+  /* Topo: X, nome da lista, copiar e lixeira em grafite. O WhatsApp desce pra barra de baixo */
+  #pjTaskModal .pj-modal-topbar { min-height: 60px; padding: 8px 8px 8px 6px !important; gap: 4px; background: var(--card) !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  #pjTaskModal .pj-modal-topbar .pj-icon-btn { color: var(--text) !important; border-radius: 12px; }
+  #pjTaskModal .pj-modal-topbar .pj-icon-btn:active { background: var(--bg2); }
+  #pjTaskModal .pj-modal-topbar .pj-btn-wa { display: none !important; }
+  #pjTaskModal #pjModalListName { font-size: 15px; font-weight: 500; color: var(--text2); }
+
+  /* Abas Tarefa e Atividade: segmentado, escolhida em grafite */
+  #pjTaskModal .pj-modal-mtabs { margin: 8px 16px 0; padding: 3px; gap: 3px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
+  #pjTaskModal .pj-modal-mtabs button { min-height: 40px; border-radius: 9px; font-size: 14px; font-weight: 600; color: var(--text2); box-shadow: none; }
+  #pjTaskModal .pj-modal-mtabs button.on { background: var(--ink); color: var(--on-ink); }
+  #pjTaskModal .pj-modal-mtabs button:focus-visible { outline-color: var(--ink); }
+  #pjTaskModal .pj-mtab-count { height: 20px; min-width: 20px; padding: 0 6px; background: var(--card); border: 1px solid var(--border); color: var(--text2); font-size: 12px; font-weight: 600; }
+  #pjTaskModal .pj-modal-mtabs button.on .pj-mtab-count { background: var(--on-ink); border-color: var(--on-ink); color: var(--ink); }
+
+  /* Título sem a caixa mínima de 44px (sobrava um vão até os chips) */
+  #pjTaskModal .pj-modal-left { padding: 16px !important; }
+  #pjTaskModal .pj-modal-title-input { min-height: 0 !important; margin-bottom: 12px; font-size: 20px !important; font-weight: 700; line-height: 26px; letter-spacing: -.01em; border-radius: 0 !important; }
+
+  /* Aviso de cliente obrigatório: cartão neutro com quadradinho vermelho sólido */
+  #pjTaskModal #pjTaskClientAlert.pj-task-client-alert { flex-wrap: wrap; align-items: flex-start; gap: 12px; padding: 14px; margin-bottom: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--sh-card); animation: none; }
+  #pjTaskModal .pj-task-client-alert-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--fg-red); box-shadow: none; }
+  #pjTaskModal .pj-task-client-alert-icon svg { width: 16px; height: 16px; }
+  #pjTaskModal .pj-task-client-alert-title { margin-bottom: 2px; font-size: 15px; font-weight: 600; color: var(--text); }
+  #pjTaskModal .pj-task-client-alert-sub { font-size: 13px; line-height: 18px; color: var(--text2); }
+  #pjTaskModal .pj-task-client-alert-btn { flex: 1 1 100%; min-height: 44px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); color: var(--text); font-size: 14px; font-weight: 600; transform: none; }
+
+  /* Chips: grade de 2 colunas, 44px, brancos com borda; cliente na linha inteira */
+  #pjTaskModal #pjModalMeta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 8px; margin-bottom: 16px; padding-bottom: 16px; border-bottom-color: var(--sep); }
+  #pjTaskModal #pjModalMeta .pj-meta-item {
+    min-width: 0; min-height: 44px !important; padding: 0 12px !important; gap: 8px;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px;
+    color: var(--text); font-size: 14px !important; font-weight: 500; overflow: hidden;
+    box-shadow: none !important; transform: none !important; -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+  #pjTaskModal #pjModalMeta .pj-meta-item:hover { color: var(--text); border-color: var(--border) !important; }
+  #pjTaskModal #pjModalMeta .pj-meta-item:active { background: var(--bg2) !important; }
+  #pjTaskModal #pjModalMeta .pj-meta-item > span:not(.pj-meta-ic):not(.pj-priority):not(.pj-tag-pill):not(.pj-meta-avs) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #pjTaskModal #pjModalMeta .pj-meta-item[title^="Cliente"] { grid-column: 1 / -1; }
+  /* com tags, a linha de tags fica inteira e o Pomodoro também, pra não sobrar buraco */
+  #pjTaskModal #pjModalMeta .pj-meta-tags:has(.pj-tag-pill),
+  #pjTaskModal #pjModalMeta:has(.pj-meta-tags .pj-tag-pill) .pj-meta-item[onclick^="pjPomoOpen"] { grid-column: 1 / -1; }
+  #pjTaskModal #pjModalMeta .pj-meta-tags:has(.pj-tag-pill) { flex-wrap: wrap; padding: 8px 12px !important; }
+  #pjTaskModal #pjModalMeta :is(.pj-meta-ph, .pj-meta-date-btn.empty) { color: var(--text2); }
+  #pjTaskModal #pjModalMeta .pj-meta-tags > span[style*="color"] { color: var(--text2) !important; font-size: 14px !important; }
+  #pjTaskModal #pjModalMeta .pj-meta-date-btn { min-width: 0; font-size: 14px; font-weight: 500; color: var(--text); }
+  #pjTaskModal #pjModalMeta .pj-avatar { width: 28px !important; height: 28px !important; min-width: 28px !important; min-height: 28px !important; box-shadow: none; }
+  #pjTaskModal #pjModalMeta .pj-meta-avs .pj-avatar + .pj-avatar { margin-left: -8px; box-shadow: 0 0 0 2px var(--card); }
+  #pjTaskModal #pjModalMeta .pj-meta-item img { width: 20px !important; height: 20px !important; border-radius: 6px !important; }
+  /* prioridade dentro do chip: só bolinha e nome (urgente vermelha, alta âmbar, normal e baixa cinza) */
+  #pjTaskModal #pjModalMeta .pj-priority {
+    display: inline-flex !important; align-items: center; gap: 8px; height: auto; padding: 0 !important;
+    background: none !important; border: 0 !important; border-radius: 0 !important;
+    color: var(--text) !important; font-size: 14px !important; font-weight: 500 !important;
+    text-transform: none !important; letter-spacing: 0 !important; box-shadow: none !important; animation: none !important;
+  }
+  #pjTaskModal .pj-priority::before { content: '' !important; width: 8px; height: 8px; flex-shrink: 0; border-radius: 50%; background: #9ca3af; opacity: 1 !important; }
+  #pjTaskModal .pj-priority.urgent::before { background: var(--fg-red); }
+  #pjTaskModal .pj-priority.high::before { background: var(--fg-amber); }
+  #pjTaskModal .pj-tag-pill { height: 26px; padding: 0 4px 0 9px; gap: 6px; background: var(--card); border-color: var(--border); font-size: 12px; }
+  #pjTaskModal .pj-tag-pill-dot { width: 8px; height: 8px; }
+  #pjTaskModal .pj-tag-pill-x { width: 24px; height: 24px; font-size: 16px; color: var(--text2); }
+
+  /* Editor: caixa fechada nos 4 lados */
+  #pjTaskModal #pjDescToolbar { padding: 2px 4px !important; background: var(--card) !important; border-color: var(--border) !important; border-radius: 12px 12px 0 0 !important; }
+  #pjTaskModal #pjDescToolbar > button { width: 44px !important; height: 44px !important; border-radius: 10px !important; color: var(--text) !important; background: transparent !important; }
+  #pjTaskModal #pjDescToolbar > button:active { background: var(--bg2) !important; }
+  #pjTaskModal #pjDescToolbar > span[style*="width:1px"] { background: var(--border) !important; }
+  #pjTaskModal :is(#pjModalDesc, #pjModalDescPreview) {
+    min-height: 140px; margin-bottom: 0; padding: 12px 14px !important;
+    background: var(--card) !important; color: var(--text) !important; font-size: 16px !important; line-height: 24px;
+    border: 1px solid var(--border) !important; border-top-color: var(--sep) !important; border-radius: 0 0 12px 12px !important;
+  }
+
+  /* Campos: rótulo sem caixa alta, campo branco de 44 */
+  #pjTaskModal .pj-modal-section-title { justify-content: space-between; margin: 20px 0 12px; padding-bottom: 0; border-bottom: 0; font-size: 15px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--text); }
+  #pjTaskModal .pj-fields-manage { min-height: 44px !important; padding: 0 14px !important; border-radius: 12px !important; background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; font-size: 14px !important; font-weight: 600; }
+  #pjTaskModal .pj-fields-manage svg { color: var(--text2); }
+  #pjTaskModal .pj-fields-grid { gap: 12px; margin-bottom: 16px; }
+  #pjTaskModal .pj-field-item { gap: 6px; }
+  #pjTaskModal .pj-field-label { font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--text2); }
+  #pjTaskModal .pj-field-value { min-height: 44px; padding: 0 12px; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; color: var(--text); font-size: 16px !important; }
+  #pjTaskModal .pj-field-value:focus { border-color: var(--ink) !important; box-shadow: none !important; }
+  #pjTaskModal .pj-field-value-missing { border-color: var(--fg-red) !important; }
+  #pjTaskModal .pj-field-value::placeholder { color: var(--text3); }
+
+  /* Anexos: cartão branco, sem lilás */
+  #pjTaskModal .pj-attach-block { margin: 20px 0 8px; padding: 2px 4px 2px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; }
+  #pjTaskModal .pj-attach-header { min-height: 48px; font-size: 15px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--text); }
+  #pjTaskModal .pj-attach-header-icon { color: var(--text2); }
+  #pjTaskModal .pj-attach-count { padding: 0 7px; line-height: 18px; border-radius: 999px; background: var(--card); border: 1px solid var(--border); color: var(--text2); font-size: 12px; font-weight: 600; }
+  #pjTaskModal .pj-attach-add-btn { width: 44px; height: 44px; padding: 0; border-radius: 12px; color: var(--text); }
+  #pjTaskModal .pj-attach-add-btn svg { width: 16px; height: 16px; }
+  #pjTaskModal .pj-attach-add-btn:hover { background: var(--card); color: var(--text); border-color: var(--border); box-shadow: none; transform: none; }
+  #pjTaskModal #pjAttachSection { padding: 0 8px 10px 0; }
+  #pjTaskModal .pj-attach-item:hover { border-color: var(--border); box-shadow: none; transform: none; }
+  #pjTaskModal .pj-attach-dropzone { border-radius: 12px; border-color: var(--border); background: var(--card); }
+  #pjTaskModal .pj-attach-dropzone-icon { color: var(--text2); }
+
+  /* Barra de baixo sem sombra: WhatsApp (secundário) e Salvar e fechar */
+  #pjTaskModal .pj-modal-bottombar { gap: 8px; padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0px)) !important; box-shadow: none !important; }
+  #pjTaskModal .pj-modal-bottombar .pj-bb-close { display: none !important; }
+  #pjTaskModal .pj-modal-bottombar .pj-bb-wa {
+    display: inline-flex !important; align-items: center; justify-content: center; gap: 8px; flex: 0 0 auto;
+    min-height: 48px; padding: 0 16px; border-radius: 12px;
+    background: var(--card); border: 1px solid var(--border); color: var(--text); font-size: 15px; font-weight: 600;
+  }
+  #pjTaskModal .pj-modal-bottombar .pj-bb-wa svg { color: var(--text2); }
+  #pjTaskModal .pj-modal-bottombar .pj-bb-wa:active { background: var(--bg2); }
+  #pjTaskModal .pj-btn-primary { min-height: 48px; border-radius: 12px !important; background: var(--fg-acao) !important; border-color: var(--fg-acao) !important; color: var(--on-ink) !important; font-size: 15px; font-weight: 600; box-shadow: none !important; }
+
+  /* Atividade: fundo branco, fio contínuo, ícone em quadradinho, hora solta embaixo */
+  #pjTaskModal[data-mtab="chat"] .pj-modal-right { background: var(--card) !important; padding: 4px 16px calc(12px + env(safe-area-inset-bottom, 0px)) !important; }
+  #pjTaskModal .pj-activity-item { gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--sep); }
+  #pjTaskModal .pj-activity-item.reply { margin-left: 16px; padding-left: 12px; border-left: 2px solid var(--sep); border-bottom: 0; }
+  #pjTaskModal .pj-activity-text { font-size: 15px; line-height: 21px; color: var(--text); }
+  #pjActivityList .pj-activity-item > .pj-avatar { width: 28px !important; height: 28px !important; min-width: 28px !important; min-height: 28px !important; font-size: 11px; box-shadow: none; }
+  #pjTaskModal .pj-activity-log-item { display: grid; grid-template-columns: 28px minmax(0, 1fr); column-gap: 12px; row-gap: 2px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--sep); font-size: 14px; line-height: 20px; color: var(--text2); }
+  #pjTaskModal .pj-activity-log-icon { grid-row: span 2; width: 28px; height: 28px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); color: var(--text2); }
+  #pjTaskModal .pj-activity-log-body em { font-style: normal; color: var(--text2); }
+  #pjTaskModal :is(.pj-activity-log-time, .pj-activity-time) { padding: 0; margin: 0; background: none; border: 0; border-radius: 0; font-size: 12px; line-height: 16px; color: var(--text3); }
+  #pjTaskModal .pj-activity-log-time { grid-column: 2; }
+  #pjTaskModal .pj-log-pill, #pjActivityList .pj-priority {
+    display: inline-flex !important; align-items: center; gap: 6px; height: 22px; padding: 0 8px !important; vertical-align: 1px;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 999px !important;
+    color: var(--text) !important; font-size: 12px !important; font-weight: 600 !important; line-height: 1;
+    text-transform: none !important; letter-spacing: 0 !important; box-shadow: none !important;
+  }
+  #pjTaskModal .pj-log-pill::before { width: 8px; height: 8px; }
+  #pjTaskModal .pj-mention { padding: 0; background: none; color: var(--text); font-weight: 600; }
+  #pjTaskModal .pj-reaction { min-height: 32px; padding: 0 10px; }
+  #pjTaskModal .pj-reaction.mine { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+  /* Responder, Reagir e Excluir: hora à esquerda e três botões de ícone de 44 */
+  #pjActivityList .pj-comment-actions { flex-wrap: nowrap; gap: 0; margin: 2px -10px 0 0; }
+  #pjActivityList .pj-comment-actions .pj-activity-time { margin-right: auto; }
+  #pjActivityList .pj-comment-actions .pj-cact { width: 44px; min-height: 44px; padding: 0 !important; justify-content: center; border-radius: 12px; font-size: 0 !important; color: var(--text2); }
+  #pjActivityList .pj-comment-actions .pj-cact svg { width: 18px; height: 18px; }
+  #pjActivityList .pj-comment-actions .pj-cact:active { background: var(--bg2); }
+  #pjActivityList .pj-comment-actions .pj-comment-del { color: var(--fg-red); }
+  #pjTaskModal .pj-comment-attach-doc { min-height: 44px; padding: 0 12px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); color: var(--text); font-size: 14px; }
+  #pjTaskModal .pj-activity-empty { padding: 32px 16px; gap: 8px; font-size: 14px; color: var(--text2); }
+  #pjTaskModal .pj-activity-empty-icon { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; border-radius: 14px; background: var(--card); border: 1px solid var(--border); color: var(--text2); }
+  #pjTaskModal .pj-activity-empty-title { font-size: 16px; font-weight: 600; color: var(--text); }
+  /* Caixa do comentário e Enviar */
+  #pjTaskModal .pj-reply-banner { min-height: 44px; padding: 0 0 0 12px; gap: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; font-size: 13px; color: var(--text2); }
+  #pjTaskModal .pj-reply-banner button { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; color: var(--text2); }
+  #pjTaskModal .pj-comment-input-wrap { margin-top: 8px; }
+  #pjTaskModal .pj-comment-input { min-height: 52px; padding: 13px 96px 13px 14px; background: var(--card); border: 1px solid var(--border); border-radius: 12px !important; color: var(--text); font-size: 16px; line-height: 22px; resize: none; }
+  #pjTaskModal .pj-comment-input:focus { border-color: var(--ink); box-shadow: none; }
+  #pjTaskModal :is(.pj-comment-attach-btn, .pj-comment-mention-btn) { bottom: 4px; width: 44px; height: 44px; border-radius: 10px; color: var(--text2); }
+  #pjTaskModal .pj-comment-attach-btn { right: 4px; }
+  #pjTaskModal .pj-comment-mention-btn { right: 48px; font-size: 17px; font-weight: 600; }
+  #pjTaskModal :is(.pj-comment-attach-btn, .pj-comment-mention-btn):hover { background: none; color: var(--text2); }
+  #pjTaskModal .pj-comment-actions .pj-comment-send { min-height: 44px; padding: 0 20px !important; gap: 0; border-radius: 12px; background: var(--fg-acao) !important; color: var(--on-ink) !important; font-size: 15px !important; font-weight: 600; box-shadow: none !important; transform: none; }
+
+  /* O que abre dos chips: responsáveis e cliente (folha), data, hora e tags (balão) */
+  .pj-form-card:has(:is(.pj-assignee-list, .pj-cli-list)) h3 { margin-bottom: 12px; font-size: 17px; font-weight: 600; }
+  .pj-assignee-list { gap: 0; }
+  .pj-assignee-row { min-height: 56px; padding: 6px 4px; gap: 12px; background: none; border-bottom: 1px solid var(--sep); border-radius: 0; }
+  .pj-assignee-row:last-child { border-bottom: 0; }
+  .pj-assignee-row input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--ink); }
+  .pj-assignee-name { font-size: 15px; }
+  .pj-cli-list { gap: 2px; }
+  .pj-cli-row { min-height: 52px; padding: 8px 12px; border: 0; border-radius: 10px; background: none; }
+  .pj-cli-row:hover { background: none; border-color: transparent; }
+  .pj-cli-row:active { background: var(--bg2); }
+  .pj-cli-row.active { background: var(--ink); }
+  .pj-cli-row.active :is(.pj-cli-name, .pj-cli-check) { color: var(--on-ink) !important; }
+  .pj-cli-logo { border-color: var(--border); }
+  #pjCliSearch {
+    min-height: 44px; padding-left: 40px; border-radius: 12px; font-size: 16px; color: var(--text);
+    background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235a6272' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") no-repeat 12px center;
+  }
+  #pjCliSearch:focus { border-color: var(--ink); box-shadow: none; }
+  .pj-form-card:has(:is(.pj-assignee-list, .pj-cli-list, .pj-cf-modal-wrap)) .pj-form-actions .pj-btn { min-height: 44px; padding: 0 16px; border-radius: 12px; font-size: 15px; font-weight: 600; box-shadow: none; }
+  .pj-form-card:has(:is(.pj-assignee-list, .pj-cli-list, .pj-cf-modal-wrap)) .pj-form-actions .pj-btn-secondary { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  .pj-form-card:has(:is(.pj-assignee-list, .pj-cli-list, .pj-cf-modal-wrap)) .pj-form-actions .pj-btn-primary { background: var(--fg-acao); border-color: var(--fg-acao); color: var(--on-ink); }
+  .pj-datepicker { padding: 12px; border-color: var(--border); border-radius: 16px; box-shadow: var(--sh-pop); }
+  .pj-dp-title { font-size: 15px; font-weight: 600; }
+  .pj-dp-nav-btn { width: 44px; height: 44px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); color: var(--text); font-size: 18px; }
+  .pj-dp-dow { font-size: 12px; font-weight: 600; text-transform: none; }
+  .pj-dp-day.today { color: var(--text); border-color: var(--ink); }
+  .pj-dp-day.selected, .pj-dp-day.selected:hover { background: var(--ink); color: var(--on-ink); filter: none; }
+  .pj-dp-btn { min-height: 44px; border-radius: 12px; background: var(--card); border-color: var(--border); color: var(--text); font-size: 14px; }
+  .pj-dp-btn.primary, .pj-dp-btn.primary:hover { background: var(--fg-acao); border-color: var(--fg-acao); color: var(--on-ink); filter: none; }
+  .pj-dp-btn.danger { color: var(--fg-red); }
+  #pjTimePicker input[type="number"] { min-height: 48px !important; background: var(--card) !important; font-size: 20px !important; }
+  #pjTimePicker .pj-dp-btn:not(.primary):not(.danger) { min-height: 44px; padding: 0 !important; font-size: 14px !important; font-variant-numeric: tabular-nums; }
+  .pj-tag-picker { left: 16px !important; right: 16px; width: auto; border-radius: 16px; box-shadow: var(--sh-pop); }
+  .pj-tag-picker-search { min-height: 48px !important; padding: 0 14px; border: 0 !important; border-bottom: 1px solid var(--sep) !important; border-radius: 0 !important; background: var(--card) !important; box-shadow: none !important; font-size: 16px !important; }
+  .pj-tag-picker-item { min-height: 44px; padding: 0 10px; border-radius: 10px; font-size: 14px; }
+  .pj-tag-picker-item.on { background: none; }
+  .pj-tag-picker-item.create { color: var(--text); }
+  .pj-tag-picker-check { color: var(--text); }
+  .pj-tag-picker-empty { font-size: 14px; color: var(--text2); }
+  .pj-tag-picker-foot span { font-size: 12px !important; }
+
+  /* Pergunte à IA (Tarefas) */
+  .pj-askai-wrap .pj-view-header { flex-wrap: wrap !important; align-items: center; row-gap: 2px; padding: 12px 16px 8px !important; }
+  .pj-askai-wrap .pj-view-title { flex: 1 1 auto; min-width: 0; font-size: 17px; font-weight: 600; }
+  .pj-askai-wrap .pj-askai-head-r { display: contents !important; }
+  .pj-askai-wrap .pj-filter-btn { order: 2; gap: 6px; padding: 0 14px; font-size: 14px; font-weight: 600; }
+  .pj-askai-wrap .pj-filter-btn svg { color: var(--text2); }
+  .pj-askai-ctxbadge { order: 3; flex: 1 1 100%; padding: 0; background: none; border: 0; border-radius: 0; font-size: 13px; color: var(--text3); }
+  .pj-askai-body { gap: 10px; padding: 0 16px 12px; }
+  .pj-askai-warn { padding: 12px 14px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; color: var(--text2); font-size: 14px; }
+  .pj-askai-warn strong { color: var(--text); }
+  .pj-askai-msgs { gap: 12px; padding: 12px; background: var(--card); border-radius: 16px; }
+  .pj-askai-empty { padding: 12px; }
+  .pj-askai-empty-emoji { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; border-radius: 14px; background: var(--card); border: 1px solid var(--border); color: var(--text2); }
+  .pj-askai-empty-title { font-size: 16px; font-weight: 600; line-height: 22px; color: var(--text); }
+  .pj-askai-empty-sub { font-size: 14px; color: var(--text2); }
+  .pj-askai-avatar, .pj-askai-msg.user .pj-askai-avatar { width: 32px; height: 32px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); color: var(--text2); }
+  .pj-askai-bubble { max-width: 85%; padding: 10px 14px; background: var(--card); border-color: var(--border); color: var(--text); font-size: 15px; line-height: 22px; }
+  .pj-askai-msg.user .pj-askai-bubble { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+  .pj-askai-msg.user .pj-askai-bubble strong { color: var(--on-ink); }
+  /* copiar fica embaixo da resposta, fora do texto */
+  .pj-askai-copy { position: static; display: flex; width: 44px; height: 44px; margin: 0 -12px -10px auto; border: 0; border-radius: 12px; background: none; color: var(--text2); opacity: 1; }
+  .pj-askai-copy svg { width: 18px; height: 18px; }
+  .pj-askai-copy:hover { background: none; border: 0; color: var(--text2); }
+  .pj-askai-copy.copied { color: var(--fg-green); }
+  .pj-askai-bubble.pending { font-style: normal; opacity: 1; color: var(--text2); }
+  .pj-askai-actions { border-top: 1px solid var(--sep); }
+  .pj-askai-action-btn { min-height: 44px; padding: 0 14px; border-radius: 12px; background: var(--card); border-color: var(--border); font-size: 14px; }
+  .pj-askai-action-btn:hover { background: var(--card); border-color: var(--border); transform: none; }
+  /* sugestões numa fileira que corre pro lado, cada uma em até 3 linhas */
+  .pj-askai-suggest { flex-shrink: 0; flex-wrap: nowrap; gap: 8px; margin: 0 -16px; padding: 0 16px; overflow-x: auto; scroll-padding-inline: 16px; scrollbar-width: none; }
+  .pj-askai-suggest::-webkit-scrollbar { display: none; }
+  .pj-askai-chip { flex: 0 0 220px; min-height: 64px; padding: 10px 12px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); color: var(--text); font-size: 13px; line-height: 18px; text-align: left; white-space: normal; }
+  .pj-askai-chip:hover { background: var(--card); border-color: var(--border); color: var(--text); transform: none; }
+  .pj-askai-chip:active { background: var(--bg2); }
+  .pj-askai-scope-pill { min-height: 44px; padding: 0 14px !important; gap: 8px; background: var(--card); border-color: var(--border); color: var(--text); font-size: 14px; font-weight: 600; }
+  .pj-askai-scope-pill.active { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+  .pj-askai-scope-icon { display: inline-flex; color: var(--text2); }
+  .pj-askai-scope-pill.active .pj-askai-scope-icon { color: var(--on-ink); }
+  .pj-askai-scope-x { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin-right: -10px; }
+  .pj-askai-scope-glyph { display: inline-flex; color: var(--text2); }
+  .pj-askai-inputbar { align-items: flex-end; gap: 6px; padding: 6px; background: var(--card); border-radius: 16px; }
+  .pj-askai-inputbar:focus-within { border-color: var(--ink); box-shadow: none; }
+  .pj-askai-input { padding: 11px 8px; border: 0 !important; background: none !important; color: var(--text); font-size: 16px !important; line-height: 22px; }
+  .pj-askai-attach { width: 44px; height: 44px; border-radius: 12px; background: var(--card); color: var(--text2); }
+  .pj-askai-send { min-height: 44px; padding: 0 16px; border-radius: 12px; background: var(--fg-acao); color: var(--on-ink); font-size: 15px; transform: none; }
+  .pj-askai-hint { font-size: 12px; line-height: 16px; color: var(--text3); }
+  .pj-askai-trunc { color: var(--text2); }
+
+  /* Relatório do dia: prévia neutra do texto (o verde do WhatsApp era fundo colorido) */
+  #pjWaModal .pj-wa-body { padding: 16px; background: var(--bg) !important; background-image: none !important; }
+  #pjWaModal .pj-wa-body::before { content: 'Prévia da mensagem no grupo'; display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--text2); }
+  #pjWaModal .pj-wa-bubble { max-width: 100%; padding: 14px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: none; color: var(--text); font-size: 15px; line-height: 22px; }
+  #pjWaModal .pj-wa-bubble::after { content: none; }
+  #pjWaModal .pj-wa-bubble strong { color: var(--text); }
+  #pjWaModal .pj-wa-bubble em { color: var(--text2); }
+  #pjWaModal .pj-wa-time { font-size: 12px; color: var(--text3); }
+
+  /* Folha Mais: bloco da tela atual em grafite */
+  .fg-more__pn .fg-more__b.active { background: var(--ink) !important; border-color: var(--ink) !important; color: var(--on-ink) !important; }
+  .fg-more__pn .fg-more__b.active svg { stroke-width: 2; }
+}
+
+@media (max-width: 640px) {
+  /* Menus que abrem da janela (status, prioridade, recorrência): escolhido em grafite, bolinha branca */
+  body.pj-task-open .pj-popup-item.active { background: var(--ink); color: var(--on-ink); }
+  body.pj-task-open .pj-popup-item.active .pj-popup-icon { color: var(--on-ink) !important; }
+
+  /* Data e hora: balão na largura toda, dias e botões de 44 */
+  .pj-datepicker, #pjTimePicker { left: 16px !important; right: 16px !important; width: auto !important; max-width: none; }
+  .pj-dp-day { height: 44px; aspect-ratio: auto; font-size: 15px; }
+
+  /* Anexos: Baixar e Remover com 44 de toque (o desenho continua com 28) */
+  #pjTaskModal .pj-attach-actions { top: 0; right: 0; gap: 0; }
+  #pjTaskModal .pj-attach-action { width: 44px; height: 44px; padding: 8px; background-clip: content-box; box-shadow: none; }
+  /* documento: ícone em cima e nome na largura toda; lixeira no canto, como nas fotos */
+  #pjTaskModal .pj-attach-doc .pj-attach-action { background: none; color: var(--text2); }
+  #pjTaskModal .pj-attach-doc-link { flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px; }
+  #pjTaskModal .pj-attach-doc-link .pj-attach-info { width: 100%; }
+  #pjTaskModal .pj-attach-doc .pj-attach-name { font-size: 14px; }
+  #pjTaskModal .pj-attach-doc .pj-attach-sub { font-size: 12px; color: var(--text2); }
+  #pjTaskModal .pj-attach-doc-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--card) !important; border: 1px solid var(--border); color: var(--text2); }
+  /* o × de cada campo sumia sem hover; remover campo fica no Gerenciar */
+  #pjTaskModal .pj-field-quick-del { display: none; }
+
+  /* Gerenciar campos: cabe na tela, cada campo em 2 linhas (nome e excluir, tipo embaixo) */
+  .pj-cf-modal-wrap { width: auto; max-width: 100%; }
+  .pj-cf-modal-header { margin-bottom: 8px; }
+  .pj-cf-modal-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); color: var(--text2); }
+  .pj-cf-modal-title { font-size: 17px; font-weight: 600; }
+  .pj-cf-modal-header div[style] { font-size: 13px !important; color: var(--text2) !important; }
+  .pj-cf-modal-sub { font-size: 14px; line-height: 20px; color: var(--text2); }
+  .pj-cf-modal-wrap .pj-field-edit-row { display: grid; grid-template-columns: 32px minmax(0, 1fr) 44px; align-items: center; gap: 8px 10px; padding: 12px; background: var(--card); border-color: var(--border); border-radius: 16px; box-shadow: none; }
+  .pj-cf-modal-wrap .pj-field-edit-row:hover { border-color: var(--border); box-shadow: none; }
+  .pj-cf-modal-wrap .pj-field-type-icon { grid-row: 1; grid-column: 1; background: var(--card) !important; border: 1px solid var(--border); color: var(--text2) !important; }
+  .pj-cf-modal-wrap .pj-field-name-input { grid-row: 1; grid-column: 2; min-width: 0; min-height: 44px; padding: 0 12px; border-radius: 12px; font-size: 16px; }
+  .pj-cf-modal-wrap .pj-field-del-btn { grid-row: 1; grid-column: 3; width: 44px; height: 44px; border-radius: 12px; color: var(--fg-red); }
+  .pj-cf-modal-wrap .pj-field-del-btn:hover { background: none; color: var(--fg-red); }
+  .pj-cf-modal-wrap .pj-field-type-btn { grid-row: 2; grid-column: 2 / -1; justify-self: start; min-height: 44px; padding: 0 14px; border-radius: 12px; color: var(--text); font-size: 14px; }
+  .pj-cf-modal-wrap .pj-field-type-btn:hover { border-color: var(--border); color: var(--text); }
+  .pj-cf-modal-wrap .pj-field-type-btn > svg:first-child { color: var(--text2); }
+  .pj-cf-modal-wrap .pj-field-options-input { grid-column: 1 / -1; margin: 0; min-height: 44px; padding: 0 12px; border-radius: 12px; font-size: 16px; }
+  .pj-cf-modal-wrap :is(.pj-field-name-input, .pj-field-options-input):focus { border-color: var(--ink); }
+  .pj-cf-add-btn { min-height: 44px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); color: var(--text); font-size: 15px; }
+  .pj-cf-add-btn:hover { border-color: var(--border); color: var(--text); background: var(--card); }
+
+  /* Pomodoro: faixa acima da barra de baixo (e do +), botão grafite sem degradê, ícones de traço */
+  /* acima da janela da tarefa (2000) e embaixo das folhas que abrem dela (2100) */
+  .pj-pomo-widget { z-index: 2050; left: 16px; right: 16px; width: auto; bottom: calc(144px + env(safe-area-inset-bottom, 0px)); padding: 12px 16px 16px; gap: 12px; border-radius: 16px; box-shadow: var(--sh-pop); }
+  body.pj-task-open .pj-pomo-widget { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  .pj-pomo-mode { font-size: 15px; font-weight: 600; }
+  .pj-pomo-close { width: 44px; height: 44px; margin: -6px -12px -6px 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; color: var(--text2); }
+  .pj-pomo-timer { font-size: 40px; font-weight: 700; letter-spacing: -.02em; }
+  .pj-pomo-timer.running { color: var(--text); animation: none; }
+  .pj-pomo-task-name { font-size: 13px; color: var(--text2); }
+  .pj-pomo-task-name:empty { display: none; }
+  .pj-pomo-dot { width: 8px; height: 8px; }
+  .pj-pomo-dot.done { background: var(--ink); }
+  .pj-pomo-controls { gap: 8px; }
+  .pj-pomo-btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; background: var(--fg-acao); color: var(--on-ink); font-size: 15px; font-weight: 600; }
+  .pj-pomo-btn:hover { opacity: 1; }
+  .pj-pomo-btn-sec { flex: 0 0 44px; background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  #pjPomoNotifRow .pj-pomo-btn-sec { font-size: 14px !important; }
+}
 
 
 

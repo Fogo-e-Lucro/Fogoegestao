@@ -2809,19 +2809,19 @@ ufw allow 3000/tcp</pre>
   <!-- Pomodoro Widget -->
   <div class="pj-pomo-widget" id="pjPomoWidget" style="display:none;">
     <div class="pj-pomo-header">
-      <span class="pj-pomo-mode" id="pjPomoMode">🍅 Foco</span>
-      <button class="pj-pomo-close" onclick="pjPomoClose()" title="Fechar">×</button>
+      <span class="pj-pomo-mode" id="pjPomoMode">Foco</span>
+      <button class="pj-pomo-close" onclick="pjPomoClose()" title="Fechar" aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
     </div>
     <div class="pj-pomo-timer" id="pjPomoTimer">25:00</div>
-    <div class="pj-pomo-task-name" id="pjPomoTaskName">—</div>
+    <div class="pj-pomo-task-name" id="pjPomoTaskName"></div>
     <div class="pj-pomo-cycles" id="pjPomoCycles"></div>
     <div class="pj-pomo-controls">
-      <button class="pj-pomo-btn" id="pjPomoStartBtn" onclick="pjPomoToggle()">▶ Iniciar</button>
-      <button class="pj-pomo-btn pj-pomo-btn-sec" onclick="pjPomoReset()">↺</button>
-      <button class="pj-pomo-btn pj-pomo-btn-sec" onclick="pjPomoSkip()" title="Pular sessão">⏭</button>
+      <button class="pj-pomo-btn" id="pjPomoStartBtn" onclick="pjPomoToggle()">Iniciar</button>
+      <button class="pj-pomo-btn pj-pomo-btn-sec" onclick="pjPomoReset()" title="Recomeçar" aria-label="Recomeçar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+      <button class="pj-pomo-btn pj-pomo-btn-sec" onclick="pjPomoSkip()" title="Pular sessão" aria-label="Pular sessão"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 4 10 8-10 8V4z"/><line x1="19" x2="19" y1="5" y2="19"/></svg></button>
     </div>
     <div id="pjPomoNotifRow" style="margin-top:8px;text-align:center;display:none;">
-      <button class="pj-pomo-btn pj-pomo-btn-sec" style="width:100%;font-size:10px;" onclick="pjPomoRequestNotif()">🔔 Ativar avisos do sistema</button>
+      <button class="pj-pomo-btn pj-pomo-btn-sec" style="width:100%;font-size:10px;" onclick="pjPomoRequestNotif()">Ativar avisos do sistema</button>
     </div>
   </div>
 
@@ -2865,14 +2865,14 @@ ufw allow 3000/tcp</pre>
       <div class="pj-modal-body">
         <div class="pj-modal-left" id="pjModalLeft">
           <div id="pjTaskClientAlert" class="pj-task-client-alert" style="display:none;">
-            <div class="pj-task-client-alert-icon">🏢</div>
+            <div class="pj-task-client-alert-icon" style="color:#fff;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/></svg></div>
             <div class="pj-task-client-alert-body">
               <div class="pj-task-client-alert-title">Cliente obrigatório</div>
-              <div class="pj-task-client-alert-sub">Escolha qual restaurante essa tarefa é. Sem cliente ela não sai do modal nem pode ser concluída.</div>
+              <div class="pj-task-client-alert-sub">Escolha o restaurante desta tarefa. Sem cliente ela não fecha nem pode ser concluída.</div>
             </div>
-            <button type="button" class="pj-task-client-alert-btn" onclick="pjJumpToClientField()">Ir pro campo →</button>
+            <button type="button" class="pj-task-client-alert-btn" onclick="pjJumpToClientField()">Escolher cliente</button>
           </div>
-          <textarea class="pj-modal-title-input" id="pjModalTitle" placeholder="Nome da tarefa..." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';pjModalTitleChanged()"></textarea>
+          <textarea class="pj-modal-title-input" id="pjModalTitle" placeholder="Nome da tarefa" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';pjModalTitleChanged()"></textarea>
           <div class="app-coedit-badge-wrap" id="appCoEditBadgeWrap"></div>
           <div class="pj-modal-meta" id="pjModalMeta"></div>
           <div class="pj-desc-wrap" style="position:relative;">
@@ -2893,7 +2893,7 @@ ufw allow 3000/tcp</pre>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
               </button>
             </div>
-            <textarea class="pj-modal-desc pj-modal-desc-tb" id="pjModalDesc" placeholder="Adicione uma descrição... (⌘V cola print)" oninput="pjModalDescChanged()" ondragover="pjDescDragOver(event)" ondragleave="pjDescDragLeave(event)" ondrop="pjDescDrop(event)" onkeydown="pjDescKeyDown(event)" onpaste="pjDescPaste(event)" style="border-top-left-radius:0;border-top-right-radius:0;min-height:140px;"></textarea>
+            <textarea class="pj-modal-desc pj-modal-desc-tb" id="pjModalDesc" placeholder="Descrição" oninput="pjModalDescChanged()" ondragover="pjDescDragOver(event)" ondragleave="pjDescDragLeave(event)" ondrop="pjDescDrop(event)" onkeydown="pjDescKeyDown(event)" onpaste="pjDescPaste(event)" style="border-top-left-radius:0;border-top-right-radius:0;min-height:140px;"></textarea>
             <div class="pj-modal-desc-preview pj-md" id="pjModalDescPreview" style="display:none;"></div>
           </div>
           <div id="pjModalCustomFields"></div>
@@ -2921,8 +2921,8 @@ ufw allow 3000/tcp</pre>
                    onclick="document.getElementById('pjTaskAttachFile').click()">
                 <svg class="pj-attach-dropzone-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
                 <div class="pj-attach-dropzone-text">
-                  <strong>Arraste arquivos aqui</strong>
-                  <span>ou clique para selecionar do dispositivo</span>
+                  <strong>Enviar arquivo</strong>
+                  <span>Escolha no aparelho ou arraste pra cá</span>
                 </div>
               </div>
             </div>
@@ -2933,10 +2933,10 @@ ufw allow 3000/tcp</pre>
           <div class="pj-activity-list" id="pjActivityList"></div>
           <div class="pj-reply-banner" id="pjReplyBanner" style="display:none;"></div>
           <div class="pj-comment-input-wrap">
-            <textarea class="pj-comment-input" id="pjCommentInput" placeholder="Escreva um comentário... (use @ para mencionar, ⌘V cola print)" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" onpaste="pjCommentPaste(event)"></textarea>
+            <textarea class="pj-comment-input" id="pjCommentInput" placeholder="Escreva um comentário. Use @ pra mencionar." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" onpaste="pjCommentPaste(event)"></textarea>
             <input type="file" id="pjCommentFile" style="display:none" onchange="pjCommentFileChosen(event)">
-            <button class="pj-comment-mention-btn" title="Mencionar membro (@)" onclick="pjInsertMention()" type="button">@</button>
-            <button class="pj-comment-attach-btn" title="Anexar arquivo" onclick="document.getElementById('pjCommentFile').click()" type="button">📎</button>
+            <button class="pj-comment-mention-btn" title="Mencionar membro (@)" aria-label="Mencionar membro" onclick="pjInsertMention()" type="button">@</button>
+            <button class="pj-comment-attach-btn" title="Anexar arquivo" aria-label="Anexar arquivo" onclick="document.getElementById('pjCommentFile').click()" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
           </div>
           <div class="pj-comment-actions">
             <button class="pj-comment-send" onclick="pjSendComment()" title="Enviar comentário" type="button">
@@ -2947,9 +2947,10 @@ ufw allow 3000/tcp</pre>
           <div class="pj-comment-attach-preview" id="pjCommentAttachPreview"></div>
         </div>
       </div>
-      <!-- Bottom action bar (visível só no mobile) — Fechar + Salvar e Fechar -->
+      <!-- Barra de baixo (só no celular e tablet). No celular o WhatsApp sai do topo e fica no lugar do Fechar (o X do topo já fecha) -->
       <div class="pj-modal-bottombar">
-        <button class="pj-btn pj-btn-secondary" onclick="pjCloseTaskModal()">Fechar</button>
+        <button class="pj-btn pj-btn-secondary pj-bb-close" onclick="pjCloseTaskModal()">Fechar</button>
+        <button class="pj-btn pj-btn-secondary pj-bb-wa" onclick="pjSendTaskWhatsApp(pjCurrentTaskId, this)" title="Avisar responsável e grupo no WhatsApp" aria-label="Avisar no WhatsApp"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg><span>WhatsApp</span></button>
         <button class="pj-btn pj-btn-primary" onclick="pjCloseTaskModal()">Salvar e fechar</button>
       </div>
     </div>
@@ -22489,25 +22490,13 @@ function pjOpenTagPicker(taskId, anchorEl) {
   const pop = document.createElement('div');
   pop.className = 'pj-tag-picker';
   pop.innerHTML = `
-    <input class="pj-tag-picker-search" type="text" placeholder="Buscar ou criar nova..." id="pjTagPickerInput">
+    <input class="pj-tag-picker-search" type="text" placeholder="Buscar ou criar tag" id="pjTagPickerInput">
     <div class="pj-tag-picker-list" id="pjTagPickerList"></div>
     <div class="pj-tag-picker-foot">
-      <span style="color:var(--text3);font-size:11px;">Enter cria; clique pra alternar</span>
+      <span style="color:var(--text3);font-size:11px;">Toque pra marcar ou digite pra criar.</span>
     </div>
   `;
   document.body.appendChild(pop);
-
-  // Posiciona próximo ao anchor
-  const r = anchorEl?.getBoundingClientRect?.();
-  if (r) {
-    const top = Math.min(window.innerHeight - 320, r.bottom + 6);
-    const left = Math.min(window.innerWidth - 280, r.left);
-    pop.style.top = top + 'px';
-    pop.style.left = left + 'px';
-  } else {
-    pop.style.top = '50%'; pop.style.left = '50%';
-    pop.style.transform = 'translate(-50%,-50%)';
-  }
 
   // Fecha ao clicar fora
   setTimeout(() => {
@@ -22535,7 +22524,7 @@ function pjOpenTagPicker(taskId, anchorEl) {
       </div>`;
     }
     if (!filtered.length && !q) {
-      html += `<div class="pj-tag-picker-empty">Nenhuma tag criada ainda.<br>Digite acima e dê Enter.</div>`;
+      html += `<div class="pj-tag-picker-empty">Nenhuma tag ainda. Digite o nome e confirme no teclado.</div>`;
     }
     html += filtered.map(t => {
       const on = taskTagIds.has(t.id);
@@ -22548,6 +22537,20 @@ function pjOpenTagPicker(taskId, anchorEl) {
     list.innerHTML = html;
   }
   renderList('');
+
+  // Posiciona embaixo do chip (em cima se não couber), com a altura real do balão
+  if (anchorEl?.getBoundingClientRect) {
+    const ph = pop.offsetHeight || 300;
+    pjRoomBelow(anchorEl, ph);
+    const r = anchorEl.getBoundingClientRect();
+    let top = r.bottom + 6;
+    if (top + ph > window.innerHeight - 10) top = Math.max(10, r.top - ph - 6);
+    pop.style.top = top + 'px';
+    pop.style.left = Math.min(window.innerWidth - 280, r.left) + 'px';
+  } else {
+    pop.style.top = '50%'; pop.style.left = '50%';
+    pop.style.transform = 'translate(-50%,-50%)';
+  }
   const inp = document.getElementById('pjTagPickerInput');
   inp?.focus();
   inp?.addEventListener('input', () => renderList(inp.value));
@@ -22759,7 +22762,7 @@ function pjPomoClose() {
   document.getElementById('pjPomoWidget').style.display = 'none';
 }
 function pjPomoRenderUI() {
-  const modeLabel = { focus:'🍅 Foco', short:'☕ Pausa curta', long:'🛋️ Pausa longa' };
+  const modeLabel = { focus:'Foco', short:'Pausa curta', long:'Pausa longa' };
   const modeEl = document.getElementById('pjPomoMode');
   const timerEl = document.getElementById('pjPomoTimer');
   const taskEl  = document.getElementById('pjPomoTaskName');
@@ -22768,9 +22771,9 @@ function pjPomoRenderUI() {
   if (modeEl)  modeEl.textContent  = modeLabel[_pomoState.mode] || '';
   if (timerEl) timerEl.textContent = pjPomoFmt(_pomoState.secsLeft);
   if (timerEl) timerEl.classList.toggle('running', _pomoState.running);
-  if (btnEl)   btnEl.textContent   = _pomoState.running ? '⏸ Pausar' : '▶ Iniciar';
+  if (btnEl)   btnEl.textContent   = _pomoState.running ? 'Pausar' : 'Iniciar';
   const task = _pomoState.taskId ? pjAllTasks.find(t=>t.id===_pomoState.taskId) : null;
-  if (taskEl)  taskEl.textContent  = task?.title || '—';
+  if (taskEl)  taskEl.textContent  = task?.title || '';
   if (cycleEl) cycleEl.innerHTML   = Array.from({length:4},(_,i)=>
     `<div class="pj-pomo-dot ${i < _pomoState.cycle ? 'done' : ''}"></div>`).join('');
   // Show notification permission button if not granted
@@ -22782,7 +22785,7 @@ function pjPomoRenderUI() {
 function pjPomoRequestNotif() {
   if (typeof Notification === 'undefined') return;
   Notification.requestPermission().then(perm => {
-    if (perm === 'granted') showToast('Avisos do sistema ativados!', 'ok');
+    if (perm === 'granted') showToast('success', 'Avisos do sistema ativados.');
     pjPomoRenderUI();
   });
 }
@@ -22840,7 +22843,8 @@ function pjPomoSessionEnd() {
   }
   // Notify
   try { new Notification('Fogo & Gestão', { body: _pomoState.mode==='focus'?'Hora de focar!':'Pausa! Descanse um pouco.' }); } catch(e){}
-  if (typeof showToast==='function') showToast(_pomoState.mode==='focus'?'🍅 Sessão encerrada! Hora da pausa.':'☕ Pausa acabou! Hora de focar.','ok');
+  // o modo já avançou: foco agora = a pausa acabou
+  if (typeof showToast==='function') showToast('success', _pomoState.mode==='focus'?'A pausa acabou. Hora de focar.':'Sessão encerrada. Hora da pausa.');
   pjPomoRenderUI();
 }
 
@@ -23441,10 +23445,10 @@ function pjAskAiMarkdown(text) {
 
 function pjBuildAskAi() {
   if (typeof userIsAdmin === 'function' && !userIsAdmin()) {
-    return `<div class="pj-view-header"><div class="pj-view-title">🤖 Pergunte à IA</div></div>
-      <div style="padding:40px;text-align:center;color:var(--text3);font-size:13px;">
-        <div style="font-size:36px;margin-bottom:8px;">🔒</div>
-        <div>Esta funcionalidade é restrita a administradores.</div>
+    return `<div class="pj-view-header"><div class="pj-view-title">Pergunte à IA</div></div>
+      <div style="padding:40px;text-align:center;color:var(--text2);font-size:14px;">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:14px;border:1px solid var(--border);background:var(--card);color:var(--text2);margin-bottom:12px;">${tjIco('lock', 26)}</div>
+        <div>Só administradores usam a Pergunte à IA.</div>
       </div>`;
   }
   const hasKey = !!(typeof getClaudeKey === 'function' && getClaudeKey());
@@ -23461,17 +23465,17 @@ function pjBuildAskAi() {
   return `
     <div class="pj-askai-wrap">
       <div class="pj-view-header">
-        <div class="pj-view-title">🤖 Pergunte à IA</div>
-        <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+        <div class="pj-view-title">Pergunte à IA</div>
+        <div class="pj-askai-head-r" style="margin-left:auto;display:flex;gap:8px;align-items:center;">
           <span class="pj-askai-ctxbadge" id="pjAskAiCtxBadge" title="Contexto enviado para a IA">
             ${c.tasks} tarefas · ${c.lists} listas · ${c.members} membros · ${c.clientes} clientes
           </span>
-          <button class="pj-filter-btn" onclick="pjAskAiClear()" title="Limpar conversa">🧹 Limpar</button>
+          <button class="pj-filter-btn" onclick="pjAskAiClear()" title="Limpar conversa">${tjIco('eraser', 16)}Limpar</button>
         </div>
       </div>
       <div class="pj-askai-body">
         ${!hasKey ? `<div class="pj-askai-warn">
-          ⚠️ <strong>Configure a Claude API Key</strong> em Configurações (⚙️ no cabeçalho do app) para usar esta funcionalidade.
+          <strong>Falta a chave da Claude API.</strong> Cadastre em Configurações pra usar a Pergunte à IA.
         </div>` : ''}
         <div class="pj-askai-msgs" id="pjAskAiMsgs"></div>
         <div class="pj-askai-suggest" id="pjAskAiSuggest">
@@ -23484,15 +23488,15 @@ function pjBuildAskAi() {
           <button class="pj-askai-attach" id="pjAskAiAttachBtn" title="Anexar imagem" onclick="document.getElementById('pjAskAiFileInput').click()" ${!hasKey?'disabled':''}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
           </button>
-          <textarea id="pjAskAiInput" class="pj-askai-input" rows="1" placeholder="Pergunte qualquer coisa sobre as tarefas, clientes, equipe…" ${!hasKey?'disabled':''}></textarea>
+          <textarea id="pjAskAiInput" class="pj-askai-input" rows="1" placeholder="Faça uma pergunta" ${!hasKey?'disabled':''}></textarea>
           <button class="pj-askai-send" id="pjAskAiSendBtn" onclick="pjAskAiSend()" ${!hasKey?'disabled':''}>
-            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.926A.75.75 0 004.41 8.7l8.59-1.075a.25.25 0 010 .495L4.41 9.196a.75.75 0 00-.717.535L2.279 14.66a.75.75 0 00.95.826l16-5.5a.75.75 0 000-1.418l-16-5.281z"/></svg>
+            ${tjIco('send', 16)}
             Enviar
           </button>
         </div>
         <div class="pj-askai-hint">
-          A IA recebe um snapshot atual do banco (sem dados pessoais sensíveis). Respostas em pt-BR. Modelo: Claude Haiku 4.5.
-          ${c.truncatedTasks ? `<br><span style="color:var(--warn);">⚠️ ${c.truncatedTasks} tarefas omitidas para caber no contexto (priorizei abertas e recentes).</span>` : ''}
+          A IA recebe um retrato atual do banco, sem dados pessoais sensíveis. Modelo: Claude Haiku 4.5.
+          ${c.truncatedTasks ? `<br><span class="pj-askai-trunc"><i class="pj-dot" style="background:#d97706;"></i> ${c.truncatedTasks} tarefas ficaram de fora pra caber no contexto. Entram primeiro as abertas e as recentes.</span>` : ''}
         </div>
       </div>
     </div>
@@ -23530,8 +23534,8 @@ function pjAskAiRenderMsgs() {
   if (!box) return;
   if (!window.pjAskAiHistory.length) {
     box.innerHTML = `<div class="pj-askai-empty">
-      <div class="pj-askai-empty-emoji">🤖</div>
-      <div class="pj-askai-empty-title">Olá! Posso ajudar com relatórios, status de tarefas, análises por cliente e muito mais.</div>
+      <div class="pj-askai-empty-emoji">${tjIco('bot', 26)}</div>
+      <div class="pj-askai-empty-title">Peça relatórios, status de tarefas ou um resumo por cliente.</div>
       <div class="pj-askai-empty-sub">Use uma sugestão abaixo ou digite sua pergunta.</div>
     </div>`;
     return;
@@ -23561,12 +23565,10 @@ function pjAskAiRenderMsgs() {
       }
     }
     const copyBtn = (m.role === 'bot' && !m.pending)
-      ? `<button class="pj-askai-copy" type="button" onclick="pjAskAiCopy(${idx},this)" title="Copiar resposta" aria-label="Copiar">
-           <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="10" rx="1.5"/><path d="M7 4V2.5A.5.5 0 0 1 7.5 2h5a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5H11"/></svg>
-         </button>`
+      ? `<button class="pj-askai-copy" type="button" onclick="pjAskAiCopy(${idx},this)" title="Copiar resposta" aria-label="Copiar">${tjIco('copy', 14)}</button>`
       : '';
     return `<div class="pj-askai-msg ${cls}">
-      <div class="pj-askai-avatar">${m.role==='user'?'🧑':'🤖'}</div>
+      <div class="pj-askai-avatar">${tjIco(m.role==='user'?'user':'bot', 16)}</div>
       <div class="pj-askai-bubble ${m.pending?'pending':''}">${content}${actionsHtml}${copyBtn}</div>
     </div>`;
   }).join('');
@@ -23638,7 +23640,7 @@ async function pjAskAiCopy(idx, btnEl) {
     if (btnEl) {
       btnEl.classList.add('copied');
       const orig = btnEl.innerHTML;
-      btnEl.innerHTML = `<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l3 3 7-7"/></svg>`;
+      btnEl.innerHTML = tjIco('check', 14);
       setTimeout(() => { btnEl.classList.remove('copied'); btnEl.innerHTML = orig; }, 1400);
     }
     if (typeof showToast === 'function') showToast('ok','📋','Copiado!');
@@ -23675,11 +23677,11 @@ function pjAskAiRenderScopePill() {
   const isAll = scope.type === 'all';
   const kindLabel = scope.type === 'space' ? 'Espaço' : scope.type === 'folder' ? 'Pasta' : scope.type === 'list' ? 'Lista' : '';
   const label = isAll ? 'Todos os espaços' : scope.label;
-  const kindIcon = isAll ? '🎯' : (scope.type === 'space' ? '🗂️' : scope.type === 'folder' ? '📁' : '📋');
-  const clearBtn = isAll ? '' : `<span class="pj-askai-scope-x" onclick="event.stopPropagation();pjAskAiClearScope()" title="Remover filtro">✕</span>`;
+  const kindIcon = tjIco(isAll ? 'layers' : (scope.type === 'space' ? 'layers' : scope.type === 'folder' ? 'folder' : 'list'), 14);
+  const clearBtn = isAll ? '' : `<span class="pj-askai-scope-x" onclick="event.stopPropagation();pjAskAiClearScope()" title="Remover filtro" aria-label="Remover filtro">${tjIco('x', 14)}</span>`;
   const activeCls = isAll ? '' : ' active';
   const styleColor = (!isAll && scope.color) ? ` style="--scope-color:${scope.color}"` : '';
-  const titleAttr = isAll ? 'Filtrar por espaço, pasta ou lista' : `${kindLabel}: ${scope.label} — clique pra trocar`;
+  const titleAttr = isAll ? 'Filtrar por espaço, pasta ou lista' : `${kindLabel}: ${scope.label}. Toque pra trocar`;
   bar.innerHTML = `
     <button type="button" class="pj-askai-scope-pill${activeCls}" id="pjAskAiScopeBtn"${styleColor} title="${escHtml(titleAttr)}" onclick="pjAskAiOpenScopePicker()">
       <span class="pj-askai-scope-icon">${kindIcon}</span>
@@ -23784,7 +23786,7 @@ function pjAskAiRenderScopePickerList(query) {
   // Linha "Tudo" fixa (sempre no topo, ignora busca)
   html += `
     <div class="pj-askai-scope-row pj-askai-scope-all${scope.type==='all'?' active':''}" data-scope-type="all">
-      <span class="pj-askai-scope-dot" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);"></span>
+      <span class="pj-askai-scope-dot" style="background:#9ca3af;"></span>
       <span class="pj-askai-scope-name">Todos os espaços</span>
       ${scope.type==='all' ? check : ''}
     </div>
@@ -23813,7 +23815,7 @@ function pjAskAiRenderScopePickerList(query) {
       const lname = l.name || 'Lista';
       html += `
         <div class="pj-askai-scope-row pj-askai-scope-list${isActive('list', l.id)?' active':''}" style="padding-left:32px" data-scope-type="list" data-scope-id="${attr(l.id)}" data-scope-label="${attr(lname)}" data-scope-color="${attr(spColor)}">
-          <span class="pj-askai-scope-glyph">📋</span>
+          <span class="pj-askai-scope-glyph">${tjIco('list', 14)}</span>
           <span class="pj-askai-scope-name">${escHtml(lname)}</span>
           ${isActive('list', l.id) ? check : ''}
         </div>
@@ -23827,7 +23829,7 @@ function pjAskAiRenderScopePickerList(query) {
       const fname = f.name || 'Pasta';
       html += `
         <div class="pj-askai-scope-row pj-askai-scope-folder${isActive('folder', f.id)?' active':''}" style="padding-left:32px" data-scope-type="folder" data-scope-id="${attr(f.id)}" data-scope-label="${attr(fname)}" data-scope-color="${attr(spColor)}">
-          <span class="pj-askai-scope-glyph">📁</span>
+          <span class="pj-askai-scope-glyph">${tjIco('folder', 14)}</span>
           <span class="pj-askai-scope-name">${escHtml(fname)}</span>
           ${isActive('folder', f.id) ? check : ''}
         </div>
@@ -23836,7 +23838,7 @@ function pjAskAiRenderScopePickerList(query) {
         const lname = l.name || 'Lista';
         html += `
           <div class="pj-askai-scope-row pj-askai-scope-list${isActive('list', l.id)?' active':''}" style="padding-left:48px" data-scope-type="list" data-scope-id="${attr(l.id)}" data-scope-label="${attr(lname)}" data-scope-color="${attr(spColor)}">
-            <span class="pj-askai-scope-glyph">📋</span>
+            <span class="pj-askai-scope-glyph">${tjIco('list', 14)}</span>
             <span class="pj-askai-scope-name">${escHtml(lname)}</span>
             ${isActive('list', l.id) ? check : ''}
           </div>
@@ -23939,7 +23941,7 @@ async function pjAskAiSend() {
   if (sendBtn) sendBtn.disabled = true;
 
   // Mensagem temporária
-  window.pjAskAiHistory.push({ role:'bot', text:'⏳ Pensando…', pending:true });
+  window.pjAskAiHistory.push({ role:'bot', text:'Pensando', pending:true });
   pjAskAiRenderMsgs();
 
   // Garante que o cache de comentários está quente antes de montar o contexto.
@@ -24029,14 +24031,14 @@ ${JSON.stringify(ctx)}`;
       const isAuth = res.status === 401 || type === 'authentication_error' || type === 'invalid_api_key';
       const kind = isCredit ? 'credit' : isAuth ? 'auth' : 'other';
       const nice = isCredit
-        ? '💳 **Sem crédito na Claude API.**\n\nA conta da Anthropic está sem saldo — recarregue em [console.anthropic.com/settings/billing](https://console.anthropic.com/settings/billing) pra voltar a usar a IA.\n\n_(Detalhe técnico: ' + msg + ')_'
+        ? '**Sem crédito na Claude API.**\n\nRecarregue em [console.anthropic.com/settings/billing](https://console.anthropic.com/settings/billing).\n\nDetalhe técnico: ' + msg
         : isAuth
-        ? '🔑 **Chave da Claude inválida ou expirada.**\n\nAtualize em Configurações (⚙️ no topo do app) com uma nova chave da [console.anthropic.com](https://console.anthropic.com/settings/keys).\n\n_(Detalhe técnico: ' + msg + ')_'
-        : '❌ ' + msg;
+        ? '**A chave da Claude venceu ou está errada.**\n\nTroque em Configurações por uma chave nova da [console.anthropic.com](https://console.anthropic.com/settings/keys).\n\nDetalhe técnico: ' + msg
+        : '**A IA não respondeu.** Tente de novo em instantes.\n\nDetalhe técnico: ' + msg;
       if (isCredit && typeof showToast === 'function') {
-        showToast('error','💳','Claude API sem crédito — recarregue a conta pra usar a IA.');
+        showToast('error','💳','Claude API sem crédito. Recarregue a conta pra usar a IA.');
       } else if (isAuth && typeof showToast === 'function') {
-        showToast('error','🔑','Chave da Claude inválida — atualize em Configurações.');
+        showToast('error','🔑','Chave da Claude inválida. Troque em Configurações.');
       }
       const e = new Error(nice);
       e.kind = kind;
@@ -24049,7 +24051,7 @@ ${JSON.stringify(ctx)}`;
   } catch(e) {
     window.pjAskAiHistory = window.pjAskAiHistory.filter(m => !m.pending);
     const already = e && e.kind; // ja veio formatado
-    window.pjAskAiHistory.push({ role:'bot', text: already ? e.message : ('❌ ' + (e.message || 'Erro ao chamar a IA.')) });
+    window.pjAskAiHistory.push({ role:'bot', text: already ? e.message : 'Não deu pra falar com a IA. Confira a internet e tente de novo.' });
   } finally {
     window.pjAskAiBusy = false;
     if (sendBtn) sendBtn.disabled = false;
@@ -25717,11 +25719,11 @@ function pjOpenRecurrenceMenu(ev, taskId) {
   const t = pjAllTasks.find(x => x.id === taskId);
   const cur = t?.recurrence?.pattern || null;
   pjShowPopupMenu(ev, [
-    { id:null,      label:'Sem recorrência', icon:'✕' },
-    { id:'daily',   label:'Diária',          icon:'🔁' },
-    { id:'weekly',  label:'Semanal',         icon:'🔁' },
-    { id:'monthly', label:'Mensal',          icon:'🔁' },
-    { id:'yearly',  label:'Anual',           icon:'🔁' },
+    { id:null,      label:'Sem recorrência', icon:tjIco('x', 16) },
+    { id:'daily',   label:'Diária',          icon:tjIco('repeat', 16) },
+    { id:'weekly',  label:'Semanal',         icon:tjIco('repeat', 16) },
+    { id:'monthly', label:'Mensal',          icon:tjIco('repeat', 16) },
+    { id:'yearly',  label:'Anual',           icon:tjIco('repeat', 16) },
   ], cur, (id) => pjSetRecurrence(taskId, id));
 }
 
@@ -25751,7 +25753,7 @@ function pjOpenStatusMenu(ev, taskId) {
   const _isAdmin = (typeof userIsAdmin === 'function') ? userIsAdmin() : true;
   if (_isAdmin) {
     items.push({ divider: true });
-    items.push({ id:'__edit__', label:'Editar status desta lista…', icon:'✏️' });
+    items.push({ id:'__edit__', label:'Editar status da lista', icon: tjIco('pencil', 16) });
   }
   pjShowPopupMenu(ev, items, cur, async (id) => {
     if (id === '__edit__') { if (list) pjOpenStatusEditor(list.id); return; }
@@ -25768,6 +25770,20 @@ function pjFmtDateShort(yyyymmdd) {
   const [y,m,d] = yyyymmdd.split('-');
   const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   return `${parseInt(d)} ${months[parseInt(m)-1]}`;
+}
+// Celular: se o balão (altura ph) não cabe entre o chip e a barra de baixo da janela, rola a janela
+// o que falta, no máximo até o chip encostar nas abas. Assim ele abre embaixo e não cobre os chips de cima.
+function pjRoomBelow(el, ph) {
+  if (!el || window.innerWidth > 640 || !el.closest('#pjTaskModal')) return;
+  let sc = el.parentElement;
+  while (sc && !(sc.scrollHeight > sc.clientHeight && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
+  if (!sc) return;
+  const box = (q) => document.querySelector('#pjTaskModal ' + q)?.getBoundingClientRect();
+  const topo = Math.max(sc.getBoundingClientRect().top, box('.pj-modal-mtabs')?.bottom || 0) + 8;
+  const fundo = (box('.pj-modal-bottombar')?.top || window.innerHeight) - 8;
+  const r = el.getBoundingClientRect();
+  const falta = r.bottom + 6 + ph - fundo;
+  if (falta > 0) sc.scrollTop += Math.min(falta, r.top - topo);
 }
 function pjOpenDatePicker(ev, taskId) {
   ev.stopPropagation();
@@ -25793,8 +25809,10 @@ function pjOpenDatePicker(ev, taskId) {
   pop.classList.add('open');
   // Position near trigger
   const trigger = ev.currentTarget;
+  // tamanho real (no celular o balão ocupa a largura toda e os dias têm 44px)
+  const pw = pop.offsetWidth || 300, ph = pop.offsetHeight || 360;
+  pjRoomBelow(trigger, ph);
   const r = trigger.getBoundingClientRect();
-  const pw = 300, ph = 360;
   let left = r.left;
   let top = r.bottom + 6;
   if (left + pw > window.innerWidth - 10) left = window.innerWidth - pw - 10;
@@ -25916,10 +25934,10 @@ function pjOpenTimePicker(ev, taskId) {
   pop.innerHTML = `
     <div class="pj-dp-header"><div class="pj-dp-title">Horário</div></div>
     <div style="display:flex;gap:6px;align-items:center;justify-content:center;margin-bottom:10px;">
-      <input id="pjTpHour" type="number" min="0" max="23" value="${parseInt(curH)||9}"
+      <input id="pjTpHour" type="number" inputmode="numeric" aria-label="Hora" min="0" max="23" value="${String(parseInt(curH)||9).padStart(2,'0')}"
         style="width:60px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:18px;font-weight:700;text-align:center;font-family:var(--font);">
       <span style="font-size:20px;font-weight:700;color:var(--text2);">:</span>
-      <input id="pjTpMin" type="number" min="0" max="59" value="${parseInt(curM)||0}"
+      <input id="pjTpMin" type="number" inputmode="numeric" aria-label="Minutos" min="0" max="59" value="${String(parseInt(curM)||0).padStart(2,'0')}"
         style="width:60px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:18px;font-weight:700;text-align:center;font-family:var(--font);">
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
@@ -25931,11 +25949,13 @@ function pjOpenTimePicker(ev, taskId) {
     </div>`;
   pop.classList.add('open');
   const trigger = ev.currentTarget;
+  const pw = pop.offsetWidth || 220, ph = pop.offsetHeight || 260;
+  pjRoomBelow(trigger, ph);
   const r = trigger.getBoundingClientRect();
   let left = r.left;
   let top = r.bottom + 6;
-  if (left + 220 > window.innerWidth - 10) left = window.innerWidth - 230;
-  if (top + 260 > window.innerHeight - 10) top = r.top - 266;
+  if (left + pw > window.innerWidth - 10) left = window.innerWidth - pw - 10;
+  if (top + ph > window.innerHeight - 10) top = r.top - ph - 6;
   pop.style.left = Math.max(10, left) + 'px';
   pop.style.top = Math.max(10, top) + 'px';
 }
@@ -25943,8 +25963,8 @@ function pjTpQuick(time) {
   const [h,m] = time.split(':');
   const hEl = document.getElementById('pjTpHour');
   const mEl = document.getElementById('pjTpMin');
-  if (hEl) hEl.value = parseInt(h);
-  if (mEl) mEl.value = parseInt(m);
+  if (hEl) hEl.value = h;
+  if (mEl) mEl.value = m;
 }
 async function pjTpSave(taskId) {
   const h = String(Math.max(0, Math.min(23, parseInt(document.getElementById('pjTpHour').value)||0))).padStart(2,'0');
@@ -25998,9 +26018,9 @@ function pjRenderClientPicker() {
   };
 
   const html = `
-    <h3>🏪 Cliente</h3>
+    <h3>Cliente</h3>
     <div class="pj-cli-search-wrap">
-      <input class="pj-form-input" id="pjCliSearch" placeholder="🔍 Buscar cliente..." value="${escHtml(_pjClientPickerQ)}" oninput="_pjClientPickerQ=this.value;pjRenderClientPickerListOnly()">
+      <input class="pj-form-input" id="pjCliSearch" placeholder="Buscar cliente" value="${escHtml(_pjClientPickerQ)}" oninput="_pjClientPickerQ=this.value;pjRenderClientPickerListOnly()">
     </div>
     <div class="pj-cli-list" id="pjCliList">
       <div class="pj-cli-row ${cur===null?'active':''}" onclick="pjPickClient(null)">
@@ -26014,7 +26034,7 @@ function pjRenderClientPicker() {
     </div>
     <div class="pj-form-actions">
       <button class="pj-btn pj-btn-secondary" onclick="pjCloseFormModal()">Fechar</button>
-      <button class="pj-btn pj-btn-primary" onclick="pjGoToBdNewClient()">＋ Cadastrar novo</button>
+      <button class="pj-btn pj-btn-primary" onclick="pjGoToBdNewClient()" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;">${tjIco('plus', 16, 2)}Cadastrar novo</button>
     </div>`;
   pjOpenFormModal(html);
   setTimeout(() => {
@@ -26161,9 +26181,10 @@ function pjOpenPriorityMenu(ev, taskId) {
   const t = pjAllTasks.find(x => x.id === taskId);
   if (!t) return;
   const cur = t.priority || null;
-  const colorMap = { urgent:'#ef4444', high:'#f97316', normal:'#6366f1', low:'#94a3b8' };
-  const opts = [{ id:null, label:'Sem prioridade', icon:'✕' }];
-  PJ_PRIORITIES.forEach(p => opts.push({ id:p.id, label:p.label, icon:'⚑', color:colorMap[p.id] }));
+  // bolinha igual à do chip: urgente vermelha, alta âmbar, normal e baixa cinza
+  const colorMap = { urgent:'#c9353a', high:'#d97706' };
+  const opts = [{ id:null, label:'Sem prioridade', icon:tjIco('x', 16) }];
+  PJ_PRIORITIES.forEach(p => opts.push({ id:p.id, label:p.label, icon:'●', color:colorMap[p.id] || '#9ca3af' }));
   pjShowPopupMenu(ev, opts, cur, async (id) => {
     await pjUpdateTask(taskId, { priority: id });
     const t2 = pjAllTasks.find(x => x.id === taskId);
@@ -26298,6 +26319,40 @@ async function pjSpawnNextRecurrence(t) {
 }
 
 // ── Task Modal ──────────────────────────────────────────
+// Ícones de traço (lucide) da janela da tarefa, do registro e da Pergunte à IA.
+// Os que faltam aqui vêm do FG_ICO (painel).
+const TJ_ICO = {
+  user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  flag: '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/>',
+  store: '<path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"/>',
+  timer: '<line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/>',
+  clip: '<path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',
+  swap: '<path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/>',
+  reply: '<polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>',
+  smile: '<path d="M22 11v1a10 10 0 1 1-9-10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/><path d="M16 5h6"/><path d="M19 2v6"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  plusc: '<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/>',
+  file: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>',
+  bot: '<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
+  eraser: '<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>',
+  layers: '<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
+  list: '<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
+  lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  type: '<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/>',
+  hash: '<line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+  pin: '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+  film: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/>',
+  music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  archive: '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>',
+};
+function tjIco(k, s = 16, w = 1.75) {
+  const p = TJ_ICO[k] || (typeof FG_ICO !== 'undefined' && FG_ICO[k]) || '';
+  return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+}
+// Ícone de chip da janela: quadrado de 16 alinhado no meio, cor de apoio
+const tjMetaIco = (k) => `<span class="pj-meta-ic" style="display:inline-flex;flex-shrink:0;color:var(--text2);">${tjIco(k)}</span>`;
+
 // Celular: alterna entre os dados da tarefa e a conversa (no desktop as duas colunas aparecem juntas)
 function pjModalMobileTab(tab) {
   const modal = document.getElementById('pjTaskModal');
@@ -26378,6 +26433,74 @@ async function pjOpenTask(taskId) {
     });
 }
 
+// Seção Campos da janela da tarefa (também redesenhada pelo salvar automático do editor de campos)
+function pjModalFieldsHtml(task, list) {
+  const fields = list?.customFields || [];
+  let fieldsHtml = '';
+  if (fields.length) {
+    fieldsHtml = `<div class="pj-modal-section-title" style="display:flex;align-items:center;gap:8px;">
+      Campos
+      <button class="pj-icon-btn pj-fields-manage" style="font-size:12px;padding:3px 9px;display:inline-flex;align-items:center;gap:6px;" title="Gerenciar campos (adicionar, renomear, excluir)" onclick="pjOpenFieldsEditor('${list.id}')">${tjIco('sliders', 14)}Gerenciar</button>
+    </div><div class="pj-fields-grid">`;
+    fields.forEach(f => {
+      // Pula campo cliente se a lista tem noClient=true (lista interna sem cliente)
+      if (f.type === 'client' && list?.noClient) return;
+      const val = task.customFieldValues?.[f.id] || '';
+      let input;
+      if (f.type === 'client') {
+        const names = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : Object.keys((typeof clients!=='undefined'&&clients)||{}).sort();
+        // Garante que valor atual (mesmo se cliente foi removido da BD) ainda apareça
+        const allOpts = val && !names.includes(val) ? [val, ...names] : names;
+        const missingCls = val ? '' : ' pj-field-value-missing';
+        input = `<select class="pj-field-value${missingCls}" onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">
+          <option value="">Selecione o cliente</option>
+          ${allOpts.map(n => `<option ${n===val?'selected':''}>${escHtml(n)}</option>`).join('')}
+        </select>`;
+      } else if (f.type === 'select') {
+        input = `<select class="pj-field-value" onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">
+          <option value="">Selecione</option>
+          ${(f.options||[]).map(o => `<option ${o===val?'selected':''}>${escHtml(o)}</option>`).join('')}
+        </select>`;
+      } else if (f.type === 'link') {
+        input = `<div style="display:flex;align-items:center;gap:6px;">
+          <input class="pj-field-value" type="url" value="${escHtml(String(val))}" placeholder="https://"
+            style="flex:1;" onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">
+          ${val ? `<a href="${escHtml(String(val))}" target="_blank" rel="noopener" class="pj-field-link-btn" title="Abrir link">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13"><path d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/><path d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/></svg>
+          </a>` : ''}
+        </div>`;
+      } else if (f.type === 'address') {
+        const mapsUrl = val ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(val))}` : '';
+        const addrId = `pjAddr_${task.id}_${f.id}`;
+        input = `<div class="pj-addr-wrap">
+          <input class="pj-field-value pj-addr-input" id="${addrId}" type="text" value="${escHtml(String(val))}" placeholder="Rua, número e cidade"
+            autocomplete="off"
+            oninput="pjAddrInput(event,'${task.id}','${f.id}')"
+            onblur="setTimeout(()=>pjAddrHideSugg('${addrId}'),200)">
+          <div class="pj-addr-suggestions" id="${addrId}_sugg"></div>
+          ${val ? `<a href="${mapsUrl}" target="_blank" rel="noopener" class="pj-field-link-btn" title="Ver no Google Maps" style="background:rgba(239,68,68,.1);color:#ef4444;flex-shrink:0;">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+          </a>` : ''}
+        </div>`;
+      } else {
+        const t = f.type==='date'?'date':(f.type==='number'?'number':'text');
+        input = `<input class="pj-field-value" type="${t}" value="${escHtml(String(val))}"
+                 onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">`;
+      }
+      const requiredMark = f.type === 'client' ? `<span class="pj-field-required" title="Obrigatório">*</span>` : '';
+      fieldsHtml += `<div class="pj-field-item${f.type==='client'?' pj-field-item-required':''}">
+        <div class="pj-field-label">${escHtml(f.name)}${requiredMark}<button class="pj-field-quick-del" title="Remover este campo de todas as tarefas" onclick="pjQuickRemoveField('${list.id}','${f.id}')">×</button></div>${input}
+      </div>`;
+    });
+    fieldsHtml += '</div>';
+  } else if (list) {
+    fieldsHtml = `<div class="pj-modal-section-title" style="display:flex;align-items:center;gap:8px;">
+      Campos
+      <button class="pj-btn pj-btn-secondary pj-fields-manage" style="font-size:11px;padding:4px 10px;display:inline-flex;align-items:center;gap:6px;" onclick="pjOpenFieldsEditor('${list.id}')">${tjIco('plus', 14)}Adicionar campo</button>
+    </div>`;
+  }
+  return fieldsHtml;
+}
 function pjRenderTaskModal(task) {
   const list = pjLists.find(l => l.id === task.listId);
   const sp   = pjSpaces.find(s => s.id === task.spaceId);
@@ -26392,9 +26515,9 @@ function pjRenderTaskModal(task) {
     if (alertEl && pjTaskHasClient(task)) alertEl.style.display = 'none';
   } catch(_){}
 
-  document.getElementById('pjModalSpaceName').textContent = sp?.name || '—';
+  document.getElementById('pjModalSpaceName').textContent = sp?.name || '';
   const listEl = document.getElementById('pjModalListName');
-  listEl.textContent = list?.name || '—';
+  listEl.textContent = list?.name || '';
 
   const titleEl = document.getElementById('pjModalTitle');
   titleEl.value = task.title || '';
@@ -26418,24 +26541,32 @@ function pjRenderTaskModal(task) {
       <span style="width:10px;height:10px;border-radius:50%;background:${st.color};display:inline-block;"></span>
       <span>${escHtml(st.name)}</span>
     </div>
-    <div class="pj-meta-item" onclick="pjOpenAssignModal('${task.id}')">
-      👤 ${(task.assignees||[]).length > 0 ? (task.assignees||[]).map(u=>pjAvatarHtml(u)).join('') : 'Responsável'}
+    <div class="pj-meta-item" title="Responsável" onclick="pjOpenAssignModal('${task.id}')">
+      ${(() => {
+        const asg = task.assignees || [];
+        if (!asg.length) return `${tjMetaIco('user')}<span class="pj-meta-ph">Responsável</span>`;
+        // avatar + primeiro nome; com mais de um, avatares sobrepostos e "+N"
+        const m = pjMembers.find(x => x.uid === asg[0] || x.id === asg[0] || x.email === asg[0]);
+        const nome = String(m?.name || m?.email?.split('@')[0] || '').trim().split(/\s+/)[0];
+        const mais = asg.length > 1 ? ` +${asg.length - 1}` : '';
+        return `<span class="pj-meta-avs">${asg.slice(0, 3).map(u => pjAvatarHtml(u)).join('')}</span><span>${escHtml(nome)}${mais}</span>`;
+      })()}
     </div>
     <div class="pj-meta-item" title="Data de entrega" onclick="pjOpenDatePicker(event,'${task.id}')">
-      📅
+      ${tjMetaIco('calendar')}
       <button class="pj-meta-date-btn ${task.dueDate?'':'empty'}" type="button">${task.dueDate ? pjFmtDateShort(task.dueDate) : 'Data'}</button>
     </div>
     <div class="pj-meta-item" title="Horário de entrega" onclick="pjOpenTimePicker(event,'${task.id}')">
-      🕐
+      ${tjMetaIco('clock')}
       <button class="pj-meta-date-btn ${task.dueTime?'':'empty'}" type="button">${task.dueTime || 'Hora'}</button>
     </div>
-    <div class="pj-meta-item" onclick="pjOpenPriorityMenu(event,'${task.id}')">
-      ${task.priority ? `<span class="pj-priority ${task.priority}">${PJ_PRIORITIES.find(p=>p.id===task.priority)?.label}</span>` : '🏳️ Prioridade'}
+    <div class="pj-meta-item" title="Prioridade" onclick="pjOpenPriorityMenu(event,'${task.id}')">
+      ${task.priority ? `<span class="pj-priority ${task.priority}">${PJ_PRIORITIES.find(p=>p.id===task.priority)?.label}</span>` : `${tjMetaIco('flag')}<span class="pj-meta-ph">Prioridade</span>`}
     </div>
     <div class="pj-meta-item" onclick="pjOpenClientMenu(event,'${task.id}')" title="Cliente associado (puxa da Base de Dados)">
       ${(() => {
         const cli = pjResolveTaskClient(task);
-        if (!cli) return '🏪 Cliente';
+        if (!cli) return `${tjMetaIco('store')}<span class="pj-meta-ph">Cliente</span>`;
         const logo = (typeof getClientLogo === 'function') ? getClientLogo(cli) : null;
         const color = (typeof getClientColor === 'function') ? getClientColor(cli) : null;
         const dot = logo
@@ -26445,84 +26576,19 @@ function pjRenderTaskModal(task) {
       })()}
     </div>
     <div class="pj-meta-item" onclick="pjOpenRecurrenceMenu(event,'${task.id}')" title="Repete ao concluir">
-      🔁 ${task.recurrence?.pattern ? pjRecurrenceLabel(task.recurrence) : 'Recorrência'}
+      ${tjMetaIco('repeat')}<span${task.recurrence?.pattern ? '' : ' class="pj-meta-ph"'}>${task.recurrence?.pattern ? pjRecurrenceLabel(task.recurrence) : 'Recorrência'}</span>
     </div>
     <div class="pj-meta-item" onclick="pjPomoOpen('${task.id}')" title="Iniciar sessão Pomodoro nesta tarefa">
-      🍅 Pomodoro
+      ${tjMetaIco('timer')}<span>Pomodoro</span>
     </div>
     <div class="pj-meta-item pj-meta-tags" onclick="pjOpenTagPicker('${task.id}',this)" title="Tags da tarefa">
-      <span>🏷️</span>
-      ${(Array.isArray(task.tags) && task.tags.length)
-        ? pjTaskTagsHtml(task, { small:true, removable:true, taskId: task.id })
-        : '<span style="color:var(--text3);font-size:12px;">Tags</span>'}
+      ${tjMetaIco('tag')}
+      ${pjTaskTagsHtml(task, { small:true, removable:true, taskId: task.id })
+        || '<span style="color:var(--text3);font-size:12px;">Tags</span>'}
     </div>`;
 
   // Custom fields
-  const fields = list?.customFields || [];
-  let fieldsHtml = '';
-  if (fields.length) {
-    fieldsHtml = `<div class="pj-modal-section-title" style="display:flex;align-items:center;gap:8px;">
-      Campos
-      <button class="pj-icon-btn" style="font-size:12px;padding:3px 9px;" title="Gerenciar campos (adicionar, renomear, excluir)" onclick="pjOpenFieldsEditor('${list.id}')">⚙️ Gerenciar</button>
-    </div><div class="pj-fields-grid">`;
-    fields.forEach(f => {
-      // Pula campo cliente se a lista tem noClient=true (lista interna sem cliente)
-      if (f.type === 'client' && list?.noClient) return;
-      const val = task.customFieldValues?.[f.id] || '';
-      let input;
-      if (f.type === 'client') {
-        const names = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : Object.keys((typeof clients!=='undefined'&&clients)||{}).sort();
-        // Garante que valor atual (mesmo se cliente foi removido da BD) ainda apareça
-        const allOpts = val && !names.includes(val) ? [val, ...names] : names;
-        const missingCls = val ? '' : ' pj-field-value-missing';
-        input = `<select class="pj-field-value${missingCls}" onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">
-          <option value="">— Selecione (obrigatório) —</option>
-          ${allOpts.map(n => `<option ${n===val?'selected':''}>${escHtml(n)}</option>`).join('')}
-        </select>`;
-      } else if (f.type === 'select') {
-        input = `<select class="pj-field-value" onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">
-          <option value="">—</option>
-          ${(f.options||[]).map(o => `<option ${o===val?'selected':''}>${escHtml(o)}</option>`).join('')}
-        </select>`;
-      } else if (f.type === 'link') {
-        input = `<div style="display:flex;align-items:center;gap:6px;">
-          <input class="pj-field-value" type="url" value="${escHtml(String(val))}" placeholder="https://..."
-            style="flex:1;" onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">
-          ${val ? `<a href="${escHtml(String(val))}" target="_blank" rel="noopener" class="pj-field-link-btn" title="Abrir link">
-            <svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13"><path d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/><path d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/></svg>
-          </a>` : ''}
-        </div>`;
-      } else if (f.type === 'address') {
-        const mapsUrl = val ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(val))}` : '';
-        const addrId = `pjAddr_${task.id}_${f.id}`;
-        input = `<div class="pj-addr-wrap">
-          <input class="pj-field-value pj-addr-input" id="${addrId}" type="text" value="${escHtml(String(val))}" placeholder="Rua, número, cidade..."
-            autocomplete="off"
-            oninput="pjAddrInput(event,'${task.id}','${f.id}')"
-            onblur="setTimeout(()=>pjAddrHideSugg('${addrId}'),200)">
-          <div class="pj-addr-suggestions" id="${addrId}_sugg"></div>
-          ${val ? `<a href="${mapsUrl}" target="_blank" rel="noopener" class="pj-field-link-btn" title="Ver no Google Maps" style="background:rgba(239,68,68,.1);color:#ef4444;flex-shrink:0;">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
-          </a>` : ''}
-        </div>`;
-      } else {
-        const t = f.type==='date'?'date':(f.type==='number'?'number':'text');
-        input = `<input class="pj-field-value" type="${t}" value="${escHtml(String(val))}"
-                 onchange="pjUpdateTaskField('${task.id}','${f.id}',this.value)">`;
-      }
-      const requiredMark = f.type === 'client' ? `<span class="pj-field-required" title="Obrigatório">*</span>` : '';
-      fieldsHtml += `<div class="pj-field-item${f.type==='client'?' pj-field-item-required':''}">
-        <div class="pj-field-label">${escHtml(f.name)}${requiredMark}<button class="pj-field-quick-del" title="Remover este campo de todas as tarefas" onclick="pjQuickRemoveField('${list.id}','${f.id}')">×</button></div>${input}
-      </div>`;
-    });
-    fieldsHtml += '</div>';
-  } else if (list) {
-    fieldsHtml = `<div class="pj-modal-section-title" style="display:flex;align-items:center;gap:8px;">
-      Campos
-      <button class="pj-btn pj-btn-secondary" style="font-size:11px;padding:4px 10px;" onclick="pjOpenFieldsEditor('${list.id}')">＋ Adicionar campo</button>
-    </div>`;
-  }
-  document.getElementById('pjModalCustomFields').innerHTML = fieldsHtml;
+  document.getElementById('pjModalCustomFields').innerHTML = pjModalFieldsHtml(task, list);
 
   // Anexos da tarefa: abre auto se já tiver anexos
   const hasAttach = Array.isArray(task.attachments) && task.attachments.length > 0;
@@ -26779,15 +26845,15 @@ function pjFmtBytes(b) {
 function pjAttachIconFor(name, type) {
   const ext = (name || '').split('.').pop()?.toLowerCase() || '';
   const t = (type || '').toLowerCase();
-  if (t.startsWith('video/')) return { icon:'🎬', cls:'video', label:'Vídeo' };
-  if (t.startsWith('audio/')) return { icon:'🎵', cls:'audio', label:'Áudio' };
-  if (t.includes('pdf') || ext === 'pdf') return { icon:'📕', cls:'pdf', label:'PDF' };
-  if (['doc','docx'].includes(ext)) return { icon:'📘', cls:'doc', label:'DOC' };
-  if (['xls','xlsx','csv'].includes(ext)) return { icon:'📗', cls:'xls', label:'XLS' };
-  if (['ppt','pptx'].includes(ext)) return { icon:'📙', cls:'ppt', label:'PPT' };
-  if (['zip','rar','7z','tar','gz'].includes(ext)) return { icon:'🗜️', cls:'zip', label:'ZIP' };
-  if (['txt','md'].includes(ext)) return { icon:'📝', cls:'txt', label:'TXT' };
-  return { icon:'📄', cls:'file', label:ext.toUpperCase() || 'Arquivo' };
+  if (t.startsWith('video/')) return { icon:tjIco('film', 20), cls:'video', label:'Vídeo' };
+  if (t.startsWith('audio/')) return { icon:tjIco('music', 20), cls:'audio', label:'Áudio' };
+  if (t.includes('pdf') || ext === 'pdf') return { icon:tjIco('file', 20), cls:'pdf', label:'PDF' };
+  if (['doc','docx'].includes(ext)) return { icon:tjIco('file', 20), cls:'doc', label:'DOC' };
+  if (['xls','xlsx','csv'].includes(ext)) return { icon:tjIco('file', 20), cls:'xls', label:'XLS' };
+  if (['ppt','pptx'].includes(ext)) return { icon:tjIco('file', 20), cls:'ppt', label:'PPT' };
+  if (['zip','rar','7z','tar','gz'].includes(ext)) return { icon:tjIco('archive', 20), cls:'zip', label:'ZIP' };
+  if (['txt','md'].includes(ext)) return { icon:tjIco('file', 20), cls:'txt', label:'TXT' };
+  return { icon:tjIco('file', 20), cls:'file', label:ext.toUpperCase() || 'Arquivo' };
 }
 
 function pjRenderTaskAttachments(taskId) {
@@ -27236,17 +27302,20 @@ function pjConfirmDanger(opts) {
     if (!document.getElementById('pjCdKeyframes')) {
       const kf = document.createElement('style');
       kf.id = 'pjCdKeyframes';
-      kf.textContent = '@keyframes pjCdFade{from{opacity:0}to{opacity:1}}@keyframes pjCdIn{from{transform:scale(.9) translateY(6px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}';
+      // foco sem anel: só a borda escurece
+      kf.textContent = '@keyframes pjCdFade{from{opacity:0}to{opacity:1}}@keyframes pjCdIn{from{transform:scale(.9) translateY(6px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}'
+        + '[data-pj-confirm-danger] [role="alertdialog"] button[type="button"]:focus-visible{outline:none!important;border-color:var(--text,#1a1d23)!important}';
       document.head.appendChild(kf);
     }
     const done = (v) => { overlay.remove(); document.removeEventListener('keydown', onKey); resolve(v); };
-    const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); done(false); } if (e.key === 'Enter') { e.preventDefault(); done(true); } };
+    // Enter só confirma com o foco no botão de confirmar (o foco começa no Cancelar)
+    const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); done(false); } if (e.key === 'Enter' && document.activeElement?.hasAttribute('data-pj-confirm')) { e.preventDefault(); done(true); } };
     document.addEventListener('keydown', onKey);
     overlay.addEventListener('click', (e) => { if (e.target === overlay) done(false); });
     box.querySelector('[data-pj-cancel]').addEventListener('click', () => done(false));
     box.querySelector('[data-pj-confirm]').addEventListener('click', () => done(true));
     (document.body || document.documentElement).appendChild(overlay);
-    setTimeout(() => box.querySelector('[data-pj-confirm]')?.focus(), 30);
+    setTimeout(() => box.querySelector('[data-pj-cancel]')?.focus(), 30);
   });
 }
 
@@ -27408,7 +27477,7 @@ function pjRenderActivityComment(c, isReply) {
     const isImg = (a.type||'').startsWith('image/');
     attachHtml = `<div class="pj-comment-attach">${isImg
       ? `<img src="${src}" alt="${safeName}" loading="lazy" onclick="event.stopPropagation();pjOpenLightbox('${safeSrc}','${safeName}')">`
-      : `<button type="button" class="pj-comment-attach-doc" onclick="event.stopPropagation();pjDownloadFile('${safeSrc}','${safeNameJs}')">📄 ${escHtml(a.name||'Arquivo')}</button>`}${canDel
+      : `<button type="button" class="pj-comment-attach-doc" onclick="event.stopPropagation();pjDownloadFile('${safeSrc}','${safeNameJs}')" style="display:inline-flex;align-items:center;gap:6px;">${tjIco('file', 16)}${escHtml(a.name||'Arquivo')}</button>`}${canDel
       ? `<button type="button" class="pj-comment-attach-del" onclick="event.stopPropagation();pjRemoveCommentAttachment('${c.id}')" aria-label="Remover ${isImg?'foto':'arquivo'}" title="Remover ${isImg?'foto':'arquivo'}">×</button>` : ''}</div>`;
   }
   const reactions = c.reactions || {};
@@ -27422,18 +27491,18 @@ function pjRenderActivityComment(c, isReply) {
     ? `<div class="pj-comment-replies">${replies.map(r => pjRenderActivityComment(r, true)).join('')}</div>` : '';
   // Estilo sutil pra mensagens históricas (importadas de ocorrência anterior)
   const histClass = c.historical ? ' pj-historical' : '';
-  const histStyle = c.historical ? 'style="opacity:0.78;border-left:2px solid rgba(99,102,241,.35);padding-left:10px;margin-left:-12px;"' : '';
+  const histStyle = c.historical ? 'style="opacity:0.78;border-left:2px solid var(--border);padding-left:10px;margin-left:-12px;"' : '';
   return `<div class="pj-activity-item ${isReply?'reply':''}${histClass}" ${histStyle}>
     ${pjAvatarHtml(c.userId)}
     <div style="flex:1;min-width:0;">
-      <div class="pj-activity-text"><strong>${escHtml(name)}</strong>${c.historical?' <span style="font-size:9.5px;color:var(--accent);font-weight:600;background:rgba(99,102,241,.1);padding:1px 6px;border-radius:8px;margin-left:4px;">↪ histórico</span>':''} <span class="pj-md">${pjMd(c.text||'')}</span></div>
+      <div class="pj-activity-text"><strong>${escHtml(name)}</strong>${c.historical?' <span class="pj-hist-pill" style="font-size:11px;color:var(--text2);font-weight:600;background:var(--card);border:1px solid var(--border);padding:0 6px;border-radius:999px;margin-left:4px;">histórico</span>':''} <span class="pj-md">${pjMd(c.text||'')}</span></div>
       ${attachHtml}
       ${reacHtml}
       <div class="pj-comment-actions">
         <span class="pj-activity-time">${time}</span>
-        ${!isReply?`<button onclick="pjStartReply('${c.id}')">↩ Responder</button>`:''}
-        <button onclick="pjShowReactionPicker(event,'${c.id}')">😊 Reagir</button>
-        ${canDel ? `<button class="pj-comment-del" onclick="pjDeleteComment('${c.id}')">🗑 Excluir</button>` : ''}
+        ${!isReply?`<button class="pj-cact" aria-label="Responder" onclick="pjStartReply('${c.id}')" style="display:inline-flex;align-items:center;gap:4px;">${tjIco('reply', 15)}Responder</button>`:''}
+        <button class="pj-cact" aria-label="Reagir" onclick="pjShowReactionPicker(event,'${c.id}')" style="display:inline-flex;align-items:center;gap:4px;">${tjIco('smile', 15)}Reagir</button>
+        ${canDel ? `<button class="pj-cact pj-comment-del" aria-label="Excluir comentário" onclick="pjDeleteComment('${c.id}')" style="display:inline-flex;align-items:center;gap:4px;">${tjIco('trash', 15)}Excluir</button>` : ''}
       </div>
       ${repliesHtml}
     </div>
@@ -27523,34 +27592,34 @@ function pjRenderActivityLogItem(a) {
   const time = a.ts ? pjRelTime(new Date(a.ts)) : '';
   const PRIO_LABEL = { urgent:'Urgente', high:'Alta', medium:'Média', low:'Baixa' };
 
-  let icon = '✏️';
+  let icon = 'pencil';
   let body = '';
 
   if (a.type === 'status') {
-    icon = '🔀';
-    const fromTxt = a.fromName ? `<span class="pj-log-pill" style="--c:${a.fromColor||'#94a3b8'}">${escHtml(a.fromName)}</span>` : '<em>—</em>';
-    const toTxt   = a.toName   ? `<span class="pj-log-pill" style="--c:${a.toColor||'#94a3b8'}">${escHtml(a.toName)}</span>`     : '<em>—</em>';
+    icon = 'swap';
+    const fromTxt = a.fromName ? `<span class="pj-log-pill" style="--c:${a.fromColor||'#94a3b8'}">${escHtml(a.fromName)}</span>` : '<em>sem status</em>';
+    const toTxt   = a.toName   ? `<span class="pj-log-pill" style="--c:${a.toColor||'#94a3b8'}">${escHtml(a.toName)}</span>`     : '<em>sem status</em>';
     body = `mudou status de ${fromTxt} pra ${toTxt}`;
   } else if (a.type === 'priority') {
-    icon = '🚩';
+    icon = 'flag';
     const fromTxt = a.from ? `<span class="pj-priority ${a.from}">${PRIO_LABEL[a.from]||a.from}</span>` : '<em>nenhuma</em>';
     const toTxt   = a.to   ? `<span class="pj-priority ${a.to}">${PRIO_LABEL[a.to]||a.to}</span>`         : '<em>nenhuma</em>';
     body = `mudou prioridade de ${fromTxt} pra ${toTxt}`;
   } else if (a.type === 'due') {
-    icon = '📅';
+    icon = 'calendar';
     const fromTxt = a.from ? `<strong>${escHtml(typeof pjFmtDateShort==='function' ? pjFmtDateShort(a.from) : a.from)}</strong>` : '<em>sem data</em>';
     const toTxt   = a.to   ? `<strong>${escHtml(typeof pjFmtDateShort==='function' ? pjFmtDateShort(a.to)   : a.to)}</strong>`   : '<em>sem data</em>';
     body = `mudou vencimento de ${fromTxt} pra ${toTxt}`;
   } else if (a.type === 'duetime') {
-    icon = '🕐';
-    const fromTxt = a.from ? `<strong>${escHtml(a.from)}</strong>` : '<em>—</em>';
-    const toTxt   = a.to   ? `<strong>${escHtml(a.to)}</strong>`   : '<em>—</em>';
+    icon = 'clock';
+    const fromTxt = a.from ? `<strong>${escHtml(a.from)}</strong>` : '<em>sem horário</em>';
+    const toTxt   = a.to   ? `<strong>${escHtml(a.to)}</strong>`   : '<em>sem horário</em>';
     body = `ajustou horário de ${fromTxt} pra ${toTxt}`;
   } else if (a.type === 'title') {
-    icon = '✏️';
+    icon = 'pencil';
     body = `renomeou para <strong>${escHtml(a.to||'(vazio)')}</strong>`;
   } else if (a.type === 'assignee') {
-    icon = '👤';
+    icon = 'user';
     const added = (a.added||[]).map(uid => {
       const mm = pjMembers.find(x => x.uid === uid);
       return `<strong>${escHtml(mm?.name || mm?.email || 'alguém')}</strong>`;
@@ -27564,10 +27633,10 @@ function pjRenderActivityLogItem(a) {
     if (removed.length) parts.push(`removeu ${removed.join(', ')}`);
     body = parts.join(' e ') || 'mexeu nas atribuições';
   } else if (a.type === 'created') {
-    icon = '✨';
+    icon = 'plusc';
     body = 'criou a tarefa';
   } else if (a.type === 'attach') {
-    icon = '📎';
+    icon = 'clip';
     if (a.action === 'add') body = `anexou <strong>${escHtml(a.name||'arquivo')}</strong>`;
     else if (a.action === 'remove') body = `removeu o anexo <strong>${escHtml(a.name||'arquivo')}</strong>`;
     else body = `mexeu nos anexos`;
@@ -27576,7 +27645,7 @@ function pjRenderActivityLogItem(a) {
   }
 
   return `<div class="pj-activity-log-item" title="${time}">
-    <span class="pj-activity-log-icon" aria-hidden="true">${icon}</span>
+    <span class="pj-activity-log-icon" aria-hidden="true">${tjIco(icon, 14)}</span>
     <span class="pj-activity-log-body">
       <strong>${escHtml(who)}</strong> ${body}
     </span>
@@ -27626,9 +27695,9 @@ function pjRenderActivity() {
   }).join('');
 
   el.innerHTML = items || `<div class="pj-activity-empty">
-    <span class="pj-activity-empty-icon">💬</span>
+    <span class="pj-activity-empty-icon">${tjIco('msg', 22)}</span>
     <span class="pj-activity-empty-title">Sem atividade ainda</span>
-    <span>Escreva um comentário para iniciar</span>
+    <span>Escreva o primeiro comentário.</span>
   </div>`;
   // Contador da aba "Conversa" (celular): comentários + respostas dessa tarefa
   const cnt = document.getElementById('pjMTabCount');
@@ -27642,7 +27711,7 @@ function pjRenderActivity() {
     if (banner) {
       const m = target ? pjMembers.find(mm => mm.uid === target.userId) : null;
       banner.style.display = target ? 'flex' : 'none';
-      if (target) banner.innerHTML = `↩ Respondendo a <strong>${escHtml(m?.name||m?.email||'Alguém')}</strong> <button onclick="pjCancelReply()" title="Cancelar">×</button>`;
+      if (target) banner.innerHTML = `${tjIco('reply', 15)} Respondendo a <strong>${escHtml(m?.name||m?.email||'Alguém')}</strong> <button onclick="pjCancelReply()" title="Cancelar resposta" aria-label="Cancelar resposta">${tjIco('x', 16)}</button>`;
     }
   } else {
     const banner = document.getElementById('pjReplyBanner');
@@ -28494,7 +28563,8 @@ async function pjDuplicateTask(taskId) {
 async function pjDeleteTaskModal(taskId) {
   if (!taskId) return;
   const task = pjAllTasks.find(t => t.id === taskId);
-  if (!confirm(`Excluir "${task?.title||'esta tarefa'}"? Esta ação não pode ser desfeita.`)) return;
+  const ok = await pjConfirmDanger({ title: 'Excluir tarefa', message: `Excluir "${task?.title||'esta tarefa'}"? Não dá pra desfazer.`, confirmLabel: 'Excluir' });
+  if (!ok) return;
   try {
     await pjC('pj_tasks').doc(taskId).delete();
     pjAllTasks = pjAllTasks.filter(t => t.id !== taskId);
@@ -28529,7 +28599,7 @@ async function pjCyclePriority(taskId) {
 function pjOpenAssignModal(taskId) {
   const task = pjAllTasks.find(t=>t.id===taskId); if (!task) return;
   const assigned = task.assignees || [];
-  const html = `<h3>👤 Responsáveis</h3>
+  const html = `<h3>Responsáveis</h3>
     <div class="pj-assignee-list">
     ${pjMembers.map(m=>`
       <label class="pj-assignee-row">
@@ -28971,13 +29041,13 @@ function pjOpenFieldsEditor(listId) {
   const list = pjLists.find(l=>l.id===listId); if(!list)return;
   const fields = list.customFields || [];
   const CF_TYPES = [
-    { id:'text',    label:'Texto',            icon:'T',  color:'#6366f1' },
-    { id:'number',  label:'Número',            icon:'#',  color:'#10b981' },
-    { id:'date',    label:'Data',              icon:'📅', color:'#f59e0b' },
-    { id:'link',    label:'Link / URL',        icon:'🔗', color:'#3b82f6' },
-    { id:'address', label:'Endereço',          icon:'📍', color:'#ef4444' },
-    { id:'client',  label:'Cliente (da base)', icon:'🏢', color:'#8b5cf6' },
-    { id:'select',  label:'Lista de opções',   icon:'≡',  color:'#a855f7' },
+    { id:'text',    label:'Texto',            icon:tjIco('type'),     color:'#6366f1' },
+    { id:'number',  label:'Número',            icon:tjIco('hash'),     color:'#10b981' },
+    { id:'date',    label:'Data',              icon:tjIco('calendar'), color:'#f59e0b' },
+    { id:'link',    label:'Link / URL',        icon:tjIco('link'),     color:'#3b82f6' },
+    { id:'address', label:'Endereço',          icon:tjIco('pin'),      color:'#ef4444' },
+    { id:'client',  label:'Cliente (da base)', icon:tjIco('store'),    color:'#8b5cf6' },
+    { id:'select',  label:'Lista de opções',   icon:tjIco('list'),     color:'#a855f7' },
   ];
   window._cfTypes = CF_TYPES;
 
@@ -28990,33 +29060,30 @@ function pjOpenFieldsEditor(listId) {
         ${t.icon} ${t.label}
         <svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor" style="opacity:.5"><path d="M2 4l4 4 4-4z"/></svg>
       </button>
-      <button class="pj-field-del-btn" title="Remover campo" onclick="(function(b){b.closest('.pj-field-edit-row').remove();pjAutoSaveFields('${listId}');})(this)">
-        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-      </button>
-      <input class="pj-field-options-input" value="${escHtml((options||[]).join(', '))}" placeholder="opção1, opção2, opção3..." style="${type==='select'?'':'display:none;'}" title="Opções separadas por vírgula" oninput="pjAutoSaveFields('${listId}')">
+      <button class="pj-field-del-btn" title="Remover campo" aria-label="Remover campo" onclick="(function(b){b.closest('.pj-field-edit-row').remove();pjAutoSaveFields('${listId}');})(this)">${tjIco('trash', 16)}</button>
+      <input class="pj-field-options-input" value="${escHtml((options||[]).join(', '))}" placeholder="Opções separadas por vírgula" style="${type==='select'?'':'display:none;'}" title="Opções separadas por vírgula" oninput="pjAutoSaveFields('${listId}')">
     </div>`;
   };
 
   let html = `<div class="pj-cf-modal-wrap">
     <div class="pj-cf-modal-header">
-      <div class="pj-cf-modal-icon">📋</div>
+      <div class="pj-cf-modal-icon">${tjIco('sliders', 18)}</div>
       <div>
         <div class="pj-cf-modal-title">Campos personalizados</div>
         <div style="font-size:11px;color:var(--text3);margin-top:1px;">${escHtml(list.name)}</div>
       </div>
     </div>
-    <div class="pj-cf-modal-sub">Adicione campos extras que aparecem como colunas na lista e no modal de cada tarefa.</div>
+    <div class="pj-cf-modal-sub">Campos extras que aparecem como colunas na lista e dentro de cada tarefa.</div>
     <div class="pj-fields-edit-list" id="pjFieldsEditList">
       ${fields.map(f => buildFieldRow(f.id, f.name, f.type||'text', f.options)).join('')}
     </div>
     <button class="pj-cf-add-btn" onclick="pjAddFieldRow()">
-      <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+      ${tjIco('plus', 16)}
       Adicionar campo
     </button>
     <div class="pj-form-actions">
       <button class="pj-btn pj-btn-secondary" onclick="pjCloseFormModal()">Cancelar</button>
       <button class="pj-btn pj-btn-primary" onclick="pjSaveFields('${listId}')">
-        <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13" style="margin-right:4px"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
         Salvar campos
       </button>
     </div>
@@ -29035,7 +29102,7 @@ function pjFieldTypePopup(ev, btn) {
     btn.dataset.type = newType;
     btn.innerHTML = `${t.icon} ${t.label} <svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor" style="opacity:.5"><path d="M2 4l4 4 4-4z"/></svg>`;
     const ic = row.querySelector('.pj-field-type-icon');
-    if (ic) { ic.style.background = t.color+'1a'; ic.style.color = t.color; ic.textContent = t.icon; }
+    if (ic) { ic.style.background = t.color+'1a'; ic.style.color = t.color; ic.innerHTML = t.icon; ic.title = t.label; }
     const optInput = row.querySelector('.pj-field-options-input');
     if (optInput) optInput.style.display = newType === 'select' ? '' : 'none';
     if (window._pjFieldsEditorListId) pjAutoSaveFields(window._pjFieldsEditorListId);
@@ -29073,29 +29140,7 @@ function pjAutoSaveFields(listId) {
       const t = pjAllTasks.find(x => x.id === pjCurrentTaskId);
       const cfEl = document.getElementById('pjModalCustomFields');
       if (t && cfEl) {
-        const list = pjLists.find(x => x.id === t.listId);
-        let fieldsHtml = '';
-        if (fields.length && list) {
-          fieldsHtml = `<div class="pj-modal-section-title" style="display:flex;align-items:center;gap:8px;">Campos<button class="pj-icon-btn" style="font-size:12px;padding:3px 9px;" title="Gerenciar campos" onclick="pjOpenFieldsEditor('${list.id}')">⚙️ Gerenciar</button></div><div class="pj-fields-grid">`;
-          fields.forEach(f => {
-            const val = t.customFieldValues?.[f.id] || '';
-            let input;
-            if (f.type === 'select') {
-              input = `<select class="pj-field-value" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)"><option value="">—</option>${(f.options||[]).map(o=>`<option ${o===val?'selected':''}>${escHtml(o)}</option>`).join('')}</select>`;
-            } else if (f.type === 'date') {
-              input = `<input class="pj-field-value" type="date" value="${escHtml(String(val))}" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)">`;
-            } else if (f.type === 'number') {
-              input = `<input class="pj-field-value" type="number" value="${escHtml(String(val))}" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)">`;
-            } else {
-              input = `<input class="pj-field-value" type="text" value="${escHtml(String(val))}" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)">`;
-            }
-            fieldsHtml += `<div class="pj-field-item"><div class="pj-field-label">${escHtml(f.name)}<button class="pj-field-quick-del" title="Remover este campo" onclick="pjQuickRemoveField('${list.id}','${f.id}')">×</button></div>${input}</div>`;
-          });
-          fieldsHtml += '</div>';
-        } else if (list) {
-          fieldsHtml = `<div class="pj-modal-section-title" style="display:flex;align-items:center;gap:8px;">Campos<button class="pj-btn pj-btn-secondary" style="font-size:11px;padding:4px 10px;" onclick="pjOpenFieldsEditor('${list.id}')">＋ Adicionar campo</button></div>`;
-        }
-        cfEl.innerHTML = fieldsHtml;
+        cfEl.innerHTML = pjModalFieldsHtml(t, pjLists.find(x => x.id === t.listId));
       }
     }
     if (pjCurrentView.id === listId) pjRenderMain();
@@ -29106,7 +29151,8 @@ async function pjQuickRemoveField(listId, fieldId) {
   if (!list) return;
   const field = (list.customFields || []).find(f => f.id === fieldId);
   if (!field) return;
-  if (!confirm(`Remover o campo "${field.name}"?\n\nIsso vai apagar esse campo de TODAS as tarefas dessa lista. Os dados preenchidos nesse campo serão perdidos.`)) return;
+  const ok = await pjConfirmDanger({ title: 'Remover campo', message: `O campo "${field.name}" sai de todas as tarefas desta lista, junto com o que foi preenchido nele.`, confirmLabel: 'Remover' });
+  if (!ok) return;
   list.customFields = (list.customFields || []).filter(f => f.id !== fieldId);
   try { await pjC('pj_lists').doc(listId).update({ customFields: list.customFields }); } catch(e){ console.error(e); }
   if (pjCurrentTaskId) {
@@ -36075,6 +36121,12 @@ document.addEventListener('click', e => {
       b.classList.toggle('active', b.dataset.tab ? b.dataset.tab === tab : !['visualizar','social','projetos'].includes(tab));
     });
     const t = document.getElementById('appTitle'); if (t) t.textContent = FG_TITULOS[tab] || '';
+    // Folha Mais: o bloco da tela atual fica marcado
+    document.querySelectorAll('.fg-more__b[data-tab]').forEach(b => {
+      const on = b.dataset.tab === tab;
+      b.classList.toggle('active', on);
+      if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
   };
   const wrapped = function(tab, ...args) {
     const r = orig ? orig(tab, ...args) : null;
