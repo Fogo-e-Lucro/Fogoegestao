@@ -2545,7 +2545,7 @@ ufw allow 3000/tcp</pre>
           <div class="mtr-side-client-info" id="mtrSideClientInfo" style="display:none;">
             Configurações salvas <strong>por cliente</strong>: cada conta do Instagram tem as próprias métricas.
           </div>
-          <div class="mtr-side-hint">Marque as métricas que deseja exibir e arraste para reordenar.</div>
+          <div class="mtr-side-hint">Marque as métricas que quer ver<span class="mtr-hint-drag"> e arraste pra mudar a ordem</span>.</div>
           <div id="mtrCatList"></div>
         </div>
         <div class="mtr-side-foot">
@@ -2567,7 +2567,7 @@ ufw allow 3000/tcp</pre>
     <div class="mtr-ai-history-modal" id="mtrAiHistoryModal" onclick="if(event.target===this)mtrCloseAiHistory()">
       <div class="mtr-ai-history-card">
         <div class="mtr-ai-history-head">
-          <div class="mtr-ai-history-title">📚 Histórico de análises IA</div>
+          <div class="mtr-ai-history-title">Histórico de análises da IA</div>
           <button class="mtr-side-close" onclick="mtrCloseAiHistory()">×</button>
         </div>
         <div class="mtr-ai-history-list" id="mtrAiHistoryList"></div>
@@ -2578,7 +2578,7 @@ ufw allow 3000/tcp</pre>
     <div class="mtr-cmp-modal" id="mtrCmpModal" onclick="if(event.target===this)mtrCloseCompare()">
       <div class="mtr-cmp-card">
         <div class="mtr-cmp-head">
-          <div class="mtr-cmp-title">⚖️ Comparação de campanhas</div>
+          <div class="mtr-cmp-title">Comparação de campanhas</div>
           <button class="mtr-side-close" onclick="mtrCloseCompare()">×</button>
         </div>
         <div class="mtr-cmp-body" id="mtrCmpBody"></div>
@@ -2588,7 +2588,7 @@ ufw allow 3000/tcp</pre>
     <!-- Modal: Compartilhar -->
     <div class="mtr-share-modal" id="mtrShareModal" onclick="if(event.target===this)mtrCloseShare()">
       <div class="mtr-share-card">
-        <div class="mtr-share-title">🔗 Compartilhar painel</div>
+        <div class="mtr-share-title">Compartilhar painel</div>
         <div class="mtr-share-desc">Gera um link público, só de leitura, com uma foto das métricas de agora. Quem tiver o link consegue ver, então não compartilhe dados sensíveis.</div>
         <div id="mtrShareContent"></div>
       </div>
@@ -10751,20 +10751,20 @@ function _mtrIsCampActive(c) {
 const MTR_CATALOG = [
   // Instagram — Insights diários (period=day)
   { id:'ig_reach', source:'ig', icon:'👁️', label:'Alcance', fmt:'num', daily:true },
-  { id:'ig_follower_count', source:'ig', icon:'🔄', label:'Ganho de Seguidores', fmt:'num', daily:true },
+  { id:'ig_follower_count', source:'ig', icon:'🔄', label:'Ganho de seguidores', fmt:'num', daily:true },
   // Instagram — Totais (metric_type=total_value)
-  { id:'ig_accounts_engaged', source:'ig', icon:'💬', label:'Contas Engajadas', fmt:'num' },
-  { id:'ig_total_interactions', source:'ig', icon:'🔥', label:'Total de Interações', fmt:'num' },
+  { id:'ig_accounts_engaged', source:'ig', icon:'💬', label:'Contas engajadas', fmt:'num' },
+  { id:'ig_total_interactions', source:'ig', icon:'🔥', label:'Total de interações', fmt:'num' },
   { id:'ig_likes', source:'ig', icon:'❤️', label:'Curtidas', fmt:'num' },
   { id:'ig_comments', source:'ig', icon:'💭', label:'Comentários', fmt:'num' },
   { id:'ig_shares', source:'ig', icon:'🔁', label:'Compartilhamentos', fmt:'num' },
   { id:'ig_saves', source:'ig', icon:'🔖', label:'Salvamentos', fmt:'num' },
   { id:'ig_views', source:'ig', icon:'📺', label:'Visualizações', fmt:'num' },
-  { id:'ig_profile_views', source:'ig', icon:'👤', label:'Visitas ao Perfil', fmt:'num' },
-  { id:'ig_website_clicks', source:'ig', icon:'🔗', label:'Cliques no Site', fmt:'num' },
+  { id:'ig_profile_views', source:'ig', icon:'👤', label:'Visitas ao perfil', fmt:'num' },
+  { id:'ig_website_clicks', source:'ig', icon:'🔗', label:'Cliques no site', fmt:'num' },
   // Instagram — Perfil
-  { id:'ig_followers_count', source:'ig', icon:'👥', label:'Seguidores Totais', fmt:'num', noSeries:true },
-  { id:'ig_media_count', source:'ig', icon:'📷', label:'Total de Posts', fmt:'num', noSeries:true },
+  { id:'ig_followers_count', source:'ig', icon:'👥', label:'Seguidores totais', fmt:'num', noSeries:true },
+  { id:'ig_media_count', source:'ig', icon:'📷', label:'Total de posts', fmt:'num', noSeries:true },
   // Anúncios — Métricas básicas
   { id:'ad_spend', source:'ad', icon:'💰', label:'Gasto (Ads)', fmt:'currency' },
   { id:'ad_reach', source:'ad', icon:'👀', label:'Alcance (Ads)', fmt:'num' },
@@ -10774,15 +10774,15 @@ const MTR_CATALOG = [
   { id:'ad_cpc', source:'ad', icon:'💵', label:'CPC', fmt:'currency', invert:true },
   { id:'ad_cpm', source:'ad', icon:'📉', label:'CPM', fmt:'currency', invert:true },
   { id:'ad_frequency', source:'ad', icon:'📡', label:'Frequência', fmt:'decimal' },
-  { id:'ad_inline_link_clicks', source:'ad', icon:'🔗', label:'Cliques em Link', fmt:'num' },
-  { id:'ad_unique_clicks', source:'ad', icon:'🎯', label:'Cliques Únicos', fmt:'num' },
+  { id:'ad_inline_link_clicks', source:'ad', icon:'🔗', label:'Cliques em link', fmt:'num' },
+  { id:'ad_unique_clicks', source:'ad', icon:'🎯', label:'Cliques únicos', fmt:'num' },
   // Anúncios — Conversões
   { id:'ad_purchases', source:'ad', icon:'🛒', label:'Compras', fmt:'num' },
   { id:'ad_revenue', source:'ad', icon:'💎', label:'Receita', fmt:'currency' },
   { id:'ad_roas', source:'ad', icon:'🏆', label:'ROAS', fmt:'roas' },
-  { id:'ad_cpp', source:'ad', icon:'🎫', label:'Custo por Compra', fmt:'currency', invert:true },
+  { id:'ad_cpp', source:'ad', icon:'🎫', label:'Custo por compra', fmt:'currency', invert:true },
   { id:'ad_leads', source:'ad', icon:'🧲', label:'Leads', fmt:'num' },
-  { id:'ad_cpl', source:'ad', icon:'💼', label:'Custo por Lead', fmt:'currency', invert:true },
+  { id:'ad_cpl', source:'ad', icon:'💼', label:'Custo por lead', fmt:'currency', invert:true },
   { id:'ad_landing_page_views', source:'ad', icon:'📄', label:'Visualizações de LP', fmt:'num' },
   { id:'ad_add_to_cart', source:'ad', icon:'🛍️', label:'Adicionar ao carrinho', fmt:'num' },
   { id:'ad_initiate_checkout', source:'ad', icon:'🧾', label:'Iniciar checkout', fmt:'num' },
@@ -10791,7 +10791,7 @@ const MTR_CATALOG = [
   { id:'ad_messaging_started', source:'ad', icon:'💬', label:'Conversas iniciadas', fmt:'num' },
   { id:'ad_instagram_profile_visits', source:'ad', icon:'👤', label:'Visitas ao perfil IG', fmt:'num' },
   { id:'ad_followers', source:'ad', icon:'➕', label:'Seguidores via Ads (só engaj.)', fmt:'num' },
-  { id:'ad_page_likes', source:'ad', icon:'👍', label:'Curtidas da Página', fmt:'num' },
+  { id:'ad_page_likes', source:'ad', icon:'👍', label:'Curtidas da página', fmt:'num' },
   { id:'ad_post_engagement', source:'ad', icon:'🔥', label:'Engaj. do post', fmt:'num' },
   { id:'ad_post_reactions', source:'ad', icon:'❤️', label:'Reações no post', fmt:'num' },
   { id:'ad_post_saves', source:'ad', icon:'🔖', label:'Salvamentos', fmt:'num' },
@@ -10820,13 +10820,13 @@ const MTR_CATALOG = [
   // Anúncios — ROAS
   { id:'ad_website_roas', source:'ad', icon:'🌐', label:'ROAS site', fmt:'roas' },
   // Google Meu Negócio
-  { id:'gmb_rating', source:'gmb', icon:'⭐', label:'Nota Média (Google)', fmt:'decimal' },
-  { id:'gmb_total_reviews', source:'gmb', icon:'💬', label:'Total Avaliações', fmt:'num' },
-  { id:'gmb_unanswered', source:'gmb', icon:'⚠️', label:'Sem Resposta', fmt:'num', invert:true },
-  { id:'gmb_response_rate', source:'gmb', icon:'✅', label:'Taxa de Resposta', fmt:'percent' },
-  { id:'gmb_negative', source:'gmb', icon:'👎', label:'Avaliações Negativas', fmt:'num', invert:true },
-  { id:'gmb_score', source:'gmb', icon:'💚', label:'Score de Saúde (GMB)', fmt:'num' },
-  { id:'gmb_new_reviews', source:'gmb', icon:'🆕', label:'Novas Avaliações (período)', fmt:'num' },
+  { id:'gmb_rating', source:'gmb', icon:'⭐', label:'Nota média (Google)', fmt:'decimal' },
+  { id:'gmb_total_reviews', source:'gmb', icon:'💬', label:'Total de avaliações', fmt:'num' },
+  { id:'gmb_unanswered', source:'gmb', icon:'⚠️', label:'Sem resposta', fmt:'num', invert:true },
+  { id:'gmb_response_rate', source:'gmb', icon:'✅', label:'Taxa de resposta', fmt:'percent' },
+  { id:'gmb_negative', source:'gmb', icon:'👎', label:'Avaliações negativas', fmt:'num', invert:true },
+  { id:'gmb_score', source:'gmb', icon:'💚', label:'Saúde do perfil (Google)', fmt:'num' },
+  { id:'gmb_new_reviews', source:'gmb', icon:'🆕', label:'Novas avaliações (período)', fmt:'num' },
   // Google Meu Negócio — Insights de Desempenho
   { id:'gmb_views_search', source:'gmb', icon:'🔍', label:'Visualizações na Busca', fmt:'num' },
   { id:'gmb_views_maps', source:'gmb', icon:'🗺️', label:'Visualizações no Maps', fmt:'num' },
@@ -11071,23 +11071,23 @@ function mtrGetDateRange(days, offset = 0) {
 }
 
 function mtrFmtNum(n) {
-  if (n === null || n === undefined || isNaN(n)) return '—';
-  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
-  if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+  if (n === null || n === undefined || isNaN(n)) return 'Sem dado';
+  if (n >= 1000000) return (n/1000000).toFixed(1).replace('.', ',') + ' mi';
+  if (n >= 1000) return (n/1000).toFixed(1).replace('.', ',') + ' mil';
   return Math.round(n).toLocaleString('pt-BR');
 }
 
 function mtrFmtCurrency(n) {
-  if (n === null || n === undefined || isNaN(n)) return '—';
+  if (n === null || n === undefined || isNaN(n)) return 'Sem dado';
   return 'R$ ' + parseFloat(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function mtrFmtValue(metric, v) {
-  if (v === null || v === undefined || isNaN(v)) return '—';
+  if (v === null || v === undefined || isNaN(v)) return 'Sem dado';
   if (metric.fmt === 'currency') return mtrFmtCurrency(v);
-  if (metric.fmt === 'percent') return parseFloat(v).toFixed(2) + '%';
-  if (metric.fmt === 'decimal') return parseFloat(v).toFixed(2);
-  if (metric.fmt === 'roas') return v > 0 ? v.toFixed(2) + 'x' : '—';
+  if (metric.fmt === 'percent') return parseFloat(v).toFixed(2).replace('.', ',') + '%';
+  if (metric.fmt === 'decimal') return parseFloat(v).toFixed(2).replace('.', ',');
+  if (metric.fmt === 'roas') return v > 0 ? v.toFixed(2).replace('.', ',') + 'x' : 'Sem dado';
   return mtrFmtNum(v);
 }
 
@@ -11206,7 +11206,7 @@ async function loadMetrics() {
   ]);
 
   if (!igCurrR.ok) {
-    document.getElementById('mtrBody').innerHTML = `<div class="mtr-empty">❌ Instagram: ${igCurrR.error}</div>`;
+    document.getElementById('mtrBody').innerHTML = `<div class="mtr-empty">Erro no Instagram: ${escHtml(String(igCurrR.error || ''))}</div>`;
     btn.disabled = false; btn.innerHTML = `${fgFerrIco('refresh', 14)} Atualizar`;
     return;
   }
@@ -11583,16 +11583,14 @@ let mtrCampCols = mtrLoadCampCols();
 
 function mtrFmtCampCell(col, c) {
   const v = col.getValue(c);
-  if (v === '—' || v === null || v === undefined) return '—';
+  if (v === '—' || v === null || v === undefined || v === '' || Number.isNaN(v)) return 'Sem dado';
   if (col.fmt === 'text') return escHtml(String(v));
   if (typeof v === 'string') return escHtml(v);
-  if (!v && v !== 0) return '—';
-  if (v === 0) return '—';
   switch (col.fmt) {
     case 'currency': return mtrFmtCurrency(v);
-    case 'percent':  return parseFloat(v).toFixed(2) + '%';
-    case 'decimal':  return parseFloat(v).toFixed(2);
-    case 'roas':     return parseFloat(v).toFixed(2) + 'x';
+    case 'percent':  return parseFloat(v).toFixed(2).replace('.', ',') + '%';
+    case 'decimal':  return parseFloat(v).toFixed(2).replace('.', ',');
+    case 'roas':     return v > 0 ? parseFloat(v).toFixed(2).replace('.', ',') + 'x' : 'Sem dado';
     case 'num':      return mtrFmtNum(parseInt(v));
     default:         return String(v);
   }
@@ -11811,9 +11809,9 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
   const allCount = igCount + adCount;
   const sourceTabsHtml = showTabs ? `
     <div class="mtr-source-tabs">
-      <button class="mtr-source-tab ${activeTab==='all'?'active':''}" onclick="mtrSwitchSourceTab('all')">🌐 Geral <span class="mtr-source-tab-count">${allCount}</span></button>
-      <button class="mtr-source-tab ${activeTab==='ig'?'active':''}" onclick="mtrSwitchSourceTab('ig')">📷 Instagram <span class="mtr-source-tab-count">${igCount}</span></button>
-      <button class="mtr-source-tab ${activeTab==='ad'?'active':''}" onclick="mtrSwitchSourceTab('ad')">📢 Meta Ads <span class="mtr-source-tab-count">${adCount}</span></button>
+      <button class="mtr-source-tab ${activeTab==='all'?'active':''}" onclick="mtrSwitchSourceTab('all')">Geral <span class="mtr-source-tab-count">${allCount}</span></button>
+      <button class="mtr-source-tab ${activeTab==='ig'?'active':''}" onclick="mtrSwitchSourceTab('ig')">Instagram <span class="mtr-source-tab-count">${igCount}</span></button>
+      <button class="mtr-source-tab ${activeTab==='ad'?'active':''}" onclick="mtrSwitchSourceTab('ad')">Anúncios <span class="mtr-source-tab-count">${adCount}</span></button>
     </div>` : '';
 
   const adAcctLabel = mtrCurrentAdAcc ? mtrCurrentAdAcc.name : '';
@@ -11847,8 +11845,8 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
   // Tabela de campanhas com checkbox de comparação + botão IA por linha + drill-down
   const cmpToolbar = (mtrCurrentAdAcc && campaigns && campaigns.length) ? `
     <div class="mtr-cmp-toolbar">
-      <span class="mtr-cmp-toolbar-info">${mtrCmpSelected.length>0 ? '<strong>'+mtrCmpSelected.length+'</strong> selecionada(s)' : 'Marque até 3 para comparar lado-a-lado'}</span>
-      <button class="mtr-cmp-btn" ${mtrCmpSelected.length<2?'disabled':''} onclick="mtrOpenCompare()">⚖️ Comparar (${mtrCmpSelected.length})</button>
+      <span class="mtr-cmp-toolbar-info">${mtrCmpSelected.length>0 ? '<strong>'+mtrCmpSelected.length+'</strong> '+(mtrCmpSelected.length>1?'marcadas':'marcada') : 'Marque até 3 pra comparar.'}</span>
+      <button class="mtr-cmp-btn" ${mtrCmpSelected.length<2?'disabled':''} onclick="mtrOpenCompare()">${fgFerrIco('scale', 16)} Comparar (${mtrCmpSelected.length})</button>
       ${mtrCmpSelected.length>0 ? '<button class="mtr-cmp-clear" onclick="mtrClearCmp()">Limpar</button>' : ''}
     </div>` : '';
 
@@ -11861,18 +11859,18 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
     ? campaigns.filter(_mtrIsCampActive)
     : campaigns;
   const filterLabel = mtrCampStatusFilter === 'active'
-    ? `${activeCount} ativa(s) de ${totalCount}`
-    : `${totalCount} no total · ${activeCount} ativa(s)`;
+    ? `${activeCount} ${activeCount===1?'ativa':'ativas'} de ${totalCount}.`
+    : `${totalCount} no total, ${activeCount} ${activeCount===1?'ativa':'ativas'}.`;
   const filterToggleLabel = mtrCampStatusFilter === 'active'
-    ? `👁️ Ver todas (${totalCount})`
-    : `✓ Só ativas (${activeCount})`;
+    ? `${fgFerrIco('eye', 16)} Ver todas (${totalCount})`
+    : `${fgFerrIco('ok', 16)} Só ativas (${activeCount})`;
   const campaignsHtml = (mtrCurrentAdAcc && campaigns && campaigns.length) ? `
     <div class="mtr-section">
       <div class="mtr-section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-        <span>📢 Campanhas do anúncio &nbsp;<span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">${filterLabel} · clique para filtrar · use ⊕ para drill-down</span></span>
+        <span>Campanhas &nbsp;<span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">${filterLabel} Escolha uma campanha pra filtrar.</span></span>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           <button class="mtr-camp-cols-btn" onclick="mtrToggleCampStatusFilter()" title="Alternar entre só ativas e todas">${filterToggleLabel}</button>
-          <button class="mtr-camp-cols-btn" onclick="mtrOpenCampColsModal()" title="Escolher colunas">⚙️ Colunas (${cols.length})</button>
+          <button class="mtr-camp-cols-btn" onclick="mtrOpenCampColsModal()" title="Escolher colunas">${fgFerrIco('sliders', 16)} Colunas (${cols.length})</button>
         </div>
       </div>
       ${cmpToolbar}
@@ -11961,7 +11959,7 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
     ${filterBar}
     ${notesHtml}
     <div class="mtr-section">
-      <div class="mtr-section-title">Visão geral &nbsp;<span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">@${mtrCurrentAcc.igUsername} ${adAcctLabel ? '· '+adAcctLabel : ''} ${filteredCamp ? '· campanha: '+escHtml(filteredCamp.name) : ''} · ${curr.since} → ${curr.until}</span></div>
+      <div class="mtr-section-title">Visão geral &nbsp;<span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">@${mtrCurrentAcc.igUsername} ${adAcctLabel ? '· '+adAcctLabel : ''} ${filteredCamp ? '· campanha: '+escHtml(filteredCamp.name) : ''} · ${curr.since.split('-').reverse().join('/')} a ${curr.until.split('-').reverse().join('/')}</span></div>
       ${sourceTabsHtml}
       <div class="mtr-kpi-grid">${cards}${customCards}${addCardHtml}</div>
     </div>
@@ -11978,6 +11976,10 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
   if (mtrAiChatHistory.length) mtrRenderAiChatMsgs();
 }
 
+/* Status da campanha em português (a Meta manda ACTIVE, PAUSED...) */
+function _mtrCampStatusTxt(st) {
+  return ({ ACTIVE:'Ativa', PAUSED:'Pausada', CAMPAIGN_PAUSED:'Pausada', ADSET_PAUSED:'Pausada', ARCHIVED:'Arquivada', DELETED:'Apagada', IN_PROCESS:'Processando', WITH_ISSUES:'Com problema', PENDING_REVIEW:'Em análise', DISAPPROVED:'Reprovada' })[st] || (st ? 'Outro' : 'Sem status');
+}
 /* Linha da tabela de campanhas (extraída para reuso no drill-down) */
 function mtrCampaignRowHtml(c) {
   const isSel = c.id === mtrCampaignFilter;
@@ -11990,7 +11992,7 @@ function mtrCampaignRowHtml(c) {
   const cols = mtrCampCols.map(id => MTR_CAMP_COLS.find(x => x.id === id)).filter(Boolean);
   const totalCols = 3 + cols.length;
   const aiResultRow = aiResult ? `<tr><td colspan="${totalCols}"><div class="mtr-camp-ai-result">${aiResult}</div></td></tr>` : '';
-  const colCells = cols.map(col => `<td class="num" onclick="mtrSelectCampaign('${c.id}')">${mtrFmtCampCell(col, c)}</td>`).join('');
+  const colCells = cols.map(col => `<td class="num" data-label="${escHtml(col.label)}" onclick="mtrSelectCampaign('${c.id}')">${mtrFmtCampCell(col, c)}</td>`).join('');
   // ★ Estrelinha pra fixar como card de métricas no topo (visão por campanha)
   const isPinned = (mtrPinnedCampaigns||[]).includes(c.id);
   return `<tr class="clickable ${isSel?'selected':''}" data-cid="${c.id}">
@@ -11998,13 +12000,13 @@ function mtrCampaignRowHtml(c) {
       <input type="checkbox" class="cmp-check" ${isCmp?'checked':''} ${(!isCmp&&mtrCmpSelected.length>=3)?'disabled':''} onchange="mtrToggleCmp('${c.id}',this.checked)" title="Comparar">
     </td>
     <td onclick="mtrSelectCampaign('${c.id}')">
-      <button class="mtr-drill-toggle ${drillOpen?'expanded':''}" onclick="event.stopPropagation();mtrToggleDrill('${c.id}')" title="Drill-down: conjuntos & anúncios">${drillOpen?'▼':'▶'}</button>
-      <button class="mtr-camp-pin-btn ${isPinned?'active':''}" onclick="event.stopPropagation();mtrTogglePinCampaign('${c.id}')" title="${isPinned?'Remover dos cards do topo':'Fixar como cards no topo'}">${isPinned?'★':'☆'}</button>
-      <span class="mtr-camp-name">${escHtml(c.name || '—')}<span class="mtr-camp-status ${statusCls}">${c.status||'—'}</span></span>
+      <button class="mtr-drill-toggle ${drillOpen?'expanded':''}" onclick="event.stopPropagation();mtrToggleDrill('${c.id}')" title="Ver conjuntos e anúncios" aria-label="Ver conjuntos e anúncios" aria-expanded="${drillOpen?'true':'false'}">${fgFerrIco(drillOpen?'down':'right', 16)}</button>
+      <button class="mtr-camp-pin-btn ${isPinned?'active':''}" onclick="event.stopPropagation();mtrTogglePinCampaign('${c.id}')" title="${isPinned?'Tirar do topo':'Fixar no topo'}" aria-label="${isPinned?'Tirar do topo':'Fixar no topo'}" aria-pressed="${isPinned?'true':'false'}">${fgFerrIco('star', 16)}</button>
+      <span class="mtr-camp-name">${escHtml(c.name || 'Sem nome')}<span class="mtr-camp-status ${statusCls}">${_mtrCampStatusTxt(c.status)}</span></span>
     </td>
     ${colCells}
     <td class="actions" onclick="event.stopPropagation()">
-      <button class="mtr-camp-ai-btn" ${aiBusy?'disabled':''} onclick="mtrAnalyzeCampaignWithAI('${c.id}')">${aiBusy?'⏳':'✨'} IA</button>
+      <button class="mtr-camp-ai-btn" ${aiBusy?'disabled':''} onclick="mtrAnalyzeCampaignWithAI('${c.id}')" aria-label="Analisar campanha com IA">${fgFerrIco('sparkles', 14)} ${aiBusy?'Analisando':'IA'}</button>
     </td>
   </tr>
   ${aiResultRow}
@@ -12141,7 +12143,7 @@ function mtrRenderPinnedCampaignsBlock(campaigns) {
              ondrop="mtrPinnedKpiDrop(event,'${c.id}','${id}')"
              title="Arraste pra reordenar dentro desta campanha"
              style="cursor:grab;">
-          <button class="mtr-kpi-del" onclick="event.stopPropagation();mtrPinnedCampRemoveKpi('${c.id}','${id}')" title="Remover este card">✕</button>
+          <button class="mtr-kpi-del" onclick="event.stopPropagation();mtrPinnedCampRemoveKpi('${c.id}','${id}')" title="Remover este card" aria-label="Remover este card">${fgFerrIco('x', 14)}</button>
           <div class="mtr-kpi-icon">${m.icon}</div>
           <div class="mtr-kpi-label">${m.label}</div>
           <div class="mtr-kpi-value">${mtrFmtValue(m, v)}</div>
@@ -12159,13 +12161,13 @@ function mtrRenderPinnedCampaignsBlock(campaigns) {
       <div class="mtr-pinned-camp">
         <div class="mtr-pinned-camp-head">
           <div class="mtr-pinned-camp-title">
-            <span class="mtr-pinned-camp-star">⭐</span>
-            <span class="mtr-pinned-camp-name">${escHtml(c.name || '—')}</span>
-            <span class="mtr-camp-status ${statusCls}">${c.status||'—'}</span>
+            <span class="mtr-pinned-camp-star">${fgFerrIco('star', 16)}</span>
+            <span class="mtr-pinned-camp-name">${escHtml(c.name || 'Sem nome')}</span>
+            <span class="mtr-camp-status ${statusCls}">${_mtrCampStatusTxt(c.status)}</span>
           </div>
           <div style="display:flex;gap:6px;align-items:center;">
-            <button class="mtr-pinned-camp-remove" onclick="mtrPinnedCampShowRaw('${c.id}')" title="Ver action_types crus (debug)" style="font-size:13px;">🔍</button>
-            <button class="mtr-pinned-camp-remove" onclick="mtrTogglePinCampaign('${c.id}')" title="Remover dos cards do topo">×</button>
+            <button class="mtr-pinned-camp-remove" onclick="mtrPinnedCampShowRaw('${c.id}')" title="Ver action_types crus (debug)" aria-label="Ver dados crus da campanha">${fgFerrIco('search', 16)}</button>
+            <button class="mtr-pinned-camp-remove" onclick="mtrTogglePinCampaign('${c.id}')" title="Tirar do topo" aria-label="Tirar do topo">${fgFerrIco('x', 16)}</button>
           </div>
         </div>
         <div class="mtr-kpi-grid mtr-pinned-camp-grid">
@@ -12178,8 +12180,8 @@ function mtrRenderPinnedCampaignsBlock(campaigns) {
   return `
     <div class="mtr-pinned-section">
       <div class="mtr-section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-        <span>⭐ Métricas por campanha fixada</span>
-        <span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">${pinned.length} campanha${pinned.length>1?'s':''} · cada uma tem suas próprias métricas</span>
+        <span>Campanhas fixadas</span>
+        <span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">${pinned.length} campanha${pinned.length>1?'s':''}, cada uma com as próprias métricas</span>
       </div>
       ${cards}
     </div>`;
@@ -12326,13 +12328,13 @@ function mtrRenderSidebar() {
         <div class="mtr-tpl-meta">${tplBadge(tpl)} ${tpl.scope==='ig'?'<span class="mtr-tpl-scope">IG</span>':tpl.scope==='ad'?'<span class="mtr-tpl-scope">Ads</span>':'<span class="mtr-tpl-scope all">Todas</span>'}</div>
       </div>
       <div class="mtr-tpl-actions">
-        <button class="mtr-tpl-apply" onclick="mtrApplyTemplate('${tpl.id}')" title="Aplicar">▶</button>
+        <button class="mtr-tpl-apply" onclick="mtrApplyTemplate('${tpl.id}')" title="Aplicar" aria-label="Aplicar ${escHtml(tpl.name)}">${fgFerrIco('ok', 16)}</button>
         ${tpl.factory ? `
-          <button class="mtr-tpl-rename" onclick="mtrCloneFactory('${tpl.id}')" title="Editar cópia">✎</button>
-          <button class="mtr-tpl-del" onclick="mtrHideFactory('${tpl.id}')" title="Ocultar">✕</button>
+          <button class="mtr-tpl-rename" onclick="mtrCloneFactory('${tpl.id}')" title="Editar cópia" aria-label="Editar cópia de ${escHtml(tpl.name)}">${fgFerrIco('pencil', 16)}</button>
+          <button class="mtr-tpl-del" onclick="mtrHideFactory('${tpl.id}')" title="Ocultar" aria-label="Ocultar ${escHtml(tpl.name)}">${fgFerrIco('x', 16)}</button>
         ` : `
-          <button class="mtr-tpl-rename" onclick="mtrRenameTemplate('${tpl.id}')" title="Renomear">✎</button>
-          <button class="mtr-tpl-del" onclick="mtrDeleteTemplate('${tpl.id}')" title="Excluir">✕</button>
+          <button class="mtr-tpl-rename" onclick="mtrRenameTemplate('${tpl.id}')" title="Renomear" aria-label="Renomear ${escHtml(tpl.name)}">${fgFerrIco('pencil', 16)}</button>
+          <button class="mtr-tpl-del" onclick="mtrDeleteTemplate('${tpl.id}')" title="Excluir" aria-label="Excluir ${escHtml(tpl.name)}">${fgFerrIco('x', 16)}</button>
         `}
       </div>
     </div>`;
@@ -12347,7 +12349,7 @@ function mtrRenderSidebar() {
   document.getElementById('mtrCatList').innerHTML = `
     <div class="mtr-side-section">
       <div class="mtr-side-section-title">Modelos</div>
-      <div class="mtr-tpl-hint">Salve a configuração atual para reutilizar depois. Clique em um modelo para aplicar.</div>
+      <div class="mtr-tpl-hint">Salve a configuração atual pra usar depois. Escolha um modelo pra aplicar.</div>
       <div class="mtr-tpl-save-row">
         <button class="mtr-tpl-save-btn all" onclick="mtrSaveCurrentAsTemplate('all')" title="Salva todas as métricas em uso">Salvar atual</button>
         <button class="mtr-tpl-save-btn ig" onclick="mtrSaveCurrentAsTemplate('ig')" title="Salva apenas as métricas do Instagram">Só Instagram</button>
@@ -12359,7 +12361,7 @@ function mtrRenderSidebar() {
       <div class="mtr-tpl-list">${userHtml}</div>
     </div>
     <div class="mtr-side-section">
-      <div class="mtr-side-section-title">Em uso (arraste para reordenar)</div>
+      <div class="mtr-side-section-title">Em uso<span class="mtr-hint-drag"> (arraste pra mudar a ordem)</span></div>
       <div class="mtr-cat-list" id="mtrCatSelected">
         ${selected.length ? selected.map(itemHtml).join('') : '<div style="font-size:11px;color:var(--text3);padding:6px;">Nenhuma métrica selecionada.</div>'}
       </div>
@@ -13070,7 +13072,7 @@ function mtrRenderHealth(h, warnings) {
     let cls = 'ok';
     if (h.tokenExpDays != null && h.tokenExpDays >= 0 && h.tokenExpDays <= 7) cls = 'warn';
     if (h.tokenExpDays != null && h.tokenExpDays < 0) cls = 'err';
-    const exp = h.tokenExpiresIn ? ` · expira em ${h.tokenExpiresIn}` : '';
+    const exp = h.tokenExpiresIn === 'nunca' ? ' sem validade' : h.tokenExpiresIn === 'expirado' ? ' vencido' : h.tokenExpiresIn ? ` vence em ${parseInt(h.tokenExpiresIn)} ${parseInt(h.tokenExpiresIn)===1?'dia':'dias'}` : '';
     pills.push(`<span class="mtr-health-pill ${cls}"><span class="mtr-health-dot"></span>Token Meta${exp}</span>`);
   } else {
     pills.push(`<span class="mtr-health-pill err"><span class="mtr-health-dot"></span>Token Meta inválido</span>`);
@@ -13078,7 +13080,7 @@ function mtrRenderHealth(h, warnings) {
   if (mtrCurrentAcc) pills.push(`<span class="mtr-health-pill ok"><span class="mtr-health-dot"></span>IG @${escHtml(mtrCurrentAcc.igUsername)}</span>`);
   if (mtrCurrentAdAcc) pills.push(`<span class="mtr-health-pill ok"><span class="mtr-health-dot"></span>${escHtml(mtrCurrentAdAcc.name)} (${mtrCurrentAdAcc.currency})</span>`);
   else pills.push(`<span class="mtr-health-pill warn"><span class="mtr-health-dot"></span>Sem conta de anúncios</span>`);
-  if (warnings && warnings.length) pills.push(`<span class="mtr-health-pill warn"><span class="mtr-health-dot"></span>${warnings.length} aviso(s)</span>`);
+  if (warnings && warnings.length) pills.push(`<span class="mtr-health-pill warn"><span class="mtr-health-dot"></span>${warnings.length} ${warnings.length===1?'aviso':'avisos'}</span>`);
   return `<div class="mtr-health-bar">${pills.join('')}</div>`;
 }
 
@@ -13253,7 +13255,7 @@ function mtrRenderNotes(curr) {
   return `<div class="mtr-notes-card">
     <div class="mtr-notes-head">
       <div class="mtr-notes-title">Anotações do período <span style="font-size:10px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(salvas por cliente)</span></div>
-      <button class="mtr-notes-add-btn" onclick="document.getElementById('mtrNotesForm').style.display='flex';document.getElementById('mtrNoteText').focus();">+ Adicionar</button>
+      <button class="mtr-notes-add-btn" onclick="document.getElementById('mtrNotesForm').style.display='flex';document.getElementById('mtrNoteText').focus();">${fgFerrIco('plus', 16)} Adicionar</button>
     </div>
     <div class="mtr-notes-list">${list}</div>
     <div class="mtr-notes-form" id="mtrNotesForm" style="display:none;">
@@ -13307,7 +13309,8 @@ function mtrRenderFunnel(adsData, igCurr) {
   const has = stages.some(s => s.value > 0);
   const max = Math.max(1, ...stages.map(s => s.value));
   const N = stages.length;
-  const stagesHtml = stages.length ? stages.map((s,i) => {
+  const stagesHtml = (stages.length && !has) ? `<div class="mtr-funnel-empty">${mtrCurrentAdAcc ? 'Sem dado no período.' : 'Escolha a conta de anúncios pra ver o funil.'}</div>`
+  : stages.length ? stages.map((s,i) => {
     // Largura híbrida: mistura proporção real (sqrt p/ suavizar) com queda por rank.
     // Garante shape de funil mesmo com ratios enormes (ex: 455K → 103).
     const prop = s.value > 0 ? Math.sqrt(s.value/max) : 0;          // 0..1
@@ -13323,13 +13326,13 @@ function mtrRenderFunnel(adsData, igCurr) {
               ondragleave="mtrFunnelStageDragLeave(event)"
               ondrop="mtrFunnelStageDrop(event,${i})"
               style="width:${w.toFixed(2)}%;align-self:center;">
-        <span class="mtr-funnel-stage-label">⋮⋮ ${s.label}</span>
+        <span class="mtr-funnel-stage-label"><span class="mtr-funnel-grip">⋮⋮</span> ${s.label}</span>
         <span style="display:flex;align-items:center;">
-          <span class="mtr-funnel-stage-value">${s.value > 0 ? mtrFmtNum(s.value) : '—'}</span>
-          <button class="mtr-funnel-stage-remove" onclick="event.stopPropagation();mtrFunnelRemove('${s.id}')" title="Remover">✕</button>
+          <span class="mtr-funnel-stage-value">${mtrFmtNum(s.value)}</span>
+          <button class="mtr-funnel-stage-remove" onclick="event.stopPropagation();mtrFunnelRemove('${s.id}')" title="Remover" aria-label="Tirar ${escHtml(s.label)} do funil">${fgFerrIco('x', 16)}</button>
         </span>
       </div>${rate ? `<div class="mtr-funnel-rate">↓ <strong>${rate}</strong> de conversão</div>` : ''}`;
-  }).join('') : `<div class="mtr-funnel-empty">Arraste KPIs ou clique em Personalizar para montar o funil</div>`;
+  }).join('') : `<div class="mtr-funnel-empty">Use Personalizar pra montar o funil.</div>`;
   return `<div class="mtr-funnel-card" id="mtrFunnelCard"
             ondragover="mtrFunnelDropOver(event)"
             ondragleave="mtrFunnelDropLeave(event)"
@@ -14139,21 +14142,21 @@ function _mtrDrillTotalCols() {
 }
 function _mtrDrillCells(item) {
   const cols = mtrCampCols.map(id => MTR_CAMP_COLS.find(x => x.id === id)).filter(Boolean);
-  return cols.map(col => `<td class="num">${mtrFmtCampCell(col, item)}</td>`).join('');
+  return cols.map(col => `<td class="num" data-label="${escHtml(col.label)}">${mtrFmtCampCell(col, item)}</td>`).join('');
 }
 function mtrRenderDrillRows(campId) {
   const st = mtrDrillState[campId];
   if (!st || !st.open) return '';
   const tc = _mtrDrillTotalCols();
-  if (st.loading) return `<tr class="mtr-drill-row"><td colspan="${tc}"><div class="mtr-drill-loading">Carregando conjuntos de anúncios…</div></td></tr>`;
-  if (st.error) return `<tr class="mtr-drill-row"><td colspan="${tc}"><div class="mtr-drill-loading" style="color:#ef4444;">❌ ${escHtml(st.error)}</div></td></tr>`;
+  if (st.loading) return `<tr class="mtr-drill-row"><td colspan="${tc}"><div class="mtr-drill-loading">Carregando conjuntos de anúncios</div></td></tr>`;
+  if (st.error) return `<tr class="mtr-drill-row"><td colspan="${tc}"><div class="mtr-drill-loading" style="color:#ef4444;">${escHtml(st.error)}</div></td></tr>`;
   if (!st.adsets?.length) return `<tr class="mtr-drill-row"><td colspan="${tc}"><div class="mtr-drill-loading">Nenhum conjunto encontrado.</div></td></tr>`;
   return st.adsets.map(a => {
     const sub = a.open ? mtrRenderAdRows(campId, a) : '';
     return `<tr class="mtr-drill-row adset">
       <td></td>
-      <td><button class="mtr-drill-toggle ${a.open?'expanded':''}" onclick="mtrToggleAdsetDrill('${campId}','${a.id}')">${a.open?'▼':'▶'}</button>
-        <span class="mtr-drill-name">${escHtml(a.name||'—')}</span></td>
+      <td><button class="mtr-drill-toggle ${a.open?'expanded':''}" onclick="mtrToggleAdsetDrill('${campId}','${a.id}')" aria-label="Ver anúncios do conjunto" aria-expanded="${a.open?'true':'false'}">${fgFerrIco(a.open?'down':'right', 16)}</button>
+        <span class="mtr-drill-name">${escHtml(a.name||'Sem nome')}</span></td>
       ${_mtrDrillCells(a)}
       <td></td>
     </tr>${sub}`;
@@ -14161,13 +14164,13 @@ function mtrRenderDrillRows(campId) {
 }
 function mtrRenderAdRows(campId, adset) {
   const tc = _mtrDrillTotalCols();
-  if (adset.loading) return `<tr class="mtr-drill-row ad"><td colspan="${tc}"><div class="mtr-drill-loading">Carregando anúncios…</div></td></tr>`;
-  if (adset.error) return `<tr class="mtr-drill-row ad"><td colspan="${tc}"><div class="mtr-drill-loading" style="color:#ef4444;">❌ ${escHtml(adset.error)}</div></td></tr>`;
+  if (adset.loading) return `<tr class="mtr-drill-row ad"><td colspan="${tc}"><div class="mtr-drill-loading">Carregando anúncios</div></td></tr>`;
+  if (adset.error) return `<tr class="mtr-drill-row ad"><td colspan="${tc}"><div class="mtr-drill-loading" style="color:#ef4444;">${escHtml(adset.error)}</div></td></tr>`;
   if (!adset.ads?.length) return `<tr class="mtr-drill-row ad"><td colspan="${tc}"><div class="mtr-drill-loading">Nenhum anúncio.</div></td></tr>`;
   return adset.ads.map(a => {
     return `<tr class="mtr-drill-row ad">
       <td></td>
-      <td>${a.thumb ? `<img class="mtr-drill-thumb" src="${a.thumb}" loading="lazy">` : ''}<span class="mtr-drill-name">${escHtml(a.name||'—')}</span></td>
+      <td>${a.thumb ? `<img class="mtr-drill-thumb" src="${a.thumb}" loading="lazy">` : ''}<span class="mtr-drill-name">${escHtml(a.name||'Sem nome')}</span></td>
       ${_mtrDrillCells(a)}
       <td></td>
     </tr>`;
@@ -15716,18 +15719,18 @@ function gmbShowMultiGrid() {
     const reviews = l._demoReviews || null;
     const score = gmbCalcScore(l, reviews);
     const scoreColor = score >= 75 ? '#22c55e' : score >= 50 ? '#f59e0b' : '#ef4444';
-    const addr = l.storefrontAddress ? [l.storefrontAddress.locality, l.storefrontAddress.administrativeArea].filter(Boolean).join(', ') : '—';
+    const addr = l.storefrontAddress ? [l.storefrontAddress.locality, l.storefrontAddress.administrativeArea].filter(Boolean).join(', ') : '';
     let ratingStat = '';
     if (reviews && reviews.length) {
       const ratings = reviews.filter(r=>r.starRating).map(r=>({ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5}[r.starRating]||0));
-      const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : '—';
-      ratingStat = `<div class="gmb-loc-stat"><div class="gmb-loc-stat-val">${avg}</div><div class="gmb-loc-stat-lbl">Nota, ${reviews.length} avaliações</div></div>`;
+      const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1).replace('.', ',') : 'Sem nota';
+      ratingStat = `<div class="gmb-loc-stat"><div class="gmb-loc-stat-val">${avg}</div><div class="gmb-loc-stat-lbl">Nota em ${reviews.length} ${reviews.length===1?'avaliação':'avaliações'}</div></div>`;
     }
     return `<div class="gmb-loc-card" onclick="gmbSelectLocation(${i})">
       <div class="gmb-loc-card-name">${escHtml(l.title||'Perfil')}</div>
-      <div class="gmb-loc-card-addr">${escHtml(addr)}</div>
+      ${addr ? `<div class="gmb-loc-card-addr">${escHtml(addr)}</div>` : ''}
       <div class="gmb-loc-card-stats">
-        <div class="gmb-loc-stat"><div class="gmb-loc-stat-val">${score}</div><div class="gmb-loc-stat-lbl">Score</div></div>
+        <div class="gmb-loc-stat"><div class="gmb-loc-stat-val">${score}</div><div class="gmb-loc-stat-lbl"><span class="gmb-nivel gmb-nivel--${score >= 75 ? 'green' : score >= 50 ? 'yellow' : 'red'}"></span>Saúde</div></div>
         ${ratingStat}
       </div>
       <div class="gmb-loc-score-bar"><div class="gmb-loc-score-fill" style="width:${score}%;background:${scoreColor}"></div></div>
@@ -15803,12 +15806,12 @@ function gmbRenderKpis() {
   const answered = reviews.filter(r => r.reviewReply).length;
   const unanswered = total - answered;
   const ratings = reviews.filter(r => r.starRating).map(r => ({ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5}[r.starRating]||0));
-  const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : '—';
+  const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1).replace('.', ',') : 'Sem nota';
   const negatives = reviews.filter(r => ['ONE','TWO'].includes(r.starRating)).length;
   document.getElementById('gmbKpiRow').innerHTML = `
     <div class="gmb-kpi"><div class="gmb-kpi-val">${avg}</div><div class="gmb-kpi-lbl">Nota média</div><div class="gmb-kpi-sub">no Google</div></div>
     <div class="gmb-kpi"><div class="gmb-kpi-val">${total}</div><div class="gmb-kpi-lbl">Avaliações</div></div>
-    <div class="gmb-kpi" style="${unanswered>0?'border-color:#ef4444;':''}""><div class="gmb-kpi-val" style="${unanswered>0?'color:#ef4444;':''}">${unanswered}</div><div class="gmb-kpi-lbl">Sem resposta</div></div>
+    <div class="gmb-kpi ${unanswered>0?'gmb-kpi--alerta':''}"><div class="gmb-kpi-val">${unanswered}</div><div class="gmb-kpi-lbl">Sem resposta</div></div>
     <div class="gmb-kpi"><div class="gmb-kpi-val">${negatives}</div><div class="gmb-kpi-lbl">Negativas</div><div class="gmb-kpi-sub">1-2 estrelas</div></div>
     <div class="gmb-kpi"><div class="gmb-kpi-val">${total?Math.round(answered/total*100):0}%</div><div class="gmb-kpi-lbl">Taxa de resposta</div></div>`;
 }
@@ -15824,7 +15827,7 @@ function gmbRenderScore() {
     { ok: !!(loc.regularHours?.periods?.length), label: 'Horários configurados' },
     { ok: !!(loc.profile?.description), label: 'Descrição preenchida' },
     { ok: !!(loc.storefrontAddress), label: 'Endereço cadastrado' },
-    { ok: _gmbReviews.length > 0 && (_gmbReviews.filter(r=>r.reviewReply).length/_gmbReviews.length) >= 0.8, label: 'Taxa resposta ≥ 80%' },
+    { ok: _gmbReviews.length > 0 && (_gmbReviews.filter(r=>r.reviewReply).length/_gmbReviews.length) >= 0.8, label: 'Responde 80% ou mais' },
   ];
   document.getElementById('gmbScoreCard').innerHTML = `
     <div class="gmb-score-head">
@@ -15833,7 +15836,7 @@ function gmbRenderScore() {
         <div class="gmb-score-max">/100</div>
       </div>
       <div class="gmb-score-info">
-        <div class="gmb-score-title">${label}</div>
+        <div class="gmb-score-title gmb-score-title--${cls}">${label}</div>
         <div class="gmb-score-desc">${escHtml(loc.title||'Perfil')} · Saúde do perfil no Google</div>
       </div>
     </div>
@@ -15870,7 +15873,7 @@ function gmbGetHistory() {
 async function gmbRenderCharts() {
   await ensureChartJs();
   const history = gmbGetHistory();
-  const labels = history.map(h => h.date.slice(5)); // MM-DD
+  const labels = history.map(h => h.date.slice(8, 10) + '/' + h.date.slice(5, 7)); // DD/MM
   const ratings = history.map(h => h.rating);
   const scores  = history.map(h => h.score);
 
@@ -15878,17 +15881,22 @@ async function gmbRenderCharts() {
   if (_gmbRatingChart) { _gmbRatingChart.destroy(); _gmbRatingChart = null; }
   if (_gmbHealthChart) { _gmbHealthChart.destroy(); _gmbHealthChart = null; }
 
+  // celular: linha grafite fina, sem área pastel e sem bolinha em cada ponto (igual à linha das Métricas)
+  const cel = matchMedia('(max-width: 640px)').matches;
+  const linha = cel ? (getComputedStyle(document.body).getPropertyValue('--text2').trim() || '#5a6272') : null;
   const chartOpts = (label, data, color) => ({
     type: 'line',
     data: {
       labels,
-      datasets: [{ label, data, borderColor: color, backgroundColor: color + '22', fill: true, tension: 0.4, pointRadius: 3, borderWidth: 2 }]
+      datasets: [cel
+        ? { label, data, borderColor: linha, fill: false, tension: 0.3, pointRadius: 0, pointHitRadius: 12, borderWidth: 2 }
+        : { label, data, borderColor: color, backgroundColor: color + '22', fill: true, tension: 0.4, pointRadius: 3, borderWidth: 2 }]
     },
     options: {
       responsive: true, maintainAspectRatio: false, animation: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: '#888', font: { size: 9 } }, grid: { color: 'rgba(128,128,128,.1)' } },
+        x: { ticks: cel ? { color: '#888', font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 5 } : { color: '#888', font: { size: 9 } }, grid: { color: 'rgba(128,128,128,.1)' } },
         y: { ticks: { color: '#888', font: { size: 9 } }, grid: { color: 'rgba(128,128,128,.1)' } }
       }
     }
@@ -15896,8 +15904,8 @@ async function gmbRenderCharts() {
 
   const ctx1 = document.getElementById('gmbRatingChart').getContext('2d');
   const ctx2 = document.getElementById('gmbHealthChart').getContext('2d');
-  _gmbRatingChart = new Chart(ctx1, chartOpts('Nota Média', ratings, '#f59e0b'));
-  _gmbHealthChart = new Chart(ctx2, chartOpts('Score de Saúde', scores, '#22c55e'));
+  _gmbRatingChart = new Chart(ctx1, chartOpts('Nota média', ratings, '#f59e0b'));
+  _gmbHealthChart = new Chart(ctx2, chartOpts('Saúde do perfil', scores, '#22c55e'));
 }
 
 function gmbRenderReviews() {
@@ -15935,7 +15943,7 @@ function gmbRenderReviews() {
       ${text ? `<div class="gmb-review-text">${escHtml(text)}</div>` : '<div class="gmb-review-text" style="font-style:italic;color:var(--text3);">Sem texto na avaliação</div>'}
       ${reply ? `<div class="gmb-review-reply-existing"><div class="gmb-review-reply-label">Sua resposta</div>${escHtml(reply)}</div>` : ''}
       <div class="gmb-review-actions">
-        <button class="gmb-ai-btn" id="gmbAiBtn_${idx}" onclick="gmbSuggestReply(${idx})">✨ Sugerir Resposta com IA</button>
+        <button class="gmb-ai-btn" id="gmbAiBtn_${idx}" onclick="gmbSuggestReply(${idx})">${fgFerrIco('sparkles', 16)} Sugerir resposta com IA</button>
       </div>
       <textarea class="gmb-reply-area" id="gmbReplyTxt_${idx}" placeholder="A resposta aparecerá aqui..." style="display:none"></textarea>
       <div style="display:none;margin-top:8px;gap:8px;flex-wrap:wrap;" id="gmbReplyActions_${idx}">
@@ -15965,10 +15973,10 @@ async function gmbSuggestReply(idx) {
   const tone = stars >= 4 ? 'positiva' : stars >= 3 ? 'neutra' : 'negativa';
 
   btn.disabled = true;
-  btn.textContent = '⏳ Gerando...';
+  btn.textContent = 'Gerando resposta';
 
   const apiKey = getClaudeKey();
-  if (!apiKey) { showToast('warn','⚠️','Configure a Claude API Key em Configurações (⚙️ no cabeçalho).'); btn.disabled=false; btn.innerHTML='✨ Sugerir Resposta com IA'; return; }
+  if (!apiKey) { showToast('warn','⚠️','Configure a Claude API Key em Configurações (⚙️ no cabeçalho).'); btn.disabled=false; btn.innerHTML=`${fgFerrIco('sparkles', 16)} Sugerir resposta com IA`; return; }
 
   const prompt = `Você é um gerente de restaurante respondendo avaliações do Google Meu Negócio.
 Cliente: ${name}
@@ -15996,13 +16004,13 @@ Retorne APENAS o texto da resposta, sem explicações.`;
       txt.value = reply;
       txt.style.display = 'block';
       actions.style.display = 'flex';
-      btn.textContent = '↺ Gerar novamente';
+      btn.innerHTML = `${fgFerrIco('refresh', 16)} Gerar de novo`;
       btn.disabled = false;
     }
   } catch(e) {
     showToast('error','❌','Erro ao chamar IA: ' + e.message);
     btn.disabled = false;
-    btn.innerHTML = '✨ Sugerir Resposta com IA';
+    btn.innerHTML = `${fgFerrIco('sparkles', 16)} Sugerir resposta com IA`;
   }
 }
 
@@ -16047,7 +16055,7 @@ function gmbClearReply(idx) {
   const btn = document.getElementById(`gmbAiBtn_${idx}`);
   if (txt) { txt.value=''; txt.style.display='none'; }
   if (actions) actions.style.display='none';
-  if (btn) { btn.disabled=false; btn.innerHTML='✨ Sugerir Resposta com IA'; }
+  if (btn) { btn.disabled=false; btn.innerHTML=`${fgFerrIco('sparkles', 16)} Sugerir resposta com IA`; }
 }
 
 // ─── GMB POSTS ───────────────────────────────────────────
@@ -29692,6 +29700,10 @@ const FG_FERR_ICO = {
   refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
   percent: '<line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
   timer: '<line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/>',
+  sparkles: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>',
+  eyeoff: '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
+  scale: '<path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>',
+  megaphone: '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
 };
 function fgFerrIco(k, s = 16, w = 1.75) {
   const p = FG_FERR_ICO[k] || (typeof FG_ICO !== 'undefined' && FG_ICO[k]) || '';
@@ -30182,13 +30194,20 @@ const _BD_SEC_ICO = {
   'inspiracoes-restricoes-de-conteudo': 'image', 'historico-o-que-funcionou': 'bulb', 'avisos-configurados': 'bell',
   'notas-livres': 'pencil', 'vendas-cardapio-web': 'coins', 'ifood': 'bike', 'identificacao-visual': 'palette',
 };
+// nome que aparece na ficha; o id (e o que já está oculto ou configurado) continua vindo do título original
+const _BD_SEC_NOME = {
+  'contato-endereco': 'Contato e endereço', 'redes-presenca': 'Redes e presença', 'estrategia-de-marca': 'Estratégia de marca',
+  'documentos-drive': 'Documentos e Drive', 'acessos-senhas': 'Acessos e senhas', 'operacao-do-restaurante': 'Operação do restaurante',
+  'promocoes-combos': 'Promoções e combos', 'cardapio-restricoes': 'Cardápio e restrições',
+  'inspiracoes-restricoes-de-conteudo': 'Inspirações e restrições de conteúdo', 'historico-o-que-funcionou': 'Histórico: o que funcionou',
+};
 function _bdSec(title, body, opts={}) {
   const open = opts.open ? 'open' : '';
   const secId = opts.id || _bdSecId(title);
   // Se a seção está oculta, não renderiza
   if (_bdGetHiddenSections().includes(secId)) return '';
   // título sem o emoji da frente e sem travessão; o ícone de traço vem do id da seção
-  const label = String(title).replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s]+/u, '').replace(/\s+[—–]\s+/g, ': ');
+  const label = _BD_SEC_NOME[secId] || String(title).replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s]+/u, '').replace(/\s+[—–]\s+/g, ': ').replace(/ & /g, ' e ');
   const ico = _BD_SEC_ICO[secId] || (/^🔧/.test(String(title)) ? 'wrench' : '');
   const safeName = label.replace(/'/g,"\\'");
   // Botão de gerenciar campos (opcional)
@@ -30200,7 +30219,7 @@ function _bdSec(title, body, opts={}) {
       <div class="bd-section-title">${ico ? `<span class="bd-sec-ic">${fgFerrIco(ico)}</span>` : ''}${label}</div>
       <div style="display:flex;align-items:center;gap:8px;">
         ${fieldsBtn}
-        <button class="bd-sec-hide-btn" title="Ocultar esta seção" aria-label="Ocultar esta seção" onclick="event.stopPropagation();bdHideSection('${secId}','${safeName}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px;border-radius:6px;line-height:1;">${fgFerrIco('trash')}</button>
+        <button class="bd-sec-hide-btn" title="Ocultar esta seção" aria-label="Ocultar esta seção" onclick="event.stopPropagation();bdHideSection('${secId}','${safeName}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px;border-radius:6px;line-height:1;">${fgFerrIco('eyeoff')}</button>
         <div class="bd-section-toggle">${fgFerrIco('right')}</div>
       </div>
     </div>
@@ -30628,17 +30647,17 @@ function _bdSectionAvisos(c) {
   const rows = avs.map((a,i) => {
     const dueClass = _bdAvisoIsDue(c, a) ? 'due' : '';
     return `<div class="bd-aviso ${dueClass}">
-      <div class="bd-aviso-text">🔔 Avisar <b>${a.dias||0} dia(s)</b> antes de <b>${_bdEsc(a.evento||'')}</b> ${a.data?'('+a.data+')':''}</div>
-      <button class="bd-aprendizado-x" onclick="bdAvisoDel('${c.id}',${i})">✕</button>
+      <div class="bd-aviso-text">Avisar <b>${a.dias||0} ${(a.dias||0)===1?'dia':'dias'}</b> antes de <b>${_bdEsc(a.evento||'')}</b> ${a.data?'('+a.data+')':''}</div>
+      <button class="bd-aprendizado-x" onclick="bdAvisoDel('${c.id}',${i})" aria-label="Apagar aviso">${fgFerrIco('x', 14)}</button>
     </div>`;
   }).join('');
   return _bdSec('🔔 Avisos configurados', `
     ${rows||'<div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Nenhum aviso. Adicione lembretes pra contratos, aniversários, datas comemorativas.</div>'}
-    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
-      <input id="bdAvN-${c.id}" class="bd-field-input" placeholder="Evento (ex: Vencimento contrato)" style="flex:2;min-width:180px;">
-      <input id="bdAvD-${c.id}" class="bd-field-input" placeholder="DD/MM/AAAA" style="flex:1;min-width:100px;">
-      <input id="bdAvDi-${c.id}" type="number" class="bd-field-input" placeholder="Dias antes" value="7" style="flex:1;min-width:80px;">
-      <button class="bd-add-row-btn" onclick="bdAvisoAdd('${c.id}')" style="padding:7px 12px;">＋ adicionar</button>
+    <div class="bd-aviso-form" style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:flex-end;">
+      <label class="bd-field" style="flex:2;min-width:180px;"><span class="bd-field-label">Evento</span><input id="bdAvN-${c.id}" class="bd-field-input" placeholder="Ex.: vencimento do contrato"></label>
+      <label class="bd-field" style="flex:1;min-width:100px;"><span class="bd-field-label">Data</span><input id="bdAvD-${c.id}" class="bd-field-input" placeholder="DD/MM/AAAA" inputmode="numeric"></label>
+      <label class="bd-field" style="flex:1;min-width:80px;"><span class="bd-field-label">Quantos dias antes</span><input id="bdAvDi-${c.id}" type="number" class="bd-field-input" value="7" inputmode="numeric"></label>
+      <button class="bd-add-row-btn" onclick="bdAvisoAdd('${c.id}')" style="padding:7px 12px;align-self:flex-end;">${fgFerrIco('plus', 16)} Adicionar</button>
     </div>
   `);
 }
@@ -30672,9 +30691,12 @@ window.bdAvisoDel = (id, i) => {
 function _bdRenderAvisosBox(c) {
   const due = (c.avisos||[]).filter(a => _bdAvisoIsDue(c, a));
   if (due.length === 0) return '';
-  return `<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:8px;padding:12px;margin-bottom:14px;">
-    <div style="font-size:13px;font-weight:600;color:#dc2626;margin-bottom:6px;">Avisos próximos</div>
-    ${due.map(a=>`<div style="font-size:12px;color:var(--text);">${_bdEsc(a.evento)} em ${a.data}</div>`).join('')}
+  return `<div class="bd-avisos-box" style="display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px;">
+    <span style="width:28px;height:28px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:#c9353a;color:#fff;">${fgFerrIco('bell', 16)}</span>
+    <div style="min-width:0;">
+      <div style="font-size:14px;font-weight:600;line-height:20px;color:var(--text);margin-bottom:2px;">Avisos próximos</div>
+      ${due.map(a=>`<div style="font-size:13px;line-height:18px;color:var(--text2);">${_bdEsc(a.evento)} em ${a.data}</div>`).join('')}
+    </div>
   </div>`;
 }
 
@@ -34802,12 +34824,12 @@ const POP = (() => {
         </div>
         <div id="ctrStep2" hidden>
           <h2>Quem é o Contratante?</h2>
-          <p class="ctr-modal-sub">A pessoa/empresa que está contratando seu serviço. O link único vai pra ela assinar.</p>
+          <p class="ctr-modal-sub">A pessoa ou empresa que está contratando seu serviço. O link único vai pra ela assinar.</p>
           <label class="ctr-field"><span>Título do contrato <em>*</em></span>
             <input id="ctrfTitle" type="text" placeholder="Ex.: Prestação de serviços, Palhoça">
           </label>
           <label class="ctr-field"><span>Nome completo do Contratante <em>*</em></span>
-            <input id="ctrfClientName" type="text" placeholder="Ex: João da Silva">
+            <input id="ctrfClientName" type="text" placeholder="Ex.: João da Silva">
           </label>
           <div class="ctr-field-row">
             <label class="ctr-field"><span>E-mail</span>
@@ -35064,7 +35086,7 @@ const POP = (() => {
       <h2>${escHtml(c.title)}</h2>
       <div class="ctr-detail-meta">
         <span class="ctr-badge ctr-badge--${c.status||'pending'}">${c.status==='signed'?'Assinado':c.status==='expired'?'Expirado':'Aguardando'}</span>
-        <span>Cliente: <b>${escHtml(c.clientName||'—')}</b></span>
+        ${c.clientName ? `<span>Cliente: <b>${escHtml(c.clientName)}</b></span>` : ''}
         ${c.clientEmail ? `<span>${escHtml(c.clientEmail)}</span>` : ''}
         <span>Criado ${fmtDate(c.createdAt)}</span>
         ${c.signedAt ? `<span>Assinado ${fmtDate(c.signedAt)}</span>` : ''}
@@ -35093,12 +35115,12 @@ const POP = (() => {
         <div class="ctr-signed-panel ctr-signed-panel--internal">
           <div class="ctr-signed-selfie">
             ${c.internalSig.selfieDataUrl ? `<img src="${c.internalSig.selfieDataUrl}" alt="Selfie do Contratado">` : ''}
-            <span class="ctr-signed-badge">✓ Você</span>
+            <span class="ctr-signed-badge">Assinado por você</span>
           </div>
           <div class="ctr-signed-info">
             <div class="ctr-signed-line"><b>Contratado</b><span>${escHtml(c.internalSig.name||'')}</span></div>
             <div class="ctr-signed-line"><b>Data/hora</b><span>${fmtDate(c.internalSig.signedAt)}</span></div>
-            <div class="ctr-signed-line"><b>IP</b><span>${escHtml(c.internalSig.ip || '—')}</span></div>
+            <div class="ctr-signed-line"><b>IP</b><span>${escHtml(c.internalSig.ip || 'Não registrado')}</span></div>
             ${c.internalSig.cpf ? `<div class="ctr-signed-line"><b>CPF</b><span>${escHtml(c.internalSig.cpf)}</span></div>` : ''}
           </div>
         </div>
@@ -35107,13 +35129,13 @@ const POP = (() => {
         <div class="ctr-signed-panel">
           <div class="ctr-signed-selfie">
             ${c.selfieDataUrl ? `<img src="${c.selfieDataUrl}" alt="Selfie do Contratante">` : ''}
-            <span class="ctr-signed-badge">✓ Contratante</span>
+            <span class="ctr-signed-badge">Assinado pelo contratante</span>
           </div>
           <div class="ctr-signed-info">
             <div class="ctr-signed-line"><b>Contratante</b><span>${escHtml(c.signatureText || c.clientName || '')}</span></div>
             <div class="ctr-signed-line"><b>Data/hora</b><span>${fmtDate(c.signedAt)}</span></div>
-            <div class="ctr-signed-line"><b>IP</b><span>${escHtml(c.signIp || '—')}</span></div>
-            <div class="ctr-signed-line"><b>Hash</b><code>${escHtml((c.bodyHash||'').slice(0,32))}…</code></div>
+            <div class="ctr-signed-line"><b>IP</b><span>${escHtml(c.signIp || 'Não registrado')}</span></div>
+            <div class="ctr-signed-line"><b>Hash</b><code>${escHtml(c.bodyHash || 'Não registrado')}</code></div>
           </div>
         </div>
         <button class="btn-primary btn-primary--lg" onclick="ctrDownloadPdf('${id}')" style="width:100%;margin-top:12px;">${fgFerrIco('download', 18)} Baixar PDF assinado</button>
