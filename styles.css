@@ -18594,6 +18594,13 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   html:not(.fg-noturno) body.at-social .sp2-seg-btn { color: var(--text2); }
   html:not(.fg-noturno) body.at-social .sp2-seg-btn.on { background: var(--ink); color: var(--on-ink); box-shadow: none; }
 
+  /* foto, carrossel, tipo e legenda moram num div em bloco: o gap da coluna não chegava neles (0 px entre um e outro).
+     O JS deixa o display vazio no modo Post e "none" no Story */
+  body.at-social .sp2-editor-col { gap: 12px; }
+  body.at-social #sp2PostMode { display: flex; flex-direction: column; gap: 12px; }
+  body.at-social .sp2-carousel-wrap { gap: 4px; }
+  body.at-social .sp2-carousel-strip { padding: 0 0 4px; }
+
   /* área da foto: vazia fica do tamanho do conteúdo (era um quadrado de 55% da tela); com foto mantém a proporção */
   body.at-social .sp2-drop { padding: 28px 16px; border-width: 1.5px; border-radius: 16px; }
   body.at-social .sp2-drop:has(> #spUploadPlaceholder:not([style*="none"])) { aspect-ratio: auto; max-height: none; }
@@ -18613,11 +18620,12 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   html:not(.fg-noturno) body.at-social .sp2-btn-carousel { background: var(--card); border-color: var(--border); color: var(--text); }
   body.at-social .sp2-remove-media { top: 8px; right: 8px; width: 44px; height: 44px; -webkit-backdrop-filter: none; backdrop-filter: none; }
   html:not(.fg-noturno) body.at-social .sp2-remove-media { background: var(--card); border: 1px solid var(--border); color: var(--text); }
-  body.at-social .sp2-ratio-badge { top: 8px; left: 8px; min-height: 28px; padding: 0 4px 0 10px; font-size: 12px; font-weight: 600; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  body.at-social .sp2-ratio-badge { top: 8px; left: 8px; min-height: 44px; padding: 0 14px 0 12px; font-size: 13px; font-weight: 600; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  body.at-social .sp2-ratio-badge:has(button) { padding-right: 0; }
   html:not(.fg-noturno) body.at-social .sp2-ratio-badge { background: var(--card); border: 1px solid var(--border); color: var(--text); }
   html:not(.fg-noturno) body.at-social .sp2-ratio-badge.ok svg { color: var(--fg-green); }
   html:not(.fg-noturno) body.at-social .sp2-ratio-badge.warn svg { color: var(--fg-amber); }
-  body.at-social .sp2-ratio-badge button { min-height: 32px; padding: 0 12px; margin-left: 6px; font-size: 13px; font-weight: 600; }
+  body.at-social .sp2-ratio-badge button { align-self: stretch; min-height: 44px; margin: -1px -1px -1px 6px; padding: 0 16px; font-size: 13px; font-weight: 600; }
   html:not(.fg-noturno) body.at-social .sp2-ratio-badge button { background: var(--fg-acao); color: var(--on-ink); }
   html:not(.fg-noturno) body.at-social .sp2-carousel-add { background: var(--card); color: var(--text2); }
   body.at-social .sp2-carousel-add-label { font-size: 12px; }
@@ -18631,7 +18639,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-social .sp2-type-swap { min-height: 44px; padding: 0 12px; border-radius: 10px; font-size: 14px; }
   html:not(.fg-noturno) body.at-social .sp2-type-swap { color: var(--text); }
   body.at-social .sp2-type-swap-menu { padding: 3px; border-radius: 12px; }
-  body.at-social .sp2-type-swap-menu button { min-height: 40px; border-radius: 9px; font-size: 14px; }
+  body.at-social .sp2-type-swap-menu button { min-height: 44px; border-radius: 9px; font-size: 14px; }
   html:not(.fg-noturno) body.at-social .sp2-type-swap-menu button.on { background: var(--ink); color: var(--on-ink); }
 
   /* legenda: chips de 44 numa linha, contador embaixo à direita; texto 16 (o iOS não dá zoom) */
@@ -18669,6 +18677,8 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-social .sp2-color-row { gap: 8px; }
   body.at-social .sp2-color-row .sp-color-dot { width: 44px; height: 44px; transform: none !important; }
   html:not(.fg-noturno) body.at-social .sp2-color-row .sp-color-dot.active { border-color: var(--card); box-shadow: 0 0 0 2px var(--ink); }
+
+  html:not(.fg-noturno) body.at-social .sp2-story-wrap:has(#spPhoneEmpty[style*="none"]) .sp2-btn-fullw { background: var(--card); border: 1px solid var(--border); color: var(--text); }
 
   /* Agora / Agendar: caixa branca, rádio grafite de 44 */
   body.at-social .sp2-schedule { min-height: 52px; padding: 0 14px; gap: 4px 20px; border-radius: 12px; }
@@ -18797,8 +18807,33 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   /* cartão da live */
   body.at-lives .studio-grid { gap: 12px; }
   body.at-lives .live-card { border-radius: 16px; box-shadow: var(--sh-card); transform: none !important; }
-  body.at-lives .live-card__thumb { aspect-ratio: 1 / 1 !important; }
-  body.at-lives .live-badge { box-shadow: none; }
+  /* miniatura de ponta a ponta (o cartão tinha padding de 18 e o texto ficava 16 px pra dentro dela).
+     Os selos ficam numa faixa em cima e o celular embaixo deles: no 1:1 o celular encolhia e cortava
+     "Enviar mensagem", e no 4:5 os selos caíam por cima dos cantos do celular */
+  body.at-lives .live-card { padding: 0; }
+  /* borda neutra em qualquer status: quem diz "reconectando" ou "caiu" é a bolinha do selo */
+  html:not(.fg-noturno) body.at-lives .live-card[data-status] { border-color: var(--border); }
+  body.at-lives .live-card__thumb { margin: 0; aspect-ratio: 3 / 4 !important; }
+  body.at-lives .live-mockup { padding: 44px 0 6px; }
+  body.at-lives .live-mockup__ig-icons { gap: 8px; }
+  body.at-lives .live-mockup__ig-input { min-width: 0; padding: 7px 10px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  /* selos: pílula branca; "Ao vivo" é status, então bolinha vermelha e não fundo vermelho.
+     O destino fica ao lado do cronômetro, que tem largura fixa */
+  body.at-lives .live-card__overlay--tl { top: 8px; left: 8px; }
+  body.at-lives .live-card__overlay--tr { top: 8px; right: 8px; }
+  body.at-lives .live-card__overlay--br { top: 8px; right: 98px; bottom: auto; }
+  body.at-lives .live-timer { min-width: 84px; justify-content: center; }
+  body.at-lives :is(.live-badge, .live-timer, .live-dest-chip) {
+    height: 28px; padding: 0 10px; gap: 6px; display: inline-flex; align-items: center; border-radius: 999px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; box-shadow: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+  html:not(.fg-noturno) body.at-lives :is(.live-badge, .live-timer, .live-dest-chip) { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  body.at-lives .live-badge__dot { width: 8px; height: 8px; animation: none; }
+  html:not(.fg-noturno) body.at-lives .live-badge__dot { background: var(--fg-red); }
+  html:not(.fg-noturno) body.at-lives .live-card[data-status="reconnecting"] .live-badge__dot { background: var(--fg-amber); }
+  body.at-lives .live-card[data-status="reconnecting"] .live-badge__label::after { content: "Reconectando"; font-size: 12px; }
+  body.at-lives .live-card[data-status="failed"] .live-badge__label::after { content: "Caiu"; font-size: 12px; }
   /* o "AO VIVO" de dentro do celular repetia o selo do cartão e espremia o nome da conta */
   body.at-lives .live-mockup__ig-live { display: none; }
   body.at-lives .live-card__body { gap: 10px; padding: 12px 16px 16px; }
@@ -18940,7 +18975,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   html:not(.fg-noturno) body.at-pop .pop-item.selected svg { color: var(--on-ink); }
   /* no toque não tem hover: o lápis de renomear aparece no item aberto */
   body.at-pop .pop-item.selected .pop-item__actions { display: inline-flex; }
-  body.at-pop .pop-item__actions button { width: 40px; height: 40px; border-radius: 8px; color: inherit; }
+  body.at-pop .pop-item__actions button { width: 44px; height: 44px; border-radius: 8px; color: inherit; }
   body.at-pop .pop-item__actions svg { width: 16px; height: 16px; }
   body.at-pop .pop-nav__add-pop { align-self: flex-start; min-height: 44px; margin: 4px 0 8px 0; padding: 0 14px; gap: 8px; border-style: solid; border-radius: 12px; font-size: 14px; font-weight: 600; }
   html:not(.fg-noturno) body.at-pop .pop-nav__add-pop { background: var(--card); border-color: var(--border); color: var(--text); }
