@@ -2805,19 +2805,19 @@ ufw allow 3000/tcp</pre>
   <!-- Pomodoro Widget -->
   <div class="pj-pomo-widget" id="pjPomoWidget" style="display:none;">
     <div class="pj-pomo-header">
-      <span class="pj-pomo-mode" id="pjPomoMode">🍅 Foco</span>
-      <button class="pj-pomo-close" onclick="pjPomoClose()" title="Fechar">×</button>
+      <span class="pj-pomo-mode" id="pjPomoMode">Foco</span>
+      <button class="pj-pomo-close" onclick="pjPomoClose()" title="Fechar" aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
     </div>
     <div class="pj-pomo-timer" id="pjPomoTimer">25:00</div>
-    <div class="pj-pomo-task-name" id="pjPomoTaskName">—</div>
+    <div class="pj-pomo-task-name" id="pjPomoTaskName"></div>
     <div class="pj-pomo-cycles" id="pjPomoCycles"></div>
     <div class="pj-pomo-controls">
-      <button class="pj-pomo-btn" id="pjPomoStartBtn" onclick="pjPomoToggle()">▶ Iniciar</button>
-      <button class="pj-pomo-btn pj-pomo-btn-sec" onclick="pjPomoReset()">↺</button>
-      <button class="pj-pomo-btn pj-pomo-btn-sec" onclick="pjPomoSkip()" title="Pular sessão">⏭</button>
+      <button class="pj-pomo-btn" id="pjPomoStartBtn" onclick="pjPomoToggle()">Iniciar</button>
+      <button class="pj-pomo-btn pj-pomo-btn-sec" onclick="pjPomoReset()" title="Recomeçar" aria-label="Recomeçar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+      <button class="pj-pomo-btn pj-pomo-btn-sec" onclick="pjPomoSkip()" title="Pular sessão" aria-label="Pular sessão"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 4 10 8-10 8V4z"/><line x1="19" x2="19" y1="5" y2="19"/></svg></button>
     </div>
     <div id="pjPomoNotifRow" style="margin-top:8px;text-align:center;display:none;">
-      <button class="pj-pomo-btn pj-pomo-btn-sec" style="width:100%;font-size:10px;" onclick="pjPomoRequestNotif()">🔔 Ativar avisos do sistema</button>
+      <button class="pj-pomo-btn pj-pomo-btn-sec" style="width:100%;font-size:10px;" onclick="pjPomoRequestNotif()">Ativar avisos do sistema</button>
     </div>
   </div>
 
@@ -22387,22 +22387,10 @@ function pjOpenTagPicker(taskId, anchorEl) {
     <input class="pj-tag-picker-search" type="text" placeholder="Buscar ou criar tag" id="pjTagPickerInput">
     <div class="pj-tag-picker-list" id="pjTagPickerList"></div>
     <div class="pj-tag-picker-foot">
-      <span style="color:var(--text3);font-size:11px;">Toque pra marcar. Enter cria uma tag nova.</span>
+      <span style="color:var(--text3);font-size:11px;">Toque pra marcar ou digite pra criar.</span>
     </div>
   `;
   document.body.appendChild(pop);
-
-  // Posiciona próximo ao anchor
-  const r = anchorEl?.getBoundingClientRect?.();
-  if (r) {
-    const top = Math.min(window.innerHeight - 320, r.bottom + 6);
-    const left = Math.min(window.innerWidth - 280, r.left);
-    pop.style.top = top + 'px';
-    pop.style.left = left + 'px';
-  } else {
-    pop.style.top = '50%'; pop.style.left = '50%';
-    pop.style.transform = 'translate(-50%,-50%)';
-  }
 
   // Fecha ao clicar fora
   setTimeout(() => {
@@ -22430,7 +22418,7 @@ function pjOpenTagPicker(taskId, anchorEl) {
       </div>`;
     }
     if (!filtered.length && !q) {
-      html += `<div class="pj-tag-picker-empty">Nenhuma tag ainda.<br>Digite o nome e toque em Enter.</div>`;
+      html += `<div class="pj-tag-picker-empty">Nenhuma tag ainda. Digite o nome e confirme no teclado.</div>`;
     }
     html += filtered.map(t => {
       const on = taskTagIds.has(t.id);
@@ -22443,6 +22431,20 @@ function pjOpenTagPicker(taskId, anchorEl) {
     list.innerHTML = html;
   }
   renderList('');
+
+  // Posiciona embaixo do chip (em cima se não couber), com a altura real do balão
+  if (anchorEl?.getBoundingClientRect) {
+    const ph = pop.offsetHeight || 300;
+    pjRoomBelow(anchorEl, ph);
+    const r = anchorEl.getBoundingClientRect();
+    let top = r.bottom + 6;
+    if (top + ph > window.innerHeight - 10) top = Math.max(10, r.top - ph - 6);
+    pop.style.top = top + 'px';
+    pop.style.left = Math.min(window.innerWidth - 280, r.left) + 'px';
+  } else {
+    pop.style.top = '50%'; pop.style.left = '50%';
+    pop.style.transform = 'translate(-50%,-50%)';
+  }
   const inp = document.getElementById('pjTagPickerInput');
   inp?.focus();
   inp?.addEventListener('input', () => renderList(inp.value));
@@ -22654,7 +22656,7 @@ function pjPomoClose() {
   document.getElementById('pjPomoWidget').style.display = 'none';
 }
 function pjPomoRenderUI() {
-  const modeLabel = { focus:'🍅 Foco', short:'☕ Pausa curta', long:'🛋️ Pausa longa' };
+  const modeLabel = { focus:'Foco', short:'Pausa curta', long:'Pausa longa' };
   const modeEl = document.getElementById('pjPomoMode');
   const timerEl = document.getElementById('pjPomoTimer');
   const taskEl  = document.getElementById('pjPomoTaskName');
@@ -22663,9 +22665,9 @@ function pjPomoRenderUI() {
   if (modeEl)  modeEl.textContent  = modeLabel[_pomoState.mode] || '';
   if (timerEl) timerEl.textContent = pjPomoFmt(_pomoState.secsLeft);
   if (timerEl) timerEl.classList.toggle('running', _pomoState.running);
-  if (btnEl)   btnEl.textContent   = _pomoState.running ? '⏸ Pausar' : '▶ Iniciar';
+  if (btnEl)   btnEl.textContent   = _pomoState.running ? 'Pausar' : 'Iniciar';
   const task = _pomoState.taskId ? pjAllTasks.find(t=>t.id===_pomoState.taskId) : null;
-  if (taskEl)  taskEl.textContent  = task?.title || '—';
+  if (taskEl)  taskEl.textContent  = task?.title || '';
   if (cycleEl) cycleEl.innerHTML   = Array.from({length:4},(_,i)=>
     `<div class="pj-pomo-dot ${i < _pomoState.cycle ? 'done' : ''}"></div>`).join('');
   // Show notification permission button if not granted
@@ -22677,7 +22679,7 @@ function pjPomoRenderUI() {
 function pjPomoRequestNotif() {
   if (typeof Notification === 'undefined') return;
   Notification.requestPermission().then(perm => {
-    if (perm === 'granted') showToast('Avisos do sistema ativados!', 'ok');
+    if (perm === 'granted') showToast('success', 'Avisos do sistema ativados.');
     pjPomoRenderUI();
   });
 }
@@ -22735,7 +22737,8 @@ function pjPomoSessionEnd() {
   }
   // Notify
   try { new Notification('Fogo & Gestão', { body: _pomoState.mode==='focus'?'Hora de focar!':'Pausa! Descanse um pouco.' }); } catch(e){}
-  if (typeof showToast==='function') showToast(_pomoState.mode==='focus'?'🍅 Sessão encerrada! Hora da pausa.':'☕ Pausa acabou! Hora de focar.','ok');
+  // o modo já avançou: foco agora = a pausa acabou
+  if (typeof showToast==='function') showToast('success', _pomoState.mode==='focus'?'A pausa acabou. Hora de focar.':'Sessão encerrada. Hora da pausa.');
   pjPomoRenderUI();
 }
 
@@ -23456,9 +23459,7 @@ function pjAskAiRenderMsgs() {
       }
     }
     const copyBtn = (m.role === 'bot' && !m.pending)
-      ? `<button class="pj-askai-copy" type="button" onclick="pjAskAiCopy(${idx},this)" title="Copiar resposta" aria-label="Copiar">
-           <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="9" height="10" rx="1.5"/><path d="M7 4V2.5A.5.5 0 0 1 7.5 2h5a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5H11"/></svg>
-         </button>`
+      ? `<button class="pj-askai-copy" type="button" onclick="pjAskAiCopy(${idx},this)" title="Copiar resposta" aria-label="Copiar">${tjIco('copy', 14)}</button>`
       : '';
     return `<div class="pj-askai-msg ${cls}">
       <div class="pj-askai-avatar">${tjIco(m.role==='user'?'user':'bot', 16)}</div>
@@ -23533,7 +23534,7 @@ async function pjAskAiCopy(idx, btnEl) {
     if (btnEl) {
       btnEl.classList.add('copied');
       const orig = btnEl.innerHTML;
-      btnEl.innerHTML = `<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l3 3 7-7"/></svg>`;
+      btnEl.innerHTML = tjIco('check', 14);
       setTimeout(() => { btnEl.classList.remove('copied'); btnEl.innerHTML = orig; }, 1400);
     }
     if (typeof showToast === 'function') showToast('ok','📋','Copiado!');
@@ -23924,14 +23925,14 @@ ${JSON.stringify(ctx)}`;
       const isAuth = res.status === 401 || type === 'authentication_error' || type === 'invalid_api_key';
       const kind = isCredit ? 'credit' : isAuth ? 'auth' : 'other';
       const nice = isCredit
-        ? '💳 **Sem crédito na Claude API.**\n\nA conta da Anthropic está sem saldo — recarregue em [console.anthropic.com/settings/billing](https://console.anthropic.com/settings/billing) pra voltar a usar a IA.\n\n_(Detalhe técnico: ' + msg + ')_'
+        ? '**Sem crédito na Claude API.**\n\nRecarregue em [console.anthropic.com/settings/billing](https://console.anthropic.com/settings/billing).\n\nDetalhe técnico: ' + msg
         : isAuth
-        ? '🔑 **Chave da Claude inválida ou expirada.**\n\nAtualize em Configurações (⚙️ no topo do app) com uma nova chave da [console.anthropic.com](https://console.anthropic.com/settings/keys).\n\n_(Detalhe técnico: ' + msg + ')_'
-        : '❌ ' + msg;
+        ? '**A chave da Claude venceu ou está errada.**\n\nTroque em Configurações por uma chave nova da [console.anthropic.com](https://console.anthropic.com/settings/keys).\n\nDetalhe técnico: ' + msg
+        : '**A IA não respondeu.** Tente de novo em instantes.\n\nDetalhe técnico: ' + msg;
       if (isCredit && typeof showToast === 'function') {
-        showToast('error','💳','Claude API sem crédito — recarregue a conta pra usar a IA.');
+        showToast('error','💳','Claude API sem crédito. Recarregue a conta pra usar a IA.');
       } else if (isAuth && typeof showToast === 'function') {
-        showToast('error','🔑','Chave da Claude inválida — atualize em Configurações.');
+        showToast('error','🔑','Chave da Claude inválida. Troque em Configurações.');
       }
       const e = new Error(nice);
       e.kind = kind;
@@ -23944,7 +23945,7 @@ ${JSON.stringify(ctx)}`;
   } catch(e) {
     window.pjAskAiHistory = window.pjAskAiHistory.filter(m => !m.pending);
     const already = e && e.kind; // ja veio formatado
-    window.pjAskAiHistory.push({ role:'bot', text: already ? e.message : ('❌ ' + (e.message || 'Erro ao chamar a IA.')) });
+    window.pjAskAiHistory.push({ role:'bot', text: already ? e.message : 'Não deu pra falar com a IA. Confira a internet e tente de novo.' });
   } finally {
     window.pjAskAiBusy = false;
     if (sendBtn) sendBtn.disabled = false;
@@ -25612,7 +25613,7 @@ function pjOpenRecurrenceMenu(ev, taskId) {
   const t = pjAllTasks.find(x => x.id === taskId);
   const cur = t?.recurrence?.pattern || null;
   pjShowPopupMenu(ev, [
-    { id:null,      label:'Sem recorrência', icon:'✕' },
+    { id:null,      label:'Sem recorrência', icon:tjIco('x', 16) },
     { id:'daily',   label:'Diária',          icon:tjIco('repeat', 16) },
     { id:'weekly',  label:'Semanal',         icon:tjIco('repeat', 16) },
     { id:'monthly', label:'Mensal',          icon:tjIco('repeat', 16) },
@@ -25664,6 +25665,20 @@ function pjFmtDateShort(yyyymmdd) {
   const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   return `${parseInt(d)} ${months[parseInt(m)-1]}`;
 }
+// Celular: se o balão (altura ph) não cabe entre o chip e a barra de baixo da janela, rola a janela
+// o que falta, no máximo até o chip encostar nas abas. Assim ele abre embaixo e não cobre os chips de cima.
+function pjRoomBelow(el, ph) {
+  if (!el || window.innerWidth > 640 || !el.closest('#pjTaskModal')) return;
+  let sc = el.parentElement;
+  while (sc && !(sc.scrollHeight > sc.clientHeight && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
+  if (!sc) return;
+  const box = (q) => document.querySelector('#pjTaskModal ' + q)?.getBoundingClientRect();
+  const topo = Math.max(sc.getBoundingClientRect().top, box('.pj-modal-mtabs')?.bottom || 0) + 8;
+  const fundo = (box('.pj-modal-bottombar')?.top || window.innerHeight) - 8;
+  const r = el.getBoundingClientRect();
+  const falta = r.bottom + 6 + ph - fundo;
+  if (falta > 0) sc.scrollTop += Math.min(falta, r.top - topo);
+}
 function pjOpenDatePicker(ev, taskId) {
   ev.stopPropagation();
   pjClosePopups();
@@ -25688,8 +25703,10 @@ function pjOpenDatePicker(ev, taskId) {
   pop.classList.add('open');
   // Position near trigger
   const trigger = ev.currentTarget;
+  // tamanho real (no celular o balão ocupa a largura toda e os dias têm 44px)
+  const pw = pop.offsetWidth || 300, ph = pop.offsetHeight || 360;
+  pjRoomBelow(trigger, ph);
   const r = trigger.getBoundingClientRect();
-  const pw = 300, ph = 360;
   let left = r.left;
   let top = r.bottom + 6;
   if (left + pw > window.innerWidth - 10) left = window.innerWidth - pw - 10;
@@ -25826,11 +25843,13 @@ function pjOpenTimePicker(ev, taskId) {
     </div>`;
   pop.classList.add('open');
   const trigger = ev.currentTarget;
+  const pw = pop.offsetWidth || 220, ph = pop.offsetHeight || 260;
+  pjRoomBelow(trigger, ph);
   const r = trigger.getBoundingClientRect();
   let left = r.left;
   let top = r.bottom + 6;
-  if (left + 220 > window.innerWidth - 10) left = window.innerWidth - 230;
-  if (top + 260 > window.innerHeight - 10) top = r.top - 266;
+  if (left + pw > window.innerWidth - 10) left = window.innerWidth - pw - 10;
+  if (top + ph > window.innerHeight - 10) top = r.top - ph - 6;
   pop.style.left = Math.max(10, left) + 'px';
   pop.style.top = Math.max(10, top) + 'px';
 }
@@ -26056,9 +26075,10 @@ function pjOpenPriorityMenu(ev, taskId) {
   const t = pjAllTasks.find(x => x.id === taskId);
   if (!t) return;
   const cur = t.priority || null;
-  const colorMap = { urgent:'#ef4444', high:'#f97316', normal:'#6366f1', low:'#94a3b8' };
-  const opts = [{ id:null, label:'Sem prioridade', icon:'✕' }];
-  PJ_PRIORITIES.forEach(p => opts.push({ id:p.id, label:p.label, icon:'⚑', color:colorMap[p.id] }));
+  // bolinha igual à do chip: urgente vermelha, alta âmbar, normal e baixa cinza
+  const colorMap = { urgent:'#c9353a', high:'#d97706' };
+  const opts = [{ id:null, label:'Sem prioridade', icon:tjIco('x', 16) }];
+  PJ_PRIORITIES.forEach(p => opts.push({ id:p.id, label:p.label, icon:'●', color:colorMap[p.id] || '#9ca3af' }));
   pjShowPopupMenu(ev, opts, cur, async (id) => {
     await pjUpdateTask(taskId, { priority: id });
     const t2 = pjAllTasks.find(x => x.id === taskId);
@@ -26212,6 +26232,13 @@ const TJ_ICO = {
   layers: '<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
   list: '<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
   lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  type: '<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/>',
+  hash: '<line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+  pin: '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+  film: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/>',
+  music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  archive: '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>',
 };
 function tjIco(k, s = 16, w = 1.75) {
   const p = TJ_ICO[k] || (typeof FG_ICO !== 'undefined' && FG_ICO[k]) || '';
@@ -26300,85 +26327,8 @@ async function pjOpenTask(taskId) {
     });
 }
 
-function pjRenderTaskModal(task) {
-  const list = pjLists.find(l => l.id === task.listId);
-  const sp   = pjSpaces.find(s => s.id === task.spaceId);
-  const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
-  const st = statuses.find(s => s.id === (task.statusId||statuses[0].id)) || statuses[0];
-
-  // Alerta "Cliente obrigatorio" fica escondido por padrao — so aparece
-  // quando o user clica em "Salvar e fechar" sem cliente (via pjCloseTaskModal).
-  // Se ele preencheu depois, some.
-  try {
-    const alertEl = document.getElementById('pjTaskClientAlert');
-    if (alertEl && pjTaskHasClient(task)) alertEl.style.display = 'none';
-  } catch(_){}
-
-  document.getElementById('pjModalSpaceName').textContent = sp?.name || '';
-  const listEl = document.getElementById('pjModalListName');
-  listEl.textContent = list?.name || '';
-
-  const titleEl = document.getElementById('pjModalTitle');
-  titleEl.value = task.title || '';
-  titleEl.style.height = 'auto'; titleEl.style.height = titleEl.scrollHeight+'px';
-
-  document.getElementById('pjModalDesc').value = task.description || '';
-  pjDescPreview = false;
-  const dPv = document.getElementById('pjModalDescPreview'); if (dPv) dPv.style.display = 'none';
-  const dTa = document.getElementById('pjModalDesc'); if (dTa) dTa.style.display = '';
-  const dBtn = document.getElementById('pjModalDescPreviewBtn');
-  if (dBtn && typeof _PJ_PV_EYE_SVG !== 'undefined') { dBtn.innerHTML = _PJ_PV_EYE_SVG; dBtn.title = 'Pré-visualizar formatação'; }
-  pjMentionAttach(document.getElementById('pjModalDesc'));
-  pjMentionAttach(document.getElementById('pjCommentInput'));
-
-  // Meta row
-  const assigneeOptions = pjMembers.map(m =>
-    `<option value="${m.uid}" ${(task.assignees||[]).includes(m.uid)?'selected':''}>${m.name||m.email}</option>`).join('');
-
-  document.getElementById('pjModalMeta').innerHTML = `
-    <div class="pj-meta-item" onclick="pjOpenStatusMenu(event,'${task.id}')">
-      <span style="width:10px;height:10px;border-radius:50%;background:${st.color};display:inline-block;"></span>
-      <span>${escHtml(st.name)}</span>
-    </div>
-    <div class="pj-meta-item" title="Responsável" onclick="pjOpenAssignModal('${task.id}')">
-      ${(task.assignees||[]).length > 0 ? (task.assignees||[]).map(u=>pjAvatarHtml(u)).join('') : `${tjMetaIco('user')}<span class="pj-meta-ph">Responsável</span>`}
-    </div>
-    <div class="pj-meta-item" title="Data de entrega" onclick="pjOpenDatePicker(event,'${task.id}')">
-      ${tjMetaIco('calendar')}
-      <button class="pj-meta-date-btn ${task.dueDate?'':'empty'}" type="button">${task.dueDate ? pjFmtDateShort(task.dueDate) : 'Data'}</button>
-    </div>
-    <div class="pj-meta-item" title="Horário de entrega" onclick="pjOpenTimePicker(event,'${task.id}')">
-      ${tjMetaIco('clock')}
-      <button class="pj-meta-date-btn ${task.dueTime?'':'empty'}" type="button">${task.dueTime || 'Hora'}</button>
-    </div>
-    <div class="pj-meta-item" title="Prioridade" onclick="pjOpenPriorityMenu(event,'${task.id}')">
-      ${task.priority ? `<span class="pj-priority ${task.priority}">${PJ_PRIORITIES.find(p=>p.id===task.priority)?.label}</span>` : `${tjMetaIco('flag')}<span class="pj-meta-ph">Prioridade</span>`}
-    </div>
-    <div class="pj-meta-item" onclick="pjOpenClientMenu(event,'${task.id}')" title="Cliente associado (puxa da Base de Dados)">
-      ${(() => {
-        const cli = pjResolveTaskClient(task);
-        if (!cli) return `${tjMetaIco('store')}<span class="pj-meta-ph">Cliente</span>`;
-        const logo = (typeof getClientLogo === 'function') ? getClientLogo(cli) : null;
-        const color = (typeof getClientColor === 'function') ? getClientColor(cli) : null;
-        const dot = logo
-          ? `<img src="${logo}" alt="" style="width:16px;height:16px;border-radius:4px;object-fit:cover;vertical-align:middle;margin-right:4px;">`
-          : `<span style="width:8px;height:8px;border-radius:50%;background:${color||'var(--accent)'};display:inline-block;margin-right:6px;vertical-align:middle;"></span>`;
-        return `${dot}${escHtml(cli)}`;
-      })()}
-    </div>
-    <div class="pj-meta-item" onclick="pjOpenRecurrenceMenu(event,'${task.id}')" title="Repete ao concluir">
-      ${tjMetaIco('repeat')}<span${task.recurrence?.pattern ? '' : ' class="pj-meta-ph"'}>${task.recurrence?.pattern ? pjRecurrenceLabel(task.recurrence) : 'Recorrência'}</span>
-    </div>
-    <div class="pj-meta-item" onclick="pjPomoOpen('${task.id}')" title="Iniciar sessão Pomodoro nesta tarefa">
-      ${tjMetaIco('timer')}<span>Pomodoro</span>
-    </div>
-    <div class="pj-meta-item pj-meta-tags" onclick="pjOpenTagPicker('${task.id}',this)" title="Tags da tarefa">
-      ${tjMetaIco('tag')}
-      ${pjTaskTagsHtml(task, { small:true, removable:true, taskId: task.id })
-        || '<span style="color:var(--text3);font-size:12px;">Tags</span>'}
-    </div>`;
-
-  // Custom fields
+// Seção Campos da janela da tarefa (também redesenhada pelo salvar automático do editor de campos)
+function pjModalFieldsHtml(task, list) {
   const fields = list?.customFields || [];
   let fieldsHtml = '';
   if (fields.length) {
@@ -26443,7 +26393,96 @@ function pjRenderTaskModal(task) {
       <button class="pj-btn pj-btn-secondary pj-fields-manage" style="font-size:11px;padding:4px 10px;display:inline-flex;align-items:center;gap:6px;" onclick="pjOpenFieldsEditor('${list.id}')">${tjIco('plus', 14)}Adicionar campo</button>
     </div>`;
   }
-  document.getElementById('pjModalCustomFields').innerHTML = fieldsHtml;
+  return fieldsHtml;
+}
+function pjRenderTaskModal(task) {
+  const list = pjLists.find(l => l.id === task.listId);
+  const sp   = pjSpaces.find(s => s.id === task.spaceId);
+  const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
+  const st = statuses.find(s => s.id === (task.statusId||statuses[0].id)) || statuses[0];
+
+  // Alerta "Cliente obrigatorio" fica escondido por padrao — so aparece
+  // quando o user clica em "Salvar e fechar" sem cliente (via pjCloseTaskModal).
+  // Se ele preencheu depois, some.
+  try {
+    const alertEl = document.getElementById('pjTaskClientAlert');
+    if (alertEl && pjTaskHasClient(task)) alertEl.style.display = 'none';
+  } catch(_){}
+
+  document.getElementById('pjModalSpaceName').textContent = sp?.name || '';
+  const listEl = document.getElementById('pjModalListName');
+  listEl.textContent = list?.name || '';
+
+  const titleEl = document.getElementById('pjModalTitle');
+  titleEl.value = task.title || '';
+  titleEl.style.height = 'auto'; titleEl.style.height = titleEl.scrollHeight+'px';
+
+  document.getElementById('pjModalDesc').value = task.description || '';
+  pjDescPreview = false;
+  const dPv = document.getElementById('pjModalDescPreview'); if (dPv) dPv.style.display = 'none';
+  const dTa = document.getElementById('pjModalDesc'); if (dTa) dTa.style.display = '';
+  const dBtn = document.getElementById('pjModalDescPreviewBtn');
+  if (dBtn && typeof _PJ_PV_EYE_SVG !== 'undefined') { dBtn.innerHTML = _PJ_PV_EYE_SVG; dBtn.title = 'Pré-visualizar formatação'; }
+  pjMentionAttach(document.getElementById('pjModalDesc'));
+  pjMentionAttach(document.getElementById('pjCommentInput'));
+
+  // Meta row
+  const assigneeOptions = pjMembers.map(m =>
+    `<option value="${m.uid}" ${(task.assignees||[]).includes(m.uid)?'selected':''}>${m.name||m.email}</option>`).join('');
+
+  document.getElementById('pjModalMeta').innerHTML = `
+    <div class="pj-meta-item" onclick="pjOpenStatusMenu(event,'${task.id}')">
+      <span style="width:10px;height:10px;border-radius:50%;background:${st.color};display:inline-block;"></span>
+      <span>${escHtml(st.name)}</span>
+    </div>
+    <div class="pj-meta-item" title="Responsável" onclick="pjOpenAssignModal('${task.id}')">
+      ${(() => {
+        const asg = task.assignees || [];
+        if (!asg.length) return `${tjMetaIco('user')}<span class="pj-meta-ph">Responsável</span>`;
+        // avatar + primeiro nome; com mais de um, avatares sobrepostos e "+N"
+        const m = pjMembers.find(x => x.uid === asg[0] || x.id === asg[0] || x.email === asg[0]);
+        const nome = String(m?.name || m?.email?.split('@')[0] || '').trim().split(/\s+/)[0];
+        const mais = asg.length > 1 ? ` +${asg.length - 1}` : '';
+        return `<span class="pj-meta-avs">${asg.slice(0, 3).map(u => pjAvatarHtml(u)).join('')}</span><span>${escHtml(nome)}${mais}</span>`;
+      })()}
+    </div>
+    <div class="pj-meta-item" title="Data de entrega" onclick="pjOpenDatePicker(event,'${task.id}')">
+      ${tjMetaIco('calendar')}
+      <button class="pj-meta-date-btn ${task.dueDate?'':'empty'}" type="button">${task.dueDate ? pjFmtDateShort(task.dueDate) : 'Data'}</button>
+    </div>
+    <div class="pj-meta-item" title="Horário de entrega" onclick="pjOpenTimePicker(event,'${task.id}')">
+      ${tjMetaIco('clock')}
+      <button class="pj-meta-date-btn ${task.dueTime?'':'empty'}" type="button">${task.dueTime || 'Hora'}</button>
+    </div>
+    <div class="pj-meta-item" title="Prioridade" onclick="pjOpenPriorityMenu(event,'${task.id}')">
+      ${task.priority ? `<span class="pj-priority ${task.priority}">${PJ_PRIORITIES.find(p=>p.id===task.priority)?.label}</span>` : `${tjMetaIco('flag')}<span class="pj-meta-ph">Prioridade</span>`}
+    </div>
+    <div class="pj-meta-item" onclick="pjOpenClientMenu(event,'${task.id}')" title="Cliente associado (puxa da Base de Dados)">
+      ${(() => {
+        const cli = pjResolveTaskClient(task);
+        if (!cli) return `${tjMetaIco('store')}<span class="pj-meta-ph">Cliente</span>`;
+        const logo = (typeof getClientLogo === 'function') ? getClientLogo(cli) : null;
+        const color = (typeof getClientColor === 'function') ? getClientColor(cli) : null;
+        const dot = logo
+          ? `<img src="${logo}" alt="" style="width:16px;height:16px;border-radius:4px;object-fit:cover;vertical-align:middle;margin-right:4px;">`
+          : `<span style="width:8px;height:8px;border-radius:50%;background:${color||'var(--accent)'};display:inline-block;margin-right:6px;vertical-align:middle;"></span>`;
+        return `${dot}${escHtml(cli)}`;
+      })()}
+    </div>
+    <div class="pj-meta-item" onclick="pjOpenRecurrenceMenu(event,'${task.id}')" title="Repete ao concluir">
+      ${tjMetaIco('repeat')}<span${task.recurrence?.pattern ? '' : ' class="pj-meta-ph"'}>${task.recurrence?.pattern ? pjRecurrenceLabel(task.recurrence) : 'Recorrência'}</span>
+    </div>
+    <div class="pj-meta-item" onclick="pjPomoOpen('${task.id}')" title="Iniciar sessão Pomodoro nesta tarefa">
+      ${tjMetaIco('timer')}<span>Pomodoro</span>
+    </div>
+    <div class="pj-meta-item pj-meta-tags" onclick="pjOpenTagPicker('${task.id}',this)" title="Tags da tarefa">
+      ${tjMetaIco('tag')}
+      ${pjTaskTagsHtml(task, { small:true, removable:true, taskId: task.id })
+        || '<span style="color:var(--text3);font-size:12px;">Tags</span>'}
+    </div>`;
+
+  // Custom fields
+  document.getElementById('pjModalCustomFields').innerHTML = pjModalFieldsHtml(task, list);
 
   // Anexos da tarefa: abre auto se já tiver anexos
   const hasAttach = Array.isArray(task.attachments) && task.attachments.length > 0;
@@ -26700,15 +26739,15 @@ function pjFmtBytes(b) {
 function pjAttachIconFor(name, type) {
   const ext = (name || '').split('.').pop()?.toLowerCase() || '';
   const t = (type || '').toLowerCase();
-  if (t.startsWith('video/')) return { icon:'🎬', cls:'video', label:'Vídeo' };
-  if (t.startsWith('audio/')) return { icon:'🎵', cls:'audio', label:'Áudio' };
-  if (t.includes('pdf') || ext === 'pdf') return { icon:'📕', cls:'pdf', label:'PDF' };
-  if (['doc','docx'].includes(ext)) return { icon:'📘', cls:'doc', label:'DOC' };
-  if (['xls','xlsx','csv'].includes(ext)) return { icon:'📗', cls:'xls', label:'XLS' };
-  if (['ppt','pptx'].includes(ext)) return { icon:'📙', cls:'ppt', label:'PPT' };
-  if (['zip','rar','7z','tar','gz'].includes(ext)) return { icon:'🗜️', cls:'zip', label:'ZIP' };
-  if (['txt','md'].includes(ext)) return { icon:'📝', cls:'txt', label:'TXT' };
-  return { icon:'📄', cls:'file', label:ext.toUpperCase() || 'Arquivo' };
+  if (t.startsWith('video/')) return { icon:tjIco('film', 20), cls:'video', label:'Vídeo' };
+  if (t.startsWith('audio/')) return { icon:tjIco('music', 20), cls:'audio', label:'Áudio' };
+  if (t.includes('pdf') || ext === 'pdf') return { icon:tjIco('file', 20), cls:'pdf', label:'PDF' };
+  if (['doc','docx'].includes(ext)) return { icon:tjIco('file', 20), cls:'doc', label:'DOC' };
+  if (['xls','xlsx','csv'].includes(ext)) return { icon:tjIco('file', 20), cls:'xls', label:'XLS' };
+  if (['ppt','pptx'].includes(ext)) return { icon:tjIco('file', 20), cls:'ppt', label:'PPT' };
+  if (['zip','rar','7z','tar','gz'].includes(ext)) return { icon:tjIco('archive', 20), cls:'zip', label:'ZIP' };
+  if (['txt','md'].includes(ext)) return { icon:tjIco('file', 20), cls:'txt', label:'TXT' };
+  return { icon:tjIco('file', 20), cls:'file', label:ext.toUpperCase() || 'Arquivo' };
 }
 
 function pjRenderTaskAttachments(taskId) {
@@ -27157,17 +27196,20 @@ function pjConfirmDanger(opts) {
     if (!document.getElementById('pjCdKeyframes')) {
       const kf = document.createElement('style');
       kf.id = 'pjCdKeyframes';
-      kf.textContent = '@keyframes pjCdFade{from{opacity:0}to{opacity:1}}@keyframes pjCdIn{from{transform:scale(.9) translateY(6px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}';
+      // foco sem anel: só a borda escurece
+      kf.textContent = '@keyframes pjCdFade{from{opacity:0}to{opacity:1}}@keyframes pjCdIn{from{transform:scale(.9) translateY(6px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}'
+        + '[data-pj-confirm-danger] [role="alertdialog"] button[type="button"]:focus-visible{outline:none!important;border-color:var(--text,#1a1d23)!important}';
       document.head.appendChild(kf);
     }
     const done = (v) => { overlay.remove(); document.removeEventListener('keydown', onKey); resolve(v); };
-    const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); done(false); } if (e.key === 'Enter') { e.preventDefault(); done(true); } };
+    // Enter só confirma com o foco no botão de confirmar (o foco começa no Cancelar)
+    const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); done(false); } if (e.key === 'Enter' && document.activeElement?.hasAttribute('data-pj-confirm')) { e.preventDefault(); done(true); } };
     document.addEventListener('keydown', onKey);
     overlay.addEventListener('click', (e) => { if (e.target === overlay) done(false); });
     box.querySelector('[data-pj-cancel]').addEventListener('click', () => done(false));
     box.querySelector('[data-pj-confirm]').addEventListener('click', () => done(true));
     (document.body || document.documentElement).appendChild(overlay);
-    setTimeout(() => box.querySelector('[data-pj-confirm]')?.focus(), 30);
+    setTimeout(() => box.querySelector('[data-pj-cancel]')?.focus(), 30);
   });
 }
 
@@ -28893,13 +28935,13 @@ function pjOpenFieldsEditor(listId) {
   const list = pjLists.find(l=>l.id===listId); if(!list)return;
   const fields = list.customFields || [];
   const CF_TYPES = [
-    { id:'text',    label:'Texto',            icon:'T',  color:'#6366f1' },
-    { id:'number',  label:'Número',            icon:'#',  color:'#10b981' },
-    { id:'date',    label:'Data',              icon:'📅', color:'#f59e0b' },
-    { id:'link',    label:'Link / URL',        icon:'🔗', color:'#3b82f6' },
-    { id:'address', label:'Endereço',          icon:'📍', color:'#ef4444' },
-    { id:'client',  label:'Cliente (da base)', icon:'🏢', color:'#8b5cf6' },
-    { id:'select',  label:'Lista de opções',   icon:'≡',  color:'#a855f7' },
+    { id:'text',    label:'Texto',            icon:tjIco('type'),     color:'#6366f1' },
+    { id:'number',  label:'Número',            icon:tjIco('hash'),     color:'#10b981' },
+    { id:'date',    label:'Data',              icon:tjIco('calendar'), color:'#f59e0b' },
+    { id:'link',    label:'Link / URL',        icon:tjIco('link'),     color:'#3b82f6' },
+    { id:'address', label:'Endereço',          icon:tjIco('pin'),      color:'#ef4444' },
+    { id:'client',  label:'Cliente (da base)', icon:tjIco('store'),    color:'#8b5cf6' },
+    { id:'select',  label:'Lista de opções',   icon:tjIco('list'),     color:'#a855f7' },
   ];
   window._cfTypes = CF_TYPES;
 
@@ -28912,33 +28954,30 @@ function pjOpenFieldsEditor(listId) {
         ${t.icon} ${t.label}
         <svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor" style="opacity:.5"><path d="M2 4l4 4 4-4z"/></svg>
       </button>
-      <button class="pj-field-del-btn" title="Remover campo" onclick="(function(b){b.closest('.pj-field-edit-row').remove();pjAutoSaveFields('${listId}');})(this)">
-        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-      </button>
-      <input class="pj-field-options-input" value="${escHtml((options||[]).join(', '))}" placeholder="opção1, opção2, opção3..." style="${type==='select'?'':'display:none;'}" title="Opções separadas por vírgula" oninput="pjAutoSaveFields('${listId}')">
+      <button class="pj-field-del-btn" title="Remover campo" aria-label="Remover campo" onclick="(function(b){b.closest('.pj-field-edit-row').remove();pjAutoSaveFields('${listId}');})(this)">${tjIco('trash', 16)}</button>
+      <input class="pj-field-options-input" value="${escHtml((options||[]).join(', '))}" placeholder="Opções separadas por vírgula" style="${type==='select'?'':'display:none;'}" title="Opções separadas por vírgula" oninput="pjAutoSaveFields('${listId}')">
     </div>`;
   };
 
   let html = `<div class="pj-cf-modal-wrap">
     <div class="pj-cf-modal-header">
-      <div class="pj-cf-modal-icon">📋</div>
+      <div class="pj-cf-modal-icon">${tjIco('sliders', 18)}</div>
       <div>
         <div class="pj-cf-modal-title">Campos personalizados</div>
         <div style="font-size:11px;color:var(--text3);margin-top:1px;">${escHtml(list.name)}</div>
       </div>
     </div>
-    <div class="pj-cf-modal-sub">Adicione campos extras que aparecem como colunas na lista e no modal de cada tarefa.</div>
+    <div class="pj-cf-modal-sub">Campos extras que aparecem como colunas na lista e dentro de cada tarefa.</div>
     <div class="pj-fields-edit-list" id="pjFieldsEditList">
       ${fields.map(f => buildFieldRow(f.id, f.name, f.type||'text', f.options)).join('')}
     </div>
     <button class="pj-cf-add-btn" onclick="pjAddFieldRow()">
-      <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+      ${tjIco('plus', 16)}
       Adicionar campo
     </button>
     <div class="pj-form-actions">
       <button class="pj-btn pj-btn-secondary" onclick="pjCloseFormModal()">Cancelar</button>
       <button class="pj-btn pj-btn-primary" onclick="pjSaveFields('${listId}')">
-        <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13" style="margin-right:4px"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
         Salvar campos
       </button>
     </div>
@@ -28957,7 +28996,7 @@ function pjFieldTypePopup(ev, btn) {
     btn.dataset.type = newType;
     btn.innerHTML = `${t.icon} ${t.label} <svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor" style="opacity:.5"><path d="M2 4l4 4 4-4z"/></svg>`;
     const ic = row.querySelector('.pj-field-type-icon');
-    if (ic) { ic.style.background = t.color+'1a'; ic.style.color = t.color; ic.textContent = t.icon; }
+    if (ic) { ic.style.background = t.color+'1a'; ic.style.color = t.color; ic.innerHTML = t.icon; ic.title = t.label; }
     const optInput = row.querySelector('.pj-field-options-input');
     if (optInput) optInput.style.display = newType === 'select' ? '' : 'none';
     if (window._pjFieldsEditorListId) pjAutoSaveFields(window._pjFieldsEditorListId);
@@ -28995,29 +29034,7 @@ function pjAutoSaveFields(listId) {
       const t = pjAllTasks.find(x => x.id === pjCurrentTaskId);
       const cfEl = document.getElementById('pjModalCustomFields');
       if (t && cfEl) {
-        const list = pjLists.find(x => x.id === t.listId);
-        let fieldsHtml = '';
-        if (fields.length && list) {
-          fieldsHtml = `<div class="pj-modal-section-title" style="display:flex;align-items:center;gap:8px;">Campos<button class="pj-icon-btn" style="font-size:12px;padding:3px 9px;" title="Gerenciar campos" onclick="pjOpenFieldsEditor('${list.id}')">⚙️ Gerenciar</button></div><div class="pj-fields-grid">`;
-          fields.forEach(f => {
-            const val = t.customFieldValues?.[f.id] || '';
-            let input;
-            if (f.type === 'select') {
-              input = `<select class="pj-field-value" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)"><option value="">—</option>${(f.options||[]).map(o=>`<option ${o===val?'selected':''}>${escHtml(o)}</option>`).join('')}</select>`;
-            } else if (f.type === 'date') {
-              input = `<input class="pj-field-value" type="date" value="${escHtml(String(val))}" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)">`;
-            } else if (f.type === 'number') {
-              input = `<input class="pj-field-value" type="number" value="${escHtml(String(val))}" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)">`;
-            } else {
-              input = `<input class="pj-field-value" type="text" value="${escHtml(String(val))}" onchange="pjUpdateTaskField('${t.id}','${f.id}',this.value)">`;
-            }
-            fieldsHtml += `<div class="pj-field-item"><div class="pj-field-label">${escHtml(f.name)}<button class="pj-field-quick-del" title="Remover este campo" onclick="pjQuickRemoveField('${list.id}','${f.id}')">×</button></div>${input}</div>`;
-          });
-          fieldsHtml += '</div>';
-        } else if (list) {
-          fieldsHtml = `<div class="pj-modal-section-title" style="display:flex;align-items:center;gap:8px;">Campos<button class="pj-btn pj-btn-secondary" style="font-size:11px;padding:4px 10px;" onclick="pjOpenFieldsEditor('${list.id}')">＋ Adicionar campo</button></div>`;
-        }
-        cfEl.innerHTML = fieldsHtml;
+        cfEl.innerHTML = pjModalFieldsHtml(t, pjLists.find(x => x.id === t.listId));
       }
     }
     if (pjCurrentView.id === listId) pjRenderMain();
