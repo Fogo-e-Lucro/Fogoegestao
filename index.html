@@ -18303,10 +18303,10 @@ function pjOpenColumnsMenu(ev, listId) {
     .filter(Boolean);
   const items = [{ header:true, label:'Mostrar colunas' }];
   sortedCols.forEach(c => {
-    items.push({ id: c.id, label: c.label, icon: hidden.has(c.id) ? '☐' : '☑' });
+    items.push({ id: c.id, label: c.label, icon: pjlIco(hidden.has(c.id) ? 'square' : 'checksq') });
   });
   items.push({ divider:true });
-  items.push({ id:'__reset__', label:'Restaurar padrão', icon:'↺' });
+  items.push({ id:'__reset__', label:'Restaurar padrão', icon:pjlIco('restore') });
   // Captura a posição do trigger pra reabrir após render
   const triggerEl = ev?.currentTarget || ev?.target;
   const reopen = () => {
@@ -18525,7 +18525,7 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
        draggable="true"
        ondragstart="pjListDragStart(event,'${t.id}')"
        ondragend="pjListDragEnd(event)"
-       style="grid-template-columns:${gridTpl}" onclick="pjOpenTask('${t.id}')">
+       style="grid-template-columns:${gridTpl}" onclick="document.body.classList.contains('pj-sel-mode')?pjToggleSelect('${t.id}',event):pjOpenTask('${t.id}')">
     <div class="pj-task-check ${done?'done':''}" onclick="event.stopPropagation();pjToggleTaskDone('${t.id}')" title="${done?'Reabrir':'Concluir'}">${done?'✓':''}</div>
     ${cellsHtml}
   </div>`;
@@ -18552,6 +18552,7 @@ const PJL_ICO = {
   clip: '<path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',
   lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
   checksq: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/>',
+  square: '<rect width="18" height="18" x="3" y="3" rx="2"/>',
   target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
   info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
   map: '<path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/>',
@@ -18562,6 +18563,13 @@ function pjlIco(k, s = 16, w = 1.75) {
 }
 // Bolinha de cor sólida (prioridade, nota) pros menus de escolha
 const pjlDot = (c) => `<i class="pj-dot" style="background:${c};margin:0"></i>`;
+// Prioridade baixa e "sem nota": anel cinza (a bolinha clara sumia no branco)
+const pjlRing = '<i class="pj-dot" style="background:var(--card,#fff);border:1.5px solid #9ca3af;box-sizing:border-box;margin:0"></i>';
+// "Ctrl+Z desfaz" só faz sentido com teclado; no celular o aviso de Desfazer já tem botão
+const pjlTarefas = (n) => `${n} ${n === 1 ? 'tarefa' : 'tarefas'}`;
+// "1 dia", "2,5 dias"
+const pjlDias = (x) => { const v = (Number(x) || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 }); return v + (v === '1' ? ' dia' : ' dias'); };
+const pjlUndoHint = () => window.innerWidth > 640 ? ' Ctrl+Z desfaz.' : '';
 
 // ── Filtros & Busca ─────────────────────────────────────
 function pjSetFilter(key, val) {
@@ -18584,7 +18592,7 @@ function pjFilterPopAssignee(ev) {
   pjShowPopupMenu(ev, items, pjFilter.assignee||'', val => pjSetFilter('assignee', val));
 }
 function pjFilterPopPriority(ev) {
-  const icons = { urgent: pjlDot('#c9353a'), high: pjlDot('#d97706'), normal: pjlDot('#9ca3af'), low: pjlDot('#d8dde6') };
+  const icons = { urgent: pjlDot('#c9353a'), high: pjlDot('#d97706'), normal: pjlDot('#9ca3af'), low: pjlRing };
   const items = [
     { id:'', label:'Todas as prioridades', icon: pjlIco('flag') },
     ...PJ_PRIORITIES.map(p => ({ id: p.id, label: p.label, icon: icons[p.id]||'' }))
@@ -18682,13 +18690,14 @@ function pjOpenFiltersSheet() {
   const curListId = isInList ? pjCurrentView.id : null;
   const curList = curListId ? (pjLists || []).find(l => l.id === curListId) : null;
   const hasMap = curList && (curList.customFields||[]).some(cf => cf.type === 'address');
+  const curMode = curListId ? (pjViewMode[curListId] || 'list') : null;
   const viewRow = isInList ? `
     <div class="pj-filter-sheet-view-row">
       <span class="pj-filter-sheet-label" style="font-size:14px;font-weight:600;">Visão</span>
       <div class="pj-filter-sheet-view-btns">
-        <button class="${pjCurrentView.type==='list'?'active':''}" onclick="pjSetView('${curListId}','list');pjCloseFormModal()">${pjlIco('list', 16)}Lista</button>
-        <button class="${pjCurrentView.type==='kanban'?'active':''}" onclick="pjSetView('${curListId}','kanban');pjCloseFormModal()">${pjlIco('kanban', 16)}Kanban</button>
-        ${hasMap ? `<button class="${pjCurrentView.type==='map'?'active':''}" onclick="pjSetView('${curListId}','map');pjCloseFormModal()">${pjlIco('pin', 16)}Mapa</button>` : ''}
+        <button class="${curMode==='list'?'active':''}" onclick="pjSetView('${curListId}','list');pjCloseFormModal()">${pjlIco('list', 16)}Lista</button>
+        <button class="${curMode==='kanban'?'active':''}" onclick="pjSetView('${curListId}','kanban');pjCloseFormModal()">${pjlIco('kanban', 16)}Kanban</button>
+        ${hasMap ? `<button class="${curMode==='map'?'active':''}" onclick="pjSetView('${curListId}','map');pjCloseFormModal()">${pjlIco('pin', 16)}Mapa</button>` : ''}
       </div>
     </div>` : '';
   const html = `
@@ -18705,6 +18714,7 @@ function pjOpenFiltersSheet() {
       </button>
       ${row('sort','Ordenar',      sortLabel,     "pjFilterPopSortFromSheet()")}
       ${row('star','Visões salvas','Abrir',       "pjOpenViewsMenuFromSheet()")}
+      ${curMode === 'list' ? row('checksq','Selecionar várias','', "pjSelModeOn()") : ''}
     </div>
     <div class="pj-form-actions">
       <button class="pj-btn pj-btn-secondary" onclick="pjClearFilter();pjCloseFormModal()">Limpar tudo</button>
@@ -18776,18 +18786,20 @@ function pjApplySort(tasks) {
 
 // ── Seleção múltipla & Bulk ─────────────────────────────
 function pjBuildBulkBar() {
-  if (!pjSelected.size) return '';
+  // Celular: "Selecionar várias" (folha de Filtros) liga o modo seleção; a barra fica até tocar no xis
+  const n = pjSelected.size;
+  if (!n && !document.body.classList.contains('pj-sel-mode')) return '';
   return `<div class="pj-bulk-bar">
-    <span class="pj-bulk-count">${pjSelected.size} selecionada${pjSelected.size>1?'s':''}</span>
+    <span class="pj-bulk-count${n ? '' : ' empty'}">${n ? `${n} selecionada${n>1?'s':''}` : 'Toque nas tarefas'}</span>
     <button class="pj-filter-btn" onclick="pjBulkSelectAll()" title="Selecionar todas as visíveis">${pjlIco('checksq', 14)}Todas</button>
-    <button class="pj-filter-btn" onclick="pjBulkStatus(event)">${fgIco('tag', 14)}Status</button>
+    ${n ? `<button class="pj-filter-btn" onclick="pjBulkStatus(event)">${fgIco('tag', 14)}Status</button>
     <button class="pj-filter-btn" onclick="pjBulkAssign(event)">${pjlIco('user', 14)}Atribuir</button>
     <button class="pj-filter-btn" onclick="pjBulkPriority(event)">${pjlIco('flag', 14)}Prioridade</button>
     <button class="pj-filter-btn" onclick="pjBulkClient(event)">${pjlIco('building', 14)}Cliente</button>
     <button class="pj-filter-btn" onclick="pjBulkDue(event)">${fgIco('calendar', 14)}Vencimento</button>
     <button class="pj-filter-btn" onclick="pjBulkMoveList(event)">${fgIco('folder', 14)}Mover lista</button>
     <button class="pj-filter-btn" onclick="pjBulkArchive()">${pjlIco('archive', 14)}Arquivar</button>
-    <button class="pj-filter-btn pj-filter-btn-danger" onclick="pjBulkDelete()">${fgIco('trash', 14)}Excluir</button>
+    <button class="pj-filter-btn pj-filter-btn-danger" onclick="pjBulkDelete()">${fgIco('trash', 14)}Excluir</button>` : ''}
     <button class="pj-filter-btn" onclick="pjBulkClear()" style="margin-left:auto;" title="Limpar seleção (Esc)" aria-label="Limpar seleção">${fgIco('x', 14)}</button>
   </div>`;
 }
@@ -18813,7 +18825,8 @@ function pjToggleSelect(taskId, e) {
   else { pjSelected.add(taskId); _pjLastSelected = taskId; }
   pjRenderMain();
 }
-function pjBulkClear() { pjSelected.clear(); _pjLastSelected = null; pjRenderMain(); }
+function pjBulkClear() { pjSelected.clear(); _pjLastSelected = null; document.body.classList.remove('pj-sel-mode'); pjRenderMain(); }
+function pjSelModeOn() { document.body.classList.add('pj-sel-mode'); pjRenderMain(); }
 function pjBulkSelectAll() {
   // Pega todas as task-ids visíveis no momento (rendered)
   document.querySelectorAll('[data-task-id]').forEach(el => {
@@ -18900,7 +18913,7 @@ document.addEventListener('keydown', (e) => {
 function pjBulkDelete() {
   if (!pjSelected.size) return;
   const n = pjSelected.size;
-  if (!confirm(`Excluir ${n} tarefa(s)?\n\nVocê terá ~10 segundos pra desfazer com Ctrl+Z.`)) return;
+  if (!confirm(`Excluir ${pjlTarefas(n)}?\n\nDá pra desfazer por 10 segundos.`)) return;
   const ids = [...pjSelected];
   // Snapshot pra undo
   const snapshots = ids.map(id => {
@@ -18914,7 +18927,7 @@ function pjBulkDelete() {
   });
   if (typeof appPushUndo === 'function') {
     appPushUndo({
-      describe: `excluir ${n} tarefa(s)`,
+      describe: `excluir ${pjlTarefas(n)}`,
       undo: async () => {
         for (const t of snapshots) {
           pjAllTasks.push(t);
@@ -18929,7 +18942,7 @@ function pjBulkDelete() {
       },
     });
   }
-  if (typeof showToast === 'function') showToast('info','🗑️',`${n} tarefa(s) excluída(s). Ctrl+Z desfaz.`);
+  if (typeof showToast === 'function') showToast('info',fgIco('trash',18),`${pjlTarefas(n)} ${n===1?'excluída':'excluídas'}.${pjlUndoHint()}`);
   pjSelected.clear();
   pjRenderMain(); pjRenderSidebar();
 }
@@ -18953,7 +18966,7 @@ async function pjBulkArchive() {
   pjAllTasks = Object.values(pjTasks).flat();
   pjSelected.clear();
   pjRenderMain(); pjRenderSidebar();
-  if (typeof showToast === 'function') showToast(`${ids.length} tarefa(s) arquivada(s).`, 'ok');
+  if (typeof showToast === 'function') showToast('success', pjlIco('archive',18), `${pjlTarefas(ids.length)} ${ids.length===1?'arquivada':'arquivadas'}.`);
 }
 async function pjBulkApply(field, value) {
   // Snapshot pra undo
@@ -18966,7 +18979,7 @@ async function pjBulkApply(field, value) {
   }
   if (typeof appPushUndo === 'function') {
     appPushUndo({
-      describe: `${field} em ${snapshots.length} tarefa(s)`,
+      describe: `${({ statusId:'status', priority:'prioridade' })[field] || field} em ${pjlTarefas(snapshots.length)}`,
       undo: async () => {
         for (const s of snapshots) await pjUpdateTask(s.id, { [field]: s.prevValue });
         pjRenderMain(); pjRenderSidebar();
@@ -18982,17 +18995,18 @@ function pjBulkStatus(ev) {
                pjLists.find(l => l.id === pjAllTasks.find(t => pjSelected.has(t.id))?.listId);
   const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
   pjShowPopupMenu(ev,
-    statuses.map(s => ({ id:s.id, label:s.name, icon:'●', color:s.color })),
+    statuses.map(s => ({ id:s.id, label:s.name, icon:pjlDot(s.color) })),
     null, (id) => pjBulkApply('statusId', id));
 }
 function pjBulkPriority(ev) {
-  const colorMap = { urgent:'#ef4444', high:'#f97316', normal:'#6366f1', low:'#94a3b8' };
-  const opts = [{ id:null, label:'Sem prioridade', icon:'✕' }];
-  PJ_PRIORITIES.forEach(p => opts.push({ id:p.id, label:p.label, icon:'⚑', color:colorMap[p.id] }));
-  pjShowPopupMenu(ev, opts, null, (id) => pjBulkApply('priority', id));
+  const dots = { urgent: pjlDot('#c9353a'), high: pjlDot('#d97706'), normal: pjlDot('#9ca3af'), low: pjlRing };
+  const opts = [{ id:null, label:'Sem prioridade', icon:fgIco('x') }];
+  PJ_PRIORITIES.forEach(p => opts.push({ id:p.id, label:p.label, icon:dots[p.id] || '' }));
+  // undefined: em lote nada vem marcado (com null, "Sem prioridade" aparecia escolhido)
+  pjShowPopupMenu(ev, opts, undefined, (id) => pjBulkApply('priority', id));
 }
 function pjBulkAssign(ev) {
-  const opts = pjMembers.map(m => ({ id:m.uid, label:m.name||m.email, icon:'👤' }));
+  const opts = pjMembers.map(m => ({ id:m.uid, label:m.name||m.email, icon:pjlIco('user') }));
   pjShowPopupMenu(ev, opts, null, async (uid) => {
     // Snapshot pra undo
     const snapshots = [...pjSelected].map(id => {
@@ -19008,7 +19022,7 @@ function pjBulkAssign(ev) {
     if (typeof appPushUndo === 'function') {
       const memberName = pjMembers.find(m => m.uid === uid)?.name || 'membro';
       appPushUndo({
-        describe: `atribuir ${snapshots.length} tarefa(s) a ${memberName}`,
+        describe: `atribuir ${pjlTarefas(snapshots.length)} a ${memberName}`,
         undo: async () => {
           for (const s of snapshots) await pjUpdateTask(s.id, { assignees: s.prevAssignees });
           pjRenderMain(); pjRenderSidebar();
@@ -19023,8 +19037,8 @@ function pjBulkAssign(ev) {
 // 🏪 Bulk: definir cliente em N tarefas
 function pjBulkClient(ev) {
   const names = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : [];
-  const opts = [{ id:'__none__', label:'— Sem cliente —', icon:'✕' }];
-  names.sort().forEach(n => opts.push({ id:n, label:n, icon:'🏪' }));
+  const opts = [{ id:'__none__', label:'Sem cliente', icon:fgIco('x') }];
+  names.sort().forEach(n => opts.push({ id:n, label:n, icon:pjlIco('building') }));
   pjShowPopupMenu(ev, opts, null, async (val) => {
     const newClient = val === '__none__' ? null : val;
     const snapshots = [...pjSelected].map(id => {
@@ -19034,7 +19048,7 @@ function pjBulkClient(ev) {
     for (const id of pjSelected) await pjUpdateTask(id, { client: newClient });
     if (typeof appPushUndo === 'function') {
       appPushUndo({
-        describe: `cliente em ${snapshots.length} tarefa(s)`,
+        describe: `cliente em ${pjlTarefas(snapshots.length)}`,
         undo: async () => {
           for (const s of snapshots) await pjUpdateTask(s.id, { client: s.prevClient });
           pjRenderMain(); pjRenderSidebar();
@@ -19053,11 +19067,11 @@ function pjBulkDue(ev) {
   const week = new Date(today); week.setDate(week.getDate()+7);
   const fmt = d => pjDateStr(d);
   const opts = [
-    { id:fmt(today), label:'Hoje', icon:'📅' },
-    { id:fmt(tomorrow), label:'Amanhã', icon:'📅' },
-    { id:fmt(week), label:'Em 7 dias', icon:'📅' },
-    { id:'__none__', label:'Sem data', icon:'✕' },
-    { id:'__custom__', label:'Escolher data…', icon:'📆' },
+    { id:fmt(today), label:'Hoje', icon:fgIco('calendar') },
+    { id:fmt(tomorrow), label:'Amanhã', icon:fgIco('calendar') },
+    { id:fmt(week), label:'Em 7 dias', icon:fgIco('calendar') },
+    { id:'__none__', label:'Sem data', icon:fgIco('x') },
+    { id:'__custom__', label:'Escolher data', icon:fgIco('calclock') },
   ];
   pjShowPopupMenu(ev, opts, null, async (val) => {
     let date = null;
@@ -19077,7 +19091,7 @@ function pjBulkDue(ev) {
     for (const id of pjSelected) await pjUpdateTask(id, { dueDate: date });
     if (typeof appPushUndo === 'function') {
       appPushUndo({
-        describe: `vencimento em ${snapshots.length} tarefa(s)`,
+        describe: `vencimento em ${pjlTarefas(snapshots.length)}`,
         undo: async () => {
           for (const s of snapshots) await pjUpdateTask(s.id, { dueDate: s.prevDue });
           pjRenderMain(); pjRenderSidebar();
@@ -19097,10 +19111,10 @@ function pjBulkMoveList(ev) {
     const lists = pjLists.filter(l => l.spaceId === sp.id);
     if (!lists.length) return;
     opts.push({ header:true, label:sp.name });
-    lists.forEach(l => opts.push({ id:l.id, label:l.name, icon:'📋' }));
+    lists.forEach(l => opts.push({ id:l.id, label:l.name, icon:pjlIco('list') }));
   });
   if (!opts.length) {
-    if (typeof showToast === 'function') showToast('warn','⚠️','Nenhuma lista disponível pra mover.');
+    if (typeof showToast === 'function') showToast('warn',fgIco('alert',18),'Nenhuma lista disponível pra mover.');
     return;
   }
   pjShowPopupMenu(ev, opts, null, async (newListId) => {
@@ -19127,7 +19141,7 @@ function pjBulkMoveList(ev) {
     pjAllTasks = Object.values(pjTasks).flat();
     if (typeof appPushUndo === 'function') {
       appPushUndo({
-        describe: `mover ${snapshots.length} tarefa(s) pra "${targetList.name}"`,
+        describe: `mover ${pjlTarefas(snapshots.length)} pra "${targetList.name}"`,
         undo: async () => {
           for (const s of snapshots) {
             const t = pjAllTasks.find(x => x.id === s.id);
@@ -19145,7 +19159,7 @@ function pjBulkMoveList(ev) {
         },
       });
     }
-    if (typeof showToast === 'function') showToast('success','📁',`${snapshots.length} tarefa(s) movida(s) pra "${targetList.name}". Ctrl+Z desfaz.`);
+    if (typeof showToast === 'function') showToast('success',fgIco('folder',18),`${pjlTarefas(snapshots.length)} ${snapshots.length===1?'movida':'movidas'} pra "${targetList.name}".${pjlUndoHint()}`);
     pjSelected.clear();
     pjRenderMain(); pjRenderSidebar();
   });
@@ -19153,9 +19167,9 @@ function pjBulkMoveList(ev) {
 
 // ── Visões salvas ───────────────────────────────────────
 function pjOpenViewsMenu(ev) {
-  const items = pjSavedViews.map(v => ({ id:v.id, label:v.name, icon:'⭐' }));
-  items.push({ id:'__save__', label:'Salvar visão atual…', icon:'＋' });
-  if (pjSavedViews.length) items.push({ id:'__manage__', label:'Gerenciar visões…', icon:'⚙' });
+  const items = pjSavedViews.map(v => ({ id:v.id, label:v.name, icon:pjlIco('star') }));
+  items.push({ id:'__save__', label:'Salvar visão atual', icon:pjlIco('plus') });
+  if (pjSavedViews.length) items.push({ id:'__manage__', label:'Gerenciar visões', icon:fgIco('sliders') });
   pjShowPopupMenu(ev, items, null, (id) => {
     if (id === '__save__') return pjSaveCurrentView();
     if (id === '__manage__') return pjOpenViewsManager();
@@ -19169,15 +19183,15 @@ function pjSaveCurrentView() {
   const v = { id:'v_'+Date.now(), name:name.trim(), filter: { ...pjFilter } };
   pjSavedViews.push(v);
   localStorage.setItem('pj_views', JSON.stringify(pjSavedViews));
-  if (typeof showToast === 'function') showToast(`⭐ Visão "${v.name}" salva.`,'success');
+  if (typeof showToast === 'function') showToast('success', pjlIco('star',18), `Visão "${v.name}" salva.`);
 }
 function pjOpenViewsManager() {
-  let html = `<h3>⭐ Visões salvas</h3>
+  let html = `<h3>Visões salvas</h3>
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
     ${pjSavedViews.map(v => `
       <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:8px;">
         <span style="flex:1;">${escHtml(v.name)}</span>
-        <button class="pj-status-del" onclick="pjDeleteView('${v.id}')">×</button>
+        <button class="pj-status-del" onclick="pjDeleteView('${v.id}')" aria-label="Excluir visão" title="Excluir visão">${fgIco('x', 16)}</button>
       </div>`).join('') || '<div style="color:var(--text3);font-size:13px;">Nenhuma visão salva ainda.</div>'}
     </div>
     <div class="pj-form-actions">
@@ -19475,7 +19489,7 @@ function pjBuildWorkload() {
 
   let h = `<div class="pj-view-header">
     <div class="pj-view-title">Workload da semana</div>
-    <div class="pj-view-header-meta">${totalCount} tarefas abertas</div>
+    <div class="pj-view-header-meta">${totalCount.toLocaleString('pt-BR')} ${totalCount===1?'tarefa aberta':'tarefas abertas'}</div>
   </div>
   <div class="pj-view-body pj-view-body-sm">
     ${pjBuildActivityHeatmap(members)}
@@ -19757,9 +19771,9 @@ function pjBuildCsHealth() {
 
   const legend = `
     <div style="display:flex;gap:14px;align-items:center;color:var(--text2);font-size:13px;flex-wrap:wrap">
-      <span style="display:flex;gap:6px;align-items:center">${pjHealthDotHtml('green',{size:10})}${counts.green} verde</span>
-      <span style="display:flex;gap:6px;align-items:center">${pjHealthDotHtml('yellow',{size:10})}${counts.yellow} amarelo</span>
-      <span style="display:flex;gap:6px;align-items:center">${pjHealthDotHtml('red',{size:10})}${counts.red} vermelho</span>
+      <span style="display:flex;gap:6px;align-items:center">${pjHealthDotHtml('green',{size:10})}${counts.green} ${counts.green===1?'verde':'verdes'}</span>
+      <span style="display:flex;gap:6px;align-items:center">${pjHealthDotHtml('yellow',{size:10})}${counts.yellow} ${counts.yellow===1?'amarelo':'amarelos'}</span>
+      <span style="display:flex;gap:6px;align-items:center">${pjHealthDotHtml('red',{size:10})}${counts.red} ${counts.red===1?'vermelho':'vermelhos'}</span>
       <span style="opacity:.6">${counts.none} sem nota</span>
     </div>`;
 
@@ -19839,7 +19853,7 @@ function pjOpenCsScoreMenu(ev, clientId, factor) {
     { id:3, label:'Verde (ok)',           icon: pjlDot('#16a34a'), active: cur===3 },
     { id:2, label:'Amarelo (atenção)',    icon: pjlDot('#d97706'), active: cur===2 },
     { id:1, label:'Vermelho (crítico)',   icon: pjlDot('#c9353a'), active: cur===1 },
-    { id:null, label:'Sem nota',          icon: pjlDot('#d8dde6'), active: !cur    },
+    { id:null, label:'Sem nota',          icon: pjlRing, active: !cur    },
   ];
   pjShowPopupMenu(ev, items, cur, val => pjSetCsHealthScore(clientId, factor, val));
 }
@@ -20100,7 +20114,7 @@ function pjBuildTimeline() {
         const more = dayTasks.length - Math.min(3, dayTasks.length);
         const wd = d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','');
         const dm = d.toLocaleDateString('pt-BR',{day:'numeric',month:'short'}).replace('.','');
-        return `<div class="pj-cal-cell ${isToday?'today':''} ${isWeekend?'weekend':''} ${dayTasks.length?'has-tasks':''}">
+        return `<div class="pj-cal-cell ${isToday?'today':''} ${ds < pjDateStr(today)?'past':''} ${isWeekend?'weekend':''} ${dayTasks.length?'has-tasks':''}">
           <div class="pj-cal-date">${d.getDate()}</div>
           <div class="pj-cal-dlabel">${wd.charAt(0).toUpperCase() + wd.slice(1)}, ${dm}${isToday?' · hoje':''}</div>
           ${dayTasks.map((t, i) => {
@@ -20186,6 +20200,7 @@ function pjBuildKanban(listId, statuses, tasks) {
           ${tagsHtml || staleHtml ? `<div class="pj-card-tags">${tagsHtml}${staleHtml}</div>` : ''}
           ${clientHtml ? `<div class="pj-card-client-wrap">${clientHtml}</div>` : ''}
           <div class="pj-card-footer">
+            ${prio ? `<span class="pj-priority ${t.priority} pj-card-prio-pill">${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}</span>` : ''}
             ${due ? `<span class="pj-task-due ${due.cls}" title="${escHtml(dueLabelFull||'')}"><svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="margin-right:3px;vertical-align:-1px"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6h12M5 1v3M11 1v3"/></svg>${dueLabelFull}</span>` : ''}
             ${trackingHtml}
             ${attachCount ? `<span class="pj-card-meta-pill" title="Anexos">${pjlIco('clip', 12)}${attachCount}</span>` : ''}
@@ -22999,7 +23014,7 @@ function pjBuildArchived() {
   const all = pjVisibleTasks(true).filter(t => pjIsArchived(t));
   let h = `<div class="pj-view-header">
     <div class="pj-view-title">Arquivadas</div>
-    <div class="pj-view-header-sub" style="margin-left:auto;font-size:12px;color:var(--text3);">${all.length} concluídas há mais de ${PJ_ARCHIVE_DAYS} dias</div>
+    <div class="pj-view-header-sub" style="margin-left:auto;font-size:12px;color:var(--text3);">${all.length.toLocaleString('pt-BR')} concluídas há mais de ${PJ_ARCHIVE_DAYS} dias</div>
   </div><div class="pj-view-body">`;
   if (!all.length) { h += `<div style="color:var(--text3);font-size:13px;padding:20px;text-align:center;">Nenhuma tarefa arquivada.</div>`; return h + '</div>'; }
   // Sort by completedAt desc
@@ -23013,7 +23028,7 @@ function pjBuildArchived() {
         <div style="font-weight:600;color:var(--text);text-decoration:line-through;opacity:.7;">${escHtml(t.title||'')}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:2px;">${escHtml(list?.name||'')}${completed ? ` · concluída em ${completed}` : ''}</div>
       </div>
-      <button class="pj-filter-btn" onclick="pjRestoreTask('${t.id}')">${pjlIco('restore', 14)}Restaurar</button>
+      <button class="pj-filter-btn" onclick="pjRestoreTask('${t.id}')" aria-label="Restaurar" title="Restaurar">${pjlIco('restore', 14)}<span class="pj-archived-restore-label">Restaurar</span></button>
     </div>`;
   });
   return h + '</div>';
@@ -24664,7 +24679,7 @@ function pjBuildSlaSection() {
       <span class="pj-sla-prio-name">${PJ_SLA_PRIO_LABELS[p]}</span>
       <span class="pj-sla-bar"><span class="pj-sla-bar-fill" style="width:${pct}%;background:${PJ_SLA_PRIO_COLORS[p]}"></span></span>
       <span class="pj-sla-pct">${pct}%</span>
-      <span class="pj-sla-meta">${o.ok}/${o.total} no SLA · média ${avgDays.toFixed(1)}d (limite ${thr[p]}d)</span>
+      <span class="pj-sla-meta">${o.ok}/${o.total} no SLA · média de ${pjlDias(avgDays)}, limite de ${pjlDias(+thr[p])}</span>
     </div>`;
   }).join('');
 
@@ -24688,7 +24703,7 @@ function pjBuildSlaSection() {
       </div>
       <div class="pj-sla-bar"><span class="pj-sla-bar-fill" style="width:${pct}%"></span></div>
       <div class="pj-sla-client-meta">
-        ${c.totalOk}/${c.total} no SLA · média ${avgDays.toFixed(1)}d
+        ${c.totalOk}/${c.total} no SLA · média de ${pjlDias(avgDays)}
         <span class="pj-sla-client-mini">${prioBreakdown}</span>
       </div>
     </div>`;
@@ -24790,9 +24805,9 @@ function pjBuildBurndownSvg() {
   // Áreas finais
   const last = series[series.length - 1];
   const summary = `<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text2);margin-top:10px;justify-content:center;">
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f97316;margin-right:5px;vertical-align:middle;"></span>Abertas hoje: <strong>${last.open}</strong></span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#10b981;margin-right:5px;vertical-align:middle;"></span>Concluídas: <strong>${last.done}</strong></span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#6366f1;margin-right:5px;vertical-align:middle;"></span>Escopo total: <strong>${last.scope}</strong></span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f97316;margin-right:5px;vertical-align:middle;"></span>Abertas hoje: <strong>${(+last.open||0).toLocaleString('pt-BR')}</strong></span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#10b981;margin-right:5px;vertical-align:middle;"></span>Concluídas: <strong>${(+last.done||0).toLocaleString('pt-BR')}</strong></span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#6366f1;margin-right:5px;vertical-align:middle;"></span>Escopo total: <strong>${(+last.scope||0).toLocaleString('pt-BR')}</strong></span>
   </div>`;
 
   return `<div class="pj-burnchart-wrap">
@@ -24978,7 +24993,7 @@ function pjBuildTimeMetrics() {
       <div class="pj-tm-kpi">
         <div class="pj-tm-kpi-label">Tempo total médio <span class="pj-tm-info" title="Da criação da tarefa até ser concluída. Inclui o tempo que ficou parada esperando.">${pjlIco('info', 14)}</span></div>
         <div class="pj-tm-kpi-val">${fmtDays(avg(leadMs))}</div>
-        <div class="pj-tm-kpi-sub">da criação à conclusão · ${leadMs.length} tarefa${leadMs.length!==1?'s':''}</div>
+        <div class="pj-tm-kpi-sub">da criação à conclusão · ${leadMs.length.toLocaleString('pt-BR')} tarefa${leadMs.length!==1?'s':''}</div>
       </div>
       <div class="pj-tm-kpi">
         <div class="pj-tm-kpi-label">Tempo total mediano <span class="pj-tm-info" title="Metade das tarefas terminou mais rápido que isso. Ignora tarefas que demoram muito e distorcem a média.">${pjlIco('info', 14)}</span></div>
@@ -24988,7 +25003,7 @@ function pjBuildTimeMetrics() {
       <div class="pj-tm-kpi">
         <div class="pj-tm-kpi-label">Tempo de execução médio <span class="pj-tm-info" title="De quando alguém começou a trabalhar na tarefa (saiu do primeiro status) até concluir. Mede a velocidade real de entrega.">${pjlIco('info', 14)}</span></div>
         <div class="pj-tm-kpi-val">${fmtDays(avg(cycleMs))}</div>
-        <div class="pj-tm-kpi-sub">do início à conclusão · ${cycleMs.length} tarefa${cycleMs.length!==1?'s':''}</div>
+        <div class="pj-tm-kpi-sub">do início à conclusão · ${cycleMs.length.toLocaleString('pt-BR')} tarefa${cycleMs.length!==1?'s':''}</div>
       </div>
       <div class="pj-tm-kpi">
         <div class="pj-tm-kpi-label">Tempo de execução mediano <span class="pj-tm-info" title="Metade das tarefas foi executada mais rápido que isso. Use esse número para estimar prazos futuros.">${pjlIco('info', 14)}</span></div>
@@ -25047,14 +25062,14 @@ function pjRecurrenceLabel(r) {
   return labels[r.pattern] || 'Recorrente';
 }
 const PJ_HEALTH_COLORS = {
-  green:  { hex:'#22c55e', label:'Verde — ok'          },
-  yellow: { hex:'#f59e0b', label:'Amarelo — atenção'   },
-  red:    { hex:'#ef4444', label:'Vermelho — crítico'  },
+  green:  { hex:'#22c55e', label:'Verde (ok)'          },
+  yellow: { hex:'#f59e0b', label:'Amarelo (atenção)'   },
+  red:    { hex:'#ef4444', label:'Vermelho (crítico)'  },
 };
 function pjHealthDotHtml(color, { size = 10, title = '' } = {}) {
   if (!color || !PJ_HEALTH_COLORS[color]) return '';
   const meta = PJ_HEALTH_COLORS[color];
-  return `<span class="pj-health-dot" title="${title || meta.label}" style="display:inline-block;width:${size}px;height:${size}px;border-radius:50%;background:${meta.hex};box-shadow:0 0 0 2px rgba(0,0,0,.06);vertical-align:middle;flex-shrink:0"></span>`;
+  return `<span class="pj-health-dot ${color}" title="${title || meta.label}" style="display:inline-block;width:${size}px;height:${size}px;border-radius:50%;background:${meta.hex};box-shadow:0 0 0 2px rgba(0,0,0,.06);vertical-align:middle;flex-shrink:0"></span>`;
 }
 
 // ── CS Health (Saúde da Carteira) ─────────────────────
@@ -25205,7 +25220,7 @@ function _ifoodMatchClient(merchant) {
 }
 
 function _ifoodFmtCurrency(n) {
-  return 'R$ ' + (Number(n) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return 'R$\u00a0' + (Number(n) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function _ifoodNomeLoja(mid) {
@@ -25371,7 +25386,7 @@ function _ifoodPainelHtml(t) {
   return `<div class="pj-ifood-header">
       ${kpi('Faturamento (GMV)', _ifoodFmtCurrency(t.gmvConcluidos), `Sem taxa de entrega: ${_ifoodFmtCurrency(t.gmvSemEntregaConcluidos)}`, 'Soma dos pedidos concluídos: produtos mais taxa de entrega.')}
       ${kpi('Ticket médio', _ifoodFmtCurrency(t.ticketMedio), 'por pedido concluído', 'Faturamento dividido pelo número de pedidos concluídos.')}
-      ${kpi('Pedidos concluídos', _ifoodNum(t.concluidos), `de ${_ifoodNum(t.total)} pedidos no período`, 'Pedidos que chegaram ao fim sem cancelamento.')}
+      ${kpi('Pedidos concluídos', _ifoodNum(t.concluidos), `de ${_ifoodNum(t.total)} pedido${t.total===1?'':'s'} no período`, 'Pedidos que chegaram ao fim sem cancelamento.')}
       ${kpi('Cancelados', _ifoodNum(t.cancelados), `${_ifoodFmtCurrency(t.gmvCancelados)} que não entraram`, 'Pedidos cancelados no período, por qualquer motivo.')}
       ${kpi('Taxa de cancelamento', _ifoodPct(t.taxaCancelamento), 'cancelados sobre o total', 'Pedidos cancelados divididos pelo total de pedidos do período.')}
     </div>
@@ -25613,9 +25628,8 @@ function pjShowPopupMenu(ev, items, current, onSelect) {
   document.body.appendChild(menu);
 
   // Posição horizontal — alinha à esquerda, ajusta se sair da tela
-  let left = rect.left;
   const menuW = Math.min(320, vw - 24);
-  if (left + menuW > vw - GAP) left = Math.max(GAP, vw - menuW - GAP);
+  const left = Math.min(Math.max(GAP, rect.left), vw - menuW - GAP);
   menu.style.left = left + 'px';
   menu.style.width = menuW + 'px';
 
@@ -25668,7 +25682,7 @@ function pjOpenStatusMenu(ev, taskId) {
     if (items.length) items.push({ divider: true });
     items.push({ header: true, label: BUCKET_LABELS[b] });
     groups[b].forEach(s => {
-      items.push({ id: s.id, label: s.name, icon: '●', color: s.color });
+      items.push({ id: s.id, label: s.name, icon: pjlDot(s.color) });
     });
   });
   // Admin pode editar os status da lista direto pelo menu
@@ -28807,7 +28821,7 @@ async function pjSaveList(editId, folderId, spaceId) {
 }
 async function pjDeleteList(id) {
   if (typeof userIsAdmin !== 'function' || !userIsAdmin()) {
-    if (typeof showToast === 'function') showToast('warn','⚠️','Só admin pode excluir listas');
+    if (typeof showToast === 'function') showToast('warn',fgIco('alert',18),'Só admin pode excluir listas.');
     return;
   }
   const list = pjLists.find(l => l.id === id);
@@ -28822,19 +28836,19 @@ async function pjDeleteList(id) {
     confirmed = confirm(`Excluir a lista "${list.name}"?\n\nA lista está vazia.`);
   } else if (taskCount < 10) {
     confirmed = confirm(
-      `⚠️ Excluir a lista "${list.name}"?\n\n` +
+      `Excluir a lista "${list.name}"?\n\n` +
       `${taskCount} tarefa${taskCount===1?'':'s'} ${taskCount===1?'será excluída':'serão excluídas'} junto.\n\n` +
-      `Você terá ~10 segundos pra desfazer com Ctrl+Z.`
+      `Dá pra desfazer por 10 segundos.`
     );
   } else {
     // 10+ tarefas — exige digitar o nome (proteção contra clique acidental)
     const typed = prompt(
-      `🛑 ATENÇÃO: você está prestes a excluir a lista "${list.name}" e ${taskCount} tarefas.\n\n` +
-      `Pra confirmar, DIGITE o nome da lista exatamente:`
+      `Isso exclui a lista "${list.name}" e as ${taskCount} tarefas dela.\n\n` +
+      `Pra confirmar, digite o nome da lista:`
     );
     if (typed === null) return; // cancelou
     if ((typed || '').trim() !== list.name) {
-      if (typeof showToast === 'function') showToast('warn','⚠️','Nome não confere — exclusão cancelada.');
+      if (typeof showToast === 'function') showToast('warn',fgIco('alert',18),'O nome não bate. A lista não foi excluída.');
       return;
     }
     confirmed = true;
@@ -28868,9 +28882,9 @@ async function pjDeleteList(id) {
           }
           pjRenderSidebar();
           if (typeof pjRenderMain === 'function') pjRenderMain();
-          if (typeof showToast === 'function') showToast('success','↩️',`Lista "${list.name}" restaurada com ${taskCount} tarefa${taskCount===1?'':'s'}.`);
+          if (typeof showToast === 'function') showToast('success',pjlIco('restore',18),`Lista "${list.name}" restaurada com ${taskCount} tarefa${taskCount===1?'':'s'}.`);
         } catch(e) {
-          if (typeof showToast === 'function') showToast('error','❌','Erro ao restaurar: '+(e.message||''));
+          if (typeof showToast === 'function') showToast('error',fgIco('alert',18),'Não deu pra restaurar: '+(e.message||''));
         }
       },
     });
@@ -28878,7 +28892,7 @@ async function pjDeleteList(id) {
 
   // Toast com hint de undo
   if (typeof showToast === 'function') {
-    showToast('info', '🗑️', `Lista "${list.name}" excluída. Ctrl+Z pra desfazer.`);
+    showToast('info', fgIco('trash',18), `Lista "${list.name}" excluída.${pjlUndoHint()}`);
   }
 }
 async function pjDeleteListData(listId) {
@@ -29153,7 +29167,7 @@ function pjOpenListMenu(ev, listId) {
     else if (id === 'delete') pjDeleteList(listId);
     else if (id === 'duplicate') {
       if (typeof pjDuplicateList === 'function') pjDuplicateList(listId);
-      else if (typeof showToast === 'function') showToast('info','💡','Em breve: duplicar listas');
+      else if (typeof showToast === 'function') showToast('info',pjlIco('info',18),'Duplicar lista ainda não está pronto.');
     }
   });
 }

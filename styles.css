@@ -18554,7 +18554,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
    Por cliente, Saúde da carteira, iFood, Timeline, Tempo e a folha de Filtros.
    Mesma receita do início: cartão branco com linhas e fio; cor só em bolinha e aviso.
    Fora da media: só as bases dos ícones novos e das peças que o computador não usa. */
-.pj-cal-dlabel, .pj-cal-task-extra { display: none; }
+.pj-cal-dlabel, .pj-cal-task-extra, .pj-card-prio-pill { display: none; }
 .pj-filter-btn svg, .pj-col-add-btn svg, .pj-add-task-row svg, .pj-bc-back svg, .pj-bc-filter-reset svg,
 .pj-view-toggle button svg, .pj-card-meta-pill svg { flex-shrink: 0; vertical-align: -2px; }
 .pj-view-toggle button, .pj-col-add-btn, .pj-add-task-row, .pj-bc-back, .pj-bc-filter-reset { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
@@ -18705,6 +18705,9 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   body.at-projetos .pj-bulk-bar .pj-filter-btn { flex-shrink: 0; min-height: 44px; white-space: nowrap; }
   body.at-projetos .pj-bulk-count { flex-shrink: 0; background: var(--ink) !important; color: var(--on-ink) !important; padding: 0 12px !important; line-height: 32px; border-radius: 999px !important; font-size: 13px !important; }
   body.at-projetos .pj-filter-btn.pj-filter-btn-danger { color: var(--fg-red) !important; }
+  body.at-projetos .pj-bulk-count.empty { padding: 0 4px !important; background: none !important; color: var(--text2) !important; font-weight: 500; }
+  /* xis de sair da seleção vem primeiro: no fim da faixa ficava fora da tela */
+  body.at-projetos .pj-bulk-bar > .pj-filter-btn:last-child { order: -1; width: 44px; margin-left: 0 !important; padding: 0 !important; justify-content: center; }
 
   /* 5. Kanban: cada coluna é um cartão de 300px que rola de lado; as tarefas são linhas */
   body.at-projetos .pj-kanban {
@@ -18810,7 +18813,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
     background: var(--card); border: 1px solid var(--border); border-radius: 12px;
   }
   body.at-projetos .pj-filter-sheet-view-btns button {
-    display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px !important;
+    display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px !important;
     background: none !important; border: 0 !important; border-radius: 9px !important; box-shadow: none !important;
     color: var(--text2) !important; font-size: 14px !important; font-weight: 600 !important;
   }
@@ -18838,9 +18841,12 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   /* menus de escolha das vistas (responsável, prioridade, data, ordem, status, nota); a janela da tarefa tem os dela */
   body.at-projetos:not(.pj-task-open) .pj-popup-menu { border-radius: 14px !important; border: 1px solid var(--border) !important; box-shadow: var(--sh-pop) !important; padding: 6px !important; }
   body.at-projetos:not(.pj-task-open) .pj-popup-item { gap: 12px !important; border-radius: 10px !important; font-size: 15px !important; }
-  body.at-projetos:not(.pj-task-open) .pj-popup-item.active { background: var(--bg2) !important; color: var(--text) !important; font-weight: 600; }
+  body.at-projetos:not(.pj-task-open) .pj-popup-item:hover { background: var(--bg2); }
+  body.at-projetos:not(.pj-task-open) .pj-popup-item.active { background: var(--ink) !important; color: var(--on-ink) !important; font-weight: 600; }
   body.at-projetos:not(.pj-task-open) .pj-popup-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; color: var(--text2); }
   body.at-projetos:not(.pj-task-open) .pj-popup-check { margin-left: auto; color: var(--text) !important; }
+  body.at-projetos:not(.pj-task-open) .pj-popup-item.active :is(.pj-popup-icon, .pj-popup-check) { color: var(--on-ink) !important; }
+  body.at-projetos:not(.pj-task-open) .pj-popup-header { padding: 10px 12px 4px !important; font-size: 12px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text3) !important; }
 
   /* o + não cobre a folha de Filtros nem os formulários de lista e espaço */
   body.at-projetos:has(#pjFormModal.open) #pjFab { display: none !important; }
@@ -18915,7 +18921,8 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   body.at-projetos .pj-bc-card::before { content: none !important; }
   body.at-projetos .pj-bc-card:active { background: var(--bg2) !important; }
   body.at-projetos .pj-bc-card-avatar { width: 40px !important; height: 40px !important; border-radius: 10px !important; font-size: 16px !important; font-weight: 700 !important; box-shadow: none !important; border: 1px solid var(--border) !important; background-color: var(--card) !important; color: var(--text2) !important; }
-  body.at-projetos .pj-bc-card.none .pj-bc-card-avatar { background: var(--card) !important; }
+  body.at-projetos .pj-bc-card.none .pj-bc-card-avatar,
+  body.at-projetos :is(.pj-bc-card-avatar, .pj-bc-detail-avatar):not([style*="url("]) { background: var(--card) !important; }
   body.at-projetos .pj-bc-card.empty :is(.pj-bc-card-name, .pj-bc-card-avatar) { opacity: .6; }
   body.at-projetos .pj-bc-card-name { margin-bottom: 4px !important; font-size: 15px !important; font-weight: 600 !important; }
   body.at-projetos .pj-bc-card-sub { margin-bottom: 6px !important; font-size: 13px !important; color: var(--text3) !important; }
@@ -18949,7 +18956,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   body.at-projetos .pj-bc-filter-group input { padding-right: 12px; background-image: none !important; }
   body.at-projetos .pj-bc-filter-count { flex: 1 1 100%; justify-content: flex-start !important; gap: 4px !important; margin: 0 !important; padding: 4px 0 0 !important; background: none !important; border: 0 !important; font-size: 13px !important; color: var(--text2) !important; }
   body.at-projetos .pj-bc-detail-name { display: none; }
-  body.at-projetos .pj-bc-filter-reset { min-height: 32px; padding: 0 10px !important; gap: 4px; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 999px !important; color: var(--text) !important; }
+  body.at-projetos .pj-bc-filter-reset { min-height: 44px; padding: 0 10px !important; gap: 4px; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 999px !important; color: var(--text) !important; }
   body.at-projetos .pj-bc-tasks-list { gap: 0 !important; overflow: hidden; background: var(--card); border: 1px solid var(--border); border-radius: 16px; }
   body.at-projetos .pj-bc-task-row { flex-wrap: wrap; min-height: 56px; padding: 10px 16px !important; gap: 4px 10px !important; background: none !important; border: 0 !important; border-bottom: 1px solid var(--sep) !important; border-radius: 0 !important; transform: none !important; }
   body.at-projetos .pj-bc-task-row:last-child { border-bottom: 0 !important; }
@@ -18974,10 +18981,10 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   body.at-projetos .pj-cs-th { padding: 12px 8px !important; font-size: 12px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text2) !important; }
   body.at-projetos :is(.pj-cs-th-name, .pj-cs-td-name) { position: sticky; left: 0; z-index: 1; background: var(--card); box-shadow: inset -1px 0 0 var(--sep); }
   body.at-projetos .pj-cs-th-name { padding-left: 16px !important; }
-  body.at-projetos .pj-cs-td-name { min-width: 150px !important; max-width: 150px; padding: 10px 12px 10px 16px !important; gap: 10px !important; }
-  body.at-projetos .pj-cs-logo { width: 32px !important; height: 32px !important; border-radius: 8px !important; box-shadow: none !important; border: 1px solid var(--border); }
+  body.at-projetos .pj-cs-td-name { min-width: 176px !important; max-width: 176px; padding: 10px 12px 10px 16px !important; gap: 10px !important; }
+  body.at-projetos .pj-cs-logo { width: 28px !important; height: 28px !important; flex-shrink: 0; border-radius: 8px !important; box-shadow: none !important; border: 1px solid var(--border); }
   body.at-projetos .pj-cs-logo-empty { background: var(--card) !important; color: var(--text2) !important; }
-  body.at-projetos .pj-cs-name { font-size: 14px !important; line-height: 18px; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  body.at-projetos .pj-cs-name { font-size: 13px !important; line-height: 17px; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   body.at-projetos .pj-cs-row { border-top: 1px solid var(--sep) !important; }
   body.at-projetos .pj-cs-cell { min-width: 64px; padding: 4px !important; }
   body.at-projetos .pj-cs-cell-inner { min-width: 44px; min-height: 44px; justify-content: center; padding: 4px !important; }
@@ -19027,6 +19034,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   body.at-projetos .pj-tm-bar-fill { background: var(--ink) !important; }
   body.at-projetos .pj-tm-rate-input { width: 80px !important; min-height: 44px; font-size: 16px !important; border-radius: 12px !important; background: var(--card) !important; padding: 0 10px !important; }
   body.at-projetos .pj-tm-cost.has-cost { color: var(--text) !important; }
+  body.at-projetos .pj-tm-cost:not(.has-cost) { font-size: 13px !important; font-weight: 500 !important; color: var(--text3) !important; }
   body.at-projetos .pj-tm-task {
     display: grid !important; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px !important; align-items: center !important;
     padding: 10px 0 !important; border: 0 !important; border-bottom: 1px solid var(--sep) !important; border-radius: 0 !important; margin: 0 !important;
@@ -19068,7 +19076,8 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   body.at-projetos .pj-tm-section [style*="--c:#ef4444"] { --c: #c9353a !important; }
   body.at-projetos .pj-tm-section [style*="--c:#f97316"] { --c: #d97706 !important; }
   body.at-projetos .pj-tm-section [style*="--c:#3b82f6"] { --c: #9ca3af !important; }
-  body.at-projetos .pj-tm-section [style*="--c:#10b981"] { --c: #d8dde6 !important; }
+  body.at-projetos .pj-tm-section [style*="--c:#10b981"] { --c: var(--card) !important; }
+  body.at-projetos .pj-tm-section .pj-sla-dot[style*="--c:#10b981"], body.at-projetos .pj-tm-section [style*="--c:#10b981"] :is(.pj-sla-mini-dot, .pj-sla-thr-dot) { box-shadow: inset 0 0 0 1.5px #9ca3af !important; }
   /* mapa de calor dia × hora: rola de lado e fica em tons de cinza (era anil) */
   body.at-projetos .pj-tm-section .pj-heat-grid { min-width: 560px; filter: grayscale(1); }
 
@@ -19094,7 +19103,7 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
   body.at-projetos .pj-ifood-aviso .pj-ifood-badge-test { display: none; }
   body.at-projetos .pj-ifood-view .mtr-period-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
   body.at-projetos .pj-ifood-view .mtr-presets { display: flex; gap: 0 !important; padding: 3px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; }
-  body.at-projetos .pj-ifood-view .mtr-preset { flex: 1; min-height: 38px; border-radius: 9px !important; font-size: 14px !important; font-weight: 600 !important; color: var(--text2) !important; background: none !important; box-shadow: none !important; }
+  body.at-projetos .pj-ifood-view .mtr-preset { flex: 1; min-height: 44px; border-radius: 9px !important; font-size: 14px !important; font-weight: 600 !important; color: var(--text2) !important; background: none !important; box-shadow: none !important; }
   body.at-projetos .pj-ifood-view .mtr-preset.active { background: var(--ink) !important; color: var(--on-ink) !important; }
   body.at-projetos .pj-ifood-view .mtr-compare-dates { display: flex; align-items: center; gap: 8px !important; padding: 0 !important; background: none !important; border: 0 !important; }
   body.at-projetos .pj-ifood-view .mtr-period-label { font-size: 13px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text2) !important; }
@@ -19131,6 +19140,60 @@ body:has(.pj-sidebar.open) #pjFab { display: none !important; }
     box-shadow: none !important; font-size: 14px !important; font-weight: 600 !important;
   }
   body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-header .pj-wa-trigger-btn svg { color: var(--text2); }
+
+  /* 16. Selecionar várias: o quadradinho só aparece no modo seleção (Filtros > Selecionar várias)
+         e toma o lugar do concluir, sem dois alvos empilhados; tocar na linha marca ou desmarca */
+  body.at-projetos:not(.pj-sel-mode) .pj-list-tr .pj-sel-circle { display: none !important; }
+  body.at-projetos.pj-sel-mode .pj-list-tr .pj-task-check { display: none !important; }
+  body.at-projetos.pj-sel-mode .pj-list-tr .pj-sel-circle {
+    display: flex !important; align-items: center; justify-content: center;
+    left: 16px; top: 15px; width: 22px !important; height: 22px !important; font-size: 13px; border-color: #9ca3af !important;
+  }
+  body.at-projetos.pj-sel-mode .pj-list-tr .pj-sel-circle::after { inset: -13px; }
+  /* a lista já vem agrupada por status: a pílula repetida em cada linha sai (troca pela janela da tarefa) */
+  body.at-projetos .pj-list-table .pj-list-tr .pj-list-cell:has(> .pj-status-pill) { display: none !important; }
+
+  /* 17. Kanban: Alta e Urgente em pílula com bolinha na linha de baixo, igual à lista */
+  body.at-projetos .pj-kanban .pj-card-prio { display: none !important; }
+  body.at-projetos .pj-kanban .pj-card-prio-pill { display: inline-flex !important; }
+
+  /* 18. Timeline: dia que passou mostra só o que ficou aberto; dia sem nada aberto sai */
+  body.at-projetos .pj-cal-cell.past .pj-cal-task.done,
+  body.at-projetos .pj-cal-cell.past:not(:has(.pj-cal-task:not(.done))) { display: none !important; }
+
+  /* 19. Arquivadas: Restaurar só com ícone, 44 × 44 */
+  body.at-projetos .pj-archived-row .pj-filter-btn { width: 44px; padding: 0 !important; justify-content: center; }
+  body.at-projetos .pj-archived-restore-label { display: none; }
+  body.at-projetos .pj-archived-row .pj-filter-btn svg { width: 18px; height: 18px; }
+
+  /* 20. Saúde: bolinhas nas cores do app, sem halo; Ritmo só com a pílula dos dias */
+  body.at-projetos .pj-health-dot { box-shadow: none !important; }
+  body.at-projetos .pj-health-dot.green { background: var(--fg-green) !important; }
+  body.at-projetos .pj-health-dot.yellow { background: var(--fg-amber) !important; }
+  body.at-projetos .pj-health-dot.red { background: var(--fg-red) !important; }
+  body.at-projetos .pj-cs-cell .pj-health-dot { width: 14px !important; height: 14px !important; }
+  body.at-projetos .pj-cs-td-final .pj-health-dot { width: 16px !important; height: 16px !important; }
+  body.at-projetos .pj-cs-cell-inner:has(.pj-cs-days-badge) .pj-health-dot { display: none !important; }
+  body.at-projetos .pj-cs-days-badge { height: 24px; padding: 0 8px !important; font-size: 12px !important; font-weight: 600; }
+  body.at-projetos .pj-cs-days-badge::before { width: 8px; height: 8px; }
+
+  /* 21. iFood: quadradinho da loja sem logo igual ao do Por cliente; vínculo branco com borda, 44 */
+  body.at-projetos .pj-ifood-card-logo { box-shadow: none !important; border: 1px solid var(--border); border-radius: 10px !important; }
+  body.at-projetos .pj-ifood-card-logo-empty { background: var(--card) !important; color: var(--text2) !important; }
+  body.at-projetos .pj-ifood-vinculo { flex: 1 1 100%; font-size: 13px; font-weight: 600; color: var(--text2); }
+  body.at-projetos .pj-ifood-vinculo .fx-select-wrap { flex: 1; min-width: 0; }
+  body.at-projetos .pj-ifood-vinculo :is(.mtr-select, .fx-select-btn) {
+    flex: 1; width: 100%; min-width: 0; min-height: 44px; padding: 0 12px !important;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; box-shadow: none !important;
+    color: var(--text) !important; font-size: 15px !important; font-weight: 500 !important;
+  }
+
+  /* 22. Toques de 44: xis do filtro em Todas e ações do espaço na gaveta */
+  body.at-projetos #pjMain .pj-view-title .pj-dash-filter-chip button { position: relative; }
+  body.at-projetos #pjMain .pj-view-title .pj-dash-filter-chip button::after { content: ''; position: absolute; inset: -8px; }
+  body.at-projetos .pj-space-actions { gap: 0 !important; }
+  body.at-projetos .pj-space-actions .pj-icon-btn { min-width: 44px; min-height: 44px; }
+  body.at-projetos .pj-space-row:hover .pj-space-chevron { display: none; } /* com as 5 ações de 44 não cabia; tocar na linha abre e fecha do mesmo jeito */
 }
 
 
