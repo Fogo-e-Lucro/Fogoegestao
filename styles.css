@@ -20516,6 +20516,651 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
 
 
 /* ─── Celular v2: tarefa-listas ─── */
+/* Vistas de Tarefas fora do início: lista, Kanban, Todas, Caixa de Entrada, Arquivadas, Workload,
+   Por cliente, Saúde da carteira, iFood, Timeline, Tempo e a folha de Filtros.
+   Mesma receita do início: cartão branco com linhas e fio; cor só em bolinha e aviso.
+   Fora da media: só as bases dos ícones novos e das peças que o computador não usa. */
+.pj-cal-dlabel, .pj-cal-task-extra, .pj-card-prio-pill { display: none; }
+.pj-filter-btn svg, .pj-col-add-btn svg, .pj-add-task-row svg, .pj-bc-back svg, .pj-bc-filter-reset svg,
+.pj-view-toggle button svg, .pj-card-meta-pill svg { flex-shrink: 0; vertical-align: -2px; }
+.pj-view-toggle button, .pj-col-add-btn, .pj-add-task-row, .pj-bc-back, .pj-bc-filter-reset { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.pj-add-task-row { justify-content: flex-start; }
+.pj-card-recur, .pj-cs-lock { display: inline-flex; color: var(--text3); }
+.pj-filter-sheet-value, .pj-filter-sheet-icon { display: inline-flex; align-items: center; gap: 4px; }
+.pj-empty-ic svg { display: block; margin: 0 auto; }
+.pj-cycle-warn, .pj-map-open-link, .pj-sla-reset-btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+.pj-tm-info svg, .pj-map-pin svg { vertical-align: -2px; }
+/* Tempo: o mapa de calor dia × hora herdava a grade de 12 colunas do Workload (mesma classe) e encavalava */
+.pj-tm-section .pj-heat-grid { display: flex; flex-direction: column; gap: 2px; }
+
+@media (max-width: 640px) {
+
+  /* 1. Cabeçalho das vistas deste grupo (Pergunte à IA, Digest, Integrações e Gantt ficam como estão):
+        nome da vista em 17/600 no papel, sem fio nem brilho */
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-header {
+    min-height: 60px; padding: 8px 12px 8px 16px !important; gap: 8px !important;
+    background: var(--bg) !important; border-bottom: 0 !important;
+  }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-header::after { content: none !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-title { font-size: 17px !important; font-weight: 600 !important; letter-spacing: -.01em; color: var(--text); }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) :is(.pj-view-header-meta, .pj-view-header-sub) {
+    margin-left: auto; padding: 0 !important; background: none !important; border: 0 !important;
+    font-size: 13px !important; font-weight: 500 !important; color: var(--text3) !important; text-align: right; line-height: 18px;
+  }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body {
+    padding: 4px 16px calc(96px + env(safe-area-inset-bottom, 0px)) !important; background: var(--bg);
+  }
+
+  /* 2. Busca e Filtros numa linha só */
+  body.at-projetos .pj-filter-bar {
+    flex-wrap: nowrap !important; gap: 8px !important; padding: 0 16px 12px !important;
+    background: var(--bg) !important; border-bottom: 0 !important;
+  }
+  body.at-projetos .pj-filter-bar .pj-filter-search { flex: 1 1 auto !important; min-width: 0 !important; width: auto !important; margin: 0 !important; }
+  body.at-projetos .pj-filter-bar .pj-filter-btn { flex-shrink: 0; padding: 0 14px !important; gap: 8px; font-size: 14px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-filter-bar .pj-filter-btn svg { color: var(--text2); }
+  body.at-projetos .pj-filter-bar .pj-filter-active-btn svg { color: var(--on-ink); }
+  body.at-projetos .pj-filter-badge {
+    min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; line-height: 20px;
+    background: var(--on-ink) !important; color: var(--ink) !important; font-size: 12px; font-weight: 700; box-shadow: none !important;
+  }
+  body.at-projetos .pj-filter-bar .pj-filter-btn-danger { width: 44px; padding: 0 !important; justify-content: center; font-size: 0 !important; color: var(--fg-red) !important; }
+  body.at-projetos .pj-filter-bar .pj-filter-btn-danger svg { width: 18px; height: 18px; color: var(--fg-red); }
+
+  /* 3. Lista: cada status é um cartão; as tarefas são linhas com fio */
+  body.at-projetos .pj-list-table { padding: 0; margin: 0; }
+  body.at-projetos .pj-list-table .pj-status-group-header {
+    position: relative !important; top: auto; z-index: 0;
+    min-height: 52px; margin: 12px 0 0 !important; padding: 0 8px 0 16px !important; gap: 10px !important;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-bottom-color: var(--sep) !important; border-radius: 16px 16px 0 0 !important;
+    box-shadow: none !important;
+  }
+  body.at-projetos .pj-list-table .pj-status-group-header:first-of-type { margin-top: 4px !important; }
+  body.at-projetos .pj-list-table .pj-status-group-header.collapsed { border-radius: 16px !important; border-bottom-color: var(--border) !important; box-shadow: var(--sh-card) !important; }
+  body.at-projetos .pj-list-table .pj-status-group-header::after { content: none !important; }
+  body.at-projetos .pj-list-table .pj-status-group-dot { margin: 0 !important; }
+  body.at-projetos .pj-list-table .pj-status-group-name { font-size: 15px !important; }
+  body.at-projetos .pj-list-table .pj-status-chev { order: 9; margin-left: auto; width: 44px; height: 44px; padding: 14px; color: var(--text3); }
+  body.at-projetos .pj-list-table .pj-status-zone {
+    margin: 0; overflow: hidden;
+    background: var(--card); border: 1px solid var(--border); border-top: 0; border-radius: 0 0 16px 16px;
+    box-shadow: var(--sh-card);
+  }
+  body.at-projetos .pj-list-table .pj-list-tr {
+    margin: 0 !important; min-height: 56px; padding: 12px 16px 12px 52px !important; gap: 4px 6px !important;
+    background: none !important; border: 0 !important; border-bottom: 1px solid var(--sep) !important; border-radius: 0 !important;
+    animation: none !important; transform: none !important;
+  }
+  body.at-projetos .pj-list-table .pj-list-tr:active { background: var(--bg2) !important; }
+  body.at-projetos .pj-list-tr.selected { background: var(--bg2) !important; }
+  /* concluir: círculo de 22 à esquerda; marcado = grafite */
+  body.at-projetos :is(.pj-list-tr, .pj-task-row) .pj-task-check {
+    width: 22px !important; height: 22px !important; border-radius: 50% !important;
+    border: 1.5px solid #9ca3af !important; background: var(--card) !important; box-shadow: none !important; transform: none !important;
+    color: var(--on-ink) !important; font-size: 12px !important; font-weight: 700;
+  }
+  body.at-projetos :is(.pj-list-tr, .pj-task-row) .pj-task-check.done { background: var(--ink) !important; border-color: var(--ink) !important; }
+  body.at-projetos .pj-list-table .pj-list-tr .pj-task-check { left: 16px !important; top: 13px !important; }
+  /* 1ª linha: título (até 2 linhas) e avatar; 2ª linha: pílulas, recorrência e "parada", com o selecionar no fim.
+     A célula do título se desfaz (display: contents) e o ::after quebra a linha depois do avatar */
+  body.at-projetos .pj-list-tr .pj-list-cell.title { display: contents !important; }
+  body.at-projetos :is(.pj-list-table .pj-list-tr, .pj-task-row)::after { content: '' !important; display: block !important; order: 2; flex: 0 0 100%; height: 0; margin: 0; padding: 0; opacity: 1; }
+  body.at-projetos .pj-list-tr .pj-list-title-text {
+    order: 0; flex: 1 1 0; min-width: 0; font-size: 15px; line-height: 20px; font-weight: 500; color: var(--text);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden !important;
+  }
+  body.at-projetos .pj-list-tr .pj-list-title-text.done { color: var(--text3); }
+  body.at-projetos .pj-list-tr .pj-list-cell.title > :not(.pj-list-title-text):not(.pj-sel-circle) { order: 4; }
+  body.at-projetos .pj-list-tr .pj-list-tags { display: inline-flex; gap: 4px; }
+  /* selecionar (ação em lote): quadradinho discreto embaixo do concluir, na mesma coluna, toque de 44 */
+  body.at-projetos .pj-list-tr .pj-sel-circle {
+    position: absolute !important; left: 18px; top: 47px; width: 18px !important; height: 18px !important; margin: 0; flex-shrink: 0;
+    border-radius: 6px !important; border: 1.5px solid var(--border) !important; background: var(--card) !important;
+    color: var(--on-ink) !important; font-size: 11px; opacity: 1 !important; box-shadow: none !important;
+  }
+  body.at-projetos .pj-list-tr .pj-sel-circle::after { content: ''; position: absolute; inset: -12px; }
+  body.at-projetos .pj-list-tr :is(.pj-sel-circle.checked), body.at-projetos .pj-list-tr.selected .pj-sel-circle { background: var(--ink) !important; border-color: var(--ink) !important; }
+  body.at-projetos .pj-list-tr .pj-list-cell:not(.title) { order: 3; font-size: 13px !important; }
+  body.at-projetos .pj-list-tr .pj-list-cell.assignee { order: 1; flex: 0 0 auto; margin: -4px 0 -4px 4px; padding: 0 !important; gap: 0 !important; }
+  body.at-projetos .pj-list-tr .pj-list-cell.assignee .pj-avatar + .pj-avatar { margin-left: -8px; }
+  body.at-projetos :is(.pj-list-tr .pj-list-cell.assignee, .pj-task-row .pj-task-assignees) .pj-avatar {
+    width: 28px !important; height: 28px !important; min-width: 28px !important; min-height: 28px !important; font-size: 11px !important;
+    border: 2px solid var(--card); box-shadow: none !important;
+  }
+  /* campo vazio, "+ cliente" e prioridade normal/baixa saem (a janela da tarefa tem tudo) */
+  body.at-projetos .pj-list-tr .pj-list-cell:not(.title):has(> .pj-list-client-pill.empty),
+  body.at-projetos .pj-list-tr .pj-list-cell:not(.title):has(> :is(.pj-priority.normal, .pj-priority.low)),
+  body.at-projetos .pj-task-row :is(.pj-priority.normal, .pj-priority.low) { display: none !important; }
+  body.at-projetos :is(.pj-list-tr, .pj-task-row, .pj-card) :is(.pj-priority, .pj-task-due, .pj-stale-pill, .pj-status-pill, .pj-task-row-status-pill, .pj-list-client-pill) { height: 26px !important; padding-left: 9px !important; padding-right: 9px !important; }
+  body.at-projetos .pj-list-client-pill {
+    display: inline-flex; align-items: center; gap: 6px; padding: 0 10px 0 4px !important; max-width: 160px;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 999px !important;
+    color: var(--text) !important; font-size: 12px !important; font-weight: 600 !important; box-shadow: none !important;
+  }
+  body.at-projetos .pj-list-client-pill :is(.pj-list-client-logo, .pj-list-client-dot) { width: 18px !important; height: 18px !important; border-radius: 50%; }
+  body.at-projetos .pj-list-client-pill .pj-list-client-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  body.at-projetos .pj-status-pill .pj-status-pill-label { font-size: 12px; font-weight: 600; }
+  body.at-projetos .pj-status-pill .pj-status-pill-dot { width: 8px; height: 8px; background: var(--c, #9ca3af) !important; }
+  body.at-projetos .pj-status-pill { padding: 0 10px !important; }
+  body.at-projetos .pj-status-pill .pj-status-pill-arrow { display: none; }
+  body.at-projetos .pj-recur-badge svg { width: 14px; height: 14px; }
+  /* "Adicionar tarefa": última linha do cartão, 48px */
+  body.at-projetos .pj-list-table .pj-add-task-row {
+    min-height: 48px; margin: 0 !important; padding: 0 16px !important; gap: 10px;
+    background: none !important; border: 0 !important; border-radius: 0 !important;
+    color: var(--text2) !important; font-size: 14px !important; font-weight: 600 !important; opacity: 1 !important;
+  }
+  body.at-projetos .pj-list-table .pj-add-task-row svg { color: var(--text2); margin-left: 3px; }
+  body.at-projetos .pj-list-table .pj-add-task-row:active { background: var(--bg2) !important; }
+
+  /* "está vendo agora" nas listas e no Kanban: só a bolinha verde parada; o nome fica no title.
+     Na lista vai na 1ª linha, depois do avatar; no Kanban fica na margem esquerda do cartão */
+  body.at-projetos :is(.pj-list-tr, .pj-task-row, .pj-card) .pj-task-viewers {
+    position: static !important; order: 1; display: inline-flex; align-items: center; margin: 0 0 0 4px; padding: 0; background: none; border: 0; box-shadow: none;
+  }
+  body.at-projetos .pj-kanban .pj-card .pj-task-viewers { position: absolute !important; left: 5px; top: 50%; margin: -4px 0 0; }
+  body.at-projetos :is(.pj-list-tr, .pj-task-row, .pj-card) .pj-viewer-pulse { animation: none !important; box-shadow: none !important; background: var(--success, #16a34a) !important; width: 8px; height: 8px; margin: 0; }
+  body.at-projetos :is(.pj-list-tr, .pj-task-row, .pj-card) .pj-viewer-dot { display: none !important; }
+
+  /* 4. Barra de seleção em lote: uma faixa que rola de lado, botões de 44 */
+  body.at-projetos .pj-bulk-bar {
+    flex-wrap: nowrap !important; overflow-x: auto; gap: 8px !important; margin: 0 !important; padding: 0 16px 12px !important;
+    background: var(--bg) !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; scrollbar-width: none;
+  }
+  body.at-projetos .pj-bulk-bar::-webkit-scrollbar { display: none; }
+  body.at-projetos .pj-bulk-bar .pj-filter-btn { flex-shrink: 0; min-height: 44px; white-space: nowrap; }
+  body.at-projetos .pj-bulk-count { flex-shrink: 0; background: var(--ink) !important; color: var(--on-ink) !important; padding: 0 12px !important; line-height: 32px; border-radius: 999px !important; font-size: 13px !important; }
+  body.at-projetos .pj-filter-btn.pj-filter-btn-danger { color: var(--fg-red) !important; }
+  body.at-projetos .pj-bulk-count.empty { padding: 0 4px !important; background: none !important; color: var(--text2) !important; font-weight: 500; }
+  /* xis de sair da seleção vem primeiro: no fim da faixa ficava fora da tela */
+  body.at-projetos .pj-bulk-bar > .pj-filter-btn:last-child { order: -1; width: 44px; margin-left: 0 !important; padding: 0 !important; justify-content: center; }
+
+  /* 5. Kanban: cada coluna é um cartão de 300px que rola de lado; as tarefas são linhas */
+  body.at-projetos .pj-kanban {
+    gap: 12px !important; margin: 0 -16px; padding: 4px 16px 16px !important; min-height: 0;
+    scroll-snap-type: x mandatory; scroll-padding-inline: 16px; scrollbar-width: none;
+  }
+  body.at-projetos .pj-kanban::-webkit-scrollbar { display: none; }
+  body.at-projetos .pj-kanban .pj-col {
+    min-width: min(300px, calc(100vw - 56px)) !important; max-width: min(300px, calc(100vw - 56px)) !important; max-height: none !important;
+    scroll-snap-align: start; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 16px !important;
+    box-shadow: var(--sh-card) !important;
+  }
+  body.at-projetos .pj-kanban .pj-col::before { content: none !important; }
+  body.at-projetos .pj-kanban .pj-col-header { min-height: 52px; padding: 0 12px 0 16px !important; gap: 10px !important; border-bottom: 1px solid var(--sep) !important; background: none !important; }
+  body.at-projetos .pj-kanban .pj-col-dot { width: 8px !important; height: 8px !important; box-shadow: none !important; }
+  body.at-projetos .pj-kanban .pj-col-name { font-size: 15px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; }
+  body.at-projetos .pj-kanban .pj-col-count { padding: 0 8px !important; border-radius: 999px !important; line-height: 20px; font-size: 12px !important; font-weight: 600 !important; background: var(--card) !important; }
+  body.at-projetos .pj-kanban .pj-col-body { padding: 0 !important; gap: 0 !important; min-height: 0 !important; overflow: visible !important; background: none !important; }
+  body.at-projetos .pj-kanban .pj-card {
+    gap: 8px !important; margin: 0 !important; padding: 12px 16px !important;
+    background: none !important; border: 0 !important; border-bottom: 1px solid var(--sep) !important; border-radius: 0 !important;
+    transform: none !important; animation: none !important;
+  }
+  body.at-projetos .pj-kanban .pj-card:active { background: var(--bg2) !important; }
+  body.at-projetos .pj-kanban .pj-card-top { gap: 8px !important; align-items: flex-start; }
+  body.at-projetos .pj-kanban .pj-card-title { font-size: 15px !important; font-weight: 500 !important; line-height: 20px !important; -webkit-line-clamp: 2 !important; }
+  body.at-projetos .pj-kanban .pj-card-prio { width: 8px !important; height: 8px !important; margin-top: 6px !important; box-shadow: none !important; }
+  body.at-projetos .pj-kanban .pj-card-prio.urgent { background: var(--fg-red) !important; }
+  body.at-projetos .pj-kanban .pj-card-prio.high { background: var(--fg-amber) !important; }
+  body.at-projetos .pj-kanban .pj-card-recur { opacity: 1 !important; margin-top: 3px !important; }
+  body.at-projetos .pj-kanban :is(.pj-card-tags, .pj-card-footer) { gap: 6px !important; }
+  body.at-projetos .pj-kanban .pj-card-client { padding: 0 10px 0 4px !important; height: 26px; background: var(--card) !important; color: var(--text) !important; font-size: 12px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-kanban .pj-card-meta-pill { height: 26px; padding: 0 10px !important; gap: 4px !important; background: var(--card) !important; color: var(--text2) !important; font-size: 12px !important; border-radius: 999px !important; }
+  body.at-projetos .pj-kanban .pj-task-due svg { display: none; }
+  body.at-projetos .pj-kanban .pj-col-add { padding: 0 !important; }
+  body.at-projetos .pj-kanban .pj-col-add-btn {
+    width: 100%; min-height: 48px; padding: 0 16px !important; gap: 10px; justify-content: flex-start;
+    background: none !important; border: 0 !important; border-radius: 0 0 16px 16px !important;
+    color: var(--text2) !important; font-size: 14px !important; font-weight: 600 !important;
+  }
+  body.at-projetos .pj-kanban .pj-col-add-btn:active { background: var(--bg2) !important; }
+
+  /* 6. Todas e Caixa de Entrada: as tarefas viram linhas de um cartão só */
+  body.at-projetos .pj-task-row {
+    display: flex !important; flex-wrap: wrap !important; align-items: center !important; gap: 4px 6px !important;
+    position: relative; min-height: 56px; margin: 0 !important; padding: 12px 16px 12px 52px !important;
+    background: var(--card) !important; border: 0 !important; border-bottom: 1px solid var(--sep) !important; border-radius: 0 !important;
+    transform: none !important; animation: none !important; box-shadow: none !important;
+  }
+  body.at-projetos .pj-task-row:active { background: var(--bg2) !important; }
+  body.at-projetos .pj-task-row .pj-task-check { position: absolute !important; left: 16px; top: 13px; }
+  body.at-projetos .pj-task-row .pj-task-title-cell { order: 0; flex: 1 1 0; min-width: 0; }
+  body.at-projetos .pj-task-row .pj-task-title-text { font-size: 15px !important; font-weight: 500 !important; line-height: 20px !important; -webkit-line-clamp: 2 !important; }
+  body.at-projetos .pj-task-row .pj-task-title-text.done { color: var(--text3) !important; }
+  body.at-projetos .pj-task-row .pj-task-row-meta { display: contents !important; }
+  body.at-projetos .pj-task-row .pj-status-dot { display: none !important; }
+  body.at-projetos .pj-task-row .pj-task-row-status-pill {
+    display: inline-flex !important; order: 3; padding: 0 10px !important; gap: 6px !important;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 999px !important;
+    color: var(--text) !important; font-size: 12px !important; font-weight: 600 !important; box-shadow: none !important;
+  }
+  body.at-projetos .pj-task-row .pj-task-row-status-dot { width: 8px !important; height: 8px !important; }
+  body.at-projetos .pj-task-row .pj-task-due { order: 4; font-size: 12px !important; }
+  body.at-projetos .pj-task-row .pj-priority { display: inline-flex !important; order: 5; }
+  body.at-projetos .pj-task-row .pj-task-client-mini { order: 6; width: 26px; height: 26px; }
+  body.at-projetos .pj-task-row .pj-task-client-mini .pj-task-client-logo { width: 24px !important; height: 24px !important; min-width: 24px !important; max-width: 24px !important; max-height: 24px !important; }
+  body.at-projetos .pj-task-row .pj-task-assignees { display: flex !important; order: 1; flex: 0 0 auto; margin: -4px 0 -4px 4px; }
+  body.at-projetos .pj-task-row .pj-task-assignees:empty { display: none !important; }
+  /* Todas: as linhas soltas viram um cartão (primeira com cantos em cima, última embaixo) */
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body > .pj-task-row { border-left: 1px solid var(--border) !important; border-right: 1px solid var(--border) !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body > .pj-task-row:first-child { margin-top: 4px !important; border-top: 1px solid var(--border) !important; border-radius: 16px 16px 0 0 !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body > .pj-task-row:last-child { border-bottom-color: var(--border) !important; border-radius: 0 0 16px 16px !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body > .pj-task-row:only-child { border-radius: 16px !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-title .pj-dash-filter-chip {
+    display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 4px 0 12px !important; margin-left: 4px;
+    border-radius: 999px !important; font-size: 13px !important; font-weight: 600 !important;
+  }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-title .pj-dash-filter-chip button { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 0; background: none; color: var(--text2); }
+  /* Caixa de Entrada: cada grupo é um cartão com cabeçalho de 52 */
+  body.at-projetos .pj-inbox-section {
+    margin: 0 0 12px !important; overflow: hidden;
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--sh-card);
+  }
+  body.at-projetos .pj-inbox-section:first-child { margin-top: 4px !important; }
+  body.at-projetos .pj-inbox-section-title { min-height: 52px; margin: 0 !important; padding: 0 4px 0 16px !important; gap: 10px !important; }
+  body.at-projetos .pj-inbox-section-chev { order: 9; width: 44px; height: 44px; padding: 14px; margin-left: auto; color: var(--text3); }
+  body.at-projetos .pj-inbox-section-body { border-top: 1px solid var(--sep); }
+  body.at-projetos .pj-inbox-section-body > div:not(.pj-task-row) { padding: 14px 16px !important; font-size: 14px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-inbox-section-body > .pj-task-row:last-child { border-bottom: 0 !important; }
+  body.at-projetos .pj-inbox-section.collapsed .pj-inbox-section-body { display: none; }
+
+  /* 7. Folha de Filtros: sobe de baixo; linhas com ícone num quadradinho, valor e chevron */
+  body.at-projetos #pjFormModal:has(.pj-filter-sheet-list) { align-items: flex-end !important; padding: 0 !important; background: var(--dim) !important; }
+  body.at-projetos #pjFormModal:has(.pj-filter-sheet-list) .pj-form-card {
+    width: 100% !important; min-width: 0 !important; max-width: none !important; max-height: 88dvh; overflow-y: auto;
+    margin: 0 !important; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    border: 0 !important; border-radius: 20px 20px 0 0 !important; box-shadow: 0 -8px 24px rgba(16,24,40,.12) !important;
+  }
+  body.at-projetos .pj-filter-sheet-title { margin: 0 0 12px !important; font-size: 17px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-filter-sheet-view-row { justify-content: space-between; margin: 0 0 12px; padding: 0 !important; background: none !important; }
+  body.at-projetos .pj-filter-sheet-view-btns {
+    display: flex; flex-wrap: nowrap !important; gap: 0 !important; padding: 3px; flex: 0 1 auto;
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  }
+  body.at-projetos .pj-filter-sheet-view-btns button {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px !important;
+    background: none !important; border: 0 !important; border-radius: 9px !important; box-shadow: none !important;
+    color: var(--text2) !important; font-size: 14px !important; font-weight: 600 !important;
+  }
+  body.at-projetos .pj-filter-sheet-view-btns button.active { background: var(--ink) !important; color: var(--on-ink) !important; }
+  body.at-projetos .pj-filter-sheet-list {
+    gap: 0 !important; margin: 0 0 16px !important; overflow: hidden;
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  }
+  body.at-projetos .pj-filter-sheet-row {
+    min-height: 56px; padding: 8px 12px 8px 16px !important; gap: 12px !important;
+    background: none !important; border: 0 !important; border-bottom: 1px solid var(--sep) !important; border-radius: 0 !important;
+  }
+  body.at-projetos .pj-filter-sheet-row:last-child { border-bottom: 0 !important; }
+  body.at-projetos .pj-filter-sheet-row:active { background: var(--bg2) !important; }
+  body.at-projetos .pj-filter-sheet-icon {
+    width: 28px !important; height: 28px; justify-content: center; flex-shrink: 0;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text2);
+  }
+  body.at-projetos .pj-filter-sheet-label { font-size: 15px !important; font-weight: 500 !important; color: var(--text); }
+  body.at-projetos .pj-filter-sheet-value { font-size: 14px !important; color: var(--text2) !important; }
+  body.at-projetos .pj-filter-sheet-value svg { color: #9ca3af; }
+  body.at-projetos #pjFormModal:has(.pj-filter-sheet-list) .pj-form-actions { display: flex; gap: 8px; margin: 0 !important; }
+  body.at-projetos #pjFormModal:has(.pj-filter-sheet-list) .pj-form-actions .pj-btn { flex: 1; min-height: 48px; border-radius: 12px !important; font-size: 15px !important; font-weight: 600 !important; }
+  body.at-projetos #pjFormModal:has(.pj-filter-sheet-list) .pj-btn-secondary { background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; }
+  /* menus de escolha das vistas (responsável, prioridade, data, ordem, status, nota); a janela da tarefa tem os dela */
+  body.at-projetos:not(.pj-task-open) .pj-popup-menu { border-radius: 14px !important; border: 1px solid var(--border) !important; box-shadow: var(--sh-pop) !important; padding: 6px !important; }
+  body.at-projetos:not(.pj-task-open) .pj-popup-item { gap: 12px !important; border-radius: 10px !important; font-size: 15px !important; }
+  body.at-projetos:not(.pj-task-open) .pj-popup-item:hover { background: var(--bg2); }
+  body.at-projetos:not(.pj-task-open) .pj-popup-item.active { background: var(--ink) !important; color: var(--on-ink) !important; font-weight: 600; }
+  body.at-projetos:not(.pj-task-open) .pj-popup-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; color: var(--text2); }
+  body.at-projetos:not(.pj-task-open) .pj-popup-check { margin-left: auto; color: var(--text) !important; }
+  body.at-projetos:not(.pj-task-open) .pj-popup-item.active :is(.pj-popup-icon, .pj-popup-check) { color: var(--on-ink) !important; }
+  body.at-projetos:not(.pj-task-open) .pj-popup-header { padding: 10px 12px 4px !important; font-size: 12px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text3) !important; }
+
+  /* o + não cobre a folha de Filtros nem os formulários de lista e espaço */
+  body.at-projetos:has(#pjFormModal.open) #pjFab { display: none !important; }
+
+  /* 8. Arquivadas: linhas de um cartão; Restaurar é botão secundário */
+  body.at-projetos .pj-archived-row {
+    min-height: 64px; margin: 0 !important; padding: 10px 12px 10px 16px !important; gap: 14px !important;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-top-width: 0 !important; border-bottom-color: var(--sep) !important; border-radius: 0 !important;
+  }
+  body.at-projetos .pj-archived-row:first-child { margin-top: 4px !important; border-top-width: 1px !important; border-radius: 16px 16px 0 0 !important; }
+  body.at-projetos .pj-archived-row:last-child { border-bottom-color: var(--border) !important; border-radius: 0 0 16px 16px !important; }
+  body.at-projetos .pj-archived-row .pj-task-check.done {
+    width: 22px !important; height: 22px !important; border-radius: 50% !important; position: static !important;
+    background: var(--ink) !important; border: 0 !important; box-shadow: none !important; color: var(--on-ink) !important; font-size: 12px !important;
+  }
+  body.at-projetos .pj-archived-row > div[style*="flex:1"] { min-width: 0; }
+  body.at-projetos .pj-archived-row > div[style*="flex:1"] > div:first-child { font-size: 15px; font-weight: 500 !important; line-height: 20px; color: var(--text3) !important; opacity: 1 !important; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  body.at-projetos .pj-archived-row > div[style*="flex:1"] > div:last-child { font-size: 13px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-archived-row .pj-filter-btn { flex-shrink: 0; min-height: 44px; padding: 0 12px !important; font-size: 14px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-archived-row .pj-filter-btn svg { color: var(--text2); }
+  /* cabeçalho com o número embaixo do título */
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-header:has(> .pj-view-header-sub) { flex-wrap: wrap !important; row-gap: 0 !important; padding-top: 10px !important; }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-header > .pj-view-header-sub { flex: 0 0 100%; margin: 0 !important; text-align: left; }
+
+  /* 9. Workload: atividade num cartão que ocupa a largura; uma pessoa por cartão, dias sem caixinhas */
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body-sm { padding: 4px 16px calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
+  body.at-projetos .pj-activity-heatmap { margin: 4px 0 12px !important; padding: 16px !important; border-radius: 16px !important; box-shadow: var(--sh-card); }
+  body.at-projetos .pj-heat-head { gap: 4px; margin-bottom: 12px; }
+  body.at-projetos .pj-heat-title { font-size: 15px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-heat-stats { font-size: 13px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-heat-grid-inner { flex: 1 1 auto; }
+  body.at-projetos .pj-activity-heatmap .pj-heat-grid { display: grid !important; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px !important; padding: 0 !important; }
+  body.at-projetos .pj-activity-heatmap .pj-heat-months { display: grid !important; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; }
+  body.at-projetos .pj-activity-heatmap .pj-heat-col { display: grid !important; grid-template-rows: none !important; gap: 3px !important; }
+  body.at-projetos .pj-activity-heatmap .pj-heat-grid .pj-heat-cell { width: auto !important; height: auto !important; aspect-ratio: 1; border-radius: 4px !important; }
+  body.at-projetos .pj-activity-heatmap .pj-heat-grid-wrap { align-items: stretch !important; overflow: visible !important; }
+  body.at-projetos .pj-activity-heatmap .pj-heat-day-labels { grid-template-rows: repeat(7, minmax(0, 1fr)) !important; gap: 3px !important; margin-top: 16px !important; font-size: 11px !important; }
+  body.at-projetos .pj-activity-heatmap .pj-heat-day-labels span { height: auto !important; display: flex; align-items: center; justify-content: flex-end; }
+  body.at-projetos .pj-activity-heatmap .pj-heat-month { font-size: 11px !important; }
+  body.at-projetos .pj-heat-legend { font-size: 12px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-workload-grid { gap: 12px !important; }
+  body.at-projetos .pj-workload-row {
+    display: flex !important; flex-direction: column; align-items: stretch !important; gap: 12px !important;
+    padding: 16px !important; border-radius: 16px !important; box-shadow: var(--sh-card);
+  }
+  body.at-projetos .pj-workload-user { gap: 12px !important; }
+  body.at-projetos .pj-workload-user .pj-avatar { width: 40px !important; height: 40px !important; min-width: 40px !important; box-shadow: none !important; }
+  body.at-projetos .pj-wl-name { font-size: 15px !important; }
+  body.at-projetos .pj-wl-meta { font-size: 13px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-wl-meta .overdue { color: var(--fg-red) !important; font-weight: 600 !important; }
+  body.at-projetos .pj-workload-bar { height: 4px !important; border-radius: 2px !important; background: var(--bg2) !important; }
+  body.at-projetos .pj-workload-bar-fill { border-radius: 2px !important; background: var(--ink) !important; box-shadow: none !important; }
+  body.at-projetos .pj-workload-bar-fill.mid { background: var(--fg-amber) !important; }
+  body.at-projetos .pj-workload-bar-fill.high { background: var(--fg-red) !important; }
+  body.at-projetos .pj-workload-days { gap: 4px !important; }
+  body.at-projetos .pj-wl-day { padding: 6px 0 !important; background: none !important; border: 0 !important; border-radius: 10px !important; opacity: 1 !important; }
+  body.at-projetos .pj-wl-day-label { font-size: 12px !important; font-weight: 500 !important; text-transform: capitalize !important; color: var(--text3) !important; letter-spacing: 0 !important; }
+  body.at-projetos .pj-wl-day-count { min-height: 20px; margin-top: 2px; font-size: 15px !important; font-weight: 600 !important; color: var(--text) !important; }
+  /* hoje: contorno grafite (marca, não escolha) */
+  body.at-projetos .pj-wl-day.today { box-shadow: inset 0 0 0 1.5px var(--ink) !important; }
+  body.at-projetos .pj-wl-day.today .pj-wl-day-label { color: var(--text) !important; font-weight: 700 !important; }
+
+  /* 10. Por cliente: um cartão com uma linha por cliente; números em pílula neutra */
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body[style*="18px 22px"] { padding: 4px 16px calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
+  body.at-projetos .pj-bc-grid { display: block !important; overflow: hidden; background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--sh-card); }
+  body.at-projetos .pj-bc-card {
+    min-height: 68px; padding: 12px 8px 12px 16px !important; gap: 12px !important;
+    background: none !important; border: 0 !important; border-bottom: 1px solid var(--sep) !important; border-radius: 0 !important;
+    box-shadow: none !important; transform: none !important; opacity: 1 !important;
+  }
+  body.at-projetos .pj-bc-card:last-child { border-bottom: 0 !important; }
+  body.at-projetos .pj-bc-card::before { content: none !important; }
+  body.at-projetos .pj-bc-card:active { background: var(--bg2) !important; }
+  body.at-projetos .pj-bc-card-avatar { width: 40px !important; height: 40px !important; border-radius: 10px !important; font-size: 16px !important; font-weight: 700 !important; box-shadow: none !important; border: 1px solid var(--border) !important; background-color: var(--card) !important; color: var(--text2) !important; }
+  body.at-projetos .pj-bc-card.none .pj-bc-card-avatar,
+  body.at-projetos :is(.pj-bc-card-avatar, .pj-bc-detail-avatar):not([style*="url("]) { background: var(--card) !important; }
+  body.at-projetos .pj-bc-card.empty :is(.pj-bc-card-name, .pj-bc-card-avatar) { opacity: .6; }
+  body.at-projetos .pj-bc-card-name { margin-bottom: 4px !important; font-size: 15px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-bc-card-sub { margin-bottom: 6px !important; font-size: 13px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-bc-card-stats { gap: 6px !important; }
+  body.at-projetos .pj-bc-mini {
+    display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px !important;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 999px !important;
+    color: var(--text) !important; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0 !important;
+  }
+  body.at-projetos .pj-bc-mini.overdue::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--fg-red); }
+  body.at-projetos .pj-bc-mini.muted { border: 0 !important; padding: 0 !important; color: var(--text3) !important; font-weight: 500 !important; }
+  body.at-projetos .pj-bc-card-arrow { display: inline-flex; width: 32px; justify-content: center; color: #9ca3af !important; transform: none !important; }
+  /* detalhe do cliente */
+  body.at-projetos .pj-bc-back { min-height: 44px; padding: 0 12px 0 8px !important; gap: 4px; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; color: var(--text) !important; font-size: 14px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-bc-back + .pj-view-title { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; display: block !important; }
+  body.at-projetos .pj-bc-detail-hero { gap: 14px !important; margin: 4px 0 12px !important; padding: 16px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 16px !important; box-shadow: var(--sh-card) !important; }
+  body.at-projetos .pj-bc-detail-avatar { width: 56px !important; height: 56px !important; border-radius: 14px !important; box-shadow: none !important; border: 1px solid var(--border) !important; background-color: var(--card) !important; color: var(--text2) !important; }
+  body.at-projetos .pj-bc-detail-name { font-size: 17px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-bc-detail-sub { font-size: 13px !important; margin-bottom: 8px !important; }
+  body.at-projetos .pj-bc-stat { height: 26px; display: inline-flex; align-items: center; padding: 0 10px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 999px !important; color: var(--text2) !important; font-size: 12px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-bc-stat strong { color: var(--text) !important; font-weight: 700 !important; }
+  body.at-projetos .pj-bc-stat.overdue::before { content: ''; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--fg-red); }
+  body.at-projetos .pj-bc-filter-bar { margin: 0 0 12px !important; padding: 12px !important; gap: 8px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 16px !important; box-shadow: none !important; }
+  body.at-projetos .pj-bc-filter-label { font-size: 13px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text2) !important; }
+  body.at-projetos .pj-bc-filter-group { flex: 1 1 calc(50% - 4px) !important; min-width: 0 !important; max-width: none !important; }
+  body.at-projetos .pj-bc-filter-group :is(select, .fx-select-btn, input) {
+    width: 100%; min-height: 44px; padding: 0 36px 0 12px; border: 1px solid var(--border) !important; border-radius: 12px !important;
+    background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235a6272' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center !important;
+    -webkit-appearance: none; appearance: none; color: var(--text) !important; font-size: 16px !important; font-family: inherit;
+  }
+  body.at-projetos .pj-bc-filter-group input { padding-right: 12px; background-image: none !important; }
+  body.at-projetos .pj-bc-filter-count { flex: 1 1 100%; justify-content: flex-start !important; gap: 4px !important; margin: 0 !important; padding: 4px 0 0 !important; background: none !important; border: 0 !important; font-size: 13px !important; color: var(--text2) !important; }
+  body.at-projetos .pj-bc-detail-name { display: none; }
+  body.at-projetos .pj-bc-filter-reset { min-height: 44px; padding: 0 10px !important; gap: 4px; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 999px !important; color: var(--text) !important; }
+  body.at-projetos .pj-bc-tasks-list { gap: 0 !important; overflow: hidden; background: var(--card); border: 1px solid var(--border); border-radius: 16px; }
+  body.at-projetos .pj-bc-task-row { flex-wrap: wrap; min-height: 56px; padding: 10px 16px !important; gap: 4px 10px !important; background: none !important; border: 0 !important; border-bottom: 1px solid var(--sep) !important; border-radius: 0 !important; transform: none !important; }
+  body.at-projetos .pj-bc-task-row:last-child { border-bottom: 0 !important; }
+  body.at-projetos .pj-bc-task-dot { width: 8px !important; height: 8px !important; box-shadow: none !important; }
+  body.at-projetos .pj-bc-task-title { flex: 1 1 calc(100% - 20px) !important; font-size: 15px !important; }
+  body.at-projetos .pj-bc-task-list { margin-left: 18px; padding: 0 !important; background: none !important; font-size: 13px !important; font-weight: 500 !important; color: var(--text3) !important; }
+
+  /* 11. Saúde da carteira: margem de 16, tabela num cartão que rola de lado com o nome preso à esquerda */
+  body.at-projetos .pj-cs-view { padding: 12px 16px calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
+  body.at-projetos .pj-cs-view > .pj-view-title { margin: 0 0 4px; font-size: 17px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-cs-view .pj-cs-hint { margin: 0 0 12px !important; font-size: 13px !important; color: var(--text2) !important; }
+  body.at-projetos .pj-cs-view > div[style*="display:flex"] { gap: 6px !important; font-size: 13px !important; }
+  body.at-projetos .pj-cs-view > div[style*="display:flex"] > span {
+    display: inline-flex !important; align-items: center; gap: 6px !important; height: 28px; padding: 0 10px;
+    border: 1px solid var(--border); border-radius: 999px; background: var(--card);
+    color: var(--text) !important; font-weight: 600; opacity: 1 !important;
+  }
+  body.at-projetos .pj-cs-view > div[style*="display:flex"] > span:last-child::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+  body.at-projetos .pj-cs-table-wrap { margin-top: 12px !important; overflow-x: auto !important; border-radius: 16px !important; box-shadow: var(--sh-card) !important; }
+  body.at-projetos .pj-cs-table { font-size: 14px; }
+  body.at-projetos .pj-cs-table thead { background: var(--card) !important; }
+  body.at-projetos .pj-cs-th { padding: 12px 8px !important; font-size: 12px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text2) !important; }
+  body.at-projetos :is(.pj-cs-th-name, .pj-cs-td-name) { position: sticky; left: 0; z-index: 1; background: var(--card); box-shadow: inset -1px 0 0 var(--sep); }
+  body.at-projetos .pj-cs-th-name { padding-left: 16px !important; }
+  body.at-projetos .pj-cs-td-name { min-width: 176px !important; max-width: 176px; padding: 10px 12px 10px 16px !important; gap: 10px !important; }
+  body.at-projetos .pj-cs-logo { width: 28px !important; height: 28px !important; flex-shrink: 0; border-radius: 8px !important; box-shadow: none !important; border: 1px solid var(--border); }
+  body.at-projetos .pj-cs-logo-empty { background: var(--card) !important; color: var(--text2) !important; }
+  body.at-projetos .pj-cs-name { font-size: 13px !important; line-height: 17px; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  body.at-projetos .pj-cs-row { border-top: 1px solid var(--sep) !important; }
+  body.at-projetos .pj-cs-cell { min-width: 64px; padding: 4px !important; }
+  body.at-projetos .pj-cs-cell-inner { min-width: 44px; min-height: 44px; justify-content: center; padding: 4px !important; }
+  body.at-projetos .pj-cs-empty-dot { border: 1.5px solid var(--border) !important; }
+  body.at-projetos .pj-cs-days-badge { height: 20px; padding: 0 7px !important; display: inline-flex; align-items: center; gap: 4px; background: var(--card) !important; border: 1px solid var(--border); color: var(--text) !important; font-size: 11px !important; }
+  body.at-projetos .pj-cs-days-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #9ca3af; }
+  body.at-projetos .pj-cs-days-badge.green::before { background: var(--fg-green); }
+  body.at-projetos .pj-cs-days-badge.yellow::before { background: var(--fg-amber); }
+  body.at-projetos .pj-cs-days-badge.red::before { background: var(--fg-red); }
+  body.at-projetos .pj-cs-td-final { padding: 10px 16px !important; }
+
+  /* 12. Timeline: vira agenda; um cartão por dia com tarefa, todas as tarefas do dia, bolinha do status */
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-body[style*="padding:14px"] { padding: 4px 16px calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
+  body.at-projetos .pj-cal-grid { display: flex !important; flex-direction: column; gap: 12px !important; overflow: visible !important; }
+  body.at-projetos .pj-cal-head, body.at-projetos .pj-cal-cell:not(.has-tasks), body.at-projetos .pj-cal-more, body.at-projetos .pj-cal-date { display: none !important; }
+  body.at-projetos .pj-cal-cell {
+    min-height: 0 !important; padding: 0 !important; gap: 0 !important; overflow: hidden;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 16px !important; box-shadow: var(--sh-card) !important;
+  }
+  body.at-projetos .pj-cal-dlabel {
+    display: flex !important; align-items: center; min-height: 48px; padding: 0 16px;
+    border-bottom: 1px solid var(--sep); font-size: 15px; font-weight: 600; color: var(--text);
+  }
+  body.at-projetos .pj-cal-task, body.at-projetos .pj-cal-task-extra {
+    display: flex !important; align-items: center; gap: 12px; min-height: 48px; padding: 0 16px !important;
+    background: none !important; border: 0 !important; border-bottom: 1px solid var(--sep) !important; border-radius: 0 !important;
+    font-size: 15px !important; color: var(--text) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; filter: none !important;
+  }
+  body.at-projetos .pj-cal-task:last-child { border-bottom: 0 !important; }
+  body.at-projetos .pj-cal-task::before { content: ''; flex-shrink: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--c, #9ca3af); }
+  body.at-projetos .pj-cal-task.done { opacity: 1 !important; color: var(--text3) !important; }
+  body.at-projetos .pj-cal-task:active { background: var(--bg2) !important; }
+
+  /* 13. Métricas de tempo: números 2 por linha, rótulos sem caixa alta, seções em cartão */
+  body.at-projetos .pj-tm-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; margin: 4px 0 12px !important; }
+  body.at-projetos .pj-tm-kpi { padding: 14px !important; background: var(--card) !important; border-radius: 16px !important; box-shadow: var(--sh-card); }
+  body.at-projetos .pj-tm-kpi-label { font-size: 13px !important; font-weight: 600 !important; line-height: 17px; text-transform: none !important; letter-spacing: 0 !important; color: var(--text2) !important; }
+  body.at-projetos .pj-tm-info { display: none; }
+  body.at-projetos .pj-tm-kpi-val { margin: 6px 0 2px !important; font-size: 22px !important; color: var(--text) !important; font-variant-numeric: tabular-nums; }
+  body.at-projetos .pj-tm-kpi-sub { font-size: 12px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-tm-section { margin: 0 0 12px !important; padding: 16px !important; overflow-x: auto; background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--sh-card); }
+  body.at-projetos .pj-tm-h { margin-bottom: 6px !important; font-size: 15px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-tm-section > div[style*="font-size:11px"] { font-size: 13px !important; line-height: 18px; color: var(--text2) !important; margin-bottom: 12px !important; }
+  body.at-projetos .pj-tm-row { grid-template-columns: minmax(0, 1fr) auto !important; gap: 4px 10px !important; padding: 10px 0 !important; border-bottom: 1px solid var(--sep); }
+  body.at-projetos .pj-tm-row:last-child { border-bottom: 0; }
+  body.at-projetos .pj-tm-bar { grid-column: 1 / -1; height: 4px !important; background: var(--bg2) !important; }
+  body.at-projetos .pj-tm-bar-fill { background: var(--ink) !important; }
+  body.at-projetos .pj-tm-rate-input { width: 80px !important; min-height: 44px; font-size: 16px !important; border-radius: 12px !important; background: var(--card) !important; padding: 0 10px !important; }
+  body.at-projetos .pj-tm-cost.has-cost { color: var(--text) !important; }
+  body.at-projetos .pj-tm-cost:not(.has-cost) { font-size: 13px !important; font-weight: 500 !important; color: var(--text3) !important; }
+  body.at-projetos .pj-tm-task {
+    display: grid !important; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px !important; align-items: center !important;
+    padding: 10px 0 !important; border: 0 !important; border-bottom: 1px solid var(--sep) !important; border-radius: 0 !important; margin: 0 !important;
+  }
+  body.at-projetos .pj-tm-task:last-child { border-bottom: 0 !important; }
+  body.at-projetos .pj-tm-task > div:first-child { grid-column: 1; font-size: 15px; font-weight: 500 !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  body.at-projetos .pj-tm-task > div:nth-child(2) { grid-column: 1; font-size: 13px !important; color: var(--text3) !important; line-height: 18px; }
+  body.at-projetos .pj-tm-task > div:last-child { grid-column: 2; grid-row: 1 / span 2; margin: 0 !important; font-size: 15px; font-weight: 600 !important; color: var(--text) !important; font-variant-numeric: tabular-nums; }
+  /* SLA: limites em linhas, prioridade e clientes como linhas com fio; cor só na bolinha */
+  body.at-projetos .pj-sla-thresholds-row { flex-wrap: wrap; gap: 8px !important; padding: 12px !important; background: var(--card) !important; border-radius: 12px !important; }
+  body.at-projetos .pj-sla-thr-label-main { flex: 1 1 100%; font-size: 13px !important; font-weight: 600 !important; color: var(--text2) !important; }
+  body.at-projetos .pj-sla-thr { flex: 1 1 calc(50% - 4px); min-height: 44px; background: var(--card) !important; border-radius: 12px !important; }
+  body.at-projetos .pj-sla-thr-input { min-height: 36px; font-size: 16px !important; }
+  body.at-projetos .pj-sla-reset-btn { width: 44px; height: 44px; border-radius: 12px !important; background: var(--card) !important; color: var(--text2) !important; }
+  body.at-projetos .pj-sla-overall-h { margin: 16px 0 4px !important; font-size: 13px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text2) !important; }
+  body.at-projetos .pj-sla-prio-row { padding: 10px 0 !important; border-radius: 0 !important; border-bottom: 1px solid var(--sep); background: none !important; }
+  body.at-projetos .pj-sla-dot, body.at-projetos .pj-cycle-dot { width: 8px !important; height: 8px !important; box-shadow: none !important; }
+  body.at-projetos .pj-sla-bar, body.at-projetos .pj-cycle-bar { height: 4px !important; border-radius: 2px !important; background: var(--bg2) !important; }
+  body.at-projetos .pj-sla-bar-fill, body.at-projetos .pj-cycle-bar-fill { background: var(--ink) !important; border-radius: 2px !important; }
+  body.at-projetos :is(.pj-sla-pct, .pj-sla-client-pct) { display: inline-flex; align-items: center; gap: 6px; color: var(--text) !important; font-weight: 700 !important; }
+  body.at-projetos :is(.pj-sla-prio-row, .pj-sla-client-row) :is(.pj-sla-pct, .pj-sla-client-pct)::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #9ca3af; }
+  body.at-projetos :is(.pj-sla-prio-row, .pj-sla-client-row).good :is(.pj-sla-pct, .pj-sla-client-pct)::before { background: var(--fg-green); }
+  body.at-projetos :is(.pj-sla-prio-row, .pj-sla-client-row).warn :is(.pj-sla-pct, .pj-sla-client-pct)::before { background: var(--fg-amber); }
+  body.at-projetos :is(.pj-sla-prio-row, .pj-sla-client-row).bad :is(.pj-sla-pct, .pj-sla-client-pct)::before { background: var(--fg-red); }
+  body.at-projetos .pj-sla-meta, body.at-projetos .pj-sla-client-meta { font-size: 12px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-sla-clients { display: block !important; }
+  body.at-projetos .pj-sla-client-row { padding: 12px 0 !important; gap: 8px !important; background: none !important; border: 0 !important; border-bottom: 1px solid var(--sep) !important; border-radius: 0 !important; }
+  body.at-projetos .pj-sla-client-row:last-child { border-bottom: 0 !important; }
+  body.at-projetos .pj-sla-client-name { font-size: 15px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-sla-client-mini { margin-left: 0 !important; }
+  body.at-projetos .pj-sla-mini { height: 22px; padding: 0 8px !important; gap: 5px !important; background: var(--card) !important; border: 1px solid var(--border); color: var(--text) !important; font-size: 11px !important; }
+  /* Tempo por status: sem fundo tingido no gargalo; aviso em pílula neutra com ícone âmbar */
+  body.at-projetos .pj-cycle-row { padding: 10px 0 !important; border-radius: 0 !important; border-bottom: 1px solid var(--sep); background: none !important; margin: 0 !important; }
+  body.at-projetos .pj-cycle-row:last-child { border-bottom: 0; }
+  body.at-projetos .pj-cycle-warn { height: 22px; padding: 0 8px !important; background: var(--card) !important; border: 1px solid var(--border); border-radius: 999px !important; color: var(--text) !important; font-size: 11px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-cycle-warn svg { color: var(--fg-amber); }
+  body.at-projetos .pj-cycle-meta { font-size: 12px !important; white-space: normal !important; }
+  /* prioridade só em vermelho e âmbar; normal e baixa ficam cinza */
+  body.at-projetos .pj-tm-section [style*="--c:#ef4444"] { --c: #c9353a !important; }
+  body.at-projetos .pj-tm-section [style*="--c:#f97316"] { --c: #d97706 !important; }
+  body.at-projetos .pj-tm-section [style*="--c:#3b82f6"] { --c: #9ca3af !important; }
+  body.at-projetos .pj-tm-section [style*="--c:#10b981"] { --c: var(--card) !important; }
+  body.at-projetos .pj-tm-section .pj-sla-dot[style*="--c:#10b981"], body.at-projetos .pj-tm-section [style*="--c:#10b981"] :is(.pj-sla-mini-dot, .pj-sla-thr-dot) { box-shadow: inset 0 0 0 1.5px #9ca3af !important; }
+  /* mapa de calor dia × hora: rola de lado e fica em tons de cinza (era anil) */
+  body.at-projetos .pj-tm-section .pj-heat-grid { min-width: 560px; filter: grayscale(1); }
+
+  /* 14. iFood: avisos neutros com quadradinho âmbar, período em segmentado, rótulos sem caixa alta */
+  body.at-projetos .pj-ifood-view { padding: 4px 16px calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
+  body.at-projetos .pj-ifood-hint { margin: 0 0 12px !important; font-size: 13px !important; line-height: 18px; color: var(--text2) !important; }
+  body.at-projetos .pj-ifood-badge-test {
+    display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px !important; margin-left: 8px;
+    background: var(--card) !important; border: 1px solid var(--border); border-radius: 999px !important;
+    color: var(--text) !important; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important;
+  }
+  body.at-projetos .pj-ifood-badge-test::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--fg-amber); }
+  body.at-projetos .pj-ifood-aviso {
+    position: relative; margin: 0 0 12px !important; padding: 14px 14px 14px 58px !important; min-height: 60px;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 16px !important;
+    font-size: 13px !important; line-height: 18px; color: var(--text2) !important;
+  }
+  body.at-projetos .pj-ifood-aviso::before {
+    content: ''; position: absolute; left: 14px; top: 14px; width: 32px; height: 32px; border-radius: 8px;
+    background: var(--fg-amber) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E") no-repeat center;
+  }
+  body.at-projetos .pj-ifood-aviso-erro::before { background-color: var(--fg-red); }
+  body.at-projetos .pj-ifood-aviso .pj-ifood-badge-test { display: none; }
+  body.at-projetos .pj-ifood-view .mtr-period-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+  body.at-projetos .pj-ifood-view .mtr-presets { display: flex; gap: 0 !important; padding: 3px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; }
+  body.at-projetos .pj-ifood-view .mtr-preset { flex: 1; min-height: 44px; border-radius: 9px !important; font-size: 14px !important; font-weight: 600 !important; color: var(--text2) !important; background: none !important; box-shadow: none !important; }
+  body.at-projetos .pj-ifood-view .mtr-preset.active { background: var(--ink) !important; color: var(--on-ink) !important; }
+  body.at-projetos .pj-ifood-view .mtr-compare-dates { display: flex; align-items: center; gap: 8px !important; padding: 0 !important; background: none !important; border: 0 !important; }
+  body.at-projetos .pj-ifood-view .mtr-period-label { font-size: 13px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text2) !important; }
+  body.at-projetos .pj-ifood-view .mtr-date-input { flex: 1; min-width: 0; min-height: 44px; padding: 0 10px !important; font-size: 16px !important; color: var(--text) !important; color-scheme: light; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; }
+  body.at-projetos .pj-ifood-view .mtr-date-sep { font-size: 13px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-ifood-ref { margin: 4px 0 12px !important; font-size: 13px !important; line-height: 18px; }
+  body.at-projetos .pj-ifood-header { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; margin-bottom: 12px !important; }
+  body.at-projetos :is(.pj-ifood-kpi, .pj-ifood-dist, .pj-ifood-card) { padding: 14px !important; border-radius: 16px !important; box-shadow: var(--sh-card) !important; background: var(--card) !important; }
+  body.at-projetos .pj-ifood-kpi-label, body.at-projetos .pj-ifood-metric-label { font-size: 13px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text2) !important; }
+  body.at-projetos .pj-ifood-kpi-value { margin: 4px 0 2px; font-size: 20px !important; font-weight: 700 !important; color: var(--text) !important; font-variant-numeric: tabular-nums; }
+  body.at-projetos .pj-ifood-kpi-note { font-size: 12px !important; color: var(--text3) !important; }
+  body.at-projetos .pj-ifood-dists { gap: 8px !important; }
+  body.at-projetos .pj-ifood-dist-bar { height: 4px !important; background: var(--bg2) !important; }
+  body.at-projetos .pj-ifood-dist-bar > span { background: var(--ink) !important; }
+  body.at-projetos .pj-ifood-h { margin: 16px 0 8px !important; font-size: 15px !important; font-weight: 600 !important; }
+  body.at-projetos .pj-ifood-vazio { padding: 20px 16px !important; border: 1px solid var(--border) !important; border-radius: 16px !important; font-size: 14px !important; color: var(--text3) !important; }
+
+  /* 15. Esqueleto do painel na mesma grade do painel pronto; Todas vazia com quadradinho neutro */
+  body.at-projetos .pj-dash-skel .pj-dash-kpis { margin-bottom: 12px !important; }
+  body.at-projetos .pj-dash-skel .pj-skel-kpi-cell { align-items: center; }
+  body.at-projetos .pj-dash-skel .pj-skel-kpi-cell .pj-skel-line { margin: 4px auto; height: 14px; }
+  body.at-projetos .pj-dash-skel .pj-dash-kpi-label .pj-skel-line { height: 10px; width: 48px !important; }
+  body.at-projetos .pj-dash-skel .pj-skel-row .pj-skel-line { height: 12px; margin: 3px 0; }
+  body.at-projetos .pj-dash-skel .pj-dash-section-title .pj-skel-line { margin: 0; height: 14px; }
+  body.at-projetos .pj-empty-ic {
+    display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin: 0 auto 12px !important;
+    border: 1px solid var(--border); border-radius: 14px; background: var(--card); color: var(--text2); font-size: 0 !important; filter: none !important;
+  }
+
+  /* Caixa de entrada: Relatório do dia igual ao do painel (branco, ícone de traço) */
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-header .pj-wa-trigger-btn {
+    flex-shrink: 0; min-height: 44px; padding: 0 14px !important; gap: 8px !important; border-radius: 12px !important;
+    background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important;
+    box-shadow: none !important; font-size: 14px !important; font-weight: 600 !important;
+  }
+  body.at-projetos #pjMain:not(:has(.pj-askai-wrap, .pj-digest-kpi, .pj-integ-card, .pj-gantt-label)) .pj-view-header .pj-wa-trigger-btn svg { color: var(--text2); }
+
+  /* 16. Selecionar várias: o quadradinho só aparece no modo seleção (Filtros > Selecionar várias)
+         e toma o lugar do concluir, sem dois alvos empilhados; tocar na linha marca ou desmarca */
+  body.at-projetos:not(.pj-sel-mode) .pj-list-tr .pj-sel-circle { display: none !important; }
+  body.at-projetos.pj-sel-mode .pj-list-tr .pj-task-check { display: none !important; }
+  body.at-projetos.pj-sel-mode .pj-list-tr .pj-sel-circle {
+    display: flex !important; align-items: center; justify-content: center;
+    left: 16px; top: 15px; width: 22px !important; height: 22px !important; font-size: 13px; border-color: #9ca3af !important;
+  }
+  body.at-projetos.pj-sel-mode .pj-list-tr .pj-sel-circle::after { inset: -13px; }
+  /* a lista já vem agrupada por status: a pílula repetida em cada linha sai (troca pela janela da tarefa) */
+  body.at-projetos .pj-list-table .pj-list-tr .pj-list-cell:has(> .pj-status-pill) { display: none !important; }
+
+  /* 17. Kanban: Alta e Urgente em pílula com bolinha na linha de baixo, igual à lista */
+  body.at-projetos .pj-kanban .pj-card-prio { display: none !important; }
+  body.at-projetos .pj-kanban .pj-card-prio-pill { display: inline-flex !important; }
+
+  /* 18. Timeline: dia que passou mostra só o que ficou aberto; dia sem nada aberto sai */
+  body.at-projetos .pj-cal-cell.past .pj-cal-task.done,
+  body.at-projetos .pj-cal-cell.past:not(:has(.pj-cal-task:not(.done))) { display: none !important; }
+
+  /* 19. Arquivadas: Restaurar só com ícone, 44 × 44 */
+  body.at-projetos .pj-archived-row .pj-filter-btn { width: 44px; padding: 0 !important; justify-content: center; }
+  body.at-projetos .pj-archived-restore-label { display: none; }
+  body.at-projetos .pj-archived-row .pj-filter-btn svg { width: 18px; height: 18px; }
+
+  /* 20. Saúde: bolinhas nas cores do app, sem halo; Ritmo só com a pílula dos dias */
+  body.at-projetos .pj-health-dot { box-shadow: none !important; }
+  body.at-projetos .pj-health-dot.green { background: var(--fg-green) !important; }
+  body.at-projetos .pj-health-dot.yellow { background: var(--fg-amber) !important; }
+  body.at-projetos .pj-health-dot.red { background: var(--fg-red) !important; }
+  body.at-projetos .pj-cs-cell .pj-health-dot { width: 14px !important; height: 14px !important; }
+  body.at-projetos .pj-cs-td-final .pj-health-dot { width: 16px !important; height: 16px !important; }
+  body.at-projetos .pj-cs-cell-inner:has(.pj-cs-days-badge) .pj-health-dot { display: none !important; }
+  body.at-projetos .pj-cs-days-badge { height: 24px; padding: 0 8px !important; font-size: 12px !important; font-weight: 600; }
+  body.at-projetos .pj-cs-days-badge::before { width: 8px; height: 8px; }
+
+  /* 21. iFood: quadradinho da loja sem logo igual ao do Por cliente; vínculo branco com borda, 44 */
+  body.at-projetos .pj-ifood-card-logo { box-shadow: none !important; border: 1px solid var(--border); border-radius: 10px !important; }
+  body.at-projetos .pj-ifood-card-logo-empty { background: var(--card) !important; color: var(--text2) !important; }
+  body.at-projetos .pj-ifood-vinculo { flex: 1 1 100%; font-size: 13px; font-weight: 600; color: var(--text2); }
+  body.at-projetos .pj-ifood-vinculo .fx-select-wrap { flex: 1; min-width: 0; }
+  body.at-projetos .pj-ifood-vinculo :is(.mtr-select, .fx-select-btn) {
+    flex: 1; width: 100%; min-width: 0; min-height: 44px; padding: 0 12px !important;
+    background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; box-shadow: none !important;
+    color: var(--text) !important; font-size: 15px !important; font-weight: 500 !important;
+  }
+
+  /* 22. Toques de 44: xis do filtro em Todas e ações do espaço na gaveta */
+  body.at-projetos #pjMain .pj-view-title .pj-dash-filter-chip button { position: relative; }
+  body.at-projetos #pjMain .pj-view-title .pj-dash-filter-chip button::after { content: ''; position: absolute; inset: -8px; }
+  body.at-projetos .pj-space-actions { gap: 0 !important; }
+  body.at-projetos .pj-space-actions .pj-icon-btn { min-width: 44px; min-height: 44px; }
+  body.at-projetos .pj-space-row:hover .pj-space-chevron { display: none; } /* com as 5 ações de 44 não cabia; tocar na linha abre e fecha do mesmo jeito */
+}
 
 
 /* ─── fim do espalhar ─── */
