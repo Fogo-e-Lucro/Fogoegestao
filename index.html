@@ -399,37 +399,37 @@
 <div class="modal-overlay" id="appSettingsModal" onclick="if(event.target===this)closeAppSettings()" style="z-index:1000;">
   <div class="modal-box" style="max-width:720px;position:relative;">
     <button class="modal-close" onclick="closeAppSettings()" aria-label="Fechar" style="position:absolute;top:12px;right:12px;width:44px;height:44px;background:transparent;border:none;font-size:24px;line-height:1;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;border-radius:8px;">×</button>
-    <div class="modal-title">⚙️ Configurações do Sistema</div>
+    <div class="modal-title">Configurações do Sistema</div>
     <div class="modal-sub">Chaves de API e integrações. Centralizadas no Firestore para não ficarem expostas no código.</div>
 
     <div class="app-settings-tabs">
-      <button class="app-settings-tab active pj-admin-only" data-tab="apis" onclick="appSettingsTab('apis')">🔑 APIs</button>
-      <button class="app-settings-tab pj-admin-only" data-tab="integ" onclick="appSettingsTab('integ')">🔌 Integrações</button>
-      <button class="app-settings-tab" data-tab="rec" onclick="appSettingsTab('rec')">🎥 Gravador</button>
-      <button class="app-settings-tab pj-admin-only" data-tab="equipe" onclick="appSettingsTab('equipe')">👥 Equipe</button>
-      <button class="app-settings-tab pj-admin-only" data-tab="wa" onclick="appSettingsTab('wa');fgWaOnOpen()">📱 WhatsApp</button>
+      <button class="app-settings-tab active pj-admin-only" data-tab="apis" onclick="appSettingsTab('apis')">APIs</button>
+      <button class="app-settings-tab pj-admin-only" data-tab="integ" onclick="appSettingsTab('integ')">Integrações</button>
+      <button class="app-settings-tab" data-tab="rec" onclick="appSettingsTab('rec')">Gravador</button>
+      <button class="app-settings-tab pj-admin-only" data-tab="equipe" onclick="appSettingsTab('equipe')">Equipe</button>
+      <button class="app-settings-tab pj-admin-only" data-tab="wa" onclick="appSettingsTab('wa');fgWaOnOpen()">WhatsApp</button>
     </div>
 
     <div class="app-settings-pane" data-pane="apis">
       <div class="app-settings-section">
-        <div class="app-settings-row-label">✨ Claude API Key <span class="app-settings-hint">para geração de IA (ganchos, legendas, análises)</span></div>
+        <div class="app-settings-row-label">Claude API Key <span class="app-settings-hint">para geração de IA (ganchos, legendas, análises)</span></div>
         <div class="app-settings-row">
           <input type="password" class="app-settings-input" id="cfgClaude" placeholder="sk-ant-...">
-          <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('cfgClaude',this)">👁</button>
+          <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('cfgClaude',this)" aria-label="Mostrar ou ocultar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg></button>
           <button class="app-settings-btn" onclick="appSettingsSave('claude','cfgClaude')">Salvar</button>
         </div>
         <div class="app-settings-action-row">
           <a href="https://console.anthropic.com/settings/keys" target="_blank" class="app-settings-link">Obter chave →</a>
-          <button class="app-settings-btn-test" onclick="appSettingsTestClaude()">▶ Testar</button>
+          <button class="app-settings-btn-test" onclick="appSettingsTestClaude()">Testar</button>
           <span class="app-settings-test-result" id="cfgClaudeResult"></span>
         </div>
       </div>
 
       <div class="app-settings-section">
-        <div class="app-settings-row-label">🖼️ ImgBB Key <span class="app-settings-hint">para upload de imagens (gratuito)</span></div>
+        <div class="app-settings-row-label">ImgBB Key <span class="app-settings-hint">para upload de imagens (gratuito)</span></div>
         <div class="app-settings-row">
           <input type="password" class="app-settings-input" id="cfgImgbb" placeholder="Chave do ImgBB...">
-          <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('cfgImgbb',this)">👁</button>
+          <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('cfgImgbb',this)" aria-label="Mostrar ou ocultar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg></button>
           <button class="app-settings-btn" onclick="appSettingsSave('imagebb','cfgImgbb')">Salvar</button>
         </div>
         <div class="app-settings-action-row">
@@ -438,10 +438,10 @@
       </div>
 
       <div class="app-settings-section">
-        <div class="app-settings-row-label">📘 Meta Token (Facebook/Instagram) <span class="app-settings-hint">token de acesso para publicar posts. Use o botão "Conectar com Facebook" na aba Social ou cole um token longo aqui.</span></div>
+        <div class="app-settings-row-label">Meta Token (Facebook/Instagram) <span class="app-settings-hint">token de acesso para publicar posts. Use o botão "Conectar com Facebook" na aba Social ou cole um token longo aqui.</span></div>
         <div class="app-settings-row">
           <input type="password" class="app-settings-input" id="cfgMetaToken" placeholder="EAAB...">
-          <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('cfgMetaToken',this)">👁</button>
+          <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('cfgMetaToken',this)" aria-label="Mostrar ou ocultar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg></button>
           <button class="app-settings-btn" onclick="appSettingsSave('meta_token','cfgMetaToken')">Salvar</button>
         </div>
         <div class="app-settings-action-row">
@@ -451,10 +451,10 @@
       </div>
 
       <div class="app-settings-section">
-        <div class="app-settings-row-label">📍 Google Places API <span class="app-settings-hint">para a pré-análise de qualquer perfil público no Google Maps (28k buscas grátis/mês).</span></div>
+        <div class="app-settings-row-label">Google Places API <span class="app-settings-hint">para a pré-análise de qualquer perfil público no Google Maps (28k buscas grátis/mês).</span></div>
         <div class="app-settings-row">
           <input type="password" class="app-settings-input" id="cfgGooglePlaces" placeholder="AIza...">
-          <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('cfgGooglePlaces',this)">👁</button>
+          <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('cfgGooglePlaces',this)" aria-label="Mostrar ou ocultar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg></button>
           <button class="app-settings-btn" onclick="appSettingsSave('google_places','cfgGooglePlaces')">Salvar</button>
         </div>
         <div class="app-settings-action-row">
@@ -463,10 +463,10 @@
       </div>
 
       <div class="app-settings-section">
-        <div class="app-settings-row-label">🗺️ DataForSEO <span class="app-settings-hint">grid de posicionamento no Google Maps. Pay-as-you-go: ~R$ 0,003/ponto. Grade 11×11 = ~R$ 0,35 por scan.</span></div>
+        <div class="app-settings-row-label">DataForSEO <span class="app-settings-hint">grid de posicionamento no Google Maps. Pay-as-you-go: ~R$ 0,003/ponto. Grade 11×11 = ~R$ 0,35 por scan.</span></div>
         <div class="app-settings-row">
           <input type="password" class="app-settings-input" id="cfgDataForSEO" placeholder="login:senha (credencial DataForSEO)">
-          <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('cfgDataForSEO',this)">👁</button>
+          <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('cfgDataForSEO',this)" aria-label="Mostrar ou ocultar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg></button>
           <button class="app-settings-btn" onclick="appSettingsSave('dataforseo','cfgDataForSEO')">Salvar</button>
         </div>
         <div class="app-settings-action-row">
@@ -477,7 +477,7 @@
 
     <div class="app-settings-pane" data-pane="integ" style="display:none;">
       <div class="app-settings-section">
-        <div class="app-settings-row-label">🔔 Push Notifications (FCM) <span class="app-settings-hint">notificações push em qualquer dispositivo, mesmo com aba fechada</span></div>
+        <div class="app-settings-row-label">Push Notifications (FCM) <span class="app-settings-hint">notificações push em qualquer dispositivo, mesmo com aba fechada</span></div>
         <div class="app-settings-row">
           <input type="text" class="app-settings-input" id="cfgFcmVapid" placeholder="VAPID Public Key (Firebase Console → Cloud Messaging → Web Push certificates)">
           <button class="app-settings-btn" onclick="appSettingsSave('fcm_vapid','cfgFcmVapid'); try{localStorage.setItem('pj_fcm_vapid',document.getElementById('cfgFcmVapid').value||'');}catch(_){}">Salvar</button>
@@ -487,12 +487,12 @@
         </div>
         <div class="app-settings-action-row">
           <a href="https://console.firebase.google.com/project/calendario-cd198/settings/cloudmessaging" target="_blank" class="app-settings-link">Console FCM →</a>
-          <button class="app-settings-btn-test" onclick="pjFcmEnable()">▶ Ativar push neste dispositivo</button>
+          <button class="app-settings-btn-test" onclick="pjFcmEnable()">Ativar push neste dispositivo</button>
           <span class="app-settings-test-result" id="cfgFcmResult"></span>
         </div>
       </div>
       <div class="app-settings-section">
-        <div class="app-settings-row-label">🍽️ Cardápio Web <span class="app-settings-hint">faturamento diário de cada loja, vinculado ao cliente</span></div>
+        <div class="app-settings-row-label">Cardápio Web <span class="app-settings-hint">faturamento diário de cada loja, vinculado ao cliente</span></div>
         <div id="cwIntegBody"><span class="app-settings-hint">Abra a aba pra carregar.</span></div>
         <div class="app-settings-action-row">
           <span class="app-settings-hint">Uma autorização só cobre todas as lojas em que você tem acesso no Cardápio Web. O sync roda sozinho todo dia às 8h.</span>
@@ -616,9 +616,9 @@
 
     <div class="app-settings-pane" data-pane="equipe" style="display:none;">
       <!-- 🧹 Limpeza automática de anexos antigos (admin-only) -->
-      <div class="acesso-card pj-admin-only" style="margin-bottom:14px;background:linear-gradient(135deg,rgba(99,102,241,.04),rgba(168,85,247,.03));">
+      <div class="acesso-card pj-admin-only" style="margin-bottom:14px;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-          <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;">🧹</div>
+          <div style="width:38px;height:38px;flex-shrink:0;border-radius:10px;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--text2);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></div>
           <div style="flex:1;">
             <div style="font-size:14px;font-weight:700;color:var(--text1);">Limpeza automática de anexos</div>
             <div style="font-size:11.5px;color:var(--text2);line-height:1.5;">Apaga arquivos do Firebase Storage de tarefas <strong>concluídas há mais tempo</strong>. Imagens do ImgBB ficam (gratuitas).</div>
@@ -630,11 +630,11 @@
           <span style="font-size:12px;color:var(--text2);">dias</span>
           <button class="app-settings-btn" id="cfgAttachCleanupSaveBtn" onclick="pjCleanupSaveDays()" style="font-size:11px;padding:6px 10px;">Salvar</button>
           <span style="flex:1;"></span>
-          <button class="app-settings-btn-test" id="cfgAttachCleanupRunBtn" onclick="pjCleanupRunNow()" style="font-size:11.5px;padding:7px 14px;font-weight:700;">▶ Limpar agora</button>
+          <button class="app-settings-btn-test" id="cfgAttachCleanupRunBtn" onclick="pjCleanupRunNow()" style="font-size:11.5px;padding:7px 14px;font-weight:700;">Limpar agora</button>
         </div>
         <div id="cfgAttachCleanupResult" style="font-size:12px;color:var(--text2);min-height:0;"></div>
         <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5;">
-          ℹ️ Roda <strong>automaticamente 1x por dia</strong> quando você abre o app. Tarefas afetadas continuam no sistema, só os arquivos somem.
+          Roda <strong>automaticamente 1x por dia</strong> quando você abre o app. Tarefas afetadas continuam no sistema, só os arquivos somem.
         </div>
       </div>
 
@@ -680,7 +680,7 @@
       <!-- Member list -->
       <div class="acesso-card" style="margin-bottom:14px;">
         <div class="acesso-list-header">
-          <div class="acesso-title" style="margin-bottom:0;">👥 Equipe</div>
+          <div class="acesso-title" style="margin-bottom:0;">Equipe</div>
           <span id="acessoMemberCount" style="font-size:12px;color:var(--text3);"></span>
         </div>
         <div id="acessoMemberList"></div>
@@ -697,7 +697,7 @@
     <div class="app-settings-pane" data-pane="wa" style="display:none;">
       <!-- Header compacto: titulo + badge de status -->
       <div class="fg-wa-header">
-        <div class="fg-wa-header-icon">📱</div>
+        <div class="fg-wa-header-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg></div>
         <div class="fg-wa-header-txt">
           <div class="fg-wa-header-title">WhatsApp da Central</div>
           <div class="fg-wa-header-sub">Relatório diário 6h + alertas "vence em 1h"</div>
@@ -718,7 +718,7 @@
         </div>
 
         <div id="fgWaEmpty" class="fg-wa-empty">
-          <div class="fg-wa-empty-icon" id="fgWaEmptyIcon">💤</div>
+          <div class="fg-wa-empty-icon" id="fgWaEmptyIcon"></div>
           <div class="fg-wa-empty-title" id="fgWaEmptyTitle">Clique em <b>Reconectar</b> pra gerar o QR</div>
           <div class="fg-wa-empty-sub" id="fgWaEmptySub">O status atualiza sozinho a cada 5s.</div>
         </div>
@@ -726,28 +726,28 @@
 
       <div class="fg-wa-actions">
         <button class="fg-wa-reconnect-btn" onclick="window._fgWaAutoReconnected=true;fgWaReconnect()">
-          <span style="font-size:18px;">🔗</span> Gerar novo QR
+          Gerar novo QR
         </button>
-        <button class="app-settings-btn-test" onclick="fgWaCheckStatus()" style="font-size:12px;">🔄 Atualizar</button>
+        <button class="app-settings-btn-test" onclick="fgWaCheckStatus()" style="font-size:12px;">Atualizar</button>
       </div>
 
       <div id="fgWaLog" class="fg-wa-log"></div>
 
       <details class="fg-wa-cfg-details">
-        <summary>⚙️ Configuração avançada (URL, API Key, instância)</summary>
+        <summary>Configuração avançada (URL, API Key, instância)</summary>
         <div class="fg-wa-cfg-body">
           <label>URL do servidor Evolution</label>
           <input type="text" id="fgWaUrl" class="app-settings-input" placeholder="https://evo.89-116-30-126.nip.io">
           <label>API Key (fica salva só no seu browser)</label>
           <div style="display:flex;gap:6px;">
             <input type="password" id="fgWaKey" class="app-settings-input" placeholder="b71dea7c..." style="flex:1;">
-            <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('fgWaKey',this)">👁</button>
+            <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('fgWaKey',this)" aria-label="Mostrar ou ocultar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg></button>
           </div>
           <label>Nome da instância</label>
           <input type="text" id="fgWaInstance" class="app-settings-input" placeholder="fogogestao">
           <div style="display:flex;gap:8px;margin-top:4px;">
             <button class="app-settings-btn" onclick="fgWaSaveConfig()">Salvar configuração</button>
-            <button class="app-settings-btn-test" onclick="fgWaCheckStatus()">▶ Testar conexão</button>
+            <button class="app-settings-btn-test" onclick="fgWaCheckStatus()">Testar conexão</button>
           </div>
         </div>
       </details>
@@ -1046,7 +1046,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
       <!-- TOP BAR -->
       <header class="estudio-bar">
         <div class="estudio-bar-left">
-          <button class="estudio-bar-back" onclick="switchTab('visualizar')" aria-label="Voltar ao calendário">
+          <button class="estudio-bar-back" onclick="switchTab(window._fgAbaAnterior || 'visualizar')" aria-label="Voltar">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
           <div class="estudio-bar-crumbs">
@@ -1365,7 +1365,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
       </div>
       <div class="ed-filter-mini">
         <svg class="ed-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input id="filterSearch" class="ed-search" type="search" enterkeyhint="search" placeholder="Buscar por gancho, prato ou legenda" oninput="applyFilters()">
+        <input id="filterSearch" class="ed-search" type="search" enterkeyhint="search" placeholder="Gancho, prato ou legenda" oninput="applyFilters()">
         <button id="filterClear" class="ed-clear-btn" onclick="const i=document.getElementById('filterSearch');i.value='';applyFilters();i.focus()" aria-label="Limpar busca">×</button>
       </div>
     </div>
@@ -2828,10 +2828,8 @@ ufw allow 3000/tcp</pre>
       <div class="pj-drawer-backdrop" id="pjDrawerBackdrop" onclick="pjCloseDrawer()"></div>
       <!-- Main -->
       <div class="pj-main" id="pjMain">
-        <div class="pj-main-initial">
-          <div class="pj-main-initial-icon">🗂️</div>
-          <div class="pj-main-initial-text">Gestão Central</div>
-          <div class="pj-main-initial-sub">Selecione uma lista na sidebar ou abra a Caixa de Entrada</div>
+        <div class="pj-main-initial" aria-busy="true">
+          <div class="pj-main-initial-text">Carregando tarefas</div>
         </div>
       </div>
     </div>
@@ -4640,12 +4638,12 @@ function appCoEditRender() {
     wrap.innerHTML = '';
     return;
   }
-  const names = _appCoEditOthers.map(u => u.name || u.email || '?');
+  const names = _appCoEditOthers.map(u => escHtml(String(u.name || u.email || '?')));
   let label;
-  if (names.length === 1) label = `<strong>${names[0]}</strong> está editando agora…`;
-  else if (names.length === 2) label = `<strong>${names[0]}</strong> e <strong>${names[1]}</strong> estão editando…`;
-  else label = `<strong>${names.length} pessoas</strong> editando agora…`;
-  wrap.innerHTML = `<div class="app-presence-edit-badge"><span class="dot"></span>👁 ${label}</div>`;
+  if (names.length === 1) label = `<strong>${names[0]}</strong> está editando`;
+  else if (names.length === 2) label = `<strong>${names[0]}</strong> e <strong>${names[1]}</strong> estão editando`;
+  else label = `<strong>${names.length} pessoas</strong> estão editando`;
+  wrap.innerHTML = `<div class="app-presence-edit-badge"><span class="dot"></span>${label}</div>`;
 }
 
 // Carrega config + inicia listener + polling + presence quando auth resolver
@@ -5788,7 +5786,7 @@ function renderMemberList() {
     const photoTitle = isMe ? 'Clique para mudar a sua foto' : (iAmAdmin ? `Clique para definir foto de ${m.name||m.email}` : '');
     // Botão de trocar foto sempre visível pra admin (não depende de hover)
     const photoBtn = canEditPhoto
-      ? `<button class="acesso-photo-edit" onclick="acessoUploadAvatar(this.parentElement.querySelector('.acesso-member-avatar')${isMe?'':`,'${safeEmail}'`})" title="${isMe?'Trocar sua foto':'Trocar foto de '+(m.name||m.email)}">📷</button>`
+      ? `<button class="acesso-photo-edit" onclick="acessoUploadAvatar(this.parentElement.querySelector('.acesso-member-avatar')${isMe?'':`,'${safeEmail}'`})" title="${isMe?'Trocar sua foto':'Trocar foto de '+(m.name||m.email)}" aria-label="Trocar foto">${fgIco('camera', 14)}</button>`
       : '';
     const photoRemoveBtn = (canEditPhoto && m.photoUrl)
       ? `<button class="acesso-photo-remove" onclick="acessoRemoveAvatar('${safeEmail}')" title="Remover foto (volta pro avatar gerado)">✕</button>`
@@ -5810,8 +5808,8 @@ function renderMemberList() {
       </div>
       <div class="acesso-member-actions">
         ${!isAdmin ? `
-          <button class="acesso-action-btn" onclick="openPermsModal('${safeEmail}')" title="Permissões">⚙️</button>
-          <button class="acesso-action-btn" onclick="acessoSendInvite('${safeEmail}','${safeName}','${m.authType||'google'}','')" title="Reenviar convite">✉️</button>
+          <button class="acesso-action-btn" onclick="openPermsModal('${safeEmail}')" title="Permissões" aria-label="Permissões">${fgIco('sliders', 16)}</button>
+          <button class="acesso-action-btn" onclick="acessoSendInvite('${safeEmail}','${safeName}','${m.authType||'google'}','')" title="Reenviar convite" aria-label="Reenviar convite">${fgIco('send', 16)}</button>
           <button class="acesso-action-btn danger" onclick="removeMember('${safeEmail}')" title="Remover">×</button>
         ` : ''}
       </div>
@@ -7146,7 +7144,11 @@ function switchTab(tab, btn) {
   // Teardown de listeners da aba anterior (perf: evita vazamento de onSnapshot)
   // Usa cleanup escopado: mata só pj_*/iFood/POP, sem tocar em listeners
   // compartilhados (clientes_base, posts) que outras abas usam.
+  if (!document.getElementById('tab-' + tab)) return; // aba que não existe mais (ex.: acesso, hoje dentro de Configurações)
+  try { pjClosePopups(); } catch(_){} // menu aberto não fica por cima da aba nova
   const _prevTab = document.body.dataset.activeTab;
+  // Criar post volta pra aba de onde veio (antes voltava sempre pro Calendário)
+  if (tab === 'entrada' && _prevTab && _prevTab !== 'entrada') window._fgAbaAnterior = _prevTab;
   if (_prevTab && _prevTab !== tab) {
     if (_prevTab === 'projetos') {
       try { _pjCleanupRealtimeOnly(); } catch(_){}
@@ -7590,7 +7592,7 @@ function appSettingsToggleVisible(inputId, btn) {
   const el = document.getElementById(inputId);
   if (!el) return;
   el.type = (el.type === 'password') ? 'text' : 'password';
-  if (btn) btn.textContent = (el.type === 'password') ? '👁' : '🙈';
+  if (btn) btn.classList.toggle('is-on', el.type !== 'password'); // olho de traço fica; o estado vai na cor
 }
 
 // ═════════════ WhatsApp da Central ═════════════
@@ -7662,7 +7664,8 @@ function fgWaOnOpen() {
 function fgWaShowEmpty(icon, title, sub) {
   const box = document.getElementById('fgWaQrBox'); if (box) box.style.display = 'none';
   const emp = document.getElementById('fgWaEmpty'); if (emp) emp.style.display = 'flex';
-  const i = document.getElementById('fgWaEmptyIcon'); if (i) i.textContent = icon || '💤';
+  const _k = { '⚠️': 'alert', '✅': 'check', '⏳': 'hourglass' }[icon] || 'clock';
+  const i = document.getElementById('fgWaEmptyIcon'); if (i) i.innerHTML = fgIco(_k, 24);
   const t = document.getElementById('fgWaEmptyTitle'); if (t) t.innerHTML = title || '';
   const s = document.getElementById('fgWaEmptySub'); if (s) s.textContent = sub || '';
 }
@@ -7717,7 +7720,7 @@ async function fgWaCheckStatus(silent) {
       if (!qr || qr.style.display === 'none') {
         if (!window._fgWaAutoReconnected) {
           window._fgWaAutoReconnected = true;
-          fgWaShowEmpty('⏳','Gerando QR pra vincular…','Aguarde uns segundos.');
+          fgWaShowEmpty('⏳','Gerando QR pra vincular','Aguarde uns segundos.');
           fgWaReconnect();
         }
       }
@@ -8479,6 +8482,9 @@ document.getElementById('confirmDeleteBtn').onclick = () => {
 ═══════════════════════════════════════════════════════ */
 function showToast(type, icon, msg) {
   // Permite chamadas flexíveis: showToast(msg), showToast(type, msg), showToast(type, icon, msg)
+  // e também showToast(msg, type), que muita chamada usa (sem isso o aviso saía só "info"/"warn")
+  const TIPOS = ['success', 'ok', 'warn', 'warning', 'error', 'info', 'danger'];
+  if (msg === undefined && TIPOS.includes(icon) && !TIPOS.includes(type)) { msg = type; type = icon; icon = undefined; }
   if (typeof type === 'string' && icon === undefined && msg === undefined) {
     msg = type; type = 'info'; icon = 'ℹ️';
   } else if (typeof type === 'string' && typeof icon === 'string' && msg === undefined) {
@@ -8495,7 +8501,12 @@ function showToast(type, icon, msg) {
   while (c.children.length >= 3) c.firstElementChild?.remove();
   const t = document.createElement('div');
   t.className = `toast ${type || 'info'}`;
-  t.innerHTML = `<span class="toast-icon">${icon}</span><span>${msg}</span>`;
+  // Ícone de traço pelo tipo (emoji não é ícone de interface); o emoji do começo do texto sai
+  const TOAST_ICO = { success: 'check', ok: 'check', warn: 'alert', warning: 'alert', error: 'x', danger: 'trash', info: 'info' };
+  let ico = '';
+  try { const k = TOAST_ICO[type] || 'info'; ico = k === 'info' ? pjlIco('info', 16) : fgIco(k, 16); } catch (_) {}
+  msg = String(msg).replace(/^(?:\p{Extended_Pictographic}|[ℹ✅❌✔✓️‍\s])+/u, '');
+  t.innerHTML = `<span class="toast-icon">${ico}</span><span>${msg}</span>`;
   c.appendChild(t);
   setTimeout(()=>{ t.classList.add('toast-out'); setTimeout(()=>t.remove(),280); }, 3000);
 }
@@ -9600,6 +9611,14 @@ function spUpdateTokenStatus() {
   const expiry = localStorage.getItem('metaTokenExpiry');
   const status = document.getElementById('spTokenStatus');
   if (!status) return;
+  // Conectado: o botão vira "Reconectar" de contorno (não um segundo botão grafite logo acima de "Conectado")
+  const fb = document.getElementById('spFbLoginBtn');
+  const _ok = !!getSpToken() && (!expiry || Math.ceil((parseInt(expiry) - Date.now()) / 86400000) > 7);
+  if (fb) {
+    fb.classList.toggle('is-ok', _ok);
+    const tn = [...fb.childNodes].reverse().find(n => n.nodeType === 3 && n.textContent.trim());
+    if (tn) tn.textContent = _ok ? ' Reconectar ' : ' Conectar com Facebook ';
+  }
   if (!getSpToken()) { status.innerHTML = ''; return; }
   const dot = (c) => `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${c};margin-right:6px;vertical-align:middle;"></span>`;
   if (!expiry) {
@@ -16804,6 +16823,7 @@ async function pjInit() {
     pjSetupRealtime();
   } catch(e) {
     console.warn('[Projetos] Firestore indisponível, modo offline:', e.message);
+    if (!pjUnsubs?.length) window._pjLoadedOnce = true; // sem listener não vem retrato: mostra o que tiver
   }
   pjRenderSidebar();
   // Restaura view/cliente/filtro do Por Cliente do localStorage (fallback: dashboard)
@@ -16954,7 +16974,7 @@ async function pjLoadAllTasks() {
   // pjAllTasks/pjTasks. Economiza 1 full-collection read por sessão.
   pjAllTasks = [];
   pjTasks = {};
-  window._pjLoadedOnce = true;
+  window._pjLoadedOnce = false; // vira true no 1º retrato de pj_tasks; até lá o painel mostra o esqueleto
   pjStartViewersListener();
 }
 
@@ -17214,8 +17234,16 @@ function pjSetupRealtime() {
   }, ()=>{});
   pjUnsubs.push(unsubLists);
   // Listen for task changes across all lists (patch incremental via docChanges)
+  // Avisos só de mudança feita depois que o app abriu: com o cache do Firestore o 1º retrato
+  // pode vir parcial e o do servidor trazia tarefas antigas como 'added' (rajada de "X criou")
+  const desde = Date.now() - 60000;
+  const ms = (ts) => typeof ts === 'number' ? ts : (ts && ts.toMillis ? ts.toMillis() : (ts && ts.seconds ? ts.seconds * 1000 : 0));
+  const recente = (t, tipo) => tipo === 'added' ? ms(t.createdAt) > desde : (!ms(t.updatedAt) || ms(t.updatedAt) > desde);
+  let primeiroRetrato = true;
   const unsub = pjC('pj_tasks').onSnapshot(snap => {
-    const isFirstLoad = pjAllTasks.length === 0;
+    const isFirstLoad = primeiroRetrato || pjAllTasks.length === 0;
+    primeiroRetrato = false;
+    window._pjLoadedOnce = true;
     const changes = snap.docChanges();
     const affectedListIds = new Set();
     const byId = new Map(pjAllTasks.map(t => [t.id, t]));
@@ -17232,7 +17260,7 @@ function pjSetupRealtime() {
       const newT = { id, ...ch.doc.data() };
       const prevT = byId.get(id);
       // Notificações (só depois da primeira carga)
-      if (!isFirstLoad && myUid && (ch.type === 'added' || ch.type === 'modified')) {
+      if (!isFirstLoad && myUid && (ch.type === 'added' || ch.type === 'modified') && recente(newT, ch.type)) {
         const wasAssigned = prevT && (prevT.assignees||[]).includes(myUid);
         const isAssigned = (newT.assignees||[]).includes(myUid);
         const createdByMe = newT.createdBy === myUid && ch.type === 'added';
@@ -17327,6 +17355,7 @@ const FG_ICO = {
   more: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
   contrast: '<circle cx="12" cy="12" r="10"/><path d="M12 18a6 6 0 0 0 0-12v12z"/>',
   repeat: '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+  camera: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
   inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>'
 };
 function fgIco(k, s = 16, w = 1.75) {
@@ -17380,7 +17409,7 @@ function pjRenderSidebar() {
         html += `
         <div class="pj-folder-row" onclick="pjToggleFolder('${f.id}')">
           <span class="pj-row-ic" style="color:var(--text3);display:inline-flex;">${fgIco(fOpen ? 'folderopen' : 'folder')}</span>
-          <span class="pj-folder-name">${escHtml(f.name)}</span>${folderActions}
+          <span class="pj-folder-name">${escHtml(f.name)}</span>${folderActions}${isAdmin ? PJ_ROW_MORE : ''}
         </div>`;
         if (fOpen) fLists.forEach(l => { html += pjListRowHtml(l, true, isAdmin); });
       });
@@ -17492,6 +17521,12 @@ function fgNavLoadSpaces() {
     })
     .catch(() => {})
     .finally(() => { _fgSpacesP = null; });
+}
+// Tela de toque não tem hover: as ações do espaço e da pasta (que aparecem no hover) vão num menu ⋯
+const PJ_ROW_MORE = `<button class="pj-icon-btn pj-row-more" title="Ações" aria-label="Ações" onclick="event.stopPropagation();pjRowActionsMenu(event)">${fgIco('more', 18)}</button>`;
+function pjRowActionsMenu(ev) {
+  const btns = [...ev.currentTarget.parentElement.querySelectorAll(':scope > .pj-space-actions > button, :scope > .pj-folder-actions > button')];
+  pjShowPopupMenu(ev, btns.map((b, i) => ({ id: i, label: b.getAttribute('aria-label') || b.title, icon: b.innerHTML })), null, (i) => btns[i]?.click());
 }
 
 function pjListRowHtml(l, indent, isAdmin) {
@@ -17628,6 +17663,7 @@ function pjLoadDemo() {
 
   pjAllTasks = Object.values(pjTasks).flat();
   pjInitialized = true;
+  window._pjLoadedOnce = true;
   pjRenderSidebar();
   pjNavigate('dashboard');
   const dBtn = document.getElementById('pjDemoBtn');
@@ -17662,6 +17698,7 @@ function pjExitDemo() {
 
 // ── Navigation ─────────────────────────────────────────
 function pjNavigate(type, id = null) {
+  try { pjClosePopups(); } catch(_){} // menu aberto não fica por cima da tela nova
   // Bloqueia navegação para listas de espaços não permitidos
   if ((type === 'list' || type === 'kanban') && id && typeof userIsAdmin === 'function' && !userIsAdmin()) {
     const list = pjLists.find(l => l.id === id);
@@ -17771,7 +17808,7 @@ function pjRenderSidebarUser() {
   const avatarContent = '';
   // Find member role
   const member = pjMembers.find(m => m.uid === u.uid);
-  const role = member?.role === 'admin' ? '🔑 Admin' : member?.role === 'viewer' ? '👁 Viewer' : '✏️ Membro';
+  const role = member?.role === 'admin' ? 'Admin' : member?.role === 'viewer' ? 'Viewer' : 'Membro';
   el.innerHTML = `<div class="pj-sidebar-user-row" onclick="pjOpenProfileSettings?.()">
     <div class="pj-avatar" style="${avatarStyle}width:32px;height:32px;border-radius:10px;font-size:13px;">${avatarContent}</div>
     <div class="pj-sidebar-user-info">
@@ -17840,9 +17877,7 @@ function pjBuildDashboard() {
   if (!pjAllTasks.length && !pjMembers.length && (typeof pjUnsubs === 'undefined' || !pjUnsubs?.length)) {
     // primeiro carregamento, ainda sem realtime
   }
-  if (!pjAllTasks.length && pjUnsubs && pjUnsubs.length && !window._pjLoadedOnce) {
-    return pjBuildDashboardSkeleton();
-  }
+  if (!window._pjLoadedOnce) return pjBuildDashboardSkeleton();
 
   const today = pjDateStr(new Date());
   const now = new Date();
@@ -18370,6 +18405,8 @@ function pjOpenDailyReport() {
     if (typeof showToast === 'function') showToast('Relatório do dia disponível apenas para admins.', 'warn');
     return;
   }
+  // aberto cedo saía "Tudo em dia" com as tarefas ainda chegando
+  if (!window._pjLoadedOnce) { showToast('info', 'As tarefas ainda estão carregando'); return; }
   const text = pjGenerateDailyReport();
   const time = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
   let modal = document.getElementById('pjWaModal');
@@ -19734,29 +19771,36 @@ function pjRingNotifBell() {
 }
 function pjToggleNotifPanel(ev) {
   if (ev) ev.stopPropagation();
-  pjNotifPanelOpen = !pjNotifPanelOpen;
   const panel = document.getElementById('pjNotifPanel');
   if (!panel) return;
-  if (pjNotifPanelOpen) {
-    pjRenderNotifPanel();
-    panel.classList.add('open');
-    // 👀 Visualizou! Marca tudo como lido — sino volta ao normal.
-    // Pequeno delay pra usuário ver o badge brevemente antes do panel sumir
-    // o estado unread (UX: confirmação visual de que viu o que estava pendente)
-    setTimeout(() => {
-      try { pjMarkAllRead(); } catch(_) {}
-    }, 500);
-    setTimeout(() => {
-      const onDoc = (e) => {
-        if (!panel.contains(e.target) && e.target.id !== 'pjNotifBell' && !document.getElementById('pjNotifBell').contains(e.target)) {
-          pjNotifPanelOpen = false; panel.classList.remove('open'); document.removeEventListener('click', onDoc);
-        }
-      };
-      document.addEventListener('click', onDoc);
-    }, 10);
-  } else {
-    panel.classList.remove('open');
-  }
+  if (pjNotifPanelOpen) return pjCloseNotifPanel();
+  pjNotifPanelOpen = true;
+  pjRenderNotifPanel();
+  panel.classList.add('open');
+  // Escurecido de verdade (não um ::after do body): no iPhone o toque no body não gera click
+  // e o painel não fechava tocando fora. No computador o div fica sem estilo e sem altura.
+  const bd = document.createElement('div');
+  bd.className = 'pj-notif-bd';
+  bd.onclick = (e) => { e.stopPropagation(); pjCloseNotifPanel(); };
+  document.body.appendChild(bd);
+  // Visualizou: marca tudo como lido depois de um instante (dá tempo de ver o que era novo)
+  setTimeout(() => {
+    try { pjMarkAllRead(); } catch(_) {}
+  }, 500);
+  setTimeout(() => { if (pjNotifPanelOpen) document.addEventListener('click', pjNotifOnDoc); }, 10);
+}
+function pjNotifOnDoc(e) {
+  const panel = document.getElementById('pjNotifPanel');
+  const bell = document.getElementById('pjNotifBell');
+  // o cartão "Apagar todas?" fica fora do painel: Cancelar não fecha o painel junto
+  if (e.target.closest?.('[data-pj-confirm-danger]')) return;
+  if (panel && !panel.contains(e.target) && !(bell && bell.contains(e.target))) pjCloseNotifPanel();
+}
+function pjCloseNotifPanel() {
+  pjNotifPanelOpen = false;
+  document.getElementById('pjNotifPanel')?.classList.remove('open');
+  document.querySelectorAll('.pj-notif-bd').forEach(b => b.remove());
+  document.removeEventListener('click', pjNotifOnDoc);
 }
 // "há 3 dias", igual ao resto do painel
 function pjNotifTime(ts) {
@@ -19804,6 +19848,7 @@ function pjRenderNotifPanel() {
     <div class="pj-notif-header">
       <span>Notificações</span>
       <button onclick="pjClearNotifs()" title="Apagar todas" aria-label="Apagar todas">${fgIco('trash', 18)}</button>
+      <button class="pj-notif-x" onclick="pjCloseNotifPanel()" title="Fechar" aria-label="Fechar">${fgIco('x', 18)}</button>
     </div>
     ${pjPushRow()}
     ${mentionBanner}
@@ -19818,8 +19863,7 @@ function pjOpenNotif(id) {
   // Persiste read=true no Firestore (pra não vir como unread em outros devices)
   try { pjC('pj_notifications').doc(id).update({ read: true }).catch(()=>{}); } catch(_) {}
   if (n.taskId) pjOpenTask(n.taskId);
-  pjNotifPanelOpen = false;
-  document.getElementById('pjNotifPanel')?.classList.remove('open');
+  pjCloseNotifPanel();
 }
 function pjMarkAllRead() {
   const unreadIds = pjNotifications.filter(n => !n.read).map(n => n.id);
@@ -21718,7 +21762,7 @@ function pjOpenFabModal() {
   const spaceSel = document.getElementById('pjFabSpaceSelect');
   if (spaceSel) {
     if (!visibleSpaces.length) {
-      spaceSel.innerHTML = '<option value="">Nenhuma pasta disponível — crie uma pasta primeiro</option>';
+      spaceSel.innerHTML = '<option value="">' + (window._pjLoadedOnce ? 'Nenhuma pasta ainda. Crie uma no menu' : 'Carregando pastas') + '</option>';
     } else {
       const preSpace = lastSpaceId && visibleSpaces.find(s=>s.id===lastSpaceId)
                        ? lastSpaceId
@@ -22812,6 +22856,7 @@ function pjOpenTagPicker(taskId, anchorEl) {
     </div>
   `;
   document.body.appendChild(pop);
+  pjToqueFora(pop, () => pop.remove());
 
   // Fecha ao clicar fora
   setTimeout(() => {
@@ -25958,9 +26003,25 @@ async function pjSetRecurrence(taskId, pattern) {
   pjClosePopups();
 }
 function pjClosePopups() {
-  document.querySelectorAll('.pj-popup-menu').forEach(el => el.remove());
+  document.querySelectorAll('.pj-popup-menu, .pj-popup-bd').forEach(el => el.remove());
   document.getElementById('pjDatePicker')?.classList.remove('open');
   document.getElementById('pjTimePicker')?.classList.remove('open');
+}
+// Toque fora fecha o balão também no iPhone: o Safari não gera click em área sem nada clicável
+// (o click no document nunca chegava) e o sino e a conta param o click antes do document.
+// Um fundo transparente logo abaixo do balão pega o toque; some sozinho quando o balão fecha.
+function pjToqueFora(pop, fechar) {
+  let z = parseInt(getComputedStyle(pop).zIndex, 10);
+  if (!(z > 1)) { z = 10000; pop.style.zIndex = z; }
+  const bd = document.createElement('div');
+  bd.className = 'pj-popup-bd';
+  bd.style.cssText = `position:fixed;inset:0;z-index:${z - 1}`;
+  bd.addEventListener('click', (e) => { e.stopPropagation(); bd.remove(); fechar(); });
+  pop.parentNode.insertBefore(bd, pop);
+  const aberto = () => pop.isConnected && (!pop.id || pop.classList.contains('open'));
+  const mo = new MutationObserver(() => { if (!aberto()) { bd.remove(); mo.disconnect(); } });
+  mo.observe(pop.parentNode, { childList: true });
+  mo.observe(pop, { attributes: true, attributeFilter: ['class'] });
 }
 function pjShowPopupMenu(ev, items, current, onSelect) {
   ev.stopPropagation();
@@ -26005,6 +26066,7 @@ function pjShowPopupMenu(ev, items, current, onSelect) {
   menu.style.maxHeight = maxH + 'px';
   menu.style.position = 'fixed';
   document.body.appendChild(menu);
+  pjToqueFora(menu, pjClosePopups);
 
   // Posição horizontal — alinha à esquerda, ajusta se sair da tela
   const menuW = Math.min(320, vw - 24);
@@ -26024,6 +26086,7 @@ function pjShowPopupMenu(ev, items, current, onSelect) {
   }
   setTimeout(() => {
     const onDocClick = (e) => {
+      if (!menu.isConnected) return document.removeEventListener('click', onDocClick); // já fechou pelo fundo
       if (!menu.contains(e.target)) { pjClosePopups(); document.removeEventListener('click', onDocClick); }
     };
     document.addEventListener('click', onDocClick);
@@ -26122,6 +26185,7 @@ function pjOpenDatePicker(ev, taskId) {
   }
   pjRenderDatePicker();
   pop.classList.add('open');
+  pjToqueFora(pop, () => pop.classList.remove('open'));
   // Position near trigger
   const trigger = ev.currentTarget;
   // tamanho real (no celular o balão ocupa a largura toda e os dias têm 44px)
@@ -26263,6 +26327,7 @@ function pjOpenTimePicker(ev, taskId) {
       <button class="pj-dp-btn primary" onclick="pjTpSave('${taskId}')">Salvar</button>
     </div>`;
   pop.classList.add('open');
+  pjToqueFora(pop, () => pop.classList.remove('open'));
   const trigger = ev.currentTarget;
   const pw = pop.offsetWidth || 220, ph = pop.offsetHeight || 260;
   pjRoomBelow(trigger, ph);
@@ -26839,6 +26904,7 @@ function pjRenderTaskModal(task) {
   titleEl.style.height = 'auto'; titleEl.style.height = titleEl.scrollHeight+'px';
 
   document.getElementById('pjModalDesc').value = task.description || '';
+  requestAnimationFrame(pjDescAutoGrow);
   pjDescPreview = false;
   const dPv = document.getElementById('pjModalDescPreview'); if (dPv) dPv.style.display = 'none';
   const dTa = document.getElementById('pjModalDesc'); if (dTa) dTa.style.display = '';
@@ -27152,8 +27218,8 @@ async function pjDownloadFile(src, filename) {
 
 function pjFmtBytes(b) {
   if (!b || b < 1024) return (b||0) + ' B';
-  if (b < 1024*1024) return (b/1024).toFixed(1).replace('.0','') + ' KB';
-  return (b/(1024*1024)).toFixed(1).replace('.0','') + ' MB';
+  if (b < 1024*1024) return (b/1024).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' KB';
+  return (b/(1024*1024)).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' MB';
 }
 
 // Ícone visual baseado na extensão/tipo do arquivo
@@ -27578,7 +27644,7 @@ function pjGetFirstName() {
 // Diálogo de confirmação destrutivo (vermelho). Retorna Promise<boolean>.
 // Estilo inline pra não depender de styles.css cacheado velho.
 function pjConfirmDanger(opts) {
-  // Cartão branco com quadradinho vermelho sólido (ícone de traço), sem emoji e sem brilho.
+  // Cartão branco com quadradinho neutro e traço vermelho (só o botão de confirmar é vermelho), sem emoji e sem brilho.
   // O "icon" antigo continua aceito mas não é mais usado.
   const { title='Confirmar', message='Tem certeza?', confirmLabel='Sim', cancelLabel='Cancelar' } = opts || {};
   return new Promise(resolve => {
@@ -27605,7 +27671,7 @@ function pjConfirmDanger(opts) {
     ].join(';');
     const _ic = typeof fgIco === 'function' ? fgIco('alert', 20, 2) : '!';
     box.innerHTML = `
-      <div style="width:40px;height:40px;border-radius:10px;background:#c9353a;color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">${_ic}</div>
+      <div style="width:40px;height:40px;border-radius:10px;background:var(--card,#fff);border:1px solid var(--border,#d8dde6);color:#c9353a;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">${_ic}</div>
       <div style="font-size:17px;line-height:22px;font-weight:600;margin-bottom:6px;">${escHtml(title)}</div>
       <div style="font-size:15px;line-height:21px;color:var(--text2,#5a6272);margin-bottom:20px;">${escHtml(message)}</div>
       <div style="display:flex;gap:8px;justify-content:flex-end;">
@@ -28472,7 +28538,15 @@ function pjModalTitleChanged() {
     if (pjCurrentTaskId && v) pjUpdateTask(pjCurrentTaskId, {title:v});
   }, 800);
 }
+// Celular: a descrição cresce com o texto (era uma caixa com rolagem própria dentro da janela que rola)
+function pjDescAutoGrow() {
+  const ta = document.getElementById('pjModalDesc');
+  if (!ta || !matchMedia('(max-width: 640px)').matches) return;
+  ta.style.height = 'auto';
+  if (ta.scrollHeight > 0) ta.style.height = (ta.scrollHeight + 2) + 'px';
+}
 function pjModalDescChanged() {
+  pjDescAutoGrow();
   clearTimeout(pjModalSaveTimer);
   pjModalSaveTimer = setTimeout(() => {
     const v = document.getElementById('pjModalDesc')?.value;
@@ -28927,12 +29001,13 @@ function pjOpenAssignModal(taskId) {
 }
 // Notifica no WhatsApp que um responsável foi atribuído a uma tarefa.
 // Fire-and-forget: não bloqueia a UI, não estoura se falhar.
+// Devolve true só se o servidor aceitou (o botão manual depende disso; os automáticos ignoram)
 async function fgNotifyWhatsAppTaskAssigned(uid, task) {
   try {
-    if (!uid || !task) return;
+    if (!uid || !task) return false;
     const m = (Array.isArray(pjMembers) ? pjMembers.find(x => x.uid === uid) : null);
     const email = m?.email;
-    if (!email) return;
+    if (!email) return false;
     const myUid = _auth?.currentUser?.uid || _currentUser?.uid;
     const me = pjMembers.find(x => x.uid === myUid);
     const senderName = me?.name || me?.email?.split('@')[0] || 'Alguém';
@@ -28946,7 +29021,7 @@ async function fgNotifyWhatsAppTaskAssigned(uid, task) {
     const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
     const apiUrl = (cfg.url || 'https://89-116-30-126.sslip.io').replace(/\/+$/,'');
     const apiTok = cfg.token || '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
-    await fetch(apiUrl + '/notify/task-assigned', {
+    const res = await fetch(apiUrl + '/notify/task-assigned', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiTok },
       body: JSON.stringify({
@@ -28958,8 +29033,9 @@ async function fgNotifyWhatsAppTaskAssigned(uid, task) {
         senderName,
         listName,
       }),
-    }).catch(e => console.warn('[notifyWA] fetch falhou:', e.message));
-  } catch(e) { console.warn('[notifyWA]', e); }
+    }).catch(e => { console.warn('[notifyWA] fetch falhou:', e.message); return null; });
+    return !!(res && res.ok);
+  } catch(e) { console.warn('[notifyWA]', e); return false; }
 }
 
 // Botão manual "📤 WhatsApp" no header do modal — dispara DM + grupo agora.
@@ -28975,13 +29051,13 @@ async function pjSendTaskWhatsApp(taskId, btn) {
   const _btnHtml = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.textContent = 'Enviando'; }
   try {
-    await fgNotifyWhatsAppTaskAssigned(uid, task);
+    if (!(await fgNotifyWhatsAppTaskAssigned(uid, task))) throw new Error('o WhatsApp não respondeu');
     // Se estiver em status análise/revisão, avisa no grupo com o formato de análise
     const list = pjLists.find(l => l.id === task.listId);
     const statuses = list?.statuses || PJ_DEFAULT_STATUSES;
     const st = statuses.find(s => s.id === task.statusId);
     if (st && /an[aá]lise|revis[aã]o|review/i.test(st.name || '')) {
-      await fgNotifyWhatsAppTaskAnalysis(task, st, list);
+      if (!(await fgNotifyWhatsAppTaskAnalysis(task, st, list))) throw new Error('o grupo não recebeu');
     }
     showToast('success','📤','Mensagem enviada no WhatsApp');
   } catch(e) {
@@ -28994,7 +29070,7 @@ async function pjSendTaskWhatsApp(taskId, btn) {
 
 async function fgNotifyWhatsAppTaskAnalysis(task, newSt, list) {
   try {
-    if (!task) { console.warn('[notifyAnalysis] sem task'); return; }
+    if (!task) { console.warn('[notifyAnalysis] sem task'); return false; }
     const uid = (Array.isArray(task.assignees) && task.assignees[0]) || null;
     const m = uid && Array.isArray(pjMembers) ? pjMembers.find(x => x.uid === uid) : null;
     console.log('[notifyAnalysis] enviando pra grupo | task:', task.title, '| responsavel:', m?.name || '(sem)', '| status:', newSt?.name);
@@ -29004,7 +29080,7 @@ async function fgNotifyWhatsAppTaskAnalysis(task, newSt, list) {
     const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
     const apiUrl = (cfg.url || 'https://89-116-30-126.sslip.io').replace(/\/+$/,'');
     const apiTok = cfg.token || '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
-    await fetch(apiUrl + '/notify/task-analysis', {
+    const res = await fetch(apiUrl + '/notify/task-analysis', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiTok },
       body: JSON.stringify({
@@ -29016,8 +29092,9 @@ async function fgNotifyWhatsAppTaskAnalysis(task, newSt, list) {
         senderName,
         statusName: newSt?.name || 'Análise',
       }),
-    }).catch(e => console.warn('[notifyAnalysis] fetch falhou:', e.message));
-  } catch(e) { console.warn('[notifyAnalysis]', e); }
+    }).catch(e => { console.warn('[notifyAnalysis] fetch falhou:', e.message); return null; });
+    return !!(res && res.ok);
+  } catch(e) { console.warn('[notifyAnalysis]', e); return false; }
 }
 
 async function pjToggleAssignee(taskId, uid, add) {
@@ -31600,14 +31677,14 @@ window.bdOpenFieldsConfig = function() {
     <div style="background:var(--card);border-radius:14px;width:600px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4);">
       <div style="padding:20px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
         <div>
-          <div style="font-size:16px;font-weight:700;color:var(--text);">⚙️ Configurar campos da ficha</div>
+          <div style="font-size:16px;font-weight:700;color:var(--text);">Configurar campos da ficha</div>
           <div style="font-size:12px;color:var(--text3);margin-top:3px;">Adicione, remova ou reordene campos. Aplica para todos os clientes.</div>
         </div>
-        <button onclick="document.getElementById('bdFieldsModal').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2);">✕</button>
+        <button onclick="document.getElementById('bdFieldsModal').remove()" title="Fechar" aria-label="Fechar" style="width:44px;height:44px;margin:-8px -10px 0 0;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;background:none;border:none;border-radius:12px;cursor:pointer;color:var(--text2);">${fgIco('x', 20)}</button>
       </div>
       <div style="flex:1;overflow-y:auto;padding:16px 22px;" id="bdFieldsList"></div>
       <div style="padding:14px 22px;border-top:1px solid var(--border);">
-        <button onclick="bdAddFieldPrompt()" style="width:100%;padding:11px;background:linear-gradient(90deg,#a855f7,#6366f1);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">＋ Adicionar novo campo</button>
+        <button onclick="bdAddFieldPrompt()" style="width:100%;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:var(--text);color:var(--card);border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;">${pjlIco('plus', 16)} Adicionar novo campo</button>
       </div>
     </div>`;
   bdRenderFieldsList();
@@ -31617,20 +31694,20 @@ function bdRenderFieldsList() {
   const el = document.getElementById('bdFieldsList');
   if (!el) return;
   if (_bdSchema.length === 0) {
-    el.innerHTML = `<div class="bd-field-empty">Nenhum campo extra criado ainda.<br>Clique em "＋ Adicionar novo campo".</div>`;
+    el.innerHTML = `<div class="bd-field-empty">Nenhum campo extra criado ainda.<br>Use o botão Adicionar novo campo, aqui embaixo.</div>`;
     return;
   }
   el.innerHTML = _bdSchema.map((f,i) => {
     const tipo = BD_TIPOS.find(t => t.value === f.type) || BD_TIPOS[0];
     return `<div class="bd-field-row">
-      <span class="bd-field-icon">${tipo.icon}</span>
+      <span class="bd-field-icon">${fgIco('fields', 16)}</span>
       <div class="bd-field-info">
         <div class="bd-field-name">${_bdEsc(f.label)}</div>
         <div class="bd-field-type">${tipo.label}${f.section?' · '+f.section:''}</div>
       </div>
       <button class="bd-field-btn" onclick="bdFieldMoveUp(${i})" title="Subir">↑</button>
       <button class="bd-field-btn" onclick="bdFieldMoveDown(${i})" title="Descer">↓</button>
-      <button class="bd-field-btn danger" onclick="bdFieldDelete(${i})" title="Excluir">🗑️</button>
+      <button class="bd-field-btn danger" onclick="bdFieldDelete(${i})" title="Excluir" aria-label="Excluir campo">${fgIco('trash', 16)}</button>
     </div>`;
   }).join('');
 }
@@ -33698,10 +33775,13 @@ document.addEventListener('input', (e) => {
     const spaceBelow = window.innerHeight - r.bottom - 12;
     const spaceAbove = r.top - 12;
     if (spaceBelow < 220 && spaceAbove > spaceBelow) {
+      // abre pra cima colado no campo: ancora pelo pé (h é a altura máxima, não a do menu)
       const h = Math.min(400, spaceAbove);
-      menu.style.top = Math.max(8, r.top - h - 4) + 'px';
+      menu.style.top = 'auto';
+      menu.style.bottom = (window.innerHeight - r.top + 4) + 'px';
       menu.style.maxHeight = h + 'px';
     } else {
+      menu.style.bottom = 'auto';
       menu.style.top = (r.bottom + 4) + 'px';
       menu.style.maxHeight = Math.min(400, spaceBelow) + 'px';
     }
@@ -33727,7 +33807,7 @@ document.addEventListener('input', (e) => {
     if (hasMany) {
       const search = document.createElement('div');
       search.className = 'fx-select-search';
-      search.innerHTML = `<input type="text" placeholder="Buscar..." autocomplete="off" spellcheck="false">`;
+      search.innerHTML = `<input type="text" placeholder="Buscar" autocomplete="off" spellcheck="false">`;
       menu.appendChild(search);
       searchInput = search.querySelector('input');
     }
@@ -33789,6 +33869,7 @@ document.addEventListener('input', (e) => {
     positionMenu(menu, btn);
     btn.setAttribute('aria-expanded', 'true');
     openState = { wrap, menu, close: closeMenu };
+    try { pjToqueFora(menu, closeMenu); } catch (_) {}
 
     if (searchInput) {
       searchInput.addEventListener('input', e => render(e.target.value));
