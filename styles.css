@@ -20812,7 +20812,8 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-projetos:not(.pj-task-open) .pj-popup-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; color: var(--text2); }
   body.at-projetos:not(.pj-task-open) .pj-popup-check { margin-left: auto; color: var(--text) !important; }
   body.at-projetos:not(.pj-task-open) .pj-popup-item.active :is(.pj-popup-icon, .pj-popup-check) { color: var(--on-ink) !important; }
-  body.at-projetos:not(.pj-task-open) .pj-popup-header { padding: 10px 12px 4px !important; font-size: 12px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text3) !important; }
+  /* cabeçalho igual nas vistas e na janela da tarefa (o mesmo menu de status abre nas duas) */
+  :is(body.at-projetos, body.pj-task-open) .pj-popup-header { padding: 10px 12px 4px !important; font-size: 12px !important; font-weight: 600 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text3) !important; }
 
   /* o + não cobre a folha de Filtros nem os formulários de lista e espaço */
   body.at-projetos:has(#pjFormModal.open) #pjFab { display: none !important; }
