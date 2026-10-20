@@ -313,7 +313,7 @@
       </button>
       <button class="app-menu-tile" data-tab="gmb" onclick="appMenuGo('gmb')">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span>Google</span>
+        <span>Perfil no Google</span>
       </button>
       <button class="app-menu-tile" data-tab="metricas" onclick="appMenuGo('metricas')">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
@@ -24152,7 +24152,7 @@ AÇÕES EXECUTÁVEIS (opcional): Quando fizer sentido, ao FINAL da resposta, adi
   {"label":"Ver caixa de entrada","type":"navigate","view":"inbox"},
   {"label":"Todas as tarefas","type":"navigate","view":"all"},
   {"label":"Ver dashboard","type":"navigate","view":"dashboard"},
-  {"label":"Por cliente","type":"navigate","view":"byclient"},
+  {"label":"Tarefas por cliente","type":"navigate","view":"byclient"},
   {"label":"Workload da equipe","type":"navigate","view":"workload"},
   {"label":"Filtrar Tio Pirilampo","type":"navigate","view":"all","filter":{"clienteName":"Tio Pirilampo"}},
   {"label":"Abrir tarefa: Criar arte","type":"open_task","taskId":"<id>"}
@@ -36282,7 +36282,7 @@ document.addEventListener('click', e => {
   if (!nav) return;
   const orig = window.switchTab;
   // Nome de cada tela na barra de cima (só aparece no celular)
-  const FG_TITULOS = { projetos:'Tarefas', visualizar:'Calendário', social:'Publipost', entrada:'Criar post', lives:'Ao vivo', pop:'POPs', gmb:'Google', metricas:'Métricas', base:'Clientes', contratos:'Contratos', acesso:'Acessos' };
+  const FG_TITULOS = { projetos:'Tarefas', visualizar:'Calendário', social:'Publipost', entrada:'Criar post', lives:'Ao vivo', pop:'POPs', gmb:'Perfil no Google', metricas:'Métricas', base:'Clientes', contratos:'Contratos', acesso:'Acessos' };
   // O botão Mais (sem data-tab) acende em qualquer tela que não seja Calendário, Publipost ou Tarefas
   const marca = (tab) => {
     nav.querySelectorAll('.fg-mnav__i').forEach(b => {
