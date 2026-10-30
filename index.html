@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.5">
+<link rel="stylesheet" href="styles.css?v=3.71.6">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -47,7 +47,8 @@
       const s = document.createElement('script');
       s.src = src; s.async = true;
       s.onload = () => resolve();
-      s.onerror = () => reject(new Error('Falha ao carregar ' + src));
+      // sai do cache pra próxima chamada tentar de novo
+      s.onerror = () => { _fgLoadCache.delete(src); s.remove(); reject(new Error('Falha ao carregar ' + src)); };
       document.head.appendChild(s);
     });
     _fgLoadCache.set(src, p);
@@ -2479,13 +2480,14 @@ ufw allow 3000/tcp</pre>
         <select class="gmb-loc-select" id="gmbLocSelect" onchange="gmbOnLocationChange()">
           <option value="">Todos os perfis</option>
         </select>
-        <button class="gmb-refresh-btn" onclick="gmbLoadLocation()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>Atualizar</button>
+        <button class="gmb-refresh-btn" onclick="_gmbNumCache={};gmbLoadLocation()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>Atualizar</button>
       </div>
 
       <!-- Multi-location overview -->
       <div id="gmbMultiGrid" style="display:none">
         <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:12px;">Todos os perfis</div>
         <div class="gmb-multi-grid" id="gmbLocCards"></div>
+        <div class="gmb-num-card" id="gmbNumTodos"></div>
       </div>
 
       <!-- Single location detail -->
@@ -2493,6 +2495,7 @@ ufw allow 3000/tcp</pre>
 
         <!-- KPIs -->
         <div class="gmb-kpi-row" id="gmbKpiRow"></div>
+        <div class="gmb-num-card" id="gmbNumCard"></div>
 
         <!-- Score + Charts -->
         <div class="gmb-score-card" id="gmbScoreCard"></div>
@@ -11116,13 +11119,13 @@ const MTR_CATALOG = [
   // Anúncios — ROAS
   { id:'ad_website_roas', source:'ad', icon:'🌐', label:'ROAS site', fmt:'roas' },
   // Google Meu Negócio
-  { id:'gmb_rating', source:'gmb', icon:'⭐', label:'Nota média (Google)', fmt:'decimal' },
-  { id:'gmb_total_reviews', source:'gmb', icon:'💬', label:'Total de avaliações', fmt:'num' },
-  { id:'gmb_unanswered', source:'gmb', icon:'⚠️', label:'Sem resposta', fmt:'num', invert:true },
-  { id:'gmb_response_rate', source:'gmb', icon:'✅', label:'Taxa de resposta', fmt:'percent' },
-  { id:'gmb_negative', source:'gmb', icon:'👎', label:'Avaliações negativas', fmt:'num', invert:true },
-  { id:'gmb_score', source:'gmb', icon:'💚', label:'Saúde do perfil (Google)', fmt:'num' },
-  { id:'gmb_new_reviews', source:'gmb', icon:'🆕', label:'Novas avaliações (período)', fmt:'num' },
+  { id:'gmb_rating', source:'gmb', icon:'⭐', label:'Nota média (Google)', fmt:'decimal', noCompare:true },
+  { id:'gmb_total_reviews', source:'gmb', icon:'💬', label:'Total de avaliações', fmt:'num', noCompare:true },
+  { id:'gmb_unanswered', source:'gmb', icon:'⚠️', label:'Sem resposta', fmt:'num', invert:true, noCompare:true },
+  { id:'gmb_response_rate', source:'gmb', icon:'✅', label:'Taxa de resposta', fmt:'percent', noCompare:true },
+  { id:'gmb_negative', source:'gmb', icon:'👎', label:'Avaliações negativas', fmt:'num', invert:true, noCompare:true },
+  { id:'gmb_score', source:'gmb', icon:'💚', label:'Saúde do perfil (Google)', fmt:'num', noCompare:true },
+  { id:'gmb_new_reviews', source:'gmb', icon:'🆕', label:'Novas avaliações (período)', fmt:'num', noCompare:true },
   // Google Meu Negócio — Insights de Desempenho
   { id:'gmb_views_search', source:'gmb', icon:'🔍', label:'Visualizações na Busca', fmt:'num' },
   { id:'gmb_views_maps', source:'gmb', icon:'🗺️', label:'Visualizações no Maps', fmt:'num' },
@@ -11131,9 +11134,8 @@ const MTR_CATALOG = [
   { id:'gmb_call_clicks', source:'gmb', icon:'📞', label:'Ligações pelo Google', fmt:'num' },
   { id:'gmb_website_clicks', source:'gmb', icon:'🌐', label:'Cliques no Site (GMB)', fmt:'num' },
   { id:'gmb_bookings', source:'gmb', icon:'📅', label:'Reservas pelo Google', fmt:'num' },
-  { id:'gmb_food_orders', source:'gmb', icon:'🍕', label:'Pedidos pelo Google', fmt:'num' },
+  { id:'gmb_messages', source:'gmb', icon:'✉️', label:'Mensagens pelo Google', fmt:'num' },
   { id:'gmb_menu_clicks', source:'gmb', icon:'📋', label:'Cliques no Cardápio', fmt:'num' },
-  { id:'gmb_photo_views', source:'gmb', icon:'📸', label:'Visualizações de Fotos', fmt:'num' },
 ];
 
 const MTR_DEFAULT_KPIS = [
@@ -11553,6 +11555,7 @@ async function loadMetrics() {
 
   renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, warnings, campaigns, health);
   btn.disabled = false; btn.innerHTML = `${fgFerrIco('refresh', 14)} Atualizar`;
+  if (document.getElementById('mtrGmbSelect')?.value) mtrOnGmbChange(); // números do Google seguem o período
 }
 
 // IG limita janela a 30 dias (2592000 s) por chamada de insights.
@@ -11893,7 +11896,7 @@ function mtrFmtCampCell(col, c) {
 }
 
 /* Extrai valor numérico bruto a partir de um id de métrica */
-function mtrGetValue(id, igData, adsData) {
+function mtrGetValue(id, igData, adsData, prev) {
   const m = MTR_CATALOG.find(x => x.id === id);
   if (!m) return 0;
 
@@ -11986,32 +11989,34 @@ function mtrGetValue(id, igData, adsData) {
     }
   }
 
-  if (m.source === 'gmb') {
-    const g = window._mtrGmbData;
-    if (!g) return 0;
-    switch(id) {
-      case 'gmb_rating':       return g.avgRating || 0;
-      case 'gmb_total_reviews':return g.totalReviews || 0;
-      case 'gmb_unanswered':   return g.unanswered || 0;
-      case 'gmb_response_rate':return g.responseRate || 0;
-      case 'gmb_negative':     return g.negatives || 0;
-      case 'gmb_score':        return g.score || 0;
-      case 'gmb_new_reviews':      return g.newReviews || 0;
-      case 'gmb_views_search':     return g.viewsSearch || 0;
-      case 'gmb_views_maps':       return g.viewsMaps || 0;
-      case 'gmb_views_total':      return (g.viewsSearch||0) + (g.viewsMaps||0);
-      case 'gmb_direction_requests':return g.directionRequests || 0;
-      case 'gmb_call_clicks':      return g.callClicks || 0;
-      case 'gmb_website_clicks':   return g.websiteClicks || 0;
-      case 'gmb_bookings':         return g.bookings || 0;
-      case 'gmb_food_orders':      return g.foodOrders || 0;
-      case 'gmb_menu_clicks':      return g.menuClicks || 0;
-      case 'gmb_photo_views':      return g.photoViews || 0;
-      default: return 0;
-    }
-  }
+  if (m.source === 'gmb') return mtrGmbValor(id, prev ? window._mtrGmbData?.anterior : window._mtrGmbData);
 
   return 0;
+}
+
+// Valor de uma métrica do Google; g é o período, o anterior (g.anterior) ou um dia da série.
+// Número que não veio fica null ("Sem dado"), nunca um zero de mentira.
+function mtrGmbValor(id, g) {
+  if (!g) return null;
+  switch(id) {
+    case 'gmb_rating':       return g.avgRating ?? null;
+    case 'gmb_total_reviews':return g.totalReviews ?? null;
+    case 'gmb_unanswered':   return g.unanswered ?? null;
+    case 'gmb_response_rate':return g.responseRate ?? null;
+    case 'gmb_negative':     return g.negatives ?? null;
+    case 'gmb_score':        return g.score ?? null;
+    case 'gmb_new_reviews':      return g.newReviews ?? null;
+    case 'gmb_views_search':     return g.viewsSearch ?? null;
+    case 'gmb_views_maps':       return g.viewsMaps ?? null;
+    case 'gmb_views_total':      return g.views ?? null;
+    case 'gmb_direction_requests':return g.directionRequests ?? null;
+    case 'gmb_call_clicks':      return g.callClicks ?? null;
+    case 'gmb_website_clicks':   return g.websiteClicks ?? null;
+    case 'gmb_messages':         return g.messages ?? null;
+    case 'gmb_bookings':         return g.bookings ?? null;
+    case 'gmb_menu_clicks':      return g.menuClicks ?? null;
+    default: return 0;
+  }
 }
 
 function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, warnings, campaigns, health) {
@@ -12030,7 +12035,7 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
     const m = MTR_CATALOG.find(x => x.id === id);
     if (!m) return '';
     const cv = mtrGetValue(id, igCurr, adsData);
-    const pv = mtrGetValue(id, igPrev, adsPrev);
+    const pv = mtrGetValue(id, igPrev, adsPrev, true);
     const showDelta = compare && !m.noCompare;
     const series = mtrGetSeries(id, igCurr);
     const spark = series && series.length >= 2
@@ -13060,6 +13065,7 @@ function mtrGetSeries(id, igCurr) {
   if (m.source === 'ad' && mtrDailyAdsCache?.length) {
     return mtrDailyAdsCache.map(d => mtrAdDailyValue(id, d));
   }
+  if (m.source === 'gmb') return m.noCompare ? null : window._mtrGmbData?.serie?.map(g => mtrGmbValor(id, g)) || null;
   return null;
 }
 function mtrAdDailyValue(id, d) {
@@ -14654,9 +14660,8 @@ const MTR_DEFINITIONS = {
   gmb_call_clicks: 'Quantas pessoas clicaram em "Ligar" diretamente no perfil do Google.',
   gmb_website_clicks: 'Cliques no link do site a partir do perfil no Google.',
   gmb_bookings: 'Reservas feitas diretamente pelo Google (requer integração com sistema de reservas).',
-  gmb_food_orders: 'Pedidos de comida iniciados pelo Google (requer integração com sistema de delivery).',
+  gmb_messages: 'Quantas pessoas clicaram no botão de mensagem do perfil no Google.',
   gmb_menu_clicks: 'Cliques para visualizar o cardápio no perfil do Google.',
-  gmb_photo_views: 'Quantas vezes as fotos do perfil foram visualizadas no período.',
 };
 
 function mtrOpenKpiModal(id) {
@@ -14671,13 +14676,13 @@ function mtrOpenKpiModal(id) {
   }
   const s = mtrLastSnapshot;
   const cv = mtrGetValue(id, s.igCurr, s.adsData);
-  const pv = mtrGetValue(id, s.igPrev, s.adsPrev);
+  const pv = mtrGetValue(id, s.igPrev, s.adsPrev, true);
   const series = mtrGetSeries(id, s.igCurr);
   const delta = (cv !== null && pv !== null && pv !== 0) ? ((cv - pv) / Math.abs(pv) * 100) : null;
   const deltaPos = delta >= 0 ? !m.invert : m.invert;
-  const deltaHtml = delta !== null
+  const deltaHtml = m.noCompare ? '' : delta !== null
     ? `<div class="mtr-kpi-modal-pct ${deltaPos?'pos':'neg'}">${delta>=0?'▲':'▼'} ${Math.abs(delta).toFixed(1)}% vs período anterior</div>`
-    : '<div class="mtr-kpi-modal-pct">— sem dados do período anterior</div>';
+    : '<div class="mtr-kpi-modal-pct">Sem dados do período anterior</div>';
   const sparkHtml = (series && series.length >= 2)
     ? `<div class="mtr-kpi-modal-spark">${mtrSparkSvg(series)}</div>`
     : '<div class="mtr-kpi-modal-spark no-data">Série diária indisponível para esta métrica</div>';
@@ -14687,13 +14692,13 @@ function mtrOpenKpiModal(id) {
       <div class="mtr-kpi-modal-icon">${m.icon}</div>
       <div>
         <div class="mtr-kpi-modal-name">${m.label}</div>
-        <span class="mtr-kpi-modal-source">${m.source === 'ig' ? 'Instagram Orgânico' : 'Meta Ads'}</span>
+        <span class="mtr-kpi-modal-source">${m.source === 'ig' ? 'Instagram Orgânico' : m.source === 'gmb' ? 'Perfil no Google' : 'Meta Ads'}</span>
       </div>
     </div>
     <div class="mtr-kpi-modal-value">${mtrFmtValue(m, cv)}</div>
     ${deltaHtml}
     ${sparkHtml}
-    ${pv !== null ? `<div class="mtr-kpi-modal-prev">Período anterior: <strong>${mtrFmtValue(m, pv)}</strong></div>` : ''}
+    ${pv !== null && !m.noCompare ? `<div class="mtr-kpi-modal-prev">Período anterior: <strong>${mtrFmtValue(m, pv)}</strong></div>` : ''}
     <div class="mtr-kpi-modal-def">💡 ${def}</div>`;
   document.getElementById('mtrKpiModal').classList.add('open');
 }
@@ -15999,17 +16004,246 @@ function gmbSeedDemoHistory(loc) {
 }
 
 async function gmbApi(url, opts = {}) {
-  const r = await fetch(url, { ...opts, headers: { Authorization: 'Bearer ' + await gmbGetToken(), 'Content-Type': 'application/json' } });
+  // o erro do token (com e.code) sai antes do fetch e passa direto pelo catch
+  const r = await fetch(url, { ...opts, headers: { Authorization: 'Bearer ' + await gmbGetToken(), 'Content-Type': 'application/json' } })
+    .catch(() => { throw new Error('Sem conexão com o Google. Confira a internet e tente de novo.'); });
   if (r.status === 401) { _gmbToken = null; throw new Error('O acesso ao Google venceu. Tente de novo.'); }
   if (r.status === 429) throw new Error('O Google ainda não liberou a cota da API, ou ela estourou neste minuto. Tente mais tarde.');
   const d = await r.json().catch(() => ({}));
-  if (!r.ok || d.error) throw new Error(d.error?.message || `O Google respondeu ${r.status}`);
+  if (!r.ok || d.error) {
+    console.warn('[Google]', r.status, d.error?.message);
+    throw Object.assign(new Error(r.status >= 500 ? 'O Google está instável agora. Tente de novo daqui a pouco.' : d.error?.message || `O Google respondeu ${r.status}`), { status: r.status });
+  }
   return d;
 }
 
 // A Business Information v1 devolve locations/{id}; a v4 (avaliações e posts)
 // quer accounts/{a}/locations/{id}.
 const gmbV4 = (loc) => `https://mybusiness.googleapis.com/v4/${loc._account}/${loc.name}`;
+
+// Números do perfil (Business Profile Performance API). O Google não manda o dia
+// zerado e fecha cada dia com uns 3 dias de atraso. MESSAGING_CLICKS vale (conferido no
+// discovery do Google, revisão 20261028); BUSINESS_CONVERSATIONS e BUSINESS_FOOD_ORDERS saíram.
+const GMB_NUM_METRICAS = ['BUSINESS_IMPRESSIONS_MOBILE_SEARCH','BUSINESS_IMPRESSIONS_DESKTOP_SEARCH',
+  'BUSINESS_IMPRESSIONS_MOBILE_MAPS','BUSINESS_IMPRESSIONS_DESKTOP_MAPS','CALL_CLICKS',
+  'BUSINESS_DIRECTION_REQUESTS','WEBSITE_CLICKS','MESSAGING_CLICKS','BUSINESS_BOOKINGS','BUSINESS_FOOD_MENU_CLICKS'];
+let _gmbNumCache = {};
+const gmbGuardado = (k, fn) => _gmbNumCache[k] || (_gmbNumCache[k] = fn().catch(e => { delete _gmbNumCache[k]; throw e; }));
+const gmbMaisDias = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return mtrFmtLocalDate(d); };
+const gmbDiaMes = iso => iso.slice(8, 10) + '/' + iso.slice(5, 7);
+const gmbErroTexto = e => e?.status === 404
+  ? 'O Google não achou este perfil. Se ele saiu da conta conectada, recarregue a página pra atualizar a lista.'
+  : String(e?.message || e);
+const gmbErroNumeros = e => e?.status === 403
+  ? 'O Google recusou os números deste perfil. Confira se a Business Profile Performance API está ligada no Google Cloud e se a conta conectada cuida do perfil.'
+  : e?.status === 400 ? 'O Google não aceitou este período. Ele guarda os números só dos últimos 18 meses.'
+  : gmbErroTexto(e);
+// Último dia com número nos 6 dias antes de "ate"; sem nenhum, fica "ate"
+const gmbUltimoDia = (dias, ate) => { const piso = gmbMaisDias(ate, -6); return Object.keys(dias).filter(d => d <= ate && d >= piso).sort().pop() || ate; };
+
+// { 'AAAA-MM-DD': { METRICA: n } } só com os dias que tiveram número
+function gmbBuscarNumeros(loc, de, ate) {
+  return gmbGuardado(`${loc.name}|${de}|${ate}`, async () => {
+    if (_gmbDemoMode) return gmbDemoNumeros(loc, de, ate);
+    const data = (p, iso) => ['year','month','day'].map((k, i) => `&dailyRange.${p}.${k}=${+iso.split('-')[i]}`).join('');
+    const d = await gmbApi(`https://businessprofileperformance.googleapis.com/v1/locations/${loc.name.split('/').pop()}:fetchMultiDailyMetricsTimeSeries?`
+      + GMB_NUM_METRICAS.map(m => `dailyMetrics=${m}`).join('&') + data('start_date', de) + data('end_date', ate));
+    const dias = {};
+    (d.multiDailyMetricTimeSeries || []).flatMap(x => x.dailyMetricTimeSeries || []).forEach(s => {
+      if (s.dailySubEntityType || !GMB_NUM_METRICAS.includes(s.dailyMetric)) return;
+      (s.timeSeries?.datedValues || []).forEach(v => {
+        const n = Number(v.value || 0);
+        if (!(n > 0) || !v.date) return;
+        const dia = `${v.date.year}-${String(v.date.month).padStart(2,'0')}-${String(v.date.day).padStart(2,'0')}`;
+        const x = dias[dia] || (dias[dia] = {});
+        x[s.dailyMetric] = (x[s.dailyMetric] || 0) + n;
+      });
+    });
+    return dias;
+  });
+}
+
+function gmbSomar(dias, de, ate) {
+  const t = {};
+  for (const d in dias) if (d >= de && d <= ate) for (const m in dias[d]) t[m] = (t[m] || 0) + dias[d][m];
+  const i = s => t['BUSINESS_IMPRESSIONS_' + s] || 0;
+  const viewsSearch = i('MOBILE_SEARCH') + i('DESKTOP_SEARCH'), viewsMaps = i('MOBILE_MAPS') + i('DESKTOP_MAPS');
+  return { viewsSearch, viewsMaps, views: viewsSearch + viewsMaps, mobile: i('MOBILE_SEARCH') + i('MOBILE_MAPS'),
+    callClicks: t.CALL_CLICKS || 0, directionRequests: t.BUSINESS_DIRECTION_REQUESTS || 0, websiteClicks: t.WEBSITE_CLICKS || 0,
+    messages: t.MESSAGING_CLICKS || 0, bookings: t.BUSINESS_BOOKINGS || 0, menuClicks: t.BUSINESS_FOOD_MENU_CLICKS || 0 };
+}
+
+// Demo: número estável por perfil e dia (não muda a cada clique), mais movimento de sexta a domingo
+function gmbDemoNumeros(loc, de, ate) {
+  const h = s => { let x = 2166136261; for (const c of s) x = Math.imul(x ^ c.charCodeAt(0), 16777619); return (x >>> 0) / 4294967296; };
+  const pesos = { BUSINESS_IMPRESSIONS_MOBILE_SEARCH: 1, BUSINESS_IMPRESSIONS_DESKTOP_SEARCH: .3, BUSINESS_IMPRESSIONS_MOBILE_MAPS: .7,
+    BUSINESS_IMPRESSIONS_DESKTOP_MAPS: .15, CALL_CLICKS: .03, BUSINESS_DIRECTION_REQUESTS: .06, WEBSITE_CLICKS: .04, BUSINESS_FOOD_MENU_CLICKS: .05 };
+  const base = 60 + Math.floor(h(loc.name) * 140), dias = {};
+  const fim = [ate, gmbMaisDias(mtrFmtLocalDate(new Date()), -3)].sort()[0];
+  for (let d = de; d <= fim; d = gmbMaisDias(d, 1)) {
+    const fds = [0, 5, 6].includes(new Date(d + 'T12:00:00').getDay()) ? 1.35 : 1;
+    for (const m in pesos) { const n = Math.round(base * pesos[m] * fds * (0.75 + h(loc.name + d + m) * 0.5)); if (n > 0) (dias[d] || (dias[d] = {}))[m] = n; }
+  }
+  return dias;
+}
+
+// Buscas que mostraram o perfil por mês: [termo, número, só "menos de"], as 10 maiores
+function gmbBuscarTermos(loc, ini, fim) {
+  return gmbGuardado(`${loc.name}|termos|${ini.y}-${ini.m}|${fim.y}-${fim.m}`, async () => {
+    let lista = [];
+    if (_gmbDemoMode) {
+      const nome = (loc.title || 'restaurante').toLowerCase(), meses = (fim.y - ini.y) * 12 + fim.m - ini.m + 1;
+      lista = [[nome, 140], [nome.split(' ')[0] + ' perto de mim', 95], ['restaurante perto de mim', 60], ['delivery', 35], ['almoço', 22]]
+        .map(([k, n]) => [k, n * meses, false]).concat([['restaurante aberto agora', 15, true]]);
+    } else {
+      const q = `monthlyRange.start_month.year=${ini.y}&monthlyRange.start_month.month=${ini.m}&monthlyRange.end_month.year=${fim.y}&monthlyRange.end_month.month=${fim.m}&pageSize=100`;
+      let token = '';
+      for (let p = 0; p < 5; p++) { // ponytail: no máximo 500 termos; as 10 maiores quase sempre já vêm nisso
+        const d = await gmbApi(`https://businessprofileperformance.googleapis.com/v1/locations/${loc.name.split('/').pop()}/searchkeywords/impressions/monthly?${q}${token ? '&pageToken=' + encodeURIComponent(token) : ''}`);
+        (d.searchKeywordsCounts || []).forEach(k => {
+          const v = k.insightsValue || {};
+          if (k.searchKeyword) lista.push(v.value != null ? [k.searchKeyword, Number(v.value), false] : [k.searchKeyword, Number(v.threshold || 0), true]);
+        });
+        if (!(token = d.nextPageToken)) break;
+      }
+    }
+    return lista.sort((a, b) => a[2] - b[2] || b[1] - a[1]).slice(0, 10);
+  });
+}
+
+let _gmbNumDias = 30, _gmbNumMetrica = 'views', _gmbNumChart = null, _gmbNumVista = null;
+const GMB_NUM_KPIS = [['views','Visualizações'],['callClicks','Ligações'],['directionRequests','Pedidos de rota'],['websiteClicks','Cliques no site'],
+  ['messages','Mensagens',true],['bookings','Reservas',true],['menuClicks','Cliques no cardápio',true]];
+const gmbNumFmt = n => Math.round(n).toLocaleString('pt-BR');
+const gmbNumDelta = (a, b) => {
+  if (!(b > 0)) return '';
+  const p = Math.round((a - b) / b * 100);
+  return `<span class="mtr-kpi-delta ${p > 0 ? 'up' : p < 0 ? 'down' : 'neutral'}">${p > 0 ? '+' : ''}${p}%</span>`;
+};
+
+async function gmbRenderNumeros() {
+  const box = document.getElementById('gmbNumCard'), loc = _gmbCurrentLoc, N = _gmbNumDias;
+  if (!box || !loc) return;
+  const chips = [7, 30, 90].map(n => `<button type="button" class="gmb-filter-btn${n === N ? ' active' : ''}" aria-pressed="${n === N}" onclick="_gmbNumDias=${n};gmbRenderNumeros()">${n} dias</button>`).join('');
+  const foco = box.contains(document.activeElement); // o chip tocado some no innerHTML; o foco volta pro novo
+  box.innerHTML = `<div class="gmb-posts-head"><div class="gmb-posts-title">Números do perfil</div><div class="gmb-reviews-filter" role="group" aria-label="Período">${chips}</div></div><div class="gmb-empty" id="gmbNumCorpo">Buscando os números no Google…</div>`;
+  if (foco) box.querySelector('.gmb-filter-btn.active')?.focus();
+  const ontem = gmbMaisDias(mtrFmtLocalDate(new Date()), -1), desde = gmbMaisDias(ontem, -(2 * N + 5));
+  let dias;
+  try { dias = await gmbBuscarNumeros(loc, desde, ontem); }
+  catch (e) { const c = document.getElementById('gmbNumCorpo'); if (c && loc === _gmbCurrentLoc && N === _gmbNumDias) c.textContent = 'Os números não vieram. ' + gmbErroNumeros(e); return; }
+  if (loc !== _gmbCurrentLoc || N !== _gmbNumDias) return;
+  const corpo = document.getElementById('gmbNumCorpo');
+  if (!corpo) return;
+  if (!Object.keys(dias).length) { corpo.textContent = `Sem números no Google pra este perfil desde ${gmbDiaMes(desde)}.`; return; }
+  const fim = gmbUltimoDia(dias, ontem), ini = gmbMaisDias(fim, 1 - N);
+  const a = gmbSomar(dias, ini, fim), b = gmbSomar(dias, gmbMaisDias(ini, -N), gmbMaisDias(ini, -1));
+  const serie = [], antes = [];
+  for (let d = ini; d <= fim; d = gmbMaisDias(d, 1)) { serie.push([d, gmbSomar(dias, d, d)]); const x = gmbMaisDias(d, -N); antes.push(gmbSomar(dias, x, x)); }
+  _gmbNumVista = { N, serie, antes };
+  const kpis = GMB_NUM_KPIS.filter(([k, , opc]) => !opc || a[k] + b[k] > 0);
+  if (!kpis.some(([k]) => k === _gmbNumMetrica)) _gmbNumMetrica = 'views';
+  corpo.className = '';
+  corpo.innerHTML = `
+    <div class="gmb-num-nota">De ${gmbDiaMes(ini)} a ${gmbDiaMes(fim)}, comparado com os ${N} dias antes. O Google fecha cada dia com uns 3 dias de atraso.</div>
+    <div class="gmb-kpi-row">${kpis.map(([k, l]) => `<button type="button" class="gmb-kpi" data-m="${k}" aria-pressed="false" onclick="gmbNumGrafico('${k}')"><span class="gmb-kpi-val">${gmbNumFmt(a[k])}</span><span class="gmb-kpi-lbl">${l}</span><span class="gmb-kpi-sub">${gmbNumDelta(a[k], b[k])}</span></button>`).join('')}</div>
+    <div class="gmb-chart-wrap"><canvas id="gmbNumChart" role="img" aria-label="Gráfico dia a dia"></canvas></div>
+    ${a.views ? `<div class="gmb-num-sub">Onde viram: pesquisa do Google ${gmbNumFmt(a.viewsSearch)} · Google Maps ${gmbNumFmt(a.viewsMaps)} · ${Math.round(a.mobile / a.views * 100)}% pelo celular</div>` : ''}
+    <div id="gmbNumTermos"></div>`;
+  gmbNumGrafico(_gmbNumMetrica);
+  gmbRenderTermos(loc, N);
+}
+
+async function gmbNumGrafico(k) {
+  _gmbNumMetrica = k;
+  document.querySelectorAll('#gmbNumCard .gmb-kpi').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === k));
+  const v = _gmbNumVista;
+  try { await ensureChartJs(); }
+  catch {
+    const w = document.querySelector('#gmbNumCard .gmb-chart-wrap');
+    if (w) { w.className = 'gmb-num-nota'; w.textContent = 'O gráfico não carregou. Os números acima continuam valendo. Recarregue a página pra tentar de novo.'; }
+    return;
+  }
+  const cv = document.getElementById('gmbNumChart');
+  if (_gmbNumChart) { _gmbNumChart.destroy(); _gmbNumChart = null; }
+  if (!cv || !v) return;
+  cv.setAttribute('aria-label', `${GMB_NUM_KPIS.find(([x]) => x === k)?.[1]} por dia, últimos ${v.N} dias`);
+  const cel = matchMedia('(max-width: 640px)').matches, css = getComputedStyle(document.body);
+  const cor = css.getPropertyValue(cel ? '--ink' : '--accent').trim() || '#5a6272';
+  // ponytail: a cor sai do tema na hora de desenhar; trocar o tema só repinta no próximo gráfico
+  const cinza = css.getPropertyValue('--text2').trim() || '#888';
+  const linha = { fill: false, tension: 0.3, pointRadius: 0, pointHitRadius: 12, borderWidth: 2 };
+  _gmbNumChart = new Chart(cv.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: v.serie.map(([d]) => gmbDiaMes(d)),
+      datasets: [
+        { ...linha, label: `Últimos ${v.N} dias`, data: v.serie.map(([, s]) => s[k]), borderColor: cor },
+        { ...linha, label: `${v.N} dias antes`, data: v.antes.map(s => s[k]), borderColor: 'rgba(128,128,128,.55)', borderDash: [4, 4] },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { position: 'bottom', labels: { color: cinza, boxWidth: 12, font: { size: 11 } } } },
+      scales: {
+        x: { ticks: cel ? { color: cinza, font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 5 } : { color: cinza, font: { size: 9 }, maxRotation: 0, autoSkip: true }, grid: { color: 'rgba(128,128,128,.1)' } },
+        y: { beginAtZero: true, ticks: { color: cinza, font: { size: 9 }, precision: 0 }, grid: { color: 'rgba(128,128,128,.1)' } },
+      },
+    },
+  });
+}
+
+async function gmbRenderTermos(loc, N) {
+  const box = document.getElementById('gmbNumTermos');
+  if (!box) return;
+  const hoje = new Date(), mes = k => { const d = new Date(hoje.getFullYear(), hoje.getMonth() - k, 1); return { y: d.getFullYear(), m: d.getMonth() + 1, nome: d.toLocaleDateString('pt-BR', { month: 'long' }) }; };
+  const fim = mes(1), ini = N > 31 ? mes(3) : fim;
+  const quando = ini === fim ? `em ${fim.nome}` : `de ${ini.nome} a ${fim.nome}`;
+  const tit = `<div class="gmb-num-termos-tit">Buscas que mostraram o perfil ${quando}</div>`;
+  box.innerHTML = tit + '<div class="gmb-num-nota">Buscando no Google…</div>';
+  let lista;
+  try { lista = await gmbBuscarTermos(loc, ini, fim); }
+  catch (e) { if (box.isConnected && loc === _gmbCurrentLoc && N === _gmbNumDias) box.innerHTML = `<div class="gmb-num-nota">As buscas ${quando} não vieram. ${escHtml(gmbErroNumeros(e))}</div>`; return; }
+  if (!box.isConnected || loc !== _gmbCurrentLoc || N !== _gmbNumDias) return;
+  box.innerHTML = lista.length
+    ? tit + `<ul class="gmb-num-termos">${lista.map(([k, n, menos]) => `<li><span>${escHtml(k)}</span><span>${menos ? 'menos de ' : ''}${gmbNumFmt(n)}</span></li>`).join('')}</ul>`
+    : `<div class="gmb-num-nota">O Google não registrou buscas que mostraram o perfil ${quando}.</div>`;
+}
+
+async function gmbRenderNumerosTodos() {
+  const box = document.getElementById('gmbNumTodos');
+  if (!box || !_gmbLocations.length) return;
+  const head = '<div class="gmb-posts-head"><div class="gmb-posts-title">Números dos últimos 30 dias</div></div>';
+  box.innerHTML = head + '<div class="gmb-empty">Buscando os números no Google…</div>';
+  const ontem = gmbMaisDias(mtrFmtLocalDate(new Date()), -1), de = gmbMaisDias(ontem, -65);
+  const locs = _gmbLocations.slice(), res = [];
+  let prox = 0;
+  // ponytail: 3 perfis de cada vez pra não estourar a cota por minuto; com muitos perfis demora mais
+  await Promise.all([0, 1, 2].map(async () => {
+    while (prox < locs.length) {
+      const i = prox++, loc = locs[i];
+      try { res[i] = { loc, dias: await gmbBuscarNumeros(loc, de, ontem) }; }
+      catch (e) { res[i] = { loc, erro: e }; }
+    }
+  }));
+  if (_gmbCurrentLoc || !box.isConnected) return;
+  const ok = res.filter(r => r.dias), falhas = res.filter(r => r.erro);
+  if (!ok.length) { box.innerHTML = head + '<div class="gmb-empty"></div>'; box.lastElementChild.textContent = 'Os números não vieram. ' + gmbErroNumeros(falhas[0].erro); return; }
+  const fim = gmbUltimoDia(Object.assign({}, ...ok.map(r => r.dias)), ontem), ini = gmbMaisDias(fim, -29);
+  const antDe = gmbMaisDias(ini, -30), antAte = gmbMaisDias(ini, -1);
+  const linhas = ok.map(r => ({ ...r, a: gmbSomar(r.dias, ini, fim), b: gmbSomar(r.dias, antDe, antAte) })).sort((x, y) => y.a.views - x.a.views);
+  const cols = [['views', 'Visualizações'], ['callClicks', 'Ligações'], ['directionRequests', 'Rotas'], ['websiteClicks', 'Cliques no site']];
+  // o clique (ou Enter no botão) sobe até a linha
+  const tr = (r, tds) => `<tr onclick="gmbSelectLocation(${_gmbLocations.indexOf(r.loc)})"><td><button type="button" class="gmb-num-perfil">${escHtml(r.loc.title || 'Perfil')}</button></td>${tds}</tr>`;
+  box.innerHTML = head + `
+    <div class="gmb-num-nota">De ${gmbDiaMes(ini)} a ${gmbDiaMes(fim)}, comparado com os 30 dias antes.</div>
+    <div class="gmb-num-tabela"><table class="mtr-table"><thead><tr><th>Perfil</th>${cols.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>
+    ${linhas.map(r => tr(r, cols.map(([k]) => `<td>${gmbNumFmt(r.a[k])} ${gmbNumDelta(r.a[k], r.b[k])}</td>`).join(''))).join('')}
+    ${falhas.map(r => tr(r, `<td colspan="${cols.length}">não veio</td>`)).join('')}
+    </tbody></table></div>
+    ${falhas.length ? `<div class="gmb-num-nota">Não vieram: ${falhas.map(r => escHtml(r.loc.title || 'Perfil')).join(', ')}. ${escHtml(gmbErroNumeros(falhas[0].erro))}</div>` : ''}`;
+}
 
 async function gmbLoadAccounts() {
   try {
@@ -16079,6 +16313,7 @@ function gmbShowMultiGrid() {
   document.getElementById('gmbMultiGrid').style.display = '';
   document.getElementById('gmbReviewsWrap').style.display = '';
   gmbLoadAllReviews();
+  gmbRenderNumerosTodos();
 }
 
 // Avaliações de todos os perfis: no demo junta as fictícias; no real lê gmb_reviews, que o fg-gmb da VPS grava
@@ -16133,6 +16368,7 @@ async function gmbLoadLocation() {
   document.getElementById('gmbMultiGrid').style.display = 'none';
   document.getElementById('gmbReviewsWrap').style.display = '';
   document.getElementById('gmbReviewsTitle').textContent = 'Avaliações';
+  gmbRenderNumeros();
 
   let reviewsOk = true;
   if (_gmbDemoMode) {
@@ -16147,7 +16383,7 @@ async function gmbLoadLocation() {
       if (loc !== _gmbCurrentLoc) return;
       _gmbReviews = [];
       reviewsOk = false; // sem isso o histórico gravava nota vazia no dia
-      showToast('error','❌', e.message.slice(0,90));
+      showToast('error','❌', escHtml(gmbErroTexto(e)));
     }
   }
 
@@ -16607,9 +16843,11 @@ function mtrPopulateGmbSelect() {
   if (_mtrGmbLocIdx !== null) sel.value = _mtrGmbLocIdx;
 }
 
+let _mtrGmbVez = 0;
 async function mtrOnGmbChange() {
   const sel = document.getElementById('mtrGmbSelect');
   const idx = sel?.value;
+  const vez = ++_mtrGmbVez; // a troca de período chama de novo; só a última chamada escreve
   if (idx === '' || idx === undefined) { window._mtrGmbData = null; mtrRefreshKpis(); return; }
   _mtrGmbLocIdx = idx;
   const loc = _gmbLocations[parseInt(idx)];
@@ -16621,6 +16859,7 @@ async function mtrOnGmbChange() {
       reviews = loc._demoReviews || [];
     } else {
       const rd = await gmbApi(`${gmbV4(loc)}/reviews?pageSize=50`);
+      if (vez !== _mtrGmbVez) return;
       reviews = rd.reviews || [];
     }
     const ratings = reviews.filter(r=>r.starRating).map(r=>({ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5}[r.starRating]||0));
@@ -16633,64 +16872,32 @@ async function mtrOnGmbChange() {
     // New reviews in selected period
     const since = document.getElementById('mtrMainSince')?.value;
     const newReviews = since ? reviews.filter(r => r.createTime && r.createTime.slice(0,10) >= since).length : reviews.length;
-    // Fetch Performance Insights (Business Profile Performance API)
+    // Números do período e do anterior, parando no último dia que o Google já fechou
     let insights = {};
-    if (_gmbDemoMode) {
-      // Generate plausible insights based on review volume
-      const sinceD = document.getElementById('mtrMainSince')?.value || new Date(Date.now()-7*864e5).toISOString().slice(0,10);
-      const untilD = document.getElementById('mtrMainUntil')?.value || new Date().toISOString().slice(0,10);
-      const days = Math.max(1, Math.round((new Date(untilD) - new Date(sinceD))/864e5));
-      const base = 80 + reviews.length * 12; // baseline daily impressions
-      const rand = (mult) => Math.round(base * days * mult * (0.85 + Math.random()*0.3));
-      insights = {
-        viewsSearch: rand(0.6),
-        viewsMaps: rand(0.4),
-        directionRequests: rand(0.08),
-        callClicks: rand(0.05),
-        websiteClicks: rand(0.10),
-        bookings: rand(0.02),
-        foodOrders: rand(0.04),
-        menuClicks: rand(0.07),
-      };
-    } else {
-      try {
-        const since = document.getElementById('mtrMainSince')?.value || new Date(Date.now()-7*864e5).toISOString().slice(0,10);
-        const until = document.getElementById('mtrMainUntil')?.value  || new Date().toISOString().slice(0,10);
-        const locName = loc.name;
-        const locId = locName.split('/').pop();
-        const METRICS = ['BUSINESS_IMPRESSIONS_DESKTOP_SEARCH','BUSINESS_IMPRESSIONS_MOBILE_SEARCH',
-          'BUSINESS_IMPRESSIONS_DESKTOP_MAPS','BUSINESS_IMPRESSIONS_MOBILE_MAPS',
-          'BUSINESS_DIRECTION_REQUESTS','CALL_CLICKS','WEBSITE_CLICKS',
-          'BUSINESS_BOOKINGS','BUSINESS_FOOD_ORDERS','BUSINESS_FOOD_MENU_CLICKS'];
-        const perf = await gmbApi(
-          `https://businessprofileperformance.googleapis.com/v1/locations/${locId}:fetchMultiDailyMetricsTimeSeries?` +
-          METRICS.map(m=>`dailyMetrics=${m}`).join('&') +
-          `&dailyRange.start_date.year=${since.slice(0,4)}&dailyRange.start_date.month=${parseInt(since.slice(5,7))}&dailyRange.start_date.day=${parseInt(since.slice(8,10))}` +
-          `&dailyRange.end_date.year=${until.slice(0,4)}&dailyRange.end_date.month=${parseInt(until.slice(5,7))}&dailyRange.end_date.day=${parseInt(until.slice(8,10))}`
-        );
-        const sumMetric = name => {
-          const series = (perf.multiDailyMetricTimeSeries || []).find(s => s.dailyMetric === name);
-          return (series?.timeSeries?.datedValues || []).reduce((t,d)=>t+(d.value||0),0);
-        };
-        insights = {
-          viewsSearch: sumMetric('BUSINESS_IMPRESSIONS_DESKTOP_SEARCH') + sumMetric('BUSINESS_IMPRESSIONS_MOBILE_SEARCH'),
-          viewsMaps:   sumMetric('BUSINESS_IMPRESSIONS_DESKTOP_MAPS')   + sumMetric('BUSINESS_IMPRESSIONS_MOBILE_MAPS'),
-          directionRequests: sumMetric('BUSINESS_DIRECTION_REQUESTS'),
-          callClicks:   sumMetric('CALL_CLICKS'),
-          websiteClicks:sumMetric('WEBSITE_CLICKS'),
-          bookings:     sumMetric('BUSINESS_BOOKINGS'),
-          foodOrders:   sumMetric('BUSINESS_FOOD_ORDERS'),
-          menuClicks:   sumMetric('BUSINESS_FOOD_MENU_CLICKS'),
-        };
-      } catch(e) { /* Insights API may not be enabled yet */ }
-    }
-
+    const ontem = gmbMaisDias(mtrFmtLocalDate(new Date()), -1);
+    let ate = document.getElementById('mtrMainUntil')?.value || ontem; if (ate > ontem) ate = ontem;
+    let de = since || gmbMaisDias(ate, -7); if (de > ate) de = ate;
+    const n = Math.round((new Date(ate + 'T12:00:00') - new Date(de + 'T12:00:00')) / 864e5) + 1;
+    const s = mtrLastSnapshot;
+    const p = s?.compare && s.prev?.since ? s.prev : { since: gmbMaisDias(de, -n), until: gmbMaisDias(de, -1) };
+    try {
+      // ponytail: uma chamada cobre os dois períodos; comparar com mais de 18 meses atrás estoura o limite do Google
+      const dias = await gmbBuscarNumeros(loc, [de, p.since].sort()[0], [ate, p.until > ontem ? ontem : p.until].sort()[1]);
+      const fim = [de, gmbUltimoDia(dias, ate)].sort()[1];
+      const L = Math.round((new Date(fim + 'T12:00:00') - new Date(de + 'T12:00:00')) / 864e5) + 1;
+      const fimAnt = [p.until, gmbMaisDias(p.since, L - 1)].sort()[0];
+      const serie = []; for (let d = de; d <= fim; d = gmbMaisDias(d, 1)) serie.push(gmbSomar(dias, d, d));
+      insights = { ...gmbSomar(dias, de, fim), anterior: gmbSomar(dias, p.since, fimAnt), serie };
+    } catch (e) { if (vez === _mtrGmbVez) showToast('error', '❌', escHtml(gmbErroNumeros(e))); }
+    if (vez !== _mtrGmbVez) return;
     window._mtrGmbData = { avgRating, totalReviews: reviews.length, unanswered, responseRate, negatives, score, newReviews, ...insights };
     mtrRefreshKpis();
   } catch(e) {
-    showToast('error','❌','Erro GMB: '+(e.message||'').slice(0,60));
+    // sem isso ficavam na tela os números do perfil anterior
+    if (vez === _mtrGmbVez) { window._mtrGmbData = null; mtrRefreshKpis(); showToast('error','❌','Perfil no Google: ' + escHtml(gmbErroTexto(e))); }
+  } finally {
+    if (vez === _mtrGmbVez) sel.disabled = false;
   }
-  sel.disabled = false;
 }
 
 function mtrRefreshKpis() {
