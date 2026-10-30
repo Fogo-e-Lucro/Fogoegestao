@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.3">
+<link rel="stylesheet" href="styles.css?v=3.71.4">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -7193,6 +7193,7 @@ function switchTab(tab, btn) {
     showPostSkeletons(4);
     renderAll();
   }
+  if (tab === 'gmb' && typeof gmbVerConexao === 'function') gmbVerConexao();
   // ═══ ESTÚDIO (Criar post) — entra/sai
   if (tab === 'entrada') {
     if (typeof initEstudio === 'function') {
@@ -15751,7 +15752,11 @@ async function gmbRankLoadHistory() {
 }
 
 /* ─── Google Meu Negócio (GMB) ───────────────────────── */
-let _gmbToken = localStorage.getItem('gmbToken') || null;
+// A conta Google da assessoria conecta uma vez pelo fogo-gestao-cron, que guarda
+// o refresh token. Aqui só fica o access_token de 1 hora, em memória.
+let _gmbToken = null;
+let _gmbTokenExp = 0;
+try { localStorage.removeItem('gmbToken'); } catch(_) {} // sobra do login por popup
 let _gmbAccounts = [];
 let _gmbLocations = [];
 let _gmbCurrentLoc = null;
@@ -15760,19 +15765,51 @@ let _gmbReviewFilter = 'all';
 let _gmbRatingChart = null;
 let _gmbHealthChart = null;
 let _gmbDemoMode = false;
+let _gmbShown = []; // avaliações na ordem da tela, pro índice dos botões
+let _gmbVendo = false;
 
-const GMB_SCOPES = 'https://www.googleapis.com/auth/business.manage';
+const GMB_ERROS = {
+  nao_configurado: 'Falta ligar o acesso ao Google no servidor.',
+  nao_conectado: 'Conecte a conta Google que cuida dos perfis dos clientes.',
+  reconectar: 'O Google derrubou a conexão. Conecte de novo.',
+  unauthorized: 'Só admin conecta o Google.',
+};
+
+function gmbMostrarErro(e) {
+  const sub = document.getElementById('gmbConnectSub');
+  if (sub) sub.textContent = GMB_ERROS[e.code] || e.message;
+}
+
+async function gmbGetToken() {
+  if (_gmbToken && _gmbTokenExp > Date.now()) return _gmbToken;
+  const d = await _cwFetch('gmb-token', { method: 'POST', body: '{}' });
+  _gmbToken = d.access_token;
+  _gmbTokenExp = d.expires_at;
+  return _gmbToken;
+}
 
 async function gmbConnect() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  provider.addScope(GMB_SCOPES);
+  document.getElementById('gmbConnectSub').textContent = 'Abrindo o Google';
   try {
-    const result = await _auth.signInWithPopup(provider);
-    _gmbToken = result.credential.accessToken;
-    localStorage.setItem('gmbToken', _gmbToken);
-    gmbOnConnected();
+    const { authorizeUrl } = await _cwFetch('gmb-oauth-start', { method: 'POST', body: '{}' });
+    window.location.href = authorizeUrl;
   } catch(e) {
-    showToast('error','❌','Erro ao conectar: ' + (e.message||'').slice(0,60));
+    gmbMostrarErro(e);
+    showToast('warn','⚠️', GMB_ERROS[e.code] || e.message);
+  }
+}
+
+// Ao abrir a tela: se a conta já está conectada, carrega os perfis.
+async function gmbVerConexao() {
+  if (_gmbDemoMode || _gmbLocations.length || _gmbVendo) return;
+  _gmbVendo = true;
+  try {
+    await gmbGetToken();
+    await gmbOnConnected();
+  } catch(e) {
+    gmbMostrarErro(e);
+  } finally {
+    _gmbVendo = false;
   }
 }
 
@@ -15810,6 +15847,7 @@ function gmbExitDemo() {
   const dBtn = document.getElementById('gmbDemoBtn'); if (dBtn) { dBtn.textContent = 'Modo demo'; }
   const _gb = document.getElementById('globalDemoBanner'); if (_gb) _gb.style.display = 'none';
   showToast('info','✕','Demo encerrado');
+  gmbVerConexao();
 }
 
 function gmbBuildDemoLocations() {
@@ -15959,22 +15997,28 @@ function gmbSeedDemoHistory(loc) {
   localStorage.setItem(key, JSON.stringify(history));
 }
 
-async function gmbApiGet(url) {
-  const r = await fetch(url, { headers: { Authorization: 'Bearer ' + _gmbToken } });
-  if (r.status === 401) { _gmbToken = null; localStorage.removeItem('gmbToken'); throw new Error('Token expirado. Reconecte.'); }
-  const d = await r.json();
-  if (d.error) throw new Error(d.error.message || 'Erro API');
+async function gmbApi(url, opts = {}) {
+  const r = await fetch(url, { ...opts, headers: { Authorization: 'Bearer ' + await gmbGetToken(), 'Content-Type': 'application/json' } });
+  if (r.status === 401) { _gmbToken = null; throw new Error('O acesso ao Google venceu. Tente de novo.'); }
+  if (r.status === 429) throw new Error('O Google ainda não liberou a cota da API, ou ela estourou neste minuto. Tente mais tarde.');
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok || d.error) throw new Error(d.error?.message || `O Google respondeu ${r.status}`);
   return d;
 }
 
+// A Business Information v1 devolve locations/{id}; a v4 (avaliações e posts)
+// quer accounts/{a}/locations/{id}.
+const gmbV4 = (loc) => `https://mybusiness.googleapis.com/v4/${loc._account}/${loc.name}`;
+
 async function gmbLoadAccounts() {
   try {
-    const d = await gmbApiGet('https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
+    const d = await gmbApi('https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
     _gmbAccounts = d.accounts || [];
     _gmbLocations = [];
     for (const acc of _gmbAccounts) {
       try {
-        const ld = await gmbApiGet(`https://mybusinessbusinessinformation.googleapis.com/v1/${acc.name}/locations?readMask=name,title,storefrontAddress,regularHours,primaryPhone,websiteUri,metadata,profile`);
+        // ponytail: só a primeira página (20 contas, 100 perfis cada); seguir o nextPageToken se a agência passar disso
+        const ld = await gmbApi(`https://mybusinessbusinessinformation.googleapis.com/v1/${acc.name}/locations?pageSize=100&readMask=name,title,storefrontAddress,regularHours,primaryPhone,websiteUri,metadata,profile`);
         const locs = (ld.locations || []).map(l => ({ ...l, _account: acc.name }));
         _gmbLocations.push(...locs);
       } catch(e) {}
@@ -15991,7 +16035,7 @@ async function gmbLoadAccounts() {
 function gmbPopulateSelector() {
   const sel = document.getElementById('gmbLocSelect');
   sel.innerHTML = '<option value="">Escolha o perfil</option>' +
-    _gmbLocations.map((l,i) => `<option value="${i}">${l.title || l.name}</option>`).join('');
+    _gmbLocations.map((l,i) => `<option value="${i}">${escHtml(l.title || l.name)}</option>`).join('');
   document.getElementById('gmbLocBar').style.display = 'flex';
   document.getElementById('gmbConnectSub').textContent = `${_gmbLocations.length} perfil(is) encontrado(s)`;
   try {
@@ -16052,17 +16096,18 @@ async function gmbLoadLocation() {
   document.getElementById('gmbDetail').style.display = '';
   document.getElementById('gmbMultiGrid').style.display = 'none';
 
+  let reviewsOk = true;
   if (_gmbDemoMode) {
     _gmbReviews = _gmbCurrentLoc._demoReviews || [];
     gmbSeedDemoHistory(_gmbCurrentLoc);
   } else {
-    // Load reviews
     try {
-      const locId = _gmbCurrentLoc.name; // e.g. accounts/xxx/locations/yyy
-      const rd = await gmbApiGet(`https://mybusiness.googleapis.com/v4/${locId}/reviews?pageSize=50`);
+      const rd = await gmbApi(`${gmbV4(_gmbCurrentLoc)}/reviews?pageSize=50`);
       _gmbReviews = rd.reviews || [];
     } catch(e) {
       _gmbReviews = [];
+      reviewsOk = false; // sem isso o histórico gravava nota vazia no dia
+      showToast('error','❌', e.message.slice(0,90));
     }
   }
 
@@ -16070,7 +16115,7 @@ async function gmbLoadLocation() {
   gmbRenderScore();
   gmbRenderCharts();
   gmbRenderReviews();
-  if (!_gmbDemoMode) gmbSaveHistory();
+  if (!_gmbDemoMode && reviewsOk) gmbSaveHistory();
   // Carrega histórico de scans de ranking
   gmbRankLoadHistory();
 }
@@ -16211,6 +16256,7 @@ function gmbRenderReviews() {
   else if (_gmbReviewFilter === 'negative') reviews = reviews.filter(r => ['ONE','TWO'].includes(r.starRating));
 
   reviews.sort((a,b) => new Date(b.createTime||0) - new Date(a.createTime||0));
+  _gmbShown = reviews;
 
   if (!reviews.length) {
     list.innerHTML = '<div class="gmb-empty">Nenhuma avaliação encontrada para esse filtro.</div>';
@@ -16225,7 +16271,6 @@ function gmbRenderReviews() {
     const date = r.createTime ? new Date(r.createTime).toLocaleDateString('pt-BR') : '';
     const text = r.comment || '';
     const reply = r.reviewReply?.comment || '';
-    const reviewId = r.name; // full resource name
     return `<div class="gmb-review" id="gmbRev_${idx}">
       <div class="gmb-review-head">
         <div class="gmb-review-avatar">${initial}</div>
@@ -16242,7 +16287,7 @@ function gmbRenderReviews() {
       </div>
       <textarea class="gmb-reply-area" id="gmbReplyTxt_${idx}" placeholder="A resposta aparecerá aqui..." style="display:none"></textarea>
       <div style="display:none;margin-top:8px;gap:8px;flex-wrap:wrap;" id="gmbReplyActions_${idx}">
-        <button class="gmb-publish-btn" onclick="gmbPublishReply(${idx},'${encodeURIComponent(reviewId||'')}')">Publicar Resposta</button>
+        <button class="gmb-publish-btn" onclick="gmbPublishReply(${idx})">Publicar Resposta</button>
         <button class="gmb-filter-btn" onclick="gmbClearReply(${idx})">Cancelar</button>
       </div>
     </div>`;
@@ -16257,7 +16302,7 @@ function gmbFilterReviews(filter, btn) {
 }
 
 async function gmbSuggestReply(idx) {
-  const review = [..._gmbReviews].sort((a,b)=>new Date(b.createTime||0)-new Date(a.createTime||0))[idx];
+  const review = _gmbShown[idx];
   if (!review) return;
   const btn = document.getElementById(`gmbAiBtn_${idx}`);
   const txt = document.getElementById(`gmbReplyTxt_${idx}`);
@@ -16309,15 +16354,13 @@ Retorne APENAS o texto da resposta, sem explicações.`;
   }
 }
 
-async function gmbPublishReply(idx, encodedId) {
-  const reviewName = decodeURIComponent(encodedId);
+async function gmbPublishReply(idx) {
+  const review = _gmbShown[idx];
   const txt = document.getElementById(`gmbReplyTxt_${idx}`)?.value.trim();
+  if (!review) return;
   if (!txt) { showToast('warn','⚠️','Escreva uma resposta antes de publicar.'); return; }
   if (_gmbDemoMode) {
-    // Simulate publish in demo mode
-    if (_gmbReviews[idx]) {
-      _gmbReviews[idx].reviewReply = { comment: txt, updateTime: new Date().toISOString() };
-    }
+    review.reviewReply = { comment: txt, updateTime: new Date().toISOString() };
     showToast('success','🧪','Resposta "publicada" no modo demo (não enviada ao Google)');
     gmbRenderReviews();
     gmbRenderKpis();
@@ -16327,16 +16370,10 @@ async function gmbPublishReply(idx, encodedId) {
   const btn = document.getElementById(`gmbReplyActions_${idx}`)?.querySelector('.gmb-publish-btn');
   if (btn) btn.disabled = true;
   try {
-    const r = await fetch(`https://mybusiness.googleapis.com/v4/${reviewName}/reply`, {
-      method: 'PUT',
-      headers: { Authorization: 'Bearer ' + _gmbToken, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ comment: txt })
-    });
-    if (!r.ok) throw new Error('Erro ao publicar');
+    // review.name já vem completo da v4: accounts/{a}/locations/{l}/reviews/{r}
+    await gmbApi(`https://mybusiness.googleapis.com/v4/${review.name}/reply`, { method: 'PUT', body: JSON.stringify({ comment: txt }) });
     showToast('success','✅','Resposta publicada no Google!');
-    // Update local state
-    const sorted = [..._gmbReviews].sort((a,b)=>new Date(b.createTime||0)-new Date(a.createTime||0));
-    if (sorted[idx]) sorted[idx].reviewReply = { comment: txt };
+    review.reviewReply = { comment: txt };
     gmbRenderReviews();
   } catch(e) {
     showToast('error','❌',e.message);
@@ -16456,21 +16493,13 @@ async function gmbPublishPost() {
   catch(e) { showToast('warn','⚠️',e.message); return; }
 
   if (_gmbDemoMode) {
-    showToast('success','🧪','Postagem simulada (modo demo — não enviada ao Google)');
+    showToast('success','🧪','Postagem simulada no modo demo, nada foi pro Google');
     gmbResetPostForm();
     return;
   }
 
   try {
-    const res = await fetch(`https://mybusiness.googleapis.com/v4/${_gmbCurrentLoc.name}/localPosts`, {
-      method: 'POST',
-      headers: { Authorization: 'Bearer ' + _gmbToken, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(()=>({}));
-      throw new Error(err.error?.message || 'Erro ao publicar');
-    }
+    await gmbApi(`${gmbV4(_gmbCurrentLoc)}/localPosts`, { method: 'POST', body: JSON.stringify(body) });
     showToast('success','✅','Post publicado no perfil do Google');
     gmbResetPostForm();
   } catch(e) {
@@ -16487,15 +16516,6 @@ function gmbResetPostForm() {
   });
 }
 
-// Auto-init if token exists
-(function gmbAutoInit() {
-  if (!_gmbToken) return;
-  const sub = document.getElementById('gmbConnectSub');
-  const btn = document.getElementById('gmbConnectBtn');
-  if (sub) sub.textContent = 'Conta salva. Abra a tela pra sincronizar.';
-  if (btn) btn.textContent = 'Reconectar';
-})();
-
 /* ─── GMB in Métricas ────────────────────────────────── */
 window._mtrGmbData = null;
 let _mtrGmbLocIdx = null;
@@ -16504,16 +16524,18 @@ function mtrPopulateGmbSelect() {
   const sel = document.getElementById('mtrGmbSelect');
   if (!sel) return;
   if (!_gmbLocations || !_gmbLocations.length) {
-    if (_gmbToken && !window._mtrGmbAttempted && !window._mtrGmbFailed) {
+    // _mtrGmbFailed guarda o texto do motivo; tenta uma vez só por carregamento
+    if (window._mtrGmbFailed) {
+      sel.innerHTML = `<option value="">${escHtml(window._mtrGmbFailed)}</option>`;
+    } else if (!window._mtrGmbAttempted) {
       window._mtrGmbAttempted = true;
       sel.innerHTML = '<option value="">Carregando perfis do Google</option>';
-      gmbLoadAccounts()
-        .then(() => { window._mtrGmbAttempted = false; mtrPopulateGmbSelect(); })
-        .catch(() => { window._mtrGmbFailed = true; sel.innerHTML = '<option value="">Perfil no Google indisponível</option>'; });
-    } else if (!_gmbToken) {
-      sel.innerHTML = '<option value="">Conecte na tela Google</option>';
-    } else if (window._mtrGmbFailed) {
-      sel.innerHTML = '<option value="">Perfil no Google indisponível. Recarregue a página</option>';
+      gmbGetToken().then(gmbLoadAccounts)
+        .then(() => { if (!_gmbLocations.length) window._mtrGmbFailed = 'Nenhum perfil na conta do Google'; mtrPopulateGmbSelect(); })
+        .catch(e => {
+          window._mtrGmbFailed = ['nao_conectado','nao_configurado','reconectar'].includes(e.code) ? 'Conecte na tela Perfil no Google' : 'Perfil no Google indisponível';
+          mtrPopulateGmbSelect();
+        });
     }
     return;
   }
@@ -16535,7 +16557,7 @@ async function mtrOnGmbChange() {
     if (_gmbDemoMode) {
       reviews = loc._demoReviews || [];
     } else {
-      const rd = await gmbApiGet(`https://mybusiness.googleapis.com/v4/${loc.name}/reviews?pageSize=100`);
+      const rd = await gmbApi(`${gmbV4(loc)}/reviews?pageSize=50`);
       reviews = rd.reviews || [];
     }
     const ratings = reviews.filter(r=>r.starRating).map(r=>({ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5}[r.starRating]||0));
@@ -16577,7 +16599,7 @@ async function mtrOnGmbChange() {
           'BUSINESS_IMPRESSIONS_DESKTOP_MAPS','BUSINESS_IMPRESSIONS_MOBILE_MAPS',
           'BUSINESS_DIRECTION_REQUESTS','CALL_CLICKS','WEBSITE_CLICKS',
           'BUSINESS_BOOKINGS','BUSINESS_FOOD_ORDERS','BUSINESS_FOOD_MENU_CLICKS'];
-        const perf = await gmbApiGet(
+        const perf = await gmbApi(
           `https://businessprofileperformance.googleapis.com/v1/locations/${locId}:fetchMultiDailyMetricsTimeSeries?` +
           METRICS.map(m=>`dailyMetrics=${m}`).join('&') +
           `&dailyRange.start_date.year=${since.slice(0,4)}&dailyRange.start_date.month=${parseInt(since.slice(5,7))}&dailyRange.start_date.day=${parseInt(since.slice(8,10))}` +
@@ -31292,7 +31314,8 @@ async function _cwFetch(path, opts = {}) {
     headers: { 'Content-Type': 'application/json', 'x-firebase-id-token': token, ...(opts.headers || {}) },
   });
   const json = await r.json().catch(() => ({}));
-  if (!r.ok || json.ok === false) throw new Error(json.mensagem || json.error || `Erro ${r.status}`);
+  // code: o Perfil no Google decide o texto pelo motivo (nao_conectado, reconectar)
+  if (!r.ok || json.ok === false) throw Object.assign(new Error(json.mensagem || json.error || `Erro ${r.status}`), { code: json.error });
   return json;
 }
 
