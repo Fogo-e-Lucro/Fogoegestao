@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.6">
+<link rel="stylesheet" href="styles.css?v=3.71.7">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -2514,7 +2514,7 @@ ufw allow 3000/tcp</pre>
         <!-- Posts -->
         <div class="gmb-posts-card">
           <div class="gmb-posts-head">
-            <div class="gmb-posts-title">Criar postagem</div>
+            <div class="gmb-posts-title" id="gmbPostTitulo">Criar postagem</div>
             <div class="gmb-post-types">
               <button class="gmb-post-type-btn active" data-type="STANDARD" onclick="gmbSelectPostType('STANDARD',this)">Novidade</button>
               <button class="gmb-post-type-btn" data-type="EVENT" onclick="gmbSelectPostType('EVENT',this)">Evento</button>
@@ -2566,10 +2566,18 @@ ufw allow 3000/tcp</pre>
 
             <div class="gmb-post-actions">
               <button class="gmb-ai-btn" onclick="gmbSuggestPost()">Sugerir com IA</button>
-              <button class="gmb-publish-btn" onclick="gmbPublishPost()">Publicar post</button>
+              <button type="button" class="gmb-ed-btn" id="gmbPostCancelar" onclick="gmbResetPostForm()" hidden>Cancelar edição</button>
+              <button class="gmb-publish-btn" id="gmbPostPublicar" onclick="gmbPublishPost()">Publicar post</button>
             </div>
           </div>
         </div>
+
+        <!-- Editar o perfil: cada cartão busca no Google só quando abre -->
+        <details class="gmb-edit-card" id="gmbCartaoPosts" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Posts publicados</span><span class="gmb-edit-sub">Editar ou apagar o que já está no perfil</span></span></summary><div class="gmb-edit-corpo"></div></details>
+        <details class="gmb-edit-card" id="gmbCartaoHorario" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Horário de funcionamento</span><span class="gmb-edit-sub">Semana e datas especiais, como feriados</span></span></summary><div class="gmb-edit-corpo"></div></details>
+        <details class="gmb-edit-card" id="gmbCartaoFotos" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Fotos do perfil</span><span class="gmb-edit-sub">Enviar, ver quantas pessoas viram e apagar</span></span></summary><div class="gmb-edit-corpo"></div></details>
+        <details class="gmb-edit-card" id="gmbCartaoCardapio" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Cardápio no Google</span><span class="gmb-edit-sub">Pratos e preços que aparecem no perfil, e o link do cardápio</span></span></summary><div class="gmb-edit-corpo"></div></details>
+        <details class="gmb-edit-card" id="gmbCartaoBotoes" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Botões do perfil</span><span class="gmb-edit-sub">Links de pedido, delivery e reserva</span></span></summary><div class="gmb-edit-corpo"></div></details>
 
       </div>
 
@@ -15830,6 +15838,7 @@ function gmbLoadDemo() {
   if (_gmbDemoMode) { gmbExitDemo(); return; }
   _gmbDemoMode = true;
   _gmbLocations = gmbBuildDemoLocations();
+  gmbFecharCartoes();
   document.getElementById('gmbConnectBtn').textContent = 'Demo ativo';
   const dBtn = document.getElementById('gmbDemoBtn');
   if (dBtn) { dBtn.textContent = 'Sair do demo'; dBtn.style.opacity = '1'; }
@@ -15843,6 +15852,7 @@ function gmbLoadDemo() {
 function gmbExitDemo() {
   _gmbDemoMode = false;
   _gmbLocations = []; _gmbCurrentLoc = null; _gmbReviews = [];
+  gmbFecharCartoes();
   document.getElementById('gmbConnectBtn').innerHTML = `<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.58-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Conectar com Google`;
   document.getElementById('gmbConnectSub').textContent = 'Conecte a conta Google que administra o perfil.';
   document.getElementById('gmbEmpty').style.display = '';
@@ -16003,6 +16013,27 @@ function gmbSeedDemoHistory(loc) {
   localStorage.setItem(key, JSON.stringify(history));
 }
 
+// motivos que o Google manda em error.details[].reason, no texto de quem cuida do perfil
+const GMB_MOTIVOS = {
+  INVALID_TIME_SCHEDULE: 'O Google não aceitou o horário. Confira se um turno não passa por cima do outro no mesmo dia.',
+  INVALID_HOURS_VALUE: 'O Google não aceitou um dos horários. Confira as horas de abertura e fechamento.',
+  OVERLAPPED_SPECIAL_HOURS: 'Duas datas especiais caem no mesmo horário. Junte ou tire uma delas.',
+  STALE_DATA: 'O Google mudou esse dado do perfil há pouco e agora só o dono consegue alterar, direto no painel do Google (business.google.com).',
+  INVALID_URL: 'O Google não aceitou o link. Confira se ele abre no navegador.',
+  URL_PROVIDER_NOT_ALLOWED: 'O Google não aceita links desse site nesse botão. Use o link do próprio restaurante.',
+  ATTRIBUTE_PROVIDER_URL_NOT_ALLOWED: 'O Google não aceita link desse site no cardápio. Use o link do próprio restaurante.',
+  ATTRIBUTE_NOT_AVAILABLE: 'O Google não libera esse campo pra categoria deste perfil.',
+  INVALID_LOCATION_CATEGORY: 'A categoria do perfil não permite esse tipo de botão.',
+  UNVERIFIED_LOCATION: 'O perfil ainda não foi verificado no Google. Depois da verificação os botões ficam liberados.',
+  LINK_ALREADY_EXISTS: 'Esse link já está no perfil.',
+  ALREADY_EXISTS: 'Isso já está no perfil do Google.',
+  TOO_MANY_VALUES: 'O perfil já tem o máximo de botões desse tipo. Tire um antes de pôr outro.',
+  SCALABLE_DEEP_LINK_INVALID_MULTIPLICITY: 'Esse site já tem um botão desse tipo no perfil. O Google aceita um link por site em cada tipo.',
+  DELETED_LINK: 'Esse botão já saiu do perfil. Feche e abra o cartão Botões do perfil pra ver a lista atual.',
+  LINK_DOES_NOT_EXIST: 'Esse botão já saiu do perfil. Feche e abra o cartão Botões do perfil pra ver a lista atual.',
+  THROTTLED: 'O Google pediu um tempo antes de mudar este perfil de novo. Tente daqui a alguns minutos.',
+};
+
 async function gmbApi(url, opts = {}) {
   // o erro do token (com e.code) sai antes do fetch e passa direto pelo catch
   const r = await fetch(url, { ...opts, headers: { Authorization: 'Bearer ' + await gmbGetToken(), 'Content-Type': 'application/json' } })
@@ -16012,7 +16043,11 @@ async function gmbApi(url, opts = {}) {
   const d = await r.json().catch(() => ({}));
   if (!r.ok || d.error) {
     console.warn('[Google]', r.status, d.error?.message);
-    throw Object.assign(new Error(r.status >= 500 ? 'O Google está instável agora. Tente de novo daqui a pouco.' : d.error?.message || `O Google respondeu ${r.status}`), { status: r.status });
+    const info = d.error?.details?.find(x => x.reason) || {};
+    const msg = r.status >= 500 ? 'O Google está instável agora. Tente de novo daqui a pouco.'
+      : info.reason === 'SERVICE_DISABLED' ? `A ${info.metadata?.serviceTitle || info.metadata?.service || 'API'} está desligada no Google Cloud do projeto. Ligue em APIs e serviços e tente de novo.`
+      : GMB_MOTIVOS[info.reason] || GMB_MOTIVOS[d.error?.status] || d.error?.details?.find(x => x.errorDetails)?.errorDetails[0]?.message || d.error?.message || `O Google respondeu ${r.status}`;
+    throw Object.assign(new Error(msg), { status: r.status, motivo: info.reason });
   }
   return d;
 }
@@ -16369,6 +16404,7 @@ async function gmbLoadLocation() {
   document.getElementById('gmbReviewsWrap').style.display = '';
   document.getElementById('gmbReviewsTitle').textContent = 'Avaliações';
   gmbRenderNumeros();
+  gmbFecharCartoes();
 
   let reviewsOk = true;
   if (_gmbDemoMode) {
@@ -16488,6 +16524,7 @@ function gmbGetHistory() {
 
 async function gmbRenderCharts() {
   await ensureChartJs();
+  if (!_gmbCurrentLoc) return; // saiu do demo ou do perfil enquanto o Chart.js carregava
   const history = gmbGetHistory();
   const labels = history.map(h => h.date.slice(8, 10) + '/' + h.date.slice(5, 7)); // DD/MM
   const ratings = history.map(h => h.rating);
@@ -16785,34 +16822,696 @@ function gmbTimeOnly(dtLocal) {
   return { hours, minutes };
 }
 
+// ─── PERFIL NO GOOGLE: EDITAR O PERFIL ───────────────────
+// Cada cartão busca no Google só quando abre. Trocar de perfil (ou tocar em Atualizar) fecha todos.
+let _gmbEd = {}; // o que cada cartão aberto carregou, com o perfil (loc) de quando abriu
+let _gmbPostEditando = null;
+const GMB_CARTOES = { gmbCartaoPosts: gmbCarregarPosts, gmbCartaoHorario: gmbCarregarHorario, gmbCartaoFotos: gmbCarregarFotos,
+  gmbCartaoCardapio: gmbCarregarCardapio, gmbCartaoBotoes: gmbCarregarBotoes };
+const gmbCorpo = id => document.querySelector(`#${id} .gmb-edit-corpo`);
+// o Ranking Grid põe um negócio de fora em _gmbCurrentLoc; os cartões e o post seguem o perfil escolhido na lista
+const gmbPerfil = () => _gmbCurrentLoc?._fromPreAnalise ? _gmbLocations[document.getElementById('gmbLocSelect').value] || null : _gmbCurrentLoc;
+function gmbAbrirCartao(det) {
+  if (det.open && gmbPerfil() && (!_gmbEd[det.id] || _gmbEd[det.id].velho)) GMB_CARTOES[det.id]();
+}
+function gmbFecharCartoes() {
+  _gmbEd = {};
+  for (const id in GMB_CARTOES) { document.getElementById(id).open = false; gmbCorpo(id).innerHTML = ''; }
+  if (_gmbPostEditando) gmbResetPostForm();
+}
+// depois de uma mudança: busca de novo, se o cartão ainda é do mesmo perfil e está aberto
+function gmbRecarregar(id, loc) {
+  if (loc !== gmbPerfil()) return;
+  delete _gmbEd[id];
+  const det = document.getElementById(id);
+  if (!det.open) return;
+  // o botão apertado (desabilitado pelo gmbEspera) some no redesenho; sem isto o foco cai no body
+  if (gmbCorpo(id).querySelector('button:disabled') || gmbCorpo(id).contains(document.activeElement)) det.querySelector('summary').focus({ preventScroll: true });
+  GMB_CARTOES[id]();
+}
+function gmbErroCartao(id, tk, e) {
+  if (_gmbEd[id] !== tk) return;
+  delete _gmbEd[id];
+  gmbCorpo(id).innerHTML = `<div class="gmb-empty">${escHtml(gmbErroTexto(e))}<br><button type="button" class="gmb-ed-btn" onclick="gmbAbrirCartao(document.getElementById('${id}'))">Tentar de novo</button></div>`;
+}
+// o aviso sempre aparece; o que saiu do Google faz o cartão buscar de novo quando abrir.
+// 404 sem motivo conhecido numa ação de item = o item saiu, não o perfil
+function gmbErroAcao(tk, e, sumiu) {
+  const saiu = e?.status === 404 || ['DELETED_LINK','LINK_DOES_NOT_EXIST'].includes(e?.motivo);
+  if (tk && saiu) tk.velho = true;
+  showToast('error','❌', escHtml(e?.status === 404 && !GMB_MOTIVOS[e.motivo] ? sumiu || gmbErroTexto(e) : String(e?.message || e)));
+}
+const gmbEspera = (b, txt) => { const antes = b.innerHTML; b.disabled = true; b.textContent = txt; return () => { if (b.isConnected) { b.disabled = false; b.innerHTML = antes; } }; };
+const gmbFeito = (real, curto) => showToast('success', _gmbDemoMode ? '🧪' : '✅', _gmbDemoMode ? `${curto} no modo demo, nada foi pro Google` : real);
+const gmbApagar = url => gmbApi(url, { method: 'DELETE' }).catch(e => { if (e?.status !== 404) throw e; }); // 404 = já saiu
+const gmbPlural = (n, um, varios) => `${gmbNumFmt(n)} ${n === 1 ? um : varios}`;
+const gmbUrlOk = u => /^https?:\/\//i.test(u || '');
+const gmbImgOk = u => /^(https?:\/\/|blob:)/i.test(u || '');
+const gmbIso = d => d ? `${d.year}-${String(d.month).padStart(2,'0')}-${String(d.day).padStart(2,'0')}` : '';
+const gmbHm = t => `${String((t?.hours || 0) % 24).padStart(2,'0')}:${String(t?.minutes || 0).padStart(2,'0')}`;
+const gmbHmObj = s => { const [hours, minutes] = s.split(':').map(Number); return { hours, minutes }; };
+const gmbQuando = p => p.createTime ? new Date(p.createTime).toLocaleDateString('pt-BR') : '';
+const gmbDemoSite = loc => 'https://' + String(loc.websiteUri || 'exemplo.com.br').replace(/^https?:\/\//i, '').replace(/\/$/, '');
+
+// ─── Posts ───
+const GMB_POST_TIPO = { STANDARD: 'Novidade', EVENT: 'Evento', OFFER: 'Oferta' };
+const GMB_POST_ESTADO = { LIVE: 'No ar', PROCESSING: 'Em análise', REJECTED: 'Recusado pelo Google' };
+
 async function gmbPublishPost() {
-  if (!_gmbCurrentLoc) { showToast('warn','⚠️','Selecione um perfil primeiro.'); return; }
+  if (!gmbPerfil()) { showToast('warn','⚠️','Selecione um perfil primeiro.'); return; }
   let body;
   try { body = gmbBuildPostBody(); }
-  catch(e) { showToast('warn','⚠️',e.message); return; }
-
-  if (_gmbDemoMode) {
-    showToast('success','🧪','Postagem simulada no modo demo, nada foi pro Google');
-    gmbResetPostForm();
-    return;
-  }
-
+  catch(e) { showToast('warn','⚠️', escHtml(e.message)); return; }
+  const loc = gmbPerfil(), ed = _gmbPostEditando, btn = document.getElementById('gmbPostPublicar');
+  // ponytail: o Google não lista os campos do updateMask; vão os que o formulário mexe (oferta ignora o botão)
+  const mask = ed && ({ OFFER: 'summary,event,offer', EVENT: 'summary,callToAction,event' }[ed.topicType] || 'summary,callToAction');
+  btn.disabled = true; btn.textContent = ed ? 'Salvando post…' : 'Publicando post…';
   try {
-    await gmbApi(`${gmbV4(_gmbCurrentLoc)}/localPosts`, { method: 'POST', body: JSON.stringify(body) });
-    showToast('success','✅','Post publicado no perfil do Google');
-    gmbResetPostForm();
+    if (_gmbDemoMode) {
+      if (ed) mask.split(',').forEach(k => { if (body[k]) ed[k] = body[k]; else delete ed[k]; });
+      else gmbDemoPosts(loc).unshift({ ...body, name: 'demo-' + Date.now(), state: 'LIVE', createTime: new Date().toISOString() });
+    } else if (ed) await gmbApi(`https://mybusiness.googleapis.com/v4/${ed.name}?updateMask=${mask}`, { method: 'PATCH', body: JSON.stringify(body) });
+    else await gmbApi(`${gmbV4(loc)}/localPosts`, { method: 'POST', body: JSON.stringify(body) });
+    gmbFeito(ed ? 'Post salvo no perfil do Google' : 'Post publicado no perfil do Google', ed ? 'Edição simulada' : 'Postagem simulada');
+    if (_gmbPostEditando === ed) gmbResetPostForm();
+    gmbRecarregar('gmbCartaoPosts', loc);
   } catch(e) {
-    showToast('error','❌','Erro: ' + e.message.slice(0,80));
+    gmbErroAcao(ed && _gmbEd.gmbCartaoPosts, e, ed && 'Esse post saiu do perfil. Feche e abra o cartão Posts publicados pra ver a lista atual.');
+  } finally {
+    btn.disabled = false; btn.textContent = _gmbPostEditando ? 'Salvar post' : 'Publicar post';
   }
 }
 
+const GMB_POST_CAMPOS = ['gmbPostText','gmbPostMedia','gmbPostEventTitle','gmbPostEventStart','gmbPostEventEnd',
+  'gmbPostOfferTitle','gmbPostOfferStart','gmbPostOfferEnd','gmbPostOfferCoupon',
+  'gmbPostOfferRedeemUrl','gmbPostOfferTerms','gmbPostCta','gmbPostCtaUrl'];
 function gmbResetPostForm() {
-  ['gmbPostText','gmbPostMedia','gmbPostEventTitle','gmbPostEventStart','gmbPostEventEnd',
-   'gmbPostOfferTitle','gmbPostOfferStart','gmbPostOfferEnd','gmbPostOfferCoupon',
-   'gmbPostOfferRedeemUrl','gmbPostOfferTerms','gmbPostCta','gmbPostCtaUrl'].forEach(id => {
+  GMB_POST_CAMPOS.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+  if (!_gmbPostEditando) return;
+  _gmbPostEditando = null;
+  gmbSelectPostType('STANDARD', document.querySelector('.gmb-post-type-btn[data-type="STANDARD"]'));
+  document.querySelectorAll('.gmb-post-type-btn').forEach(b => { b.disabled = false; });
+  const media = document.getElementById('gmbPostMedia');
+  media.disabled = false; media.placeholder = 'URL da imagem (opcional, JPG ou PNG)';
+  document.getElementById('gmbPostPublicar').textContent = 'Publicar post';
+  document.getElementById('gmbPostCancelar').hidden = true;
+  document.getElementById('gmbPostTitulo').textContent = 'Criar postagem';
+}
+
+function gmbEditarPost(i) {
+  const p = _gmbEd.gmbCartaoPosts?.posts?.[i];
+  if (!p) return;
+  if (GMB_POST_CAMPOS.some(id => document.getElementById(id)?.value.trim()) && !confirm('O que está no formulário de postagem vai sumir. Editar este post mesmo assim?')) return;
+  gmbResetPostForm();
+  _gmbPostEditando = p;
+  gmbSelectPostType(p.topicType, document.querySelector(`.gmb-post-type-btn[data-type="${p.topicType}"]`));
+  document.querySelectorAll('.gmb-post-type-btn').forEach(b => { b.disabled = true; });
+  const v = (id, x) => { document.getElementById(id).value = x || ''; };
+  v('gmbPostText', p.summary);
+  const cta = document.getElementById('gmbPostCta');
+  cta.value = p.callToAction?.actionType || '';
+  if (cta.selectedIndex < 0) cta.value = ''; // ponytail: botão fora da lista (tipo GET_OFFER) some ao salvar
+  v('gmbPostCtaUrl', p.callToAction?.url);
+  const s = p.event?.schedule || {};
+  if (p.topicType === 'EVENT') {
+    v('gmbPostEventTitle', p.event?.title);
+    v('gmbPostEventStart', s.startDate && `${gmbIso(s.startDate)}T${gmbHm(s.startTime)}`);
+    v('gmbPostEventEnd', s.endDate && `${gmbIso(s.endDate)}T${gmbHm(s.endTime)}`);
+  }
+  if (p.topicType === 'OFFER') {
+    v('gmbPostOfferTitle', p.event?.title);
+    v('gmbPostOfferStart', gmbIso(s.startDate));
+    v('gmbPostOfferEnd', gmbIso(s.endDate));
+    v('gmbPostOfferCoupon', p.offer?.couponCode);
+    v('gmbPostOfferRedeemUrl', p.offer?.redeemOnlineUrl);
+    v('gmbPostOfferTerms', p.offer?.termsConditions);
+  }
+  const media = document.getElementById('gmbPostMedia');
+  media.disabled = true; media.placeholder = 'A foto fica a mesma ao editar';
+  document.getElementById('gmbPostPublicar').textContent = 'Salvar post';
+  document.getElementById('gmbPostCancelar').hidden = false;
+  document.getElementById('gmbPostTitulo').textContent = 'Editar postagem';
+  document.getElementById('gmbPostTitulo').closest('.gmb-posts-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('gmbPostText').focus({ preventScroll: true });
+}
+
+async function gmbCarregarPosts() {
+  const id = 'gmbCartaoPosts', tk = _gmbEd[id] = { loc: gmbPerfil() };
+  gmbCorpo(id).innerHTML = '<div class="gmb-empty">Buscando os posts no Google…</div>';
+  try {
+    const posts = _gmbDemoMode ? [...gmbDemoPosts(tk.loc)]
+      : (await gmbApi(`${gmbV4(tk.loc)}/localPosts?pageSize=100`)).localPosts || []; // ponytail: só a 1ª página (100 posts)
+    if (_gmbEd[id] !== tk) return;
+    tk.posts = posts.sort((a, b) => String(b.createTime || '').localeCompare(String(a.createTime || '')));
+    gmbDesenharPosts();
+  } catch(e) { gmbErroCartao(id, tk, e); }
+}
+
+function gmbDesenharPosts() {
+  const tk = _gmbEd.gmbCartaoPosts, c = gmbCorpo('gmbCartaoPosts');
+  if (!tk.posts.length) { c.innerHTML = '<div class="gmb-empty">Nenhum post no perfil ainda. Publique o primeiro no cartão Criar postagem, logo acima.</div>'; return; }
+  c.innerHTML = '<div class="gmb-ed-lista">' + tk.posts.map((p, i) => {
+    const foto = p.media?.[0]?.googleUrl || p.media?.[0]?.sourceUrl, t = p.topicType, quando = gmbQuando(p), estado = GMB_POST_ESTADO[p.state];
+    return `<div class="gmb-ed-item">
+      ${gmbImgOk(foto) ? `<img class="gmb-ed-thumb" src="${escHtml(foto)}" alt="" loading="lazy">` : ''}
+      <div class="gmb-ed-info">
+        <div class="gmb-ed-topo"><b>${GMB_POST_TIPO[t] || 'Post'}</b>${quando ? ' · ' + quando : ''}${estado ? `<span class="gmb-ed-estado${p.state === 'REJECTED' ? ' rejeitado' : ''}">${estado}</span>` : ''}</div>
+        ${p.event?.title ? `<div class="gmb-ed-titulo">${escHtml(p.event.title)}</div>` : ''}
+        ${p.summary ? `<div class="gmb-ed-texto">${escHtml(p.summary)}</div>` : ''}
+        <div class="gmb-ed-acoes">
+          ${gmbUrlOk(p.searchUrl) ? `<a class="gmb-ed-btn" href="${escHtml(p.searchUrl)}" target="_blank" rel="noopener">Ver no Google</a>` : ''}
+          ${GMB_POST_TIPO[t] ? `<button type="button" class="gmb-ed-btn" onclick="gmbEditarPost(${i})">Editar</button>` : ''}
+          <button type="button" class="gmb-ed-btn perigo" onclick="gmbApagarPost(${i},this)">Apagar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+async function gmbApagarPost(i, btn) {
+  const tk = _gmbEd.gmbCartaoPosts, p = tk?.posts?.[i];
+  if (!p) return;
+  const quando = gmbQuando(p), tipo = GMB_POST_TIPO[p.topicType] || 'post';
+  if (!confirm(`Apagar o post${quando ? ' de ' + quando : ''} (${tipo})? Ele sai do perfil no Google e não volta.`)) return;
+  const volta = gmbEspera(btn, 'Apagando…');
+  try {
+    if (_gmbDemoMode) tk.loc._demoPosts = gmbDemoPosts(tk.loc).filter(x => x !== p);
+    else await gmbApagar(`https://mybusiness.googleapis.com/v4/${p.name}`);
+    if (_gmbPostEditando?.name === p.name) gmbResetPostForm();
+    gmbFeito('Post apagado do perfil', 'Post apagado');
+    gmbRecarregar('gmbCartaoPosts', tk.loc);
+  } catch(e) { gmbErroAcao(tk, e); }
+  finally { volta(); }
+}
+
+function gmbDemoPosts(loc) {
+  if (loc._demoPosts) return loc._demoPosts;
+  const dia = n => { const d = new Date(); d.setDate(d.getDate() + n); return d; };
+  const data = d => ({ year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate() });
+  const sabado = dia(((6 - new Date().getDay() + 7) % 7) + 7);
+  return loc._demoPosts = [
+    { name: 'demo-1', topicType: 'STANDARD', state: 'LIVE', createTime: dia(-2).toISOString(),
+      summary: 'Almoço executivo de segunda a sexta, das 11h às 15h. Prato, bebida e sobremesa.',
+      callToAction: { actionType: 'BOOK', url: gmbDemoSite(loc) + '/reserva' } },
+    { name: 'demo-2', topicType: 'OFFER', state: 'LIVE', createTime: dia(-5).toISOString(),
+      summary: 'Toda terça, o segundo prato sai pela metade do preço. Mostre o cupom no caixa.',
+      event: { title: 'Terça em dobro', schedule: { startDate: data(dia(-5)), endDate: data(dia(25)) } },
+      offer: { couponCode: 'TERCA50' } },
+    { name: 'demo-3', topicType: 'EVENT', state: 'PROCESSING', createTime: new Date().toISOString(),
+      summary: 'Voz e violão das 19h às 23h. Entrada livre.',
+      event: { title: 'Sábado com música ao vivo', schedule: { startDate: data(sabado), startTime: { hours: 19 }, endDate: data(sabado), endTime: { hours: 23 } } } },
+  ];
+}
+
+// ─── Horário ───
+const GMB_DIAS = [['MONDAY','Segunda'],['TUESDAY','Terça'],['WEDNESDAY','Quarta'],['THURSDAY','Quinta'],['FRIDAY','Sexta'],['SATURDAY','Sábado'],['SUNDAY','Domingo']];
+
+async function gmbCarregarHorario() {
+  const id = 'gmbCartaoHorario', tk = _gmbEd[id] = { loc: gmbPerfil() };
+  gmbCorpo(id).innerHTML = '<div class="gmb-empty">Buscando o horário no Google…</div>';
+  try {
+    const d = _gmbDemoMode ? JSON.parse(JSON.stringify(gmbDemoHoras(tk.loc)))
+      : await gmbApi(`https://mybusinessbusinessinformation.googleapis.com/v1/${tk.loc.name}?readMask=regularHours,specialHours`);
+    if (_gmbEd[id] !== tk) return;
+    // ponytail: turno de mais de um dia (abre segunda, fecha quarta) vira turno do mesmo dia
+    tk.dias = GMB_DIAS.map(() => null);
+    for (const p of d.regularHours?.periods || []) {
+      const i = GMB_DIAS.findIndex(x => x[0] === p.openDay);
+      if (i >= 0) (tk.dias[i] = tk.dias[i] || []).push({ de: gmbHm(p.openTime), ate: gmbHm(p.closeTime) });
+    }
+    tk.dias.forEach(ts => ts?.sort((a, b) => a.de.localeCompare(b.de)));
+    // ponytail: data especial que já passou some ao salvar
+    const hoje = mtrFmtLocalDate(new Date());
+    tk.esp = (d.specialHours?.specialHourPeriods || []).map(x => ({ data: gmbIso(x.startDate), fechado: !!x.closed,
+      de: x.closed ? '' : gmbHm(x.openTime), ate: x.closed ? '' : gmbHm(x.closeTime) }))
+      .filter(x => x.data >= hoje).sort((a, b) => a.data.localeCompare(b.data));
+    gmbDesenharHorario();
+  } catch(e) { gmbErroCartao(id, tk, e); }
+}
+
+function gmbDemoHoras(loc) {
+  if (loc._demoHoras) return loc._demoHoras;
+  if (!loc.regularHours?.periods?.length) return loc._demoHoras = {};
+  const h = (d, de, ate, fecha = d) => ({ openDay: GMB_DIAS[d][0], openTime: { hours: de }, closeDay: GMB_DIAS[fecha][0], closeTime: { hours: ate } });
+  const periods = [];
+  for (let d = 1; d < 7; d++) periods.push(h(d, 11, 15)); // segunda fechada; almoço de terça a domingo
+  [1, 2, 3, 6].forEach(d => periods.push(h(d, 18, 23)));
+  [4, 5].forEach(d => periods.push(h(d, 18, 1, d + 1)));
+  const hoje = new Date(), ano = hoje.getFullYear() + (hoje.getMonth() === 11 && hoje.getDate() > 25 ? 1 : 0);
+  return loc._demoHoras = { regularHours: { periods }, specialHours: { specialHourPeriods: [{ startDate: { year: ano, month: 12, day: 25 }, closed: true }] } };
+}
+
+function gmbDesenharHorario() {
+  const tk = _gmbEd.gmbCartaoHorario, hoje = mtrFmtLocalDate(new Date());
+  const turno = (t, rot, x = '') => `<div class="gmb-hor-turno"><input type="time" class="gmb-post-input" value="${t.de}" aria-label="Abre ${rot}"> às <input type="time" class="gmb-post-input" value="${t.ate}" aria-label="Fecha ${rot}">${x}</div>`;
+  const dias = GMB_DIAS.map(([, nome], i) => {
+    const ts = tk.dias[i], lista = ts?.length ? ts : [{ de: '', ate: '' }], varios = lista.length > 1;
+    return `<div class="gmb-hor-dia" data-i="${i}">
+      <label class="gmb-ed-check gmb-hor-nome"><input type="checkbox" class="gmb-hor-aberto"${ts ? ' checked' : ''}> ${nome}</label>
+      <div class="gmb-hor-fechado">Fechado</div>
+      <div class="gmb-hor-turnos">${lista.map((t, j) => turno(t, varios ? `${nome}, turno ${j + 1}` : nome,
+        varios ? `<button type="button" class="gmb-ed-x" onclick="gmbHorTirar(${i},${j})" aria-label="Tirar o turno ${j + 1} de ${nome}">${fgIco('x', 16)}</button>` : '')).join('')}
+        <button type="button" class="gmb-ed-link" onclick="gmbHorTurno(${i})">+ turno</button></div>
+    </div>`;
+  }).join('');
+  const esp = tk.esp.map((x, k) => `<div class="gmb-hor-esp">
+      <input type="date" class="gmb-post-input" value="${x.data}" min="${hoje}" aria-label="Data especial">
+      <label class="gmb-ed-check"><input type="checkbox" class="gmb-hor-esp-fechado"${x.fechado ? ' checked' : ''}> Fechado o dia todo</label>
+      ${turno(x, 'nesta data')}
+      <button type="button" class="gmb-ed-link" onclick="gmbEspTirar(${k})">Tirar</button>
+    </div>`).join('');
+  gmbCorpo('gmbCartaoHorario').innerHTML = `<div>${dias}</div>
+    <p class="gmb-edit-nota">Se fecha depois da meia-noite, coloque o horário normal, tipo 18:00 às 02:00. Pra abrir 24 horas, use 00:00 às 00:00.</p>
+    <div class="gmb-ed-secao"><span class="gmb-ed-tit">Datas especiais</span>
+      ${esp ? `<div class="gmb-hor-esp-lista">${esp}</div>` : '<p class="gmb-edit-nota">Nenhuma data especial. Use pra feriado, dia fechado ou horário diferente.</p>'}
+      <div><button type="button" class="gmb-ed-btn gmb-hor-esp-mais" onclick="gmbHorEsp()">+ Data especial</button></div></div>
+    <div class="gmb-ed-rodape"><button type="button" class="gmb-publish-btn" onclick="gmbSalvarHorario(this)">Salvar horário</button></div>`;
+}
+
+// lê a tela pro tk (o que a pessoa digitou não se perde ao redesenhar)
+function gmbHorLer() {
+  const tk = _gmbEd.gmbCartaoHorario, c = gmbCorpo('gmbCartaoHorario');
+  const par = el => { const [a, b] = el.querySelectorAll('input[type=time]'); return { de: a.value, ate: b.value }; };
+  tk.dias = [...c.querySelectorAll('.gmb-hor-dia')].map(d => d.querySelector('.gmb-hor-aberto').checked ? [...d.querySelectorAll('.gmb-hor-turno')].map(par) : null);
+  tk.esp = [...c.querySelectorAll('.gmb-hor-esp')].map(l => ({ data: l.querySelector('input[type=date]').value, fechado: l.querySelector('.gmb-hor-esp-fechado').checked, ...par(l) }));
+  return tk;
+}
+function gmbHorMexer(fn, foco) { fn(gmbHorLer()); gmbDesenharHorario(); gmbCorpo('gmbCartaoHorario').querySelector(foco)?.focus(); }
+function gmbHorTurno(i) { gmbHorMexer(tk => (tk.dias[i] = tk.dias[i] || []).push({ de: '', ate: '' }), `.gmb-hor-dia[data-i="${i}"] .gmb-hor-turno:last-of-type input`); }
+function gmbHorTirar(i, j) { gmbHorMexer(tk => tk.dias[i]?.splice(j, 1), `.gmb-hor-dia[data-i="${i}"] .gmb-ed-link`); }
+function gmbHorEsp() { gmbHorMexer(tk => tk.esp.push({ data: '', fechado: true, de: '', ate: '' }), '.gmb-hor-esp:last-child input[type=date]'); }
+function gmbEspTirar(k) { gmbHorMexer(tk => tk.esp.splice(k, 1), '.gmb-hor-esp-mais'); }
+
+// tela → Google. Fecha antes (ou na hora) de abrir = fecha no dia seguinte; 00:00 no fechamento = meia-noite (24:00)
+const gmbFecha = (de, ate) => ({ vira: ate !== '00:00' && ate <= de, hora: ate === '00:00' ? { hours: 24 } : gmbHmObj(ate) });
+function gmbHorPeriodos(dias) {
+  return dias.flatMap((ts, i) => (ts || []).map(t => {
+    const f = gmbFecha(t.de, t.ate);
+    return { openDay: GMB_DIAS[i][0], openTime: gmbHmObj(t.de), closeDay: GMB_DIAS[f.vira ? (i + 1) % 7 : i][0], closeTime: f.hora };
+  }));
+}
+function gmbEspPeriodo(x) {
+  const dia = gmbDateOnly(x.data);
+  if (x.fechado) return { startDate: dia, closed: true };
+  const f = gmbFecha(x.de, x.ate);
+  return { startDate: dia, openTime: gmbHmObj(x.de), endDate: f.vira ? gmbDateOnly(gmbMaisDias(x.data, 1)) : dia, closeTime: f.hora };
+}
+
+async function gmbSalvarHorario(btn) {
+  const tk = gmbHorLer(), loc = tk.loc;
+  if (!tk.dias.some(Boolean)) { showToast('warn','⚠️','Marque pelo menos um dia aberto.'); return; }
+  const falta = tk.dias.findIndex(ts => ts?.some(t => !t.de || !t.ate));
+  if (falta >= 0) { showToast('warn','⚠️', `Coloque a hora de abrir e de fechar ${falta >= 5 ? 'no' : 'na'} ${GMB_DIAS[falta][1]}.`); return; }
+  if (tk.esp.some(x => !x.data)) { showToast('warn','⚠️','Escolha o dia de cada data especial.'); return; }
+  const espFalta = tk.esp.find(x => !x.fechado && (!x.de || !x.ate));
+  if (espFalta) { showToast('warn','⚠️', `Coloque a hora de abrir e de fechar em ${gmbDiaMes(espFalta.data)}, ou marque Fechado o dia todo.`); return; }
+  const longa = tk.esp.find(x => !x.fechado && gmbFecha(x.de, x.ate).vira && (x.ate > '11:59' || x.ate === x.de));
+  if (longa) { showToast('warn','⚠️', `Em ${gmbDiaMes(longa.data)} o Google só aceita fechar até 11:59 do dia seguinte, e o período precisa ter menos de 24 horas. Divida em duas datas especiais.`); return; }
+  const n = tk.esp.length;
+  if (!confirm(`Trocar o horário de "${loc.title || 'este perfil'}" no Google pelo que está na tela? Vai a semana toda${n ? ` e ${n === 1 ? 'a data especial' : `as ${n} datas especiais`}` : ''}.`)) return;
+  const periods = gmbHorPeriodos(tk.dias);
+  const corpo = { regularHours: { periods }, specialHours: { specialHourPeriods: tk.esp.map(gmbEspPeriodo) } };
+  const volta = gmbEspera(btn, 'Salvando horário…');
+  try {
+    if (_gmbDemoMode) loc._demoHoras = JSON.parse(JSON.stringify(corpo));
+    else await gmbApi(`https://mybusinessbusinessinformation.googleapis.com/v1/${loc.name}?updateMask=regularHours,specialHours`, { method: 'PATCH', body: JSON.stringify(corpo) });
+    loc.regularHours = { periods };
+    if (loc === _gmbCurrentLoc) gmbRenderScore();
+    gmbFeito('Horário salvo no Google', 'Horário salvo');
+  } catch(e) { gmbErroAcao(tk, e); }
+  finally { volta(); }
+}
+
+// ─── Fotos ───
+const GMB_FOTO_CAT = { FOOD_AND_DRINK: 'Comida e bebida', MENU: 'Cardápio', INTERIOR: 'Ambiente', EXTERIOR: 'Fachada', TEAMS: 'Equipe', AT_WORK: 'No trabalho', COVER: 'Capa', PROFILE: 'Foto do perfil', ADDITIONAL: 'Outras', LOGO: 'Logo', PRODUCT: 'Produto', COMMON_AREA: 'Área comum', ROOMS: 'Quartos' };
+
+async function gmbCarregarFotos() {
+  const id = 'gmbCartaoFotos', tk = _gmbEd[id] = { loc: gmbPerfil() };
+  gmbCorpo(id).innerHTML = '<div class="gmb-empty">Buscando as fotos no Google…</div>';
+  try {
+    const d = _gmbDemoMode ? { mediaItems: [...gmbDemoFotos(tk.loc)] }
+      : await gmbApi(`${gmbV4(tk.loc)}/media?pageSize=100`); // ponytail: só a 1ª página (100 fotos)
+    if (_gmbEd[id] !== tk) return;
+    tk.fotos = d.mediaItems || [];
+    tk.total = Number(d.totalMediaItemCount ?? tk.fotos.length);
+    gmbDesenharFotos();
+  } catch(e) { gmbErroCartao(id, tk, e); }
+}
+
+function gmbDesenharFotos() {
+  const tk = _gmbEd.gmbCartaoFotos, c = gmbCorpo('gmbCartaoFotos');
+  const cats = ['FOOD_AND_DRINK','MENU','INTERIOR','EXTERIOR','TEAMS','AT_WORK','COVER','PROFILE','ADDITIONAL'];
+  const grade = tk.fotos.map((f, i) => {
+    const src = f.thumbnailUrl || f.googleUrl;
+    return `<div class="gmb-foto">
+      ${gmbImgOk(src) ? `<img src="${escHtml(src)}" alt="" loading="lazy">` : `<div class="gmb-foto-vazia">${fgIco('camera', 28)}</div>`}
+      <div class="gmb-foto-info"><b>${GMB_FOTO_CAT[f.locationAssociation?.category] || 'Foto'}${f.mediaFormat === 'VIDEO' ? ' (vídeo)' : ''}</b>${gmbPlural(Number(f.insights?.viewCount || 0), 'visualização', 'visualizações')}</div>
+      <button type="button" class="gmb-ed-btn perigo" onclick="gmbApagarFoto(${i},this)">Apagar</button>
+    </div>`;
+  }).join('');
+  c.innerHTML = `<div class="gmb-ed-linha">
+      <select id="gmbFotoCat" class="gmb-post-input" style="width:220px" aria-label="Onde a foto entra no perfil">${cats.map(k => `<option value="${k}">${GMB_FOTO_CAT[k]}</option>`).join('')}</select>
+      <button type="button" class="gmb-publish-btn" onclick="this.nextElementSibling.click()">Enviar foto</button>
+      <input type="file" id="gmbFotoArquivo" accept="image/*" hidden onchange="gmbEnviarFoto(this)">
+    </div>
+    <p class="gmb-edit-nota">JPG ou PNG com pelo menos 250 pixels de cada lado. Foto acima de 5 MB é reduzida antes de enviar.</p>
+    <div class="gmb-ed-secao"><span class="gmb-ed-tit">${gmbPlural(tk.total, 'foto no perfil', 'fotos no perfil')}</span>
+      ${grade ? `<div class="gmb-foto-grade">${grade}</div>` : '<p class="gmb-edit-nota">Nenhuma foto do dono no perfil ainda. Foto de cliente não entra nesta lista.</p>'}
+      ${tk.total > tk.fotos.length ? `<p class="gmb-edit-nota">Mostrando ${gmbNumFmt(tk.fotos.length)} de ${gmbNumFmt(tk.total)}.</p>` : ''}
+    </div>`;
+  try { window.fxEnhanceSelects?.(c) } catch(_) {}
+}
+
+async function gmbEnviarFoto(inp) {
+  const f = inp.files?.[0], tk = _gmbEd.gmbCartaoFotos;
+  inp.value = '';
+  if (!f || !tk) return;
+  const cat = document.getElementById('gmbFotoCat').value, livre = cat === 'COVER' || cat === 'PROFILE';
+  const volta = gmbEspera(inp.previousElementSibling, 'Enviando foto…');
+  try {
+    const file = await gmbFotoPreparar(f, livre);
+    if (_gmbDemoMode) gmbDemoFotos(tk.loc).unshift({ name: 'demo-' + Date.now(), mediaFormat: 'PHOTO', locationAssociation: { category: cat }, googleUrl: URL.createObjectURL(file), insights: { viewCount: '0' } });
+    else {
+      const url = await pjUploadToStorage(file, 'task_attachments/gmb-' + tk.loc.name.split('/').pop()).catch(e => {
+        throw new Error(e?.code === 'storage/unauthorized' ? 'O Firebase recusou a foto. A pasta das fotos do Google precisa ser liberada nas regras do Storage.' : 'A foto não subiu. Confira a internet e tente de novo.');
+      });
+      await gmbApi(`${gmbV4(tk.loc)}/media`, { method: 'POST', body: JSON.stringify({ mediaFormat: 'PHOTO', locationAssociation: { category: cat }, sourceUrl: url }) });
+    }
+    gmbFeito('Foto enviada pro perfil. O Google pode levar um tempo pra mostrar.', 'Foto enviada');
+    gmbRecarregar('gmbCartaoFotos', tk.loc);
+  } catch(e) { gmbErroAcao(tk, e); }
+  finally { volta(); }
+}
+
+async function gmbFotoPreparar(f, livre) {
+  let img;
+  try {
+    img = await createImageBitmap(f).catch(() => { throw new Error('Essa foto não abriu. Mande em JPG ou PNG.'); });
+    if (!livre && Math.min(img.width, img.height) < 250) throw new Error('A foto precisa ter pelo menos 250 pixels de cada lado.');
+    let file = f;
+    if (!/^image\/(jpeg|png)$/.test(f.type) || f.size > 5 * 1024 * 1024) {
+      const k = Math.min(1, 2400 / Math.max(img.width, img.height));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.drawImage(img, 0, 0, cv.width, cv.height);
+      const blob = q => new Promise(r => cv.toBlob(r, 'image/jpeg', q));
+      let b = await blob(0.88);
+      if (b && b.size > 5 * 1024 * 1024) b = await blob(0.75);
+      if (!b) throw new Error('Essa foto não abriu. Mande em JPG ou PNG.');
+      file = new File([b], 'foto.jpg', { type: 'image/jpeg' });
+    }
+    if (!livre && file.size < 10240) throw new Error('A foto é leve demais pro Google, que pede pelo menos 10 KB. Mande uma com mais qualidade.');
+    return file;
+  } finally { img?.close?.(); }
+}
+
+async function gmbApagarFoto(i, btn) {
+  const tk = _gmbEd.gmbCartaoFotos, f = tk?.fotos?.[i];
+  if (!f || !confirm('Apagar esta foto do perfil no Google? Ela some do Google e do Maps e não volta.')) return;
+  const volta = gmbEspera(btn, 'Apagando…');
+  try {
+    if (_gmbDemoMode) tk.loc._demoFotos = gmbDemoFotos(tk.loc).filter(x => x !== f);
+    else await gmbApagar(`https://mybusiness.googleapis.com/v4/${f.name}`);
+    gmbFeito('Foto apagada do perfil', 'Foto apagada');
+    gmbRecarregar('gmbCartaoFotos', tk.loc);
+  } catch(e) { gmbErroAcao(tk, e); }
+  finally { volta(); }
+}
+
+function gmbDemoFotos(loc) {
+  return loc._demoFotos = loc._demoFotos || [['COVER', 1840], ['FOOD_AND_DRINK', 962], ['INTERIOR', 410], ['EXTERIOR', 236]]
+    .map(([category, n], i) => ({ name: 'demo-' + i, mediaFormat: 'PHOTO', locationAssociation: { category }, insights: { viewCount: String(n) } }));
+}
+
+// ─── Cardápio ───
+// "42,90" → 42.9; vazio ou torto → NaN. ponytail: "1.500" sem vírgula é lido como 1,5
+const gmbPrecoLer = s => { const t = String(s || '').replace(/R\$|\s/g, ''); const n = Number(t.includes(',') ? t.replace(/\./g, '').replace(',', '.') : t); return t && isFinite(n) && n >= 0 ? n : NaN; };
+const gmbPrecoGoogle = n => { const c = Math.round(n * 100); return { currencyCode: 'BRL', units: String(Math.floor(c / 100)), nanos: (c % 100) * 1e7 }; };
+const gmbPrecoTela = p => p ? (Number(p.units || 0) + (p.nanos || 0) / 1e9).toFixed(2).replace('.', ',') : '';
+const gmbRot = () => [{ displayName: '', languageCode: 'pt-BR' }];
+
+async function gmbCarregarCardapio() {
+  const id = 'gmbCartaoCardapio', tk = _gmbEd[id] = { loc: gmbPerfil(), txt: new Map() }, c = gmbCorpo(id);
+  if (tk.loc.metadata?.canHaveFoodMenus === false) { c.innerHTML = '<div class="gmb-empty">O Google não libera cardápio pra este perfil. Só perfil de restaurante, bar ou café tem cardápio.</div>'; return; }
+  c.innerHTML = '<div class="gmb-empty">Buscando o cardápio no Google…</div>';
+  try {
+    let fm, link;
+    if (_gmbDemoMode) { const d = JSON.parse(JSON.stringify(gmbDemoMenu(tk.loc))); fm = { menus: d.menus }; link = d.link; }
+    else {
+      const [m, a] = await Promise.all([
+        gmbApi(`${gmbV4(tk.loc)}/foodMenus`).catch(e => { if (e?.status === 404) return {}; throw e; }),
+        gmbApi(`https://mybusinessbusinessinformation.googleapis.com/v1/${tk.loc.name}/attributes`).catch(() => null),
+      ]);
+      fm = m; link = a && (a.attributes?.find(x => x.name === 'attributes/url_menu')?.uriValues?.[0]?.uri || '');
+    }
+    if (_gmbEd[id] !== tk) return;
+    tk.nome = fm.name || `${tk.loc._account}/${tk.loc.name}/foodMenus`;
+    tk.menus = fm.menus || [];
+    tk.tinha = tk.menus.length > 0;
+    tk.link = link; // null = os atributos não vieram
+    gmbDesenharCardapio();
+  } catch(e) { gmbErroCartao(id, tk, e); }
+}
+
+function gmbDemoMenu(loc) {
+  if (loc._demoMenu) return loc._demoMenu;
+  const rot = t => [{ displayName: t, languageCode: 'pt-BR' }];
+  const item = (t, n) => ({ labels: rot(t), attributes: { price: gmbPrecoGoogle(n) } });
+  return loc._demoMenu = { link: gmbDemoSite(loc) + '/cardapio', menus: [{ labels: rot('Cardápio da casa'), sections: [
+    { labels: rot('Pratos'), items: [item('Prato do dia', 39.9), item('Porção da casa', 59.9)] },
+    { labels: rot('Bebidas'), items: [item('Refrigerante lata', 7), item('Suco natural', 12)] },
+  ] }] };
+}
+
+function gmbDesenharCardapio() {
+  const tk = _gmbEd.gmbCartaoCardapio, nome = x => escHtml(x?.labels?.[0]?.displayName);
+  const link = tk.link == null
+    ? '<p class="gmb-edit-nota">O link do cardápio não veio do Google agora. Toque em Atualizar, no alto da página, e abra este cartão de novo.</p>'
+    : `<label class="gmb-ed-tit" for="gmbMenuLink">Link do cardápio</label>
+      <div class="gmb-ed-linha"><input type="url" id="gmbMenuLink" class="gmb-post-input" value="${escHtml(tk.link)}" placeholder="https://seurestaurante.com.br/cardapio">
+        <button type="button" class="gmb-ed-btn" onclick="gmbSalvarLinkCardapio(this)">Salvar link</button></div>
+      <p class="gmb-edit-nota">Abre no botão Cardápio do perfil. Deixe vazio e salve pra tirar.</p>`;
+  const menus = tk.menus.map((m, mi) => `<div class="gmb-menu-bloco">
+      <div class="gmb-menu-cab"><input class="gmb-post-input gmb-menu-nome" value="${nome(m)}" placeholder="Nome do cardápio" aria-label="Nome do cardápio" maxlength="140">
+        <button type="button" class="gmb-ed-link" onclick="gmbMenuTirar(${mi})">Tirar cardápio</button></div>
+      ${(m.sections || []).map((s, si) => `<div class="gmb-menu-secao">
+        <div class="gmb-menu-cab"><input class="gmb-post-input gmb-menu-nome" value="${nome(s)}" placeholder="Nome da seção" aria-label="Nome da seção" maxlength="140">
+          <button type="button" class="gmb-ed-link" onclick="gmbMenuTirar(${mi},${si})">Tirar seção</button></div>
+        ${(s.items || []).map((it, ii) => `<div class="gmb-menu-item">
+          <input class="gmb-post-input" value="${nome(it)}" placeholder="Nome do item" aria-label="Nome do item" maxlength="140">
+          <input class="gmb-post-input" inputmode="decimal" value="${escHtml(tk.txt.get(it) ?? gmbPrecoTela(it.attributes?.price))}" placeholder="42,90" aria-label="Preço de ${nome(it) || 'item'}">
+          <input class="gmb-post-input gmb-menu-desc" value="${escHtml(it.labels?.[0]?.description)}" placeholder="Descrição" aria-label="Descrição de ${nome(it) || 'item'}" maxlength="1000">
+          <button type="button" class="gmb-ed-x" onclick="gmbMenuTirar(${mi},${si},${ii})" aria-label="Tirar este item">${fgIco('x', 16)}</button>
+        </div>`).join('')}
+        <div><button type="button" class="gmb-ed-link" onclick="gmbMenuMais(${mi},${si})">+ Item</button></div>
+      </div>`).join('')}
+      <div><button type="button" class="gmb-ed-link" onclick="gmbMenuMais(${mi})">+ Seção</button></div>
+    </div>`).join('');
+  gmbCorpo('gmbCartaoCardapio').innerHTML = `${link}
+    <div class="gmb-ed-secao"><span class="gmb-ed-tit">Pratos e preços</span>
+      ${menus || '<p class="gmb-edit-nota">Nenhum prato no Google ainda.</p>'}</div>
+    <div class="gmb-ed-rodape"><button type="button" class="gmb-ed-btn" onclick="gmbMenuMais()">${tk.menus.length ? '+ Outro cardápio' : '+ Criar cardápio'}</button>
+      ${tk.menus.length || tk.tinha ? '<button type="button" class="gmb-publish-btn" onclick="gmbSalvarCardapio(this)">Salvar cardápio</button>' : ''}</div>`;
+}
+
+// lê a tela pro tk.menus; descrição só no item (a do cardápio e a da seção ficam como vieram)
+function gmbMenuLer() {
+  const tk = _gmbEd.gmbCartaoCardapio, c = gmbCorpo('gmbCartaoCardapio');
+  const rotulo = (x, nome, desc) => {
+    if (!x.labels?.length) x.labels = gmbRot();
+    x.labels[0].displayName = nome.trim();
+    if (desc !== undefined) { if (desc.trim()) x.labels[0].description = desc.trim(); else delete x.labels[0].description; }
+  };
+  c.querySelectorAll('.gmb-menu-bloco').forEach((b, mi) => {
+    const m = tk.menus[mi];
+    rotulo(m, b.querySelector(':scope > .gmb-menu-cab .gmb-menu-nome').value);
+    b.querySelectorAll('.gmb-menu-secao').forEach((s, si) => {
+      const sec = m.sections[si];
+      rotulo(sec, s.querySelector('.gmb-menu-nome').value);
+      s.querySelectorAll('.gmb-menu-item').forEach((el, ii) => {
+        const it = sec.items[ii], [n, p, d] = el.querySelectorAll('input');
+        rotulo(it, n.value, d.value);
+        tk.txt.set(it, p.value.trim());
+      });
+    });
+  });
+  return tk;
+}
+function gmbMenuMexer(fn, foco) { fn(gmbMenuLer().menus); gmbDesenharCardapio(); foco(gmbCorpo('gmbCartaoCardapio'))?.focus(); }
+const gmbMenuBloco = (c, m) => c.querySelectorAll('.gmb-menu-bloco')[m];
+const gmbUltimo = (el, sel) => [...el.querySelectorAll(sel)].pop();
+function gmbMenuMais(m, s) {
+  const item = () => ({ labels: gmbRot(), attributes: {} }), secao = () => ({ labels: gmbRot(), items: [item()] });
+  if (m === undefined) gmbMenuMexer(ms => ms.push({ labels: gmbRot(), sections: [secao()] }), c => gmbUltimo(c, '.gmb-menu-bloco')?.querySelector('.gmb-menu-nome'));
+  else if (s === undefined) gmbMenuMexer(ms => (ms[m].sections = ms[m].sections || []).push(secao()), c => gmbUltimo(gmbMenuBloco(c, m), '.gmb-menu-secao')?.querySelector('.gmb-menu-nome'));
+  else gmbMenuMexer(ms => { const sec = ms[m].sections[s]; (sec.items = sec.items || []).push(item()); },
+    c => gmbUltimo(gmbMenuBloco(c, m).querySelectorAll('.gmb-menu-secao')[s], '.gmb-menu-item')?.querySelector('input'));
+}
+function gmbMenuTirar(m, s, i) {
+  if (s === undefined) gmbMenuMexer(ms => ms.splice(m, 1), c => c.querySelector('.gmb-ed-rodape button'));
+  else if (i === undefined) gmbMenuMexer(ms => ms[m].sections.splice(s, 1), c => c.querySelector(`button[onclick="gmbMenuMais(${m})"]`));
+  else gmbMenuMexer(ms => ms[m].sections[s].items.splice(i, 1), c => c.querySelector(`button[onclick="gmbMenuMais(${m},${s})"]`));
+}
+// confere a cópia e põe o preço do Google em cada item; devolve o primeiro problema ou ''
+function gmbMenuConferir(tk, menus) {
+  for (const [mi, m] of menus.entries()) {
+    const mn = m.labels?.[0]?.displayName;
+    if (!mn) return 'Dê um nome pra cada cardápio, tipo Almoço ou Cardápio da casa.';
+    if (!m.sections?.length) return `O cardápio ${mn} está sem seção. Coloque uma seção ou tire o cardápio.`;
+    for (const [si, s] of m.sections.entries()) {
+      const sn = s.labels?.[0]?.displayName;
+      if (!sn) return `Dê um nome pra cada seção do cardápio ${mn}.`;
+      if (!s.items?.length) return `A seção ${sn} está sem item. Coloque um item ou tire a seção.`;
+      for (const [ii, it] of s.items.entries()) {
+        const n = it.labels?.[0]?.displayName;
+        if (!n) return `Dê um nome pra cada item da seção ${sn}.`;
+        const txt = tk.txt.get(tk.menus[mi].sections[si].items[ii]) ?? '';
+        // vazio tira o preço. A referência do Google marca price como obrigatório: se ele recusar, o catch de gmbSalvarCardapio explica
+        if (!txt.trim()) { it.attributes = { ...it.attributes }; delete it.attributes.price; continue; }
+        const preco = gmbPrecoLer(txt);
+        if (isNaN(preco)) return `Confira o preço de ${n}. Use o formato 42,90.`;
+        it.attributes = { ...it.attributes, price: gmbPrecoGoogle(preco) };
+      }
+    }
+  }
+  return '';
+}
+async function gmbSalvarCardapio(btn) {
+  const tk = gmbMenuLer(), loc = tk.loc, menus = JSON.parse(JSON.stringify(tk.menus));
+  const aviso = gmbMenuConferir(tk, menus);
+  if (aviso) { showToast('warn','⚠️', escHtml(aviso)); return; }
+  const secoes = menus.reduce((n, m) => n + m.sections.length, 0);
+  const itens = menus.reduce((n, m) => n + m.sections.reduce((k, s) => k + s.items.length, 0), 0);
+  if (!confirm(`Trocar o cardápio de "${loc.title || 'este perfil'}" no Google pelo que está na tela? ` +
+    (menus.length ? `Fica com ${gmbPlural(itens, 'item', 'itens')} em ${gmbPlural(secoes, 'seção', 'seções')}.` : 'O perfil fica sem cardápio no Google.'))) return;
+  const volta = gmbEspera(btn, 'Salvando cardápio…');
+  try {
+    if (_gmbDemoMode) gmbDemoMenu(loc).menus = menus;
+    else await gmbApi(`${gmbV4(loc)}/foodMenus`, { method: 'PATCH', body: JSON.stringify({ name: tk.nome, menus }) });
+    tk.tinha = menus.length > 0;
+    gmbFeito('Cardápio salvo no Google', 'Cardápio salvo');
+  } catch(e) {
+    gmbErroAcao(tk, e?.status === 400 && !GMB_MOTIVOS[e.motivo]
+      ? new Error(`O Google recusou o cardápio. Se algum item está sem preço, coloque o preço e salve de novo. Resposta do Google: ${e.message}`) : e);
+  }
+  finally { volta(); }
+}
+async function gmbSalvarLinkCardapio(btn) {
+  const tk = _gmbEd.gmbCartaoCardapio;
+  if (tk?.link == null) return;
+  const loc = tk.loc, uri = document.getElementById('gmbMenuLink').value.trim(), nome = loc.title || 'este perfil';
+  if (uri && !gmbUrlOk(uri)) { showToast('warn','⚠️','Coloque o link completo, começando com https://'); return; }
+  if (!confirm(uri ? `Salvar ${uri} como link do cardápio de "${nome}" no Google?` : `Tirar o link do cardápio de "${nome}" no Google?`)) return;
+  const volta = gmbEspera(btn, 'Salvando link…');
+  try {
+    if (_gmbDemoMode) gmbDemoMenu(loc).link = uri;
+    else await gmbApi(`https://mybusinessbusinessinformation.googleapis.com/v1/${loc.name}/attributes?attributeMask=attributes/url_menu`, { method: 'PATCH',
+      body: JSON.stringify({ name: `${loc.name}/attributes`, attributes: uri ? [{ name: 'attributes/url_menu', uriValues: [{ uri }] }] : [] }) });
+    tk.link = uri;
+    gmbFeito(uri ? 'Link do cardápio salvo no Google' : 'Link do cardápio tirado do Google', uri ? 'Link do cardápio salvo' : 'Link do cardápio tirado');
+  } catch(e) { gmbErroAcao(tk, e); }
+  finally { volta(); }
+}
+
+// ─── Botões do perfil (links de pedido, delivery e reserva) ───
+const GMB_BOTAO_TIPO = { FOOD_ORDERING: 'Fazer pedido', FOOD_DELIVERY: 'Delivery', FOOD_TAKEOUT: 'Retirada', DINING_RESERVATION: 'Reservar mesa', APPOINTMENT: 'Agendar', ONLINE_APPOINTMENT: 'Agendar online', SHOP_ONLINE: 'Comprar online' };
+
+async function gmbCarregarBotoes() {
+  const id = 'gmbCartaoBotoes', tk = _gmbEd[id] = { loc: gmbPerfil(), editando: null };
+  gmbCorpo(id).innerHTML = '<div class="gmb-empty">Buscando os botões no Google…</div>';
+  try {
+    let links, meta;
+    if (_gmbDemoMode) { links = gmbDemoBotoes(tk.loc); meta = ['FOOD_ORDERING','FOOD_DELIVERY','FOOD_TAKEOUT','DINING_RESERVATION'].map(placeActionType => ({ placeActionType })); }
+    else {
+      const base = 'https://mybusinessplaceactions.googleapis.com/v1/';
+      const pMeta = gmbApi(`${base}placeActionTypeMetadata?filter=location%3D${encodeURIComponent(tk.loc.name)}&languageCode=pt-BR&pageSize=20`).then(d => d.placeActionTypeMetadata || [], () => null);
+      links = [];
+      let token = '';
+      for (let pg = 0; pg < 5; pg++) { // ponytail: até 500 links; perfil de restaurante tem poucos
+        const d = await gmbApi(`${base}${tk.loc.name}/placeActionLinks?pageSize=100${token ? '&pageToken=' + encodeURIComponent(token) : ''}`);
+        links.push(...(d.placeActionLinks || []));
+        if (!(token = d.nextPageToken)) break;
+      }
+      meta = await pMeta;
+    }
+    if (_gmbEd[id] !== tk) return;
+    tk.links = links;
+    tk.tipos = { ...GMB_BOTAO_TIPO };
+    (meta || []).forEach(x => { if (x.displayName) tk.tipos[x.placeActionType] = x.displayName; });
+    tk.livres = meta ? meta.map(x => x.placeActionType) : Object.keys(GMB_BOTAO_TIPO); // null = a lista de tipos não veio
+    gmbDesenharBotoes();
+  } catch(e) { gmbErroCartao(id, tk, e); }
+}
+
+function gmbDemoBotoes(loc) {
+  return loc._demoBotoes = loc._demoBotoes || [
+    { name: 'demo-b1', placeActionType: 'FOOD_ORDERING', providerType: 'MERCHANT', isEditable: true, isPreferred: true, uri: gmbDemoSite(loc) + '/pedido' },
+    { name: 'demo-b2', placeActionType: 'FOOD_DELIVERY', providerType: 'AGGREGATOR_3P', isEditable: false, uri: 'https://www.ifood.com.br/delivery' },
+  ];
+}
+
+function gmbDesenharBotoes() {
+  const tk = _gmbEd.gmbCartaoBotoes, ed = tk.links[tk.editando];
+  const lista = tk.links.map((l, i) => `<div class="gmb-ed-item"><div class="gmb-ed-info">
+      <div class="gmb-ed-topo"><b>${escHtml(tk.tipos[l.placeActionType] || l.placeActionType)}</b>${l.isPreferred ? '<span class="gmb-ed-estado">Principal</span>' : ''}</div>
+      <div class="gmb-ed-texto">${gmbUrlOk(l.uri) ? `<a href="${escHtml(l.uri)}" target="_blank" rel="noopener">${escHtml(l.uri)}</a>` : escHtml(l.uri)}</div>
+      ${l.providerType === 'MERCHANT' && l.isEditable
+        ? `<div class="gmb-ed-acoes"><button type="button" class="gmb-ed-btn" onclick="gmbBotaoEditar(${i})">Editar</button><button type="button" class="gmb-ed-btn perigo" onclick="gmbApagarBotao(${i},this)">Tirar</button></div>`
+        : `<p class="gmb-edit-nota">${l.providerType === 'AGGREGATOR_3P' ? 'Link de parceiro do Google, não dá pra editar aqui' : 'O Google não deixa editar este link'}</p>`}
+    </div></div>`).join('');
+  const tipos = [...new Set([...tk.livres, ...(ed ? [ed.placeActionType] : [])])];
+  const form = !tipos.length ? '<p class="gmb-edit-nota">O Google não libera novos botões pra este perfil. Isso depende da categoria do negócio.</p>'
+    : `<div class="gmb-ed-form">
+        <select id="gmbBotaoTipo" class="gmb-post-input" aria-label="Tipo do botão"${ed ? ' disabled' : ''}>${tipos.map(t => `<option value="${escHtml(t)}"${ed?.placeActionType === t ? ' selected' : ''}>${escHtml(tk.tipos[t] || t)}</option>`).join('')}</select>
+        <input type="url" id="gmbBotaoUrl" class="gmb-post-input" value="${escHtml(ed?.uri)}" placeholder="https://seurestaurante.com.br/pedido" aria-label="Link do botão">
+      </div>
+      <label class="gmb-ed-check"><input type="checkbox" id="gmbBotaoPrincipal"${ed?.isPreferred ? ' checked' : ''}> Principal: o Google mostra este link primeiro quando o tipo tem mais de um</label>
+      <div class="gmb-ed-rodape">${ed ? '<button type="button" class="gmb-ed-btn" onclick="gmbBotaoCancelar()">Cancelar</button>' : ''}<button type="button" class="gmb-publish-btn" onclick="gmbSalvarBotao(this)">${ed ? 'Salvar botão' : 'Adicionar botão'}</button></div>
+      <p class="gmb-edit-nota">O Google pode levar um tempo pra mostrar um botão novo no perfil.</p>`;
+  const c = gmbCorpo('gmbCartaoBotoes');
+  c.innerHTML = `${lista ? `<div class="gmb-ed-lista">${lista}</div>` : '<p class="gmb-edit-nota">Nenhum botão no perfil ainda.</p>'}
+    <div class="gmb-ed-secao"><span class="gmb-ed-tit">${ed ? 'Editar botão' : 'Novo botão'}</span>${form}</div>`;
+  try { window.fxEnhanceSelects?.(c) } catch(_) {}
+}
+function gmbBotaoEditar(i) { const tk = _gmbEd.gmbCartaoBotoes; if (!tk?.links?.[i]) return; tk.editando = i; gmbDesenharBotoes(); document.getElementById('gmbBotaoUrl')?.focus(); }
+function gmbBotaoCancelar() { const tk = _gmbEd.gmbCartaoBotoes; if (!tk) return; const i = tk.editando; tk.editando = null; gmbDesenharBotoes(); document.querySelector(`#gmbCartaoBotoes button[onclick="gmbBotaoEditar(${i})"]`)?.focus(); }
+async function gmbSalvarBotao(btn) {
+  const tk = _gmbEd.gmbCartaoBotoes;
+  if (!tk) return;
+  const ed = tk.links[tk.editando], loc = tk.loc;
+  const uri = document.getElementById('gmbBotaoUrl').value.trim(), isPreferred = document.getElementById('gmbBotaoPrincipal').checked;
+  const placeActionType = ed ? ed.placeActionType : document.getElementById('gmbBotaoTipo').value;
+  if (!gmbUrlOk(uri)) { showToast('warn','⚠️','Coloque o link completo, começando com https://'); return; }
+  const volta = gmbEspera(btn, 'Salvando botão…');
+  try {
+    if (_gmbDemoMode) {
+      const lista = gmbDemoBotoes(loc);
+      if (isPreferred) lista.forEach(l => { if (l.placeActionType === placeActionType) l.isPreferred = false; });
+      if (ed) Object.assign(ed, { uri, isPreferred });
+      else lista.push({ name: 'demo-' + Date.now(), placeActionType, uri, isPreferred, isEditable: true, providerType: 'MERCHANT' });
+    } else if (ed) await gmbApi(`https://mybusinessplaceactions.googleapis.com/v1/${ed.name}?updateMask=uri,isPreferred`, { method: 'PATCH', body: JSON.stringify({ uri, isPreferred }) });
+    else await gmbApi(`https://mybusinessplaceactions.googleapis.com/v1/${loc.name}/placeActionLinks`, { method: 'POST', body: JSON.stringify({ placeActionType, uri, isPreferred }) });
+    gmbFeito(ed ? 'Botão salvo no perfil' : 'Botão adicionado ao perfil', ed ? 'Botão salvo' : 'Botão adicionado');
+    gmbRecarregar('gmbCartaoBotoes', loc);
+  } catch(e) { gmbErroAcao(tk, e, ed && 'Esse botão já saiu do perfil. Feche e abra o cartão Botões do perfil pra ver a lista atual.'); }
+  finally { volta(); }
+}
+async function gmbApagarBotao(i, btn) {
+  const tk = _gmbEd.gmbCartaoBotoes, l = tk?.links?.[i];
+  if (!l || !confirm(`Tirar o botão "${tk.tipos[l.placeActionType] || l.placeActionType}" (${l.uri}) do perfil? Ele some do Google e não volta.`)) return;
+  const volta = gmbEspera(btn, 'Tirando…');
+  try {
+    if (_gmbDemoMode) tk.loc._demoBotoes = gmbDemoBotoes(tk.loc).filter(x => x !== l);
+    else await gmbApagar(`https://mybusinessplaceactions.googleapis.com/v1/${l.name}`);
+    gmbFeito('Botão tirado do perfil', 'Botão tirado');
+    gmbRecarregar('gmbCartaoBotoes', tk.loc);
+  } catch(e) { gmbErroAcao(tk, e); }
+  finally { volta(); }
 }
 
 /* ─── GMB in Métricas ────────────────────────────────── */
