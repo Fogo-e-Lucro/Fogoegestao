@@ -4179,8 +4179,9 @@ function appStartUazapiPolling() {
 }
 
 /* ─── Presence (quem está online) ─────────────────────── */
-const APP_PRESENCE_HEARTBEAT_MS = 15 * 1000;  // heartbeat a cada 15s (era 25)
-const APP_PRESENCE_THRESHOLD_MS = 35 * 1000;  // offline se heartbeat há > 35s (era 60)
+// Cada heartbeat vira 1 leitura em cada aba aberta da equipe: 15s custava ~15 mil leituras/dia
+const APP_PRESENCE_HEARTBEAT_MS = 60 * 1000;
+const APP_PRESENCE_THRESHOLD_MS = 150 * 1000; // offline se heartbeat há > 150s (sair da aba já marca offline na hora)
 // Token cacheado pra usar em fetch keepalive durante beforeunload
 let _appPresenceIdToken = null;
 let _appPresenceTokenExp = 0;
@@ -4198,13 +4199,13 @@ async function appPresenceWriteHeartbeat() {
   // o status offline mais rápido quando user fica em outra aba/app
   if (typeof document !== 'undefined' && document.hidden) return;
   try {
-    // Prefere foto customizada (data URL) sobre Google URL
-    const myPhoto = window._fgMyPhoto || u.photoURL || '';
     await _db.collection('app_presence').doc(u.uid).set({
       uid: u.uid,
       name: u.displayName || (u.email||'').split('@')[0],
       email: u.email || '',
-      photoUrl: myPhoto,
+      // Só a URL do Google: a foto customizada (data URL, ~35 KB) ia pra todo mundo
+      // a cada heartbeat. Quem mostra pega a customizada de pjMembers (_appAvatarHtml).
+      photoUrl: u.photoURL || '',
       lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
       online: true, // flag explícita — vira false no beforeunload
     }, { merge: true });
@@ -4347,7 +4348,7 @@ function _appAvatarHtml(u, cls='') {
   // Prioridade: foto customizada (data URL) em pjMembers > u.photoUrl (Google) > SVG
   let url = '';
   try {
-    if (Array.isArray(window.pjMembers)) {
+    if (typeof pjMembers !== 'undefined' && Array.isArray(pjMembers)) { // let do topo não fica em window
       const m = pjMembers.find(x => (u.uid && x.uid === u.uid) || (u.email && x.email === u.email));
       if (m?.photoUrl && String(m.photoUrl).startsWith('data:')) url = m.photoUrl;
     }
@@ -4356,7 +4357,7 @@ function _appAvatarHtml(u, cls='') {
   if (!url && typeof fgAvatarDataUrl === 'function') {
     url = fgAvatarDataUrl(u.name || u.email, u.uid || u.email);
   }
-  if (url) return `<div class="app-presence-avatar ${cls}" style="background-image:url('${url}');background-size:cover;background-position:center;"></div>`;
+  if (url) return `<div class="app-presence-avatar ${cls}" style="background-image:url('${escHtml(url)}');background-size:cover;background-position:center;"></div>`;
   const initial = (u.name || u.email || '?').charAt(0).toUpperCase();
   return `<div class="app-presence-avatar ${cls}">${initial}</div>`;
 }
@@ -4575,9 +4576,9 @@ document.addEventListener('keydown', e => {
 
 /* ─── Co-edição (alguém editando essa tarefa…) ──────────
    Coleção 'app_editing' — docs ID: `${resourceId}__${uid}`
-   Heartbeat a cada 10s enquanto modal aberto. Listener filtra por resource. */
-const APP_COEDIT_HEARTBEAT_MS = 10 * 1000;
-const APP_COEDIT_THRESHOLD_MS = 25 * 1000;
+   Heartbeat a cada 30s enquanto modal aberto e aba visível. Listener filtra por resource. */
+const APP_COEDIT_HEARTBEAT_MS = 30 * 1000;
+const APP_COEDIT_THRESHOLD_MS = 75 * 1000;
 let _appCoEditCurrent = null; // resourceId que estou editando
 let _appCoEditHeartbeatTimer = null;
 let _appCoEditUnsub = null;
@@ -4586,13 +4587,14 @@ let _appCoEditOthers = []; // outros editando o mesmo resource
 async function _appCoEditWriteHeartbeat() {
   const u = firebase.auth?.()?.currentUser;
   if (!u || !_appCoEditCurrent || typeof _db === 'undefined') return;
+  if (document.hidden) return; // modal esquecido em aba escondida gerava leitura pra equipe toda o dia inteiro
   try {
     await _db.collection('app_editing').doc(`${_appCoEditCurrent}__${u.uid}`).set({
       resourceId: _appCoEditCurrent,
       uid: u.uid,
       name: u.displayName || (u.email||'').split('@')[0],
       email: u.email || '',
-      photoUrl: window._fgMyPhoto || u.photoURL || '',
+      photoUrl: u.photoURL || '', // customizada vem de pjMembers (pjUpdateViewerBadges)
       lastTouch: firebase.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
   } catch(e) {}
@@ -17975,14 +17977,16 @@ async function pjLoadAllTasks() {
 let pjViewersByTask = {}; // { taskId: [{uid,name,photoUrl,lastTouchMs}] }
 let _pjViewersUnsub = null;
 let _pjViewersStaleTimer = null;
-const PJ_VIEWER_THRESHOLD_MS = 30000;
+const PJ_VIEWER_THRESHOLD_MS = 75000; // casa com APP_COEDIT_THRESHOLD_MS (heartbeat de 30s)
 
 function pjStartViewersListener() {
   if (_pjViewersUnsub) return;
   if (typeof _db === 'undefined') return;
   const me = _auth?.currentUser?.uid || _currentUser?.uid;
   try {
+    // Só docs mexidos nos últimos 10 min: os velhos (centenas) eram relidos a cada abertura
     _pjViewersUnsub = _db.collection('app_editing')
+      .where('lastTouch', '>', new Date(Date.now() - 10 * 60 * 1000))
       .onSnapshot(snap => {
         const next = {};
         const now = Date.now();
@@ -18038,8 +18042,9 @@ function pjUpdateViewerBadges() {
       }
       const dotsHtml = viewers.slice(0, 3).map(v => {
         const initial = (v.name || '?').trim()[0]?.toUpperCase() || '?';
-        const inner = v.photoUrl
-          ? `<img src="${v.photoUrl}" alt="" loading="lazy">`
+        const photo = pjMembers.find(m => m.uid === v.uid)?.photoUrl || v.photoUrl;
+        const inner = photo
+          ? `<img src="${escHtml(photo)}" alt="" loading="lazy">`
           : `<span class="pj-viewer-initial">${escHtml(initial)}</span>`;
         return `<span class="pj-viewer-dot" title="${escHtml(v.name||'')} está vendo essa tarefa agora">${inner}</span>`;
       }).join('');
