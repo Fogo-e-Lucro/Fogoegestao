@@ -1,186 +1,68 @@
-// Firestore Security Rules — Fogo & Gestão
-// Projeto: calendario-cd198
-// Última revisão: audit 2026-09
-//
-// Modelo:
-// - root admin: assessoria@fogoelucro.com.br (email hardcoded)
-// - admins delegados: docs em /admins/{uid}, escritos SÓ pelo root admin
-// - membro comum: qualquer usuário autenticado (checkAccess do client filtra
-//   quem consegue logar via app_members)
-// - Coleções de configuração/estrutura exigem admin
-// - Coleções operacionais (tarefas, comentários, posts) exigem apenas
-//   isSignedIn() — proteção fina de RBAC fica no client
-// - app_members SÓ admin escreve (impede auto-promoção)
-// - Presence/editing SÓ o próprio uid escreve seu doc
-// - Default = negar
-
 rules_version = '2';
 
+// Regras do Firestore do Fogo & Gestão (projeto calendario-cd198).
+// Publicadas em 01/11/2026 no lugar da regra de abril, que deixava qualquer login,
+// até o anônimo, ler e gravar tudo. A versão de setembro deste arquivo nunca foi ao ar.
+//
+// Quem entra:
+// - Equipe: login que não é anônimo e tem doc em app_members (id = btoa(email) com o que
+//   não é letra ou número trocado por "_", igual ao checkAccess do app). Lê e grava tudo.
+// - Login anônimo: portal do cliente (/cliente/[slug]), só o cadastro pelo slug e os posts.
+// - Sem login: só a página de assinatura de contrato (#assinar?id=X).
+// VPS, cron da Vercel e MCP usam a service account e não passam por estas regras.
+//
+// Publicar: securityRules().releaseFirestoreRulesetFromSource() do firebase-admin na VPS.
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isSignedIn() {
-      return request.auth != null;
-    }
-    function myUid() {
-      return request.auth.uid;
-    }
-    function myEmail() {
-      return request.auth.token.email;
-    }
-    function isRootAdmin() {
-      return isSignedIn() && myEmail() == 'assessoria@fogoelucro.com.br';
-    }
-    // Admin delegado: root admin cria /admins/{uid}. Ninguém mais escreve.
-    function amIAdmin() {
-      return isRootAdmin() || (isSignedIn() && exists(/databases/$(database)/documents/admins/$(myUid())));
-    }
-    function isOwnDoc(uid) {
-      return isSignedIn() && myUid() == uid;
+    function memberId() {
+      return request.auth.token.email.toUtf8().toBase64().replace('[^a-zA-Z0-9]', '_');
     }
 
-    // ── /admins — só root admin gerencia ─────────────────
-    match /admins/{uid} {
-      allow read: if isSignedIn();
-      allow write: if isRootAdmin();
+    function isTeam() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && (request.auth.token.email == 'assessoria@fogoelucro.com.br'
+          || exists(/databases/$(database)/documents/app_members/$(memberId())));
     }
 
-    // ── /app_members — SÓ admin escreve (anti auto-promoção) ─
-    match /app_members/{docId} {
-      allow read: if isSignedIn();
-      allow create, update, delete: if amIAdmin();
+    function isPortal() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider == 'anonymous';
     }
 
-    // ── config global ────────────────────────────────────
-    match /config/{doc} {
-      allow read: if isSignedIn();
-      allow write: if amIAdmin();
-    }
-    match /app_config/{doc} {
-      allow read: if isSignedIn();
-      allow write: if amIAdmin();
+    match /{path=**} {
+      allow read, write: if isTeam();
     }
 
-    // ── Presence & editing (próprio uid) ─────────────────
-    match /app_presence/{uid} {
-      allow read: if isSignedIn();
-      allow write: if isOwnDoc(uid);
-    }
-    match /app_editing/{docId} {
-      allow read: if isSignedIn();
-      allow create, update: if isSignedIn() && request.resource.data.uid == myUid();
-      allow delete: if isSignedIn() && resource.data.uid == myUid();
-    }
-
-    // ── Filas & watchers ─────────────────────────────────
-    match /app_queue/{doc} { allow read, write: if isSignedIn(); }
-    match /pj_queue/{doc}  { allow read, write: if isSignedIn(); }
-
-    // ── Módulo Projetos ──────────────────────────────────
-    match /pj_spaces/{doc}   { allow read: if isSignedIn(); allow write: if amIAdmin(); }
-    match /pj_folders/{doc}  { allow read: if isSignedIn(); allow write: if amIAdmin(); }
-    match /pj_lists/{doc}    { allow read: if isSignedIn(); allow write: if amIAdmin(); }
-    match /pj_members/{doc}  { allow read: if isSignedIn(); allow write: if amIAdmin(); }
-
-    match /pj_tasks/{doc} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn();
-    }
-    match /pj_comments/{doc} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && (request.resource.data.userId == myUid() || request.resource.data.uid == myUid());
-      allow update, delete: if isSignedIn() && ((resource.data.userId == myUid()) || (resource.data.uid == myUid()) || amIAdmin());
-    }
-    match /pj_notifications/{doc} { allow read, write: if isSignedIn(); }
-    match /pj_cs_health/{doc}     { allow read, write: if isSignedIn(); }
-    match /pj_time/{doc}          { allow read, write: if isSignedIn(); }
-    match /pj_uploads/{doc}       { allow read, write: if isSignedIn(); }
-    match /pj_activities/{doc} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update, delete: if amIAdmin();
-    }
-    match /pj_push_tokens/{uid} {
-      allow read, write: if isOwnDoc(uid);
-    }
-    match /pj_digest_history/{doc} { allow read, write: if isSignedIn(); }
-
-    // ── Base de clientes ─────────────────────────────────
+    // Portal: só consulta filtrada por cliente (o app usa where == e limit).
     match /clientes_base/{doc} {
-      allow read: if isSignedIn();
-      allow write: if amIAdmin();
+      allow list: if isPortal() && resource.data.slug is string && request.query.limit <= 1;
+    }
+    match /posts/{doc} {
+      allow list: if isPortal() && resource.data.restaurante is string && request.query.limit <= 500;
     }
 
-    // ── Publipost / Posts / Stories ──────────────────────
-    match /posts/{doc}     { allow read: if isSignedIn(); allow write: if isSignedIn(); }
-    match /stories/{doc}   { allow read: if isSignedIn(); allow write: if isSignedIn(); }
-    match /sp2Queue/{doc}  { allow read: if isSignedIn(); allow write: if isSignedIn(); }
-
-    // ── GMB ──────────────────────────────────────────────
-    match /gmb_locations/{doc} { allow read: if isSignedIn(); allow write: if amIAdmin(); }
-    match /gmb_reviews/{doc}   { allow read: if isSignedIn(); allow write: if isSignedIn(); }
-
-    // ── POPs ─────────────────────────────────────────────
-    match /pop_docs/{doc} { allow read: if isSignedIn(); allow write: if amIAdmin(); }
-
-    // ── Contratos (assinatura eletrônica) ────────────────
-    // GET: qualquer um com o link (id opaco) — o próprio link é o segredo.
-    // LIST: só logado (admin vê os seus).
-    // CREATE: logado. UPDATE p/ assinar: público mas SÓ transição pending→signed.
+    // Assinatura pública: lê pelo id e só grava os campos da assinatura,
+    // o contador de visitas ou a troca pra "expired".
     match /contratos/{doc} {
       allow get: if true;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn();
-      // Logado: livre. Público: pending→signed (com selfie+nome), pending→expired
-      // (o próprio client marca ao detectar expiresAt vencido), OU incremento de view.
-      allow update: if isSignedIn()
-                    || (
-                      resource.data.status == 'pending'
-                      && request.resource.data.status == 'signed'
-                      && request.resource.data.signatureText is string
-                      && request.resource.data.signatureText.size() >= 3
-                      && request.resource.data.selfieDataUrl is string
-                      && request.resource.data.selfieDataUrl.matches('data:image/.*')
-                    )
-                    || (
-                      resource.data.status == 'pending'
-                      && request.resource.data.status == 'expired'
-                      && request.resource.data.diff(resource.data).affectedKeys()
-                         .hasOnly(['status'])
-                    )
-                    || (
-                      resource.data.status == 'pending'
-                      && request.resource.data.status == 'pending'
-                      && request.resource.data.diff(resource.data).affectedKeys()
-                         .hasOnly(['viewCount','firstViewedAt','lastViewedAt'])
-                    );
-      allow delete: if isSignedIn() && (resource.data.createdBy == myEmail() || isRootAdmin());
-    }
-
-    // ── iFood (poller escreve via admin SDK; client só lê) ─
-    match /ifood_merchants/{doc}         { allow read: if isSignedIn(); allow write: if false; }
-    match /ifood_merchant_status/{doc}   { allow read: if isSignedIn(); allow write: if false; }
-    match /ifood_reviews/{doc}           { allow read: if isSignedIn(); allow write: if false; }
-    match /ifood_orders/{doc}            { allow read: if isSignedIn(); allow write: if false; }
-    match /ifood_events/{doc}            { allow read: if isSignedIn(); allow write: if false; }
-    match /ifood_financial/{doc}         { allow read: if isSignedIn(); allow write: if false; }
-    match /ifood_catalogs/{doc}          { allow read: if isSignedIn(); allow write: if false; }
-    // Analytics (D-1): sync grava kpis/sync via admin SDK; a tela só grava o vínculo
-    match /ifood_kpis/{doc}              { allow read: if isSignedIn(); allow write: if false; }
-    match /ifood_sync/{doc}              { allow read: if isSignedIn(); allow write: if false; }
-    // Vínculo manual: só admin, id do doc = merchantId, nunca apaga
-    match /ifood_vinculos/{doc} {
-      allow read: if isSignedIn();
-      allow create, update: if amIAdmin() && request.resource.data.merchantId == doc && request.resource.data.origem == 'manual';
-      allow delete: if false;
-    }
-
-    // ── Cardápio Web (cron grava via admin SDK; client só lê) ─
-    match /cw_resumo/{doc} { allow read: if isSignedIn(); allow write: if false; }
-
-    // ── Default = negar ──────────────────────────────────
-    match /{document=**} {
-      allow read, write: if false;
+      allow update: if
+        (resource.data.status == 'pending'
+          && request.resource.data.status == 'signed'
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'signatureText', 'signCpf', 'signIp', 'signUserAgent', 'selfieDataUrl', 'signedAt'])
+          && request.resource.data.signatureText is string
+          && request.resource.data.signatureText.size() >= 3
+          && request.resource.data.selfieDataUrl is string
+          && request.resource.data.selfieDataUrl.matches('data:image/.*'))
+        || (resource.data.status in ['pending', 'expired']
+          && request.resource.data.status == 'expired'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+        || (resource.data.status == 'pending'
+          && request.resource.data.status == 'pending'
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['viewCount', 'firstViewedAt', 'lastViewedAt']));
     }
   }
 }

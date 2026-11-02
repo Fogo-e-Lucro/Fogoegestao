@@ -5970,6 +5970,9 @@ async function _checkForceLogout(user) {
 
 _auth.onAuthStateChanged(async user => {
   if (_DEV_BYPASS) return; // Ignora estado real do Firebase em dev bypass
+  // Portal do cliente cuida do próprio login anônimo. Checar acesso de equipe aqui
+  // deslogava o visitante no meio da carga e os posts não vinham.
+  if (window._isPortalMode) return;
   if (!user) {
     _currentUser = null;
     // Cleanup listeners para evitar leituras fantasma após logout
