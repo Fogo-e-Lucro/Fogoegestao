@@ -20129,7 +20129,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
     min-height: 44px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px;
     background-color: var(--card); color: var(--text); font-size: 16px;
   }
-  body.at-gmb :is(.gmb-post-textarea, .gmb-reply-area) { min-height: 168px !important; line-height: 22px; } /* uns 7 linhas: a resposta inteira cabe sem rolar dentro da caixa; important porque todo textarea do celular leva 44 com important */
+  body.at-gmb :is(.gmb-post-textarea, .gmb-reply-area) { min-height: 176px !important; max-height: 60vh; field-sizing: content; line-height: 22px; } /* 7 linhas (7 x 22 + 20 de respiro + 2 de borda) e cresce com o texto até 60% da tela; important porque todo textarea do celular leva 44 com important */
   body.at-gmb :is(.gmb-preanalise-input, .gmb-loc-select, .gmb-post-textarea, .gmb-post-input, .gmb-reply-area, .gmb-rank-biz-input, .gmb-rank-keyword):focus { border-color: var(--ink); box-shadow: none; outline: none; }
   body.at-gmb :is(.gmb-preanalise-input, .gmb-rank-biz-input, .gmb-rank-keyword)::placeholder { color: var(--text3); }
   body.at-gmb :is(.gmb-preanalise-btn, .gmb-rank-btn, .gmb-publish-btn) {
