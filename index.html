@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.22">
+<link rel="stylesheet" href="styles.css?v=3.71.23">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -17573,7 +17573,8 @@ const gmbRot = () => [{ displayName: '', languageCode: 'pt-BR' }];
 
 async function gmbCarregarCardapio() {
   const id = 'gmbCartaoCardapio', tk = _gmbEd[id] = { loc: gmbPerfil(), txt: new Map() }, c = gmbCorpo(id);
-  if (tk.loc.metadata?.canHaveFoodMenus === false) { c.innerHTML = '<div class="gmb-empty">O Google não libera cardápio pra este perfil. Só perfil de restaurante, bar ou café tem cardápio.</div>'; return; }
+  // o Google omite o canHaveFoodMenus quando é falso (perfil de agência vem sem ele); demo não tem metadata
+  if (tk.loc.metadata && !tk.loc.metadata.canHaveFoodMenus) { c.innerHTML = '<div class="gmb-empty">O Google não libera cardápio pra este perfil. Só perfil de restaurante, bar ou café tem cardápio.</div>'; return; }
   c.innerHTML = '<div class="gmb-empty">Buscando o cardápio no Google…</div>';
   try {
     let fm, link;
