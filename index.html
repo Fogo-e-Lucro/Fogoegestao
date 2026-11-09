@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.19">
+<link rel="stylesheet" href="styles.css?v=3.71.20">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -822,7 +822,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
 
 <!-- TOASTS -->
 <div class="toast-container" id="toastContainer"></div>
-<div id="globalDemoBanner" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9990;background:linear-gradient(90deg,#a855f7,#6366f1);color:#fff;font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;box-shadow:0 4px 16px rgba(99,102,241,.4);letter-spacing:.5px;pointer-events:none;">🎭 MODO DEMO — dados fictícios</div>
+<div id="globalDemoBanner" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9990;background:linear-gradient(90deg,#a855f7,#6366f1);color:#fff;font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;box-shadow:0 4px 16px rgba(99,102,241,.4);letter-spacing:.5px;pointer-events:none;">🎭 MODO DEMO · dados fictícios</div>
 
 <!-- OVERLAY + SIDE PANEL -->
 <div class="panel-overlay" id="panelOverlay" onclick="closeDayPanel()"></div>
@@ -2731,7 +2731,7 @@ ufw allow 3000/tcp</pre>
             <select class="mtr-select" id="mtrAdAccountSelect" onchange="mtrOnAdAccountChange()" title="Conta de anúncios">
               <option value="">Conta de anúncios</option>
             </select>
-            <select class="mtr-select" id="mtrGmbSelect" onchange="mtrOnGmbChange()" title="Perfil no Google">
+            <select class="mtr-select" id="mtrGmbSelect" onchange="mtrOnGmbChange(true)" title="Perfil no Google">
               <option value="">Perfil no Google</option>
             </select>
           </div>
@@ -11458,6 +11458,7 @@ function mtrOnAccountChange() {
   mtrCurrentAcc = spAccounts[parseInt(idx)];
   localStorage.setItem('mtrSelectedIg', mtrCurrentAcc.igId);
   mtrAplicarAdDoIg();
+  mtrAplicarGmbDoIg();
   // Carrega preferências per-cliente (KPIs + treinamento da IA)
   mtrUserKpis = mtrLoadUserKpis();
   // Limpa caches que dependem do cliente (incluindo snapshot — evita dados stale de outro cliente)
@@ -11472,18 +11473,19 @@ function mtrOnAccountChange() {
 // pro outro (o Maracanaú abria com a conta da Fábrica de Cookies). A escolha antiga não passa
 // pra nenhum Instagram: o par aberto junto era justamente o errado, e o mtrAdPorIg da 3.71.18 nasceu dele.
 try { localStorage.removeItem('mtrSelectedAd'); localStorage.removeItem('mtrAdPorIg'); } catch (_) {}
-function mtrAdsPorIg() {
-  try { return JSON.parse(localStorage.getItem('mtrAdDoIg') || '{}') || {}; } catch (_) { return {}; }
+// O perfil no Google segue a mesma regra em mtrGmbDoIg.
+function mtrPorIg(chave) {
+  try { return JSON.parse(localStorage.getItem(chave) || '{}') || {}; } catch (_) { return {}; }
 }
-function mtrGuardarAdDoIg(igId, adId) {
-  const m = mtrAdsPorIg();
-  if (adId) m[igId] = adId; else delete m[igId];
-  localStorage.setItem('mtrAdDoIg', JSON.stringify(m));
+function mtrGuardarPorIg(chave, igId, valor) {
+  const m = mtrPorIg(chave);
+  if (valor) m[igId] = valor; else delete m[igId];
+  localStorage.setItem(chave, JSON.stringify(m));
 }
 // Marca no seletor a conta de anúncios do Instagram aberto (ou nenhuma)
 function mtrAplicarAdDoIg() {
   const sel = document.getElementById('mtrAdAccountSelect');
-  const adId = mtrCurrentAcc ? mtrAdsPorIg()[mtrCurrentAcc.igId] : null;
+  const adId = mtrCurrentAcc ? mtrPorIg('mtrAdDoIg')[mtrCurrentAcc.igId] : null;
   const i = adId ? mtrAdAccounts.findIndex(a => a.id === adId) : -1;
   mtrCurrentAdAcc = i >= 0 ? mtrAdAccounts[i] : null;
   if (sel && mtrAdAccounts.length) sel.value = i >= 0 ? String(i) : '';
@@ -11493,7 +11495,7 @@ function mtrOnAdAccountChange() {
   const sel = document.getElementById('mtrAdAccountSelect');
   const idx = sel.value;
   mtrCurrentAdAcc = idx === '' ? null : mtrAdAccounts[parseInt(idx)];
-  if (mtrCurrentAcc) mtrGuardarAdDoIg(mtrCurrentAcc.igId, mtrCurrentAdAcc?.id);
+  if (mtrCurrentAcc) mtrGuardarPorIg('mtrAdDoIg', mtrCurrentAcc.igId, mtrCurrentAdAcc?.id);
   if (mtrCurrentAcc) loadMetrics();
 }
 
@@ -12866,6 +12868,7 @@ function mtrPopulateAccounts() {
       '<option value="__connect">Conectar mais contas</option>';
     if (sel.value !== '' && !mtrCurrentAcc) {
       mtrCurrentAcc = spAccounts[parseInt(sel.value)];
+      mtrAplicarGmbDoIg();
     }
   }
   // Carrega contas de anúncios em background
@@ -13296,7 +13299,7 @@ function mtrLoadDemo() {
   ];
 
   // Snapshot e render
-  const _demoWarnings = ['🎭 Modo Demo ativo — todos os dados são fictícios'];
+  const _demoWarnings = ['🎭 Modo demo ativo: todos os dados são fictícios'];
   mtrLastSnapshot = { igCurr, igPrev, adsData, adsPrev, curr, prev, compare: true, campaigns, warnings: _demoWarnings, health: { tokenOk:true, adAccountOk:true, demo:true } };
   renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, true, _demoWarnings, campaigns, mtrLastSnapshot.health);
   const b = document.getElementById('globalDemoBanner'); if (b) b.style.display = 'block';
@@ -14265,7 +14268,7 @@ function mtrRenderDemographics() {
       <div class="mtr-demo-bar-wrap"><div class="mtr-demo-bar" style="width:${w}%;"></div></div>
       <div class="mtr-demo-row-val">${pct}%</div>
     </div>`;
-  }).join('') : '<div class="mtr-demo-empty">Sem dados — requer permissão <code>instagram_manage_insights</code> com audiência mínima.</div>';
+  }).join('') : '<div class="mtr-demo-empty">Sem dados. Precisa da permissão <code>instagram_manage_insights</code> e de audiência mínima.</div>';
   return `<div class="mtr-demo-card">
     <div class="mtr-section-title" style="margin-bottom:4px;">Quem engajou com o conteúdo</div>
     <div class="mtr-demo-desc" style="font-size:11px;color:var(--text3);margin-bottom:10px;">${tabDesc[mtrDemoTab]||''} As barras mostram a proporção e os números são % do total.</div>
@@ -14718,7 +14721,7 @@ const MTR_DEFINITIONS = {
   ads_purchases: 'Compras atribuídas aos anúncios (baseado em pixel/CAPI).',
   ads_revenue: 'Receita gerada pelos anúncios (valor das compras atribuídas).',
   ads_roas: 'Retorno sobre investimento em anúncios. ROAS 3x = cada R$1 investido gerou R$3 em vendas.',
-  ads_frequency: 'Média de vezes que cada pessoa viu seu anúncio. Acima de 3–4x pode causar fadiga.',
+  ads_frequency: 'Média de vezes que cada pessoa viu seu anúncio. Acima de 3 ou 4 vezes pode causar fadiga.',
   gmb_rating: 'Nota média do perfil no Google. Meta: acima de 4,5 estrelas. Abaixo de 4,0 afeta a decisão de novos clientes.',
   gmb_total_reviews: 'Total de avaliações acumuladas no perfil. Mais avaliações = mais confiança e melhor ranking local.',
   gmb_unanswered: 'Avaliações sem resposta. Responder a todas as avaliações melhora o score de saúde e o posicionamento.',
@@ -14935,7 +14938,7 @@ async function gmbPreAnalise() {
 
     resultEl.innerHTML = `
       <div class="gmb-pre-list">
-        <div class="gmb-pre-list-header">${places.length} resultado${places.length > 1 ? 's' : ''} encontrado${places.length > 1 ? 's' : ''} — clique para analisar</div>
+        <div class="gmb-pre-list-header">${places.length} resultado${places.length > 1 ? 's' : ''} encontrado${places.length > 1 ? 's' : ''}. Clique para analisar</div>
         ${listItems}
       </div>`;
     resultEl.style.display = '';
@@ -16701,7 +16704,7 @@ function gmbCardAvaliacao(r, idx) {
   const starMap = {ONE:'★☆☆☆☆',TWO:'★★☆☆☆',THREE:'★★★☆☆',FOUR:'★★★★☆',FIVE:'★★★★★'};
   const name = r.reviewer?.displayName || 'Cliente';
   const initial = name[0].toUpperCase();
-  const stars = starMap[r.starRating] || '—';
+  const stars = starMap[r.starRating] || 'Sem nota';
   const date = r.createTime ? new Date(r.createTime).toLocaleDateString('pt-BR') : '';
   const text = r.comment || '';
   const reply = r.reviewReply?.comment || '';
@@ -16721,9 +16724,9 @@ function gmbCardAvaliacao(r, idx) {
         <button class="gmb-ai-btn" id="gmbAiBtn_${idx}" onclick="gmbSuggestReply(${idx})">${fgFerrIco('penline', 16)} Sugerir resposta com IA</button>
         <button class="gmb-filter-btn" onclick="gmbUseTemplate(${idx})">Usar modelo</button>
       </div>
-      <textarea class="gmb-reply-area" id="gmbReplyTxt_${idx}" placeholder="A resposta aparecerá aqui..." style="display:none"></textarea>
+      <textarea class="gmb-reply-area" id="gmbReplyTxt_${idx}" placeholder="Escreva a resposta" style="display:none"></textarea>
       <div style="display:none;margin-top:8px;gap:8px;flex-wrap:wrap;" id="gmbReplyActions_${idx}">
-        <button class="gmb-publish-btn" onclick="gmbPublishReply(${idx})">Publicar Resposta</button>
+        <button class="gmb-publish-btn" onclick="gmbPublishReply(${idx})">Publicar resposta</button>
         <button class="gmb-filter-btn" onclick="gmbClearReply(${idx})">Cancelar</button>
       </div>
     </div>`;
@@ -16788,7 +16791,7 @@ async function gmbSuggestReply(idx) {
 
   const prompt = `Você é um gerente de restaurante respondendo avaliações do Google Meu Negócio.
 Cliente: ${name}
-Avaliação (${stars} estrelas — tom ${tone}): "${comment || 'Sem texto'}"
+Avaliação (${stars} estrelas, tom ${tone}): "${comment || 'Sem texto'}"
 
 Escreva uma resposta profissional, calorosa e personalizada:
 - Chame o cliente pelo primeiro nome (${name.split(' ')[0]})
@@ -16796,6 +16799,7 @@ Escreva uma resposta profissional, calorosa e personalizada:
 - Se negativa: peça desculpas sinceras, ofereça solução, mostre que vai melhorar
 - Se sem texto: agradeça pela avaliação e convide a voltar
 - Máximo 4 linhas, tom humano (não robótico)
+- Sem travessão (—): use ponto ou vírgula
 - Assine com o nome do restaurante no final
 
 Retorne APENAS o texto da resposta, sem explicações.`;
@@ -17852,14 +17856,29 @@ function mtrPopulateGmbSelect() {
   sel.innerHTML = '<option value="">Perfil no Google</option>' +
     _gmbLocations.map((l,i) => `<option value="${i}">${escHtml(l.title||'Perfil '+(i+1))}</option>`).join('');
   if (_mtrGmbLocIdx !== null) sel.value = _mtrGmbLocIdx;
+  else if (mtrAplicarGmbDoIg() && mtrLastSnapshot) mtrOnGmbChange(); // o Instagram carregou antes da lista do Google
+}
+
+// Perfil no Google lembrado por Instagram pelo name: o índice muda quando a lista do Google recarrega
+function mtrAplicarGmbDoIg() {
+  const sel = document.getElementById('mtrGmbSelect');
+  if (!mtrCurrentAcc || !sel || !_gmbLocations.length) return false;
+  const nome = mtrPorIg('mtrGmbDoIg')[mtrCurrentAcc.igId];
+  const i = nome ? _gmbLocations.findIndex(l => l.name === nome) : -1;
+  const idx = i >= 0 ? String(i) : '';
+  if (sel.value !== idx) { window._mtrGmbData = null; _mtrGmbVez++; sel.disabled = false; } // a busca do perfil anterior não escreve mais
+  sel.value = idx;
+  _mtrGmbLocIdx = idx || null;
+  return i >= 0;
 }
 
 let _mtrGmbVez = 0;
-async function mtrOnGmbChange() {
+async function mtrOnGmbChange(escolha) {
   const sel = document.getElementById('mtrGmbSelect');
   const idx = sel?.value;
+  if (escolha && mtrCurrentAcc) mtrGuardarPorIg('mtrGmbDoIg', mtrCurrentAcc.igId, _gmbLocations[parseInt(idx)]?.name);
   const vez = ++_mtrGmbVez; // a troca de período chama de novo; só a última chamada escreve
-  if (idx === '' || idx === undefined) { window._mtrGmbData = null; mtrRefreshKpis(); return; }
+  if (idx === '' || idx === undefined) { _mtrGmbLocIdx = null; window._mtrGmbData = null; mtrRefreshKpis(); return; }
   _mtrGmbLocIdx = idx;
   const loc = _gmbLocations[parseInt(idx)];
   if (!loc) return;
