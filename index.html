@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.13">
+<link rel="stylesheet" href="styles.css?v=3.71.14">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -16490,7 +16490,7 @@ function gmbRenderKpis() {
     <div class="gmb-kpi"><div class="gmb-kpi-val">${avg}</div><div class="gmb-kpi-lbl">Nota média</div><div class="gmb-kpi-sub">no Google</div></div>
     <div class="gmb-kpi"><div class="gmb-kpi-val">${g ? g.total : total}</div><div class="gmb-kpi-lbl">Avaliações</div>${g ? '<div class="gmb-kpi-sub">no Google</div>' : ''}</div>
     <div class="gmb-kpi ${unanswered>0?'gmb-kpi--alerta':''}"><div class="gmb-kpi-val">${unanswered}</div><div class="gmb-kpi-lbl">Sem resposta</div>${parcial ? `<div class="gmb-kpi-sub">${parcial}</div>` : ''}</div>
-    <div class="gmb-kpi"><div class="gmb-kpi-val">${negatives}</div><div class="gmb-kpi-lbl">Negativas</div><div class="gmb-kpi-sub">1-2 estrelas${parcial ? ' ' + parcial : ''}</div></div>
+    <div class="gmb-kpi"><div class="gmb-kpi-val">${negatives}</div><div class="gmb-kpi-lbl">Negativas</div><div class="gmb-kpi-sub">1-2 estrelas</div>${parcial ? `<div class="gmb-kpi-sub">${parcial}</div>` : ''}</div>
     <div class="gmb-kpi"><div class="gmb-kpi-val">${total?Math.round(answered/total*100):0}%</div><div class="gmb-kpi-lbl">Taxa de resposta</div></div>`;
 }
 
