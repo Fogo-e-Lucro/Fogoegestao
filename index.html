@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.11">
+<link rel="stylesheet" href="styles.css?v=3.71.12">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -16082,8 +16082,10 @@ const gmbDiaMes = iso => iso.slice(8, 10) + '/' + iso.slice(5, 7);
 const gmbErroTexto = e => e?.status === 404
   ? 'O Google não achou este perfil. Se ele saiu da conta conectada, recarregue a página pra atualizar a lista.'
   : String(e?.message || e);
-const gmbErroNumeros = e => e?.status === 403
-  ? 'O Google recusou os números deste perfil. Confira se a Business Profile Performance API está ligada no Google Cloud e se a conta conectada cuida do perfil.'
+// perfil sem hasVoiceOfMerchant (não verificado) volta 403 nos números, igual a API desligada
+const gmbErroNumeros = (e, loc) => e?.status === 403 && loc?.metadata && !loc.metadata.hasVoiceOfMerchant
+  ? 'O Google só mostra os números depois que o perfil é verificado. Verifique em business.google.com.'
+  : e?.status === 403 ? 'O Google recusou os números deste perfil. Confira se a Business Profile Performance API está ligada no Google Cloud e se a conta conectada cuida do perfil.'
   : e?.status === 400 ? 'O Google não aceitou este período. Ele guarda os números só dos últimos 18 meses.'
   : gmbErroTexto(e);
 // Último dia com número nos 6 dias antes de "ate"; sem nenhum, fica "ate"
@@ -16179,7 +16181,7 @@ async function gmbRenderNumeros() {
   const ontem = gmbMaisDias(mtrFmtLocalDate(new Date()), -1), desde = gmbMaisDias(ontem, -(2 * N + 5));
   let dias;
   try { dias = await gmbBuscarNumeros(loc, desde, ontem); }
-  catch (e) { const c = document.getElementById('gmbNumCorpo'); if (c && loc === _gmbCurrentLoc && N === _gmbNumDias) c.textContent = 'Os números não vieram. ' + gmbErroNumeros(e); return; }
+  catch (e) { const c = document.getElementById('gmbNumCorpo'); if (c && loc === _gmbCurrentLoc && N === _gmbNumDias) c.textContent = 'Os números não vieram. ' + gmbErroNumeros(e, loc); return; }
   if (loc !== _gmbCurrentLoc || N !== _gmbNumDias) return;
   const corpo = document.getElementById('gmbNumCorpo');
   if (!corpo) return;
@@ -16252,7 +16254,7 @@ async function gmbRenderTermos(loc, N) {
   box.innerHTML = tit + '<div class="gmb-num-nota">Buscando no Google…</div>';
   let lista;
   try { lista = await gmbBuscarTermos(loc, ini, fim); }
-  catch (e) { if (box.isConnected && loc === _gmbCurrentLoc && N === _gmbNumDias) box.innerHTML = `<div class="gmb-num-nota">As buscas ${quando} não vieram. ${escHtml(gmbErroNumeros(e))}</div>`; return; }
+  catch (e) { if (box.isConnected && loc === _gmbCurrentLoc && N === _gmbNumDias) box.innerHTML = `<div class="gmb-num-nota">As buscas ${quando} não vieram. ${escHtml(gmbErroNumeros(e, loc))}</div>`; return; }
   if (!box.isConnected || loc !== _gmbCurrentLoc || N !== _gmbNumDias) return;
   box.innerHTML = lista.length
     ? tit + `<ul class="gmb-num-termos">${lista.map(([k, n, menos]) => `<li><span>${escHtml(k)}</span><span>${menos ? 'menos de ' : ''}${gmbNumFmt(n)}</span></li>`).join('')}</ul>`
@@ -16277,7 +16279,7 @@ async function gmbRenderNumerosTodos() {
   }));
   if (_gmbCurrentLoc || !box.isConnected) return;
   const ok = res.filter(r => r.dias), falhas = res.filter(r => r.erro);
-  if (!ok.length) { box.innerHTML = head + '<div class="gmb-empty"></div>'; box.lastElementChild.textContent = 'Os números não vieram. ' + gmbErroNumeros(falhas[0].erro); return; }
+  if (!ok.length) { box.innerHTML = head + '<div class="gmb-empty"></div>'; box.lastElementChild.textContent = 'Os números não vieram. ' + gmbErroNumeros(falhas[0].erro, falhas[0].loc); return; }
   const fim = gmbUltimoDia(Object.assign({}, ...ok.map(r => r.dias)), ontem), ini = gmbMaisDias(fim, -29);
   const antDe = gmbMaisDias(ini, -30), antAte = gmbMaisDias(ini, -1);
   const linhas = ok.map(r => ({ ...r, a: gmbSomar(r.dias, ini, fim), b: gmbSomar(r.dias, antDe, antAte) })).sort((x, y) => y.a.views - x.a.views);
@@ -16290,7 +16292,7 @@ async function gmbRenderNumerosTodos() {
     ${linhas.map(r => tr(r, cols.map(([k]) => `<td>${gmbNumFmt(r.a[k])} ${gmbNumDelta(r.a[k], r.b[k])}</td>`).join(''))).join('')}
     ${falhas.map(r => tr(r, `<td colspan="${cols.length}">não veio</td>`)).join('')}
     </tbody></table></div>
-    ${falhas.length ? `<div class="gmb-num-nota">Não vieram: ${falhas.map(r => escHtml(r.loc.title || 'Perfil')).join(', ')}. ${escHtml(gmbErroNumeros(falhas[0].erro))}</div>` : ''}`;
+    ${falhas.length ? `<div class="gmb-num-nota">Não vieram: ${falhas.map(r => escHtml(r.loc.title || 'Perfil')).join(', ')}. ${escHtml(gmbErroNumeros(falhas[0].erro, falhas[0].loc))}</div>` : ''}`;
 }
 
 async function gmbLoadAccounts() {
@@ -17671,7 +17673,7 @@ async function mtrOnGmbChange() {
       const fimAnt = [p.until, gmbMaisDias(p.since, L - 1)].sort()[0];
       const serie = []; for (let d = de; d <= fim; d = gmbMaisDias(d, 1)) serie.push(gmbSomar(dias, d, d));
       insights = { ...gmbSomar(dias, de, fim), anterior: gmbSomar(dias, p.since, fimAnt), serie };
-    } catch (e) { if (vez === _mtrGmbVez) showToast('error', '❌', escHtml(gmbErroNumeros(e))); }
+    } catch (e) { if (vez === _mtrGmbVez) showToast('error', '❌', escHtml(gmbErroNumeros(e, loc))); }
     if (vez !== _mtrGmbVez) return;
     window._mtrGmbData = { avgRating, totalReviews: reviews.length, unanswered, responseRate, negatives, score, newReviews, ...insights };
     mtrRefreshKpis();
