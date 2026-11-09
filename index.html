@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.12">
+<link rel="stylesheet" href="styles.css?v=3.71.13">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -16436,9 +16436,12 @@ async function gmbLoadLocation() {
       const rd = await gmbApi(`${gmbV4(_gmbCurrentLoc)}/reviews?pageSize=50`);
       if (loc !== _gmbCurrentLoc) return; // trocou de perfil enquanto carregava
       _gmbReviews = rd.reviews || [];
+      // a lista vem com as 50 últimas; a nota e o total do perfil inteiro vêm à parte
+      loc._nota = rd.totalReviewCount && rd.averageRating ? { media: rd.averageRating, total: rd.totalReviewCount } : null;
     } catch(e) {
       if (loc !== _gmbCurrentLoc) return;
       _gmbReviews = [];
+      loc._nota = null;
       reviewsOk = false; // sem isso o histórico gravava nota vazia no dia
       showToast('error','❌', escHtml(gmbErroTexto(e)));
     }
@@ -16480,13 +16483,14 @@ function gmbRenderKpis() {
   const answered = reviews.filter(r => r.reviewReply).length;
   const unanswered = total - answered;
   const ratings = reviews.filter(r => r.starRating).map(r => ({ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5}[r.starRating]||0));
-  const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1).replace('.', ',') : 'Sem nota';
+  const g = _gmbCurrentLoc?._nota, parcial = g?.total > total ? `nas últimas ${total}` : '';
+  const avg = g ? g.media.toFixed(1).replace('.', ',') : ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1).replace('.', ',') : 'Sem nota';
   const negatives = reviews.filter(r => ['ONE','TWO'].includes(r.starRating)).length;
   document.getElementById('gmbKpiRow').innerHTML = `
     <div class="gmb-kpi"><div class="gmb-kpi-val">${avg}</div><div class="gmb-kpi-lbl">Nota média</div><div class="gmb-kpi-sub">no Google</div></div>
-    <div class="gmb-kpi"><div class="gmb-kpi-val">${total}</div><div class="gmb-kpi-lbl">Avaliações</div></div>
-    <div class="gmb-kpi ${unanswered>0?'gmb-kpi--alerta':''}"><div class="gmb-kpi-val">${unanswered}</div><div class="gmb-kpi-lbl">Sem resposta</div></div>
-    <div class="gmb-kpi"><div class="gmb-kpi-val">${negatives}</div><div class="gmb-kpi-lbl">Negativas</div><div class="gmb-kpi-sub">1-2 estrelas</div></div>
+    <div class="gmb-kpi"><div class="gmb-kpi-val">${g ? g.total : total}</div><div class="gmb-kpi-lbl">Avaliações</div>${g ? '<div class="gmb-kpi-sub">no Google</div>' : ''}</div>
+    <div class="gmb-kpi ${unanswered>0?'gmb-kpi--alerta':''}"><div class="gmb-kpi-val">${unanswered}</div><div class="gmb-kpi-lbl">Sem resposta</div>${parcial ? `<div class="gmb-kpi-sub">${parcial}</div>` : ''}</div>
+    <div class="gmb-kpi"><div class="gmb-kpi-val">${negatives}</div><div class="gmb-kpi-lbl">Negativas</div><div class="gmb-kpi-sub">1-2 estrelas${parcial ? ' ' + parcial : ''}</div></div>
     <div class="gmb-kpi"><div class="gmb-kpi-val">${total?Math.round(answered/total*100):0}%</div><div class="gmb-kpi-lbl">Taxa de resposta</div></div>`;
 }
 
@@ -16524,7 +16528,7 @@ function gmbSaveHistory() {
   const key = 'gmbHistory_' + (loc.name||'').replace(/\//g,'_');
   const history = JSON.parse(localStorage.getItem(key)||'[]');
   const ratings = _gmbReviews.filter(r=>r.starRating).map(r=>({ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5}[r.starRating]||0));
-  const avg = ratings.length ? +(ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(2) : null;
+  const avg = loc._nota ? +loc._nota.media.toFixed(2) : ratings.length ? +(ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(2) : null;
   const score = gmbCalcScore(loc, _gmbReviews);
   const today = new Date().toISOString().slice(0,10);
   // Update or add today's entry
@@ -17646,9 +17650,10 @@ async function mtrOnGmbChange() {
       const rd = await gmbApi(`${gmbV4(loc)}/reviews?pageSize=50`);
       if (vez !== _mtrGmbVez) return;
       reviews = rd.reviews || [];
+      loc._nota = rd.totalReviewCount && rd.averageRating ? { media: rd.averageRating, total: rd.totalReviewCount } : null;
     }
     const ratings = reviews.filter(r=>r.starRating).map(r=>({ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5}[r.starRating]||0));
-    const avgRating = ratings.length ? +(ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(2) : 0;
+    const avgRating = loc._nota ? +loc._nota.media.toFixed(2) : ratings.length ? +(ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(2) : 0;
     const answered = reviews.filter(r=>r.reviewReply).length;
     const unanswered = reviews.length - answered;
     const responseRate = reviews.length ? +(answered/reviews.length*100).toFixed(1) : 0;
@@ -17675,7 +17680,7 @@ async function mtrOnGmbChange() {
       insights = { ...gmbSomar(dias, de, fim), anterior: gmbSomar(dias, p.since, fimAnt), serie };
     } catch (e) { if (vez === _mtrGmbVez) showToast('error', '❌', escHtml(gmbErroNumeros(e, loc))); }
     if (vez !== _mtrGmbVez) return;
-    window._mtrGmbData = { avgRating, totalReviews: reviews.length, unanswered, responseRate, negatives, score, newReviews, ...insights };
+    window._mtrGmbData = { avgRating, totalReviews: loc._nota?.total ?? reviews.length, unanswered, responseRate, negatives, score, newReviews, ...insights };
     mtrRefreshKpis();
   } catch(e) {
     // sem isso ficavam na tela os números do perfil anterior
