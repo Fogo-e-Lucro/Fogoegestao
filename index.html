@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.14">
+<link rel="stylesheet" href="styles.css?v=3.71.15">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -17256,7 +17256,7 @@ function gmbDesenharFotos() {
     const src = f.thumbnailUrl || f.googleUrl;
     return `<div class="gmb-foto">
       ${gmbImgOk(src) ? `<img src="${escHtml(src)}" alt="" loading="lazy">` : `<div class="gmb-foto-vazia">${fgIco('camera', 28)}</div>`}
-      <div class="gmb-foto-info"><b>${GMB_FOTO_CAT[f.locationAssociation?.category] || 'Foto'}${f.mediaFormat === 'VIDEO' ? ' (vídeo)' : ''}</b>${gmbPlural(Number(f.insights?.viewCount || 0), 'visualização', 'visualizações')}</div>
+      <div class="gmb-foto-info"><b>${GMB_FOTO_CAT[f.locationAssociation?.category] || 'Foto'}${f.mediaFormat === 'VIDEO' ? ' (vídeo)' : ''}</b>${gmbQuando(f)}</div>
       <button type="button" class="gmb-ed-btn perigo" onclick="gmbApagarFoto(${i},this)">Apagar</button>
     </div>`;
   }).join('');
@@ -17285,7 +17285,7 @@ async function gmbEnviarFoto(inp) {
   const volta = gmbEspera(inp.previousElementSibling, 'Enviando foto…');
   try {
     const file = await gmbFotoPreparar(f, livre);
-    if (_gmbDemoMode) gmbDemoFotos(tk.loc).unshift({ name: 'demo-' + Date.now(), mediaFormat: 'PHOTO', locationAssociation: { category: cat }, googleUrl: URL.createObjectURL(file), insights: { viewCount: '0' } });
+    if (_gmbDemoMode) gmbDemoFotos(tk.loc).unshift({ name: 'demo-' + Date.now(), mediaFormat: 'PHOTO', locationAssociation: { category: cat }, googleUrl: URL.createObjectURL(file), createTime: new Date().toISOString() });
     else {
       const url = await gmbSubirFoto(file, tk.loc);
       await gmbApi(`${gmbV4(tk.loc)}/media`, { method: 'POST', body: JSON.stringify({ mediaFormat: 'PHOTO', locationAssociation: { category: cat }, sourceUrl: url }) });
@@ -17334,8 +17334,8 @@ async function gmbApagarFoto(i, btn) {
 }
 
 function gmbDemoFotos(loc) {
-  return loc._demoFotos = loc._demoFotos || [['COVER', 1840], ['FOOD_AND_DRINK', 962], ['INTERIOR', 410], ['EXTERIOR', 236]]
-    .map(([category, n], i) => ({ name: 'demo-' + i, mediaFormat: 'PHOTO', locationAssociation: { category }, insights: { viewCount: String(n) } }));
+  return loc._demoFotos = loc._demoFotos || [['COVER', 420], ['FOOD_AND_DRINK', 9], ['INTERIOR', 75], ['EXTERIOR', 420]]
+    .map(([category, dias], i) => ({ name: 'demo-' + i, mediaFormat: 'PHOTO', locationAssociation: { category }, createTime: new Date(Date.now() - dias * 864e5).toISOString() }));
 }
 
 // ─── Cardápio ───
