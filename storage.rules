@@ -1,0 +1,23 @@
+rules_version = '2';
+
+// Regras do Storage do Fogo & Gestão (bucket calendario-cd198.firebasestorage.app).
+// Publicadas em 09/11/2026 no lugar da regra de maio, que deixava qualquer login, até o
+// anônimo do portal do cliente, ler, gravar e apagar todos os arquivos.
+//
+// Só a equipe usa o Storage pelo app (anexo de tarefa, imagem de post e foto do Google).
+// Portal, contrato e o Google abrem os arquivos pelo link com token do getDownloadURL,
+// que não passa por estas regras. VPS e cron usam a service account.
+//
+// Falta conferir o app_members, como no firestore.rules: o agente do Storage ainda não tem
+// o papel "Firebase Rules Firestore Service Agent" no IAM. Com o papel, publicar
+// /root/backups/storage-rules-completa-2026-11-09.rules (MODO=completa no script abaixo).
+//
+// Publicar: /root/backups/storage-publicar-e-testar-2026-11-09.js na VPS (testa e volta sozinho).
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+  }
+}
