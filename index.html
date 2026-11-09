@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.15">
+<link rel="stylesheet" href="styles.css?v=3.71.16">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -2579,7 +2579,7 @@ ufw allow 3000/tcp</pre>
         <!-- Editar o perfil: cada cartão busca no Google só quando abre -->
         <details class="gmb-edit-card" id="gmbCartaoPosts" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Posts publicados</span><span class="gmb-edit-sub">Editar ou apagar o que já está no perfil</span></span></summary><div class="gmb-edit-corpo"></div></details>
         <details class="gmb-edit-card" id="gmbCartaoHorario" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Horário de funcionamento</span><span class="gmb-edit-sub">Semana e datas especiais, como feriados</span></span></summary><div class="gmb-edit-corpo"></div></details>
-        <details class="gmb-edit-card" id="gmbCartaoFotos" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Fotos do perfil</span><span class="gmb-edit-sub">Enviar, ver quantas pessoas viram e apagar</span></span></summary><div class="gmb-edit-corpo"></div></details>
+        <details class="gmb-edit-card" id="gmbCartaoFotos" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Fotos do perfil</span><span class="gmb-edit-sub">Enviar ou apagar as fotos do restaurante</span></span></summary><div class="gmb-edit-corpo"></div></details>
         <details class="gmb-edit-card" id="gmbCartaoCardapio" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Cardápio no Google</span><span class="gmb-edit-sub">Pratos e preços que aparecem no perfil, e o link do cardápio</span></span></summary><div class="gmb-edit-corpo"></div></details>
         <details class="gmb-edit-card" id="gmbCartaoBotoes" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Botões do perfil</span><span class="gmb-edit-sub">Links de pedido, delivery e reserva</span></span></summary><div class="gmb-edit-corpo"></div></details>
 
@@ -16327,7 +16327,7 @@ function gmbPopulateSelector() {
   sel.innerHTML = '<option value="">Todos os perfis</option>' +
     _gmbLocations.map((l,i) => `<option value="${i}">${escHtml(l.title || l.name)}</option>`).join('');
   document.getElementById('gmbLocBar').style.display = 'flex';
-  document.getElementById('gmbConnectSub').textContent = `${_gmbLocations.length} perfil(is) encontrado(s)`;
+  document.getElementById('gmbConnectSub').textContent = gmbPlural(_gmbLocations.length, 'perfil encontrado', 'perfis encontrados');
   try {
     const savedId = localStorage.getItem('fg_gmb_loc_id');
     if (savedId && !_gmbCurrentLoc) {
@@ -17532,7 +17532,7 @@ async function gmbCarregarBotoes() {
     if (_gmbEd[id] !== tk) return;
     tk.links = links;
     tk.tipos = { ...GMB_BOTAO_TIPO };
-    (meta || []).forEach(x => { if (x.displayName) tk.tipos[x.placeActionType] = x.displayName; });
+    (meta || []).forEach(x => { if (x.displayName && !tk.tipos[x.placeActionType]) tk.tipos[x.placeActionType] = x.displayName; }); // o Google manda em inglês mesmo com pt-BR
     tk.livres = meta ? meta.map(x => x.placeActionType) : Object.keys(GMB_BOTAO_TIPO); // null = a lista de tipos não veio
     gmbDesenharBotoes();
   } catch(e) { gmbErroCartao(id, tk, e); }
