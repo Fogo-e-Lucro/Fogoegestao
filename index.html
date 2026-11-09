@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.10">
+<link rel="stylesheet" href="styles.css?v=3.71.11">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -16298,16 +16298,20 @@ async function gmbLoadAccounts() {
     const d = await gmbApi('https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
     _gmbAccounts = d.accounts || [];
     _gmbLocations = [];
+    let falha = null;
     for (const acc of _gmbAccounts) {
       try {
         // ponytail: só a primeira página (20 contas, 100 perfis cada); seguir o nextPageToken se a agência passar disso
-        const ld = await gmbApi(`https://mybusinessbusinessinformation.googleapis.com/v1/${acc.name}/locations?pageSize=100&readMask=name,title,storefrontAddress,regularHours,primaryPhone,websiteUri,metadata,profile`);
-        const locs = (ld.locations || []).map(l => ({ ...l, _account: acc.name }));
+        // o telefone vem dentro de phoneNumbers; pedir primaryPhone direto faz o Google recusar a lista inteira (400)
+        const ld = await gmbApi(`https://mybusinessbusinessinformation.googleapis.com/v1/${acc.name}/locations?pageSize=100&readMask=name,title,storefrontAddress,regularHours,phoneNumbers,websiteUri,metadata,profile`);
+        const locs = (ld.locations || []).map(l => ({ ...l, primaryPhone: l.phoneNumbers?.primaryPhone, _account: acc.name }));
         _gmbLocations.push(...locs);
-      } catch(e) {}
+      } catch(e) { falha = e; }
     }
     gmbPopulateSelector();
     gmbShowMultiGrid();
+    // sem nenhum perfil, mostra o que o Google disse em vez de "0 perfil(is)"
+    if (!_gmbLocations.length && falha) throw falha;
   } catch(e) {
     showToast('error','❌',e.message);
     document.getElementById('gmbConnectSub').textContent = e.message;
