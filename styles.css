@@ -2029,7 +2029,7 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .perms-btn-primary:hover { background:var(--accent); filter:brightness(.95); }
 .perms-toggle-all { font-size:11px; color:var(--accent); cursor:pointer; margin-left:8px; font-weight:600; }
 /* ── Google Meu Negócio (GMB) ── */
-.gmb-wrap { max-width:960px; margin:0 auto; padding:8px 0 40px; }
+.gmb-wrap { max-width:992px; margin:0 auto; padding:8px 16px 40px; } /* sem os 16 dos lados, de 641 a 1215 de largura os cartões encostavam na barra lateral e na borda */
 
 /* GMB page header */
 .gmb-page-header {
@@ -20172,7 +20172,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-gmb .gmb-rank-history-title { font-size: 15px; font-weight: 600; }
   body.at-gmb .gmb-rank-hist-item { min-height: 52px; border-radius: 12px; background: var(--card); }
   /* perfil conectado */
-  body.at-gmb .gmb-multi-grid { grid-template-columns: 1fr; gap: 0; }
+  body.at-gmb .gmb-multi-grid { grid-template-columns: minmax(0, 1fr); gap: 0; } /* 1fr sozinho crescia até o nome inteiro do perfil e o cartão passava da tela */
   body.at-gmb .gmb-kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
   body.at-gmb .gmb-kpi { border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--sh-card); }
   body.at-gmb .gmb-num-card .gmb-kpi[aria-pressed="true"] { border-color: var(--ink); }
