@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.17">
+<link rel="stylesheet" href="styles.css?v=3.71.18">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -361,7 +361,7 @@
       </button>
       <button class="app-menu-tile" data-tab="gmb" onclick="appMenuGo('gmb')">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span>Perfil no Google</span>
+        <span>Google</span>
       </button>
       <button class="app-menu-tile" data-tab="metricas" onclick="appMenuGo('metricas')">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
@@ -944,6 +944,10 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
         <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></svg></span>
         Contratos
       </button>
+      <button class="pj-nav-btn" data-tab="gmb" data-nav="t:gmb" onclick="switchTab('gmb')">
+        <span class="pj-nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg></span>
+        Google
+      </button>
 
       <!-- Relatórios: números e vistas de acompanhamento -->
       <div class="fg-grp" data-grp="rel">
@@ -957,7 +961,6 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
         <div class="fg-grp-sub"><div class="fg-grp-in"><div class="fg-grp-line">
           <div class="fg-blk">
             <div class="pj-section-label">Resultados</div>
-            <button class="pj-nav-btn fg-sub" data-tab="gmb" data-nav="t:gmb" onclick="switchTab('gmb')">Perfil no Google</button>
             <button class="pj-nav-btn fg-sub" data-tab="metricas" data-nav="t:metricas" onclick="switchTab('metricas')">Métricas</button>
             <button class="pj-nav-btn fg-sub" id="pjBtnIfood" data-tab="projetos" data-nav="v:ifood" onclick="fgGoView('ifood')">iFood</button>
             <button class="pj-nav-btn fg-sub" id="pjBtnCsHealth" data-tab="projetos" data-nav="v:cshealth" onclick="fgGoView('cshealth')">Saúde da carteira</button>
@@ -2420,7 +2423,7 @@ ufw allow 3000/tcp</pre>
   </div><!-- /tab-pop -->
 
   <!-- ═══ ABA GOOGLE MEU NEGÓCIO ══════════════════════════ -->
-  <div class="tab-panel" id="tab-gmb">
+  <div class="tab-panel" id="tab-gmb" data-aba="avaliacoes">
     <div class="gmb-wrap">
 
       <!-- Page header -->
@@ -2432,29 +2435,6 @@ ufw allow 3000/tcp</pre>
           <div class="gmb-page-title">Perfil no Google</div>
           <div class="gmb-page-sub">Avaliações, posts e métricas do seu perfil local</div>
         </div>
-      </div>
-
-      <!-- Pré-análise pública -->
-      <div class="gmb-preanalise-card">
-        <div class="gmb-preanalise-header">
-          <div class="gmb-connect-icon gmb-sec-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
-          <div>
-            <div class="gmb-preanalise-title">Pré-análise de negócio</div>
-            <div class="gmb-preanalise-sub">Analise qualquer perfil público no Google sem conectar conta</div>
-          </div>
-        </div>
-        <div class="gmb-preanalise-search">
-          <input class="gmb-preanalise-input" id="gmbPreInput" placeholder="Negócio e cidade" aria-label="Nome do negócio e cidade" onkeydown="if(event.key==='Enter')gmbPreAnalise()">
-          <button class="gmb-preanalise-btn" onclick="gmbPreAnalise()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            Pesquisar
-          </button>
-        </div>
-        <div id="gmbPreLoading" style="display:none;text-align:center;padding:20px;color:var(--text3);font-size:13px;">
-          <div class="gmb-rank-spinner" style="margin:0 auto 10px;width:24px;height:24px;border-width:2px;"></div>
-          Buscando informações
-        </div>
-        <div id="gmbPreResult" style="display:none"></div>
       </div>
 
       <!-- Connect bar -->
@@ -2483,25 +2463,35 @@ ufw allow 3000/tcp</pre>
         <button class="gmb-refresh-btn" onclick="_gmbNumCache={};_gmbPostsTodos=null;gmbLoadLocation()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>Atualizar</button>
       </div>
 
+      <!-- Abas: o que tem data-gmb-aba só aparece na aba dele (CSS); o resto aparece em todas -->
+      <div class="gmb-abas" role="tablist" aria-label="Partes do perfil">
+        <button type="button" role="tab" class="gmb-aba" data-aba="avaliacoes" aria-selected="true" onclick="gmbAba('avaliacoes')">Avaliações</button>
+        <button type="button" role="tab" class="gmb-aba" data-aba="posts" aria-selected="false" onclick="gmbAba('posts')">Posts</button>
+        <button type="button" role="tab" class="gmb-aba" data-aba="fotos" aria-selected="false" onclick="gmbAba('fotos')">Fotos</button>
+        <button type="button" role="tab" class="gmb-aba" data-aba="horario" aria-selected="false" onclick="gmbAba('horario')">Horário e cardápio</button>
+        <button type="button" role="tab" class="gmb-aba" data-aba="numeros" aria-selected="false" onclick="gmbAba('numeros')">Números</button>
+      </div>
+
       <!-- Multi-location overview -->
       <div id="gmbMultiGrid" style="display:none">
-        <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:12px;">Todos os perfis</div>
-        <div class="gmb-multi-grid" id="gmbLocCards"></div>
-        <div class="gmb-num-card" id="gmbPostsTodos"></div>
-        <div class="gmb-num-card" id="gmbNumTodos"></div>
+        <div data-gmb-aba="numeros" style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:12px;">Todos os perfis</div>
+        <div class="gmb-multi-grid" id="gmbLocCards" data-gmb-aba="numeros"></div>
+        <div class="gmb-num-card" id="gmbPostsTodos" data-gmb-aba="posts"></div>
+        <div class="gmb-num-card" id="gmbNumTodos" data-gmb-aba="numeros"></div>
+        <div class="gmb-empty" data-gmb-aba="fotos horario">Escolha um perfil na lista acima pra ver as fotos, o horário e o cardápio.</div>
       </div>
 
       <!-- Single location detail -->
       <div id="gmbDetail" style="display:none">
 
         <!-- KPIs -->
-        <div class="gmb-kpi-row" id="gmbKpiRow"></div>
-        <div class="gmb-num-card" id="gmbNumCard"></div>
+        <div class="gmb-kpi-row" id="gmbKpiRow" data-gmb-aba="avaliacoes"></div>
+        <div class="gmb-num-card" id="gmbNumCard" data-gmb-aba="numeros"></div>
 
         <!-- Score + Charts -->
-        <div class="gmb-score-card" id="gmbScoreCard"></div>
+        <div class="gmb-score-card" id="gmbScoreCard" data-gmb-aba="numeros"></div>
 
-        <div class="gmb-charts-row">
+        <div class="gmb-charts-row" data-gmb-aba="numeros">
           <div class="gmb-chart-card">
             <div class="gmb-chart-title">Evolução da nota</div>
             <div class="gmb-chart-wrap"><canvas id="gmbRatingChart"></canvas></div>
@@ -2513,7 +2503,7 @@ ufw allow 3000/tcp</pre>
         </div>
 
         <!-- Posts -->
-        <div class="gmb-posts-card">
+        <div class="gmb-posts-card" data-gmb-aba="posts">
           <div class="gmb-posts-head">
             <div class="gmb-posts-title" id="gmbPostTitulo">Criar postagem</div>
             <div class="gmb-post-types">
@@ -2568,25 +2558,33 @@ ufw allow 3000/tcp</pre>
               <input type="url" id="gmbPostCtaUrl" class="gmb-post-input" placeholder="URL do botão (se aplicável)">
             </div>
 
+            <!-- Agendar e outros perfis: só no post novo (o CSS esconde ao editar) -->
+            <div class="gmb-post-quando gmb-post-novo">
+              <label class="gmb-post-label" for="gmbPostQuando">Agendar (opcional)</label>
+              <input type="datetime-local" id="gmbPostQuando" class="gmb-post-input" onchange="gmbPostBotao()">
+            </div>
+            <details class="gmb-post-outros gmb-post-novo" id="gmbPostOutros" hidden><summary>Publicar também em outros perfis</summary><div class="gmb-post-outros-lista"></div></details>
+
             <div class="gmb-post-actions">
               <button class="gmb-ai-btn" onclick="gmbSuggestPost()">Sugerir com IA</button>
               <button type="button" class="gmb-ed-btn" id="gmbPostCancelar" onclick="gmbResetPostForm()" hidden>Cancelar edição</button>
               <button class="gmb-publish-btn" id="gmbPostPublicar" onclick="gmbPublishPost()">Publicar post</button>
             </div>
+            <p class="gmb-edit-nota gmb-post-aviso" id="gmbPostAviso" role="status" hidden></p>
           </div>
         </div>
 
         <!-- Editar o perfil: cada cartão busca no Google só quando abre -->
-        <details class="gmb-edit-card" id="gmbCartaoPosts" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Posts publicados</span><span class="gmb-edit-sub">Editar ou apagar o que já está no perfil</span></span></summary><div class="gmb-edit-corpo"></div></details>
-        <details class="gmb-edit-card" id="gmbCartaoHorario" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Horário de funcionamento</span><span class="gmb-edit-sub">Semana e datas especiais, como feriados</span></span></summary><div class="gmb-edit-corpo"></div></details>
-        <details class="gmb-edit-card" id="gmbCartaoFotos" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Fotos do perfil</span><span class="gmb-edit-sub">Enviar ou apagar as fotos do restaurante</span></span></summary><div class="gmb-edit-corpo"></div></details>
-        <details class="gmb-edit-card" id="gmbCartaoCardapio" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Cardápio no Google</span><span class="gmb-edit-sub">Pratos e preços que aparecem no perfil, e o link do cardápio</span></span></summary><div class="gmb-edit-corpo"></div></details>
-        <details class="gmb-edit-card" id="gmbCartaoBotoes" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Botões do perfil</span><span class="gmb-edit-sub">Links de pedido, delivery e reserva</span></span></summary><div class="gmb-edit-corpo"></div></details>
+        <details class="gmb-edit-card" id="gmbCartaoPosts" data-gmb-aba="posts" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Posts publicados</span><span class="gmb-edit-sub">Editar ou apagar o que já está no perfil</span></span></summary><div class="gmb-edit-corpo"></div></details>
+        <details class="gmb-edit-card" id="gmbCartaoHorario" data-gmb-aba="horario" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Horário de funcionamento</span><span class="gmb-edit-sub">Semana e datas especiais, como feriados</span></span></summary><div class="gmb-edit-corpo"></div></details>
+        <details class="gmb-edit-card" id="gmbCartaoFotos" data-gmb-aba="fotos" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Fotos do perfil</span><span class="gmb-edit-sub">Enviar ou apagar as fotos do restaurante</span></span></summary><div class="gmb-edit-corpo"></div></details>
+        <details class="gmb-edit-card" id="gmbCartaoCardapio" data-gmb-aba="horario" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Cardápio no Google</span><span class="gmb-edit-sub">Pratos e preços que aparecem no perfil, e o link do cardápio</span></span></summary><div class="gmb-edit-corpo"></div></details>
+        <details class="gmb-edit-card" id="gmbCartaoBotoes" data-gmb-aba="horario" ontoggle="gmbAbrirCartao(this)"><summary><span><span class="gmb-posts-title">Botões do perfil</span><span class="gmb-edit-sub">Links de pedido, delivery e reserva</span></span></summary><div class="gmb-edit-corpo"></div></details>
 
       </div>
 
       <!-- Reviews: do perfil escolhido, ou de todos (gmb_reviews, que o fg-gmb da VPS grava) -->
-      <div class="gmb-reviews-card" id="gmbReviewsWrap" style="display:none">
+      <div class="gmb-reviews-card" id="gmbReviewsWrap" data-gmb-aba="avaliacoes" style="display:none">
         <div class="gmb-reviews-head">
           <div class="gmb-reviews-title" id="gmbReviewsTitle">Avaliações</div>
           <div class="gmb-reviews-filter">
@@ -2607,8 +2605,31 @@ ufw allow 3000/tcp</pre>
         <div class="empty-state-sub">Use o botão "Conectar com Google" acima para gerenciar avaliações, posts e métricas.</div>
       </div>
 
-      <!-- ── Ranking Grid (sempre visível, independente de conta GMB) ── -->
-      <div class="gmb-rank-section">
+      <!-- Pré-análise pública -->
+      <div class="gmb-preanalise-card" data-gmb-aba="numeros">
+        <div class="gmb-preanalise-header">
+          <div class="gmb-connect-icon gmb-sec-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
+          <div>
+            <div class="gmb-preanalise-title">Pré-análise de negócio</div>
+            <div class="gmb-preanalise-sub">Analise qualquer perfil público no Google sem conectar conta</div>
+          </div>
+        </div>
+        <div class="gmb-preanalise-search">
+          <input class="gmb-preanalise-input" id="gmbPreInput" placeholder="Negócio e cidade" aria-label="Nome do negócio e cidade" onkeydown="if(event.key==='Enter')gmbPreAnalise()">
+          <button class="gmb-preanalise-btn" onclick="gmbPreAnalise()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            Pesquisar
+          </button>
+        </div>
+        <div id="gmbPreLoading" style="display:none;text-align:center;padding:20px;color:var(--text3);font-size:13px;">
+          <div class="gmb-rank-spinner" style="margin:0 auto 10px;width:24px;height:24px;border-width:2px;"></div>
+          Buscando informações
+        </div>
+        <div id="gmbPreResult" style="display:none"></div>
+      </div>
+
+      <!-- ── Ranking Grid (aba Números, independente de conta GMB) ── -->
+      <div class="gmb-rank-section" data-gmb-aba="numeros">
         <div class="gmb-rank-header">
           <div class="gmb-connect-icon gmb-sec-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg></div>
           <div>
@@ -2785,7 +2806,7 @@ ufw allow 3000/tcp</pre>
       </aside>
 
       <div id="mtrBody">
-        <div class="mtr-empty mtr-empty--pick"><span class="mtr-empty-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span><b>Escolha uma conta</b><span>Os números aparecem aqui depois que você escolher a conta do Instagram ou de anúncios.</span></div>
+        <div class="mtr-empty mtr-empty--pick"><span class="mtr-empty-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span><b>Escolha uma conta</b><span>Os números aparecem aqui depois que você escolher a conta do Instagram ou o perfil no Google.</span></div>
       </div>
 
     </div>
@@ -5189,7 +5210,7 @@ function _inviteHtml(name, email, authType, pwd, inviterName) {
       <strong style="color:#404060;">E-mail vinculado:</strong> <span style="font-family:'SF Mono',Menlo,Consolas,monospace;color:#6366f1;">${escHtml(email)}</span>
     </div>
     <div style="font-size:13px;color:#666;margin-top:12px;background:#fff;padding:10px 14px;border-radius:6px;border:1px solid #e6e8f0;">
-      ✨ Basta clicar em <strong>"Entrar com Google"</strong> ao abrir o site.
+      Basta clicar em <strong>"Entrar com Google"</strong> ao abrir o site.
     </div>` : `
     <div style="font-size:14.5px;color:#1a1a2e;line-height:1.8;">
       <strong style="color:#404060;">E-mail:</strong> <span style="font-family:'SF Mono',Menlo,Consolas,monospace;color:#6366f1;">${escHtml(email)}</span><br>
@@ -5386,7 +5407,7 @@ function acessoOpenInvitePreview(email, name, authType, pwd) {
       <div class="invite-email-actions">
         <button class="invite-email-btn invite-email-btn-secondary" onclick="acessoCopyInvite('subject', this)">📋 Copiar assunto</button>
         <button class="invite-email-btn invite-email-btn-secondary" onclick="acessoCopyInvite('text', this)">📋 Copiar texto</button>
-        <button class="invite-email-btn invite-email-btn-secondary" onclick="acessoCopyInvite('html', this)">✨ Copiar HTML formatado</button>
+        <button class="invite-email-btn invite-email-btn-secondary" onclick="acessoCopyInvite('html', this)">📋 Copiar HTML formatado</button>
         ${memberWa ? `<button class="invite-email-btn invite-email-btn-whatsapp" onclick="acessoOpenWhatsAppInvite()">💬 Enviar pelo WhatsApp</button>` : ''}
         <button class="invite-email-btn invite-email-btn-primary" onclick="acessoOpenGmailInvite()">📧 Abrir no Gmail</button>
       </div>
@@ -11260,7 +11281,7 @@ function mtrApplyTemplate(tplId) {
     renderMetrics(s.igCurr, s.igPrev, s.adsData, s.adsPrev, s.curr, s.prev, s.compare, s.warnings, s.campaigns, s.health);
   } else if (mtrCurrentAcc) {
     loadMetrics();
-  }
+  } else mtrRefreshKpis();
 }
 function mtrDeleteTemplate(tplId) {
   const list = mtrLoadTemplates();
@@ -11349,7 +11370,7 @@ function mtrSetPreset(btn) {
   // Se Comparar está ativo, recalcula o período anterior automático
   const cb = document.getElementById('mtrCompare');
   if (cb && cb.checked) mtrUseSamePeriodAsPrev();
-  if (mtrCurrentAcc) loadMetrics();
+  loadMetrics();
 }
 
 /* Preenche o período de comparação com o intervalo imediatamente anterior do mesmo tamanho */
@@ -11367,7 +11388,7 @@ function mtrUseSamePeriodAsPrev() {
   const cu = document.getElementById('mtrCompareUntil');
   if (cs) cs.value = mtrFmtLocalDate(prevSince);
   if (cu) cu.value = mtrFmtLocalDate(prevUntil);
-  if (mtrCurrentAcc) loadMetrics();
+  loadMetrics();
 }
 
 /**
@@ -11433,9 +11454,10 @@ function mtrOnAccountChange() {
     spFbLogin();
     return;
   }
-  if (idx === '') { mtrCurrentAcc = null; document.getElementById('mtrBody').innerHTML = '<div class="mtr-empty mtr-empty--pick"><span class="mtr-empty-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span><b>Escolha uma conta</b><span>Os números aparecem aqui depois que você escolher a conta do Instagram ou de anúncios.</span></div>'; return; }
+  if (idx === '') { mtrCurrentAcc = null; mtrLastSnapshot = null; mtrAplicarAdDoIg(); mtrUserKpis = mtrLoadUserKpis(); mtrRefreshKpis(); return; }
   mtrCurrentAcc = spAccounts[parseInt(idx)];
   localStorage.setItem('mtrSelectedIg', mtrCurrentAcc.igId);
+  mtrAplicarAdDoIg();
   // Carrega preferências per-cliente (KPIs + treinamento da IA)
   mtrUserKpis = mtrLoadUserKpis();
   // Limpa caches que dependem do cliente (incluindo snapshot — evita dados stale de outro cliente)
@@ -11446,17 +11468,41 @@ function mtrOnAccountChange() {
   loadMetrics();
 }
 
+// Conta de anúncios lembrada por conta do Instagram: uma só pra todos ia de um cliente
+// pro outro (o Maracanaú abria com a conta da Fábrica de Cookies). A escolha antiga fica
+// com o Instagram que estava aberto junto, uma vez, ao abrir o app.
+try {
+  const ig = localStorage.getItem('mtrSelectedIg'), ad = localStorage.getItem('mtrSelectedAd');
+  if (ad && ig && localStorage.getItem('mtrAdPorIg') === null) localStorage.setItem('mtrAdPorIg', JSON.stringify({ [ig]: ad }));
+  localStorage.removeItem('mtrSelectedAd');
+} catch (_) {}
+function mtrAdsPorIg() {
+  try { return JSON.parse(localStorage.getItem('mtrAdPorIg') || '{}') || {}; } catch (_) { return {}; }
+}
+function mtrGuardarAdDoIg(igId, adId) {
+  const m = mtrAdsPorIg();
+  if (adId) m[igId] = adId; else delete m[igId];
+  localStorage.setItem('mtrAdPorIg', JSON.stringify(m));
+}
+// Marca no seletor a conta de anúncios do Instagram aberto (ou nenhuma)
+function mtrAplicarAdDoIg() {
+  const sel = document.getElementById('mtrAdAccountSelect');
+  const adId = mtrCurrentAcc ? mtrAdsPorIg()[mtrCurrentAcc.igId] : null;
+  const i = adId ? mtrAdAccounts.findIndex(a => a.id === adId) : -1;
+  mtrCurrentAdAcc = i >= 0 ? mtrAdAccounts[i] : null;
+  if (sel && mtrAdAccounts.length) sel.value = i >= 0 ? String(i) : '';
+}
+
 function mtrOnAdAccountChange() {
   const sel = document.getElementById('mtrAdAccountSelect');
   const idx = sel.value;
   mtrCurrentAdAcc = idx === '' ? null : mtrAdAccounts[parseInt(idx)];
-  if (mtrCurrentAdAcc) localStorage.setItem('mtrSelectedAd', mtrCurrentAdAcc.id);
-  else localStorage.removeItem('mtrSelectedAd');
+  if (mtrCurrentAcc) mtrGuardarAdDoIg(mtrCurrentAcc.igId, mtrCurrentAdAcc?.id);
   if (mtrCurrentAcc) loadMetrics();
 }
 
 async function loadMetrics() {
-  if (!mtrCurrentAcc) return;
+  if (!mtrCurrentAcc) return mtrOnGmbChange(); // sem Instagram: só o perfil no Google
   const token = getSpToken();
   if (!token) { document.getElementById('mtrBody').innerHTML = '<div class="mtr-empty">Configure o Token Meta na aba Social primeiro.</div>'; return; }
 
@@ -12101,6 +12147,7 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
   const filterByTab = (id) => {
     const m = MTR_CATALOG.find(x => x.id === id);
     if (!m) return false;
+    if (!hasIg) return m.source === 'gmb'; // sem Instagram: só o perfil no Google
     // Aba Geral: mostra tudo (IG + Ads + GMB)
     if (showTabs && activeTab === 'all') return true;
     // GMB: sempre exibido (não tem aba dedicada — vai junto com a aba IG ou quando não há tabs)
@@ -12113,6 +12160,16 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
 
   const visibleKpis = mtrUserKpis.filter(filterByTab);
   const cards = visibleKpis.map(buildKpiCard).join('');
+  const periodo = `${curr.since.split('-').reverse().join('/')} a ${curr.until.split('-').reverse().join('/')}`;
+  if (!hasIg) {
+    const loc = _gmbLocations[parseInt(_mtrGmbLocIdx)];
+    document.getElementById('mtrBody').innerHTML = `
+    <div class="mtr-section">
+      <div class="mtr-section-title">Visão geral &nbsp;<span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">${escHtml(loc?.title || 'Perfil no Google')} · ${periodo}</span></div>
+      <div class="mtr-kpi-grid">${cards}${addCardHtml}</div>
+    </div>`;
+    return;
+  }
 
   // Métricas personalizadas (aparecem na aba IG, Geral, ou quando não há tabs)
   const showCustom = !showTabs || activeTab === 'ig' || activeTab === 'all';
@@ -12281,7 +12338,7 @@ function renderMetrics(igCurr, igPrev, adsData, adsPrev, curr, prev, compare, wa
     ${filterBar}
     ${notesHtml}
     <div class="mtr-section">
-      <div class="mtr-section-title">Visão geral &nbsp;<span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">@${mtrCurrentAcc.igUsername} ${adAcctLabel ? '· '+adAcctLabel : ''} ${filteredCamp ? '· campanha: '+escHtml(filteredCamp.name) : ''} · ${curr.since.split('-').reverse().join('/')} a ${curr.until.split('-').reverse().join('/')}</span></div>
+      <div class="mtr-section-title">Visão geral &nbsp;<span style="font-size:11px;text-transform:none;font-weight:400;color:var(--text2);">@${mtrCurrentAcc.igUsername} ${adAcctLabel ? '· '+adAcctLabel : ''} ${filteredCamp ? '· campanha: '+escHtml(filteredCamp.name) : ''} · ${periodo}</span></div>
       ${sourceTabsHtml}
       <div class="mtr-kpi-grid">${cards}${customCards}${addCardHtml}</div>
     </div>
@@ -12328,7 +12385,7 @@ function mtrCampaignRowHtml(c) {
     </td>
     ${colCells}
     <td class="actions" onclick="event.stopPropagation()">
-      <button class="mtr-camp-ai-btn" ${aiBusy?'disabled':''} onclick="mtrAnalyzeCampaignWithAI('${c.id}')" aria-label="Analisar campanha com IA">${fgFerrIco('sparkles', 14)} ${aiBusy?'Analisando':'IA'}</button>
+      <button class="mtr-camp-ai-btn" ${aiBusy?'disabled':''} onclick="mtrAnalyzeCampaignWithAI('${c.id}')" aria-label="Analisar campanha com IA">${fgFerrIco('bulb', 14)} ${aiBusy?'Analisando':'IA'}</button>
     </td>
   </tr>
   ${aiResultRow}
@@ -12729,7 +12786,7 @@ function mtrRemoveKpi(id) {
     renderMetrics(s.igCurr, s.igPrev, s.adsData, s.adsPrev, s.curr, s.prev, s.compare, s.warnings, s.campaigns, s.health);
   } else if (mtrCurrentAcc) {
     loadMetrics();
-  }
+  } else mtrRefreshKpis();
 }
 
 /* Alterna entre as abas de fonte (Geral / Instagram / Meta Ads) quando ambas estão disponíveis */
@@ -12776,7 +12833,7 @@ function mtrDragEnd(e) { e.currentTarget.classList.remove('dragging'); mtrDragId
 function mtrApplyKpis() {
   mtrSaveUserKpis();
   mtrCloseSidebar();
-  if (mtrCurrentAcc) loadMetrics();
+  if (mtrCurrentAcc) loadMetrics(); else mtrRefreshKpis();
 }
 
 function mtrResetKpis() {
@@ -12826,10 +12883,9 @@ async function mtrLoadAdAccounts() {
   if (!sel) return;
   try {
     mtrAdAccounts = await mtrFetchAdAccounts(token);
-    const savedAd = localStorage.getItem('mtrSelectedAd');
     sel.innerHTML = '<option value="">Conta de anúncios</option>' +
-      mtrAdAccounts.map((a,i) => `<option value="${i}" ${savedAd===a.id?'selected':''}>${a.name} (${a.currency})</option>`).join('');
-    if (sel.value !== '') mtrCurrentAdAcc = mtrAdAccounts[parseInt(sel.value)];
+      mtrAdAccounts.map((a,i) => `<option value="${i}">${a.name} (${a.currency})</option>`).join('');
+    mtrAplicarAdDoIg();
   } catch(e) {
     sel.innerHTML = `<option value="">Erro: ${e.message.slice(0,40)}</option>`;
   }
@@ -14687,7 +14743,7 @@ const MTR_DEFINITIONS = {
 
 function mtrOpenKpiModal(id) {
   const m = MTR_CATALOG.find(x => x.id === id);
-  if (!m || !mtrLastSnapshot) return;
+  if (!m || (!mtrLastSnapshot && m.source !== 'gmb')) return;
   // Portal: move o modal pro <body> pra escapar do transform da .tab-panel
   // (transform cria containing block, quebra o position:fixed → modal aparece
   // no meio da tab inteira em vez do viewport).
@@ -14695,7 +14751,7 @@ function mtrOpenKpiModal(id) {
   if (modalEl && modalEl.parentElement !== document.body) {
     document.body.appendChild(modalEl);
   }
-  const s = mtrLastSnapshot;
+  const s = mtrLastSnapshot || {};
   const cv = mtrGetValue(id, s.igCurr, s.adsData);
   const pv = mtrGetValue(id, s.igPrev, s.adsPrev, true);
   const series = mtrGetSeries(id, s.igCurr);
@@ -15792,6 +15848,7 @@ let _gmbRatingChart = null;
 let _gmbHealthChart = null;
 let _gmbDemoMode = false;
 let _gmbShown = []; // avaliações na ordem da tela, pro índice dos botões
+let _gmbVisiveis = 10; // a lista abre com 10 e o "Ver mais" traz de 10 em 10
 let _gmbVendo = false;
 
 const GMB_ERROS = {
@@ -16341,16 +16398,44 @@ function gmbPopulateSelector() {
   } catch(e) {}
 }
 
+// Resumo que o fg-gmb grava em gmb_locations/{id}: nota no Google e as 50 avaliações mais recentes,
+// cada uma como "updateTime|updateTime da resposta" (sem resposta termina em "|")
+let _gmbResumoLocs = {};
+async function gmbCarregarResumoLocs() {
+  try {
+    const snap = await _db.collection('gmb_locations').get();
+    _gmbResumoLocs = Object.fromEntries(snap.docs.map(d => [d.id, {
+      reviews: Object.values(d.get('vistos') || {}).map(a => ({ reviewReply: a.split('|')[1] || null })),
+      media: d.get('averageRating'), total: d.get('totalReviewCount'),
+    }]));
+  } catch (e) { console.warn('gmb_locations', e); return; }
+  gmbDesenharGrade();
+}
+
 function gmbShowMultiGrid() {
   if (_gmbLocations.length === 0 || _gmbCurrentLoc) return; // com perfil aberto a grade volta em "Todos os perfis"
+  gmbDesenharGrade();
+  if (!_gmbDemoMode) gmbCarregarResumoLocs();
+  document.getElementById('gmbMultiGrid').style.display = '';
+  document.getElementById('gmbReviewsWrap').style.display = '';
+  gmbLoadAllReviews();
+  gmbRenderNumerosTodos();
+  gmbRenderPostsTodos();
+}
+
+function gmbDesenharGrade() {
+  if (_gmbCurrentLoc) return; // abriu um perfil enquanto o resumo carregava
   const grid = document.getElementById('gmbLocCards');
   grid.innerHTML = _gmbLocations.map((l,i) => {
-    const reviews = l._demoReviews || null;
+    const resumo = !_gmbDemoMode && _gmbResumoLocs[(l.name || '').split('/').pop()];
+    const reviews = l._demoReviews || resumo?.reviews || null;
     const score = gmbCalcScore(l, reviews);
     const scoreColor = score >= 75 ? '#22c55e' : score >= 50 ? '#f59e0b' : '#ef4444';
     const addr = l.storefrontAddress ? [l.storefrontAddress.locality, l.storefrontAddress.administrativeArea].filter(Boolean).join(', ') : '';
     let ratingStat = '';
-    if (reviews && reviews.length) {
+    if (resumo?.media && resumo.total) {
+      ratingStat = `<div class="gmb-loc-stat"><div class="gmb-loc-stat-val">${resumo.media.toFixed(1).replace('.', ',')}</div><div class="gmb-loc-stat-lbl">Nota em ${resumo.total} ${resumo.total===1?'avaliação':'avaliações'}</div></div>`;
+    } else if (l._demoReviews?.length) {
       const ratings = reviews.filter(r=>r.starRating).map(r=>({ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5}[r.starRating]||0));
       const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1).replace('.', ',') : 'Sem nota';
       ratingStat = `<div class="gmb-loc-stat"><div class="gmb-loc-stat-val">${avg}</div><div class="gmb-loc-stat-lbl">Nota em ${reviews.length} ${reviews.length===1?'avaliação':'avaliações'}</div></div>`;
@@ -16365,11 +16450,6 @@ function gmbShowMultiGrid() {
       <div class="gmb-loc-score-bar"><div class="gmb-loc-score-fill" style="width:${score}%;background:${scoreColor}"></div></div>
     </div>`;
   }).join('');
-  document.getElementById('gmbMultiGrid').style.display = '';
-  document.getElementById('gmbReviewsWrap').style.display = '';
-  gmbLoadAllReviews();
-  gmbRenderNumerosTodos();
-  gmbRenderPostsTodos();
 }
 
 // Avaliações de todos os perfis: no demo junta as fictícias; no real lê gmb_reviews, que o fg-gmb da VPS grava
@@ -16426,6 +16506,8 @@ async function gmbLoadLocation() {
   document.getElementById('gmbReviewsTitle').textContent = 'Avaliações';
   const numeros = gmbRenderNumeros(); // a tela só para de crescer quando os números e as buscas chegam
   gmbFecharCartoes();
+  gmbAba();
+  gmbPostOutros();
 
   let reviewsOk = true;
   if (_gmbDemoMode) {
@@ -16587,9 +16669,10 @@ async function gmbRenderCharts() {
   _gmbHealthChart = new Chart(ctx2, chartOpts('Saúde do perfil', scores, '#22c55e'));
 }
 
-function gmbRenderReviews() {
+function gmbRenderReviews(manterQtd) {
   const list = document.getElementById('gmbReviewsList');
   let reviews = [..._gmbReviews];
+  if (!manterQtd) _gmbVisiveis = 10;
 
   if (_gmbReviewFilter === 'unanswered') reviews = reviews.filter(r => !r.reviewReply);
   else if (_gmbReviewFilter === 'negative') reviews = reviews.filter(r => ['ONE','TWO'].includes(r.starRating));
@@ -16602,15 +16685,31 @@ function gmbRenderReviews() {
     return;
   }
 
+  list.innerHTML = reviews.slice(0, _gmbVisiveis).map(gmbCardAvaliacao).join('') + gmbBotaoVerMais();
+}
+
+function gmbBotaoVerMais() {
+  const faltam = _gmbShown.length - _gmbVisiveis;
+  return faltam > 0 ? `<button class="gmb-filter-btn gmb-ver-mais" onclick="gmbVerMais(this)">Ver mais (faltam ${faltam})</button>` : '';
+}
+
+// Acrescenta no fim em vez de redesenhar: resposta que alguém está escrevendo mais acima não some
+function gmbVerMais(btn) {
+  const de = _gmbVisiveis;
+  _gmbVisiveis += 10;
+  btn.insertAdjacentHTML('beforebegin', _gmbShown.slice(de, _gmbVisiveis).map((r, i) => gmbCardAvaliacao(r, de + i)).join(''));
+  btn.outerHTML = gmbBotaoVerMais();
+}
+
+function gmbCardAvaliacao(r, idx) {
   const starMap = {ONE:'★☆☆☆☆',TWO:'★★☆☆☆',THREE:'★★★☆☆',FOUR:'★★★★☆',FIVE:'★★★★★'};
-  list.innerHTML = reviews.map((r, idx) => {
-    const name = r.reviewer?.displayName || 'Cliente';
-    const initial = name[0].toUpperCase();
-    const stars = starMap[r.starRating] || '—';
-    const date = r.createTime ? new Date(r.createTime).toLocaleDateString('pt-BR') : '';
-    const text = r.comment || '';
-    const reply = r.reviewReply?.comment || '';
-    return `<div class="gmb-review" id="gmbRev_${idx}">
+  const name = r.reviewer?.displayName || 'Cliente';
+  const initial = name[0].toUpperCase();
+  const stars = starMap[r.starRating] || '—';
+  const date = r.createTime ? new Date(r.createTime).toLocaleDateString('pt-BR') : '';
+  const text = r.comment || '';
+  const reply = r.reviewReply?.comment || '';
+  return `<div class="gmb-review" id="gmbRev_${idx}">
       <div class="gmb-review-head">
         <div class="gmb-review-avatar">${initial}</div>
         <div class="gmb-review-meta">
@@ -16620,9 +16719,10 @@ function gmbRenderReviews() {
         </div>
       </div>
       ${text ? `<div class="gmb-review-text">${escHtml(text)}</div>` : '<div class="gmb-review-text" style="font-style:italic;color:var(--text3);">Sem texto na avaliação</div>'}
-      ${reply ? `<div class="gmb-review-reply-existing"><div class="gmb-review-reply-label">Sua resposta</div>${escHtml(reply)}</div>` : ''}
-      <div class="gmb-review-actions">
-        <button class="gmb-ai-btn" id="gmbAiBtn_${idx}" onclick="gmbSuggestReply(${idx})">${fgFerrIco('sparkles', 16)} Sugerir resposta com IA</button>
+      ${reply ? `<div class="gmb-review-reply-existing"><div class="gmb-review-reply-label">Sua resposta</div>${escHtml(reply)}</div>
+      <div class="gmb-review-actions" id="gmbEditar_${idx}"><button class="gmb-filter-btn" onclick="gmbEditarResposta(${idx})">Editar resposta</button></div>` : ''}
+      <div class="gmb-review-actions" id="gmbAcoes_${idx}"${reply ? ' style="display:none"' : ''}>
+        <button class="gmb-ai-btn" id="gmbAiBtn_${idx}" onclick="gmbSuggestReply(${idx})">${fgFerrIco('penline', 16)} Sugerir resposta com IA</button>
         <button class="gmb-filter-btn" onclick="gmbUseTemplate(${idx})">Usar modelo</button>
       </div>
       <textarea class="gmb-reply-area" id="gmbReplyTxt_${idx}" placeholder="A resposta aparecerá aqui..." style="display:none"></textarea>
@@ -16631,7 +16731,19 @@ function gmbRenderReviews() {
         <button class="gmb-filter-btn" onclick="gmbClearReply(${idx})">Cancelar</button>
       </div>
     </div>`;
-  }).join('');
+}
+
+// Já respondida: IA e modelo só aparecem aqui, com a resposta atual na caixa pra editar
+function gmbEditarResposta(idx) {
+  const r = _gmbShown[idx];
+  if (!r) return;
+  document.getElementById(`gmbEditar_${idx}`).style.display = 'none';
+  document.getElementById(`gmbAcoes_${idx}`).style.display = '';
+  const txt = document.getElementById(`gmbReplyTxt_${idx}`);
+  txt.value = r.reviewReply?.comment || '';
+  txt.style.display = 'block';
+  document.getElementById(`gmbReplyActions_${idx}`).style.display = 'flex';
+  txt.focus();
 }
 
 function gmbFilterReviews(filter, btn) {
@@ -16676,7 +16788,7 @@ async function gmbSuggestReply(idx) {
   btn.textContent = 'Gerando resposta';
 
   const apiKey = getClaudeKey();
-  if (!apiKey) { showToast('warn','⚠️','Configure a Claude API Key em Configurações (⚙️ no cabeçalho).'); btn.disabled=false; btn.innerHTML=`${fgFerrIco('sparkles', 16)} Sugerir resposta com IA`; return; }
+  if (!apiKey) { showToast('warn','⚠️','Configure a Claude API Key em Configurações (⚙️ no cabeçalho).'); btn.disabled=false; btn.innerHTML=`${fgFerrIco('penline', 16)} Sugerir resposta com IA`; return; }
 
   const prompt = `Você é um gerente de restaurante respondendo avaliações do Google Meu Negócio.
 Cliente: ${name}
@@ -16710,7 +16822,7 @@ Retorne APENAS o texto da resposta, sem explicações.`;
   } catch(e) {
     showToast('error','❌','Erro ao chamar IA: ' + e.message);
     btn.disabled = false;
-    btn.innerHTML = `${fgFerrIco('sparkles', 16)} Sugerir resposta com IA`;
+    btn.innerHTML = `${fgFerrIco('penline', 16)} Sugerir resposta com IA`;
   }
 }
 
@@ -16722,7 +16834,7 @@ async function gmbPublishReply(idx) {
   if (_gmbDemoMode) {
     review.reviewReply = { comment: txt, updateTime: new Date().toISOString() };
     showToast('success','🧪','Resposta "publicada" no modo demo (não enviada ao Google)');
-    gmbRenderReviews();
+    gmbRenderReviews(true);
     if (_gmbCurrentLoc) { gmbRenderKpis(); gmbRenderScore(); }
     return;
   }
@@ -16736,7 +16848,7 @@ async function gmbPublishReply(idx) {
     // a lista de todos os perfis vem do Firestore; o fg-gmb confirma com o Google na rodada seguinte
     _db.collection('gmb_reviews').doc(review.reviewId || review.name.split('/').pop())
       .update({ reviewReply: review.reviewReply }).catch(() => {});
-    gmbRenderReviews();
+    gmbRenderReviews(true);
   } catch(e) {
     showToast('error','❌',e.message);
     if (btn) btn.disabled = false;
@@ -16749,7 +16861,9 @@ function gmbClearReply(idx) {
   const btn = document.getElementById(`gmbAiBtn_${idx}`);
   if (txt) { txt.value=''; txt.style.display='none'; }
   if (actions) actions.style.display='none';
-  if (btn) { btn.disabled=false; btn.innerHTML=`${fgFerrIco('sparkles', 16)} Sugerir resposta com IA`; }
+  if (btn) { btn.disabled=false; btn.innerHTML=`${fgFerrIco('penline', 16)} Sugerir resposta com IA`; }
+  const editar = document.getElementById(`gmbEditar_${idx}`);
+  if (editar) { editar.style.display = ''; document.getElementById(`gmbAcoes_${idx}`).style.display = 'none'; }
 }
 
 // ─── GMB POSTS ───────────────────────────────────────────
@@ -16865,6 +16979,13 @@ function gmbFecharCartoes() {
   for (const id in GMB_CARTOES) { document.getElementById(id).open = false; gmbCorpo(id).innerHTML = ''; }
   if (_gmbPostEditando) gmbResetPostForm();
 }
+// Abas da tela: a aba fica em data-aba no #tab-gmb, o CSS esconde o resto e os cartões da aba abrem e carregam
+function gmbAba(aba) {
+  const tela = document.getElementById('tab-gmb');
+  if (aba) tela.dataset.aba = aba; else aba = tela.dataset.aba;
+  tela.querySelectorAll('.gmb-aba').forEach(b => b.setAttribute('aria-selected', b.dataset.aba === aba));
+  tela.querySelectorAll(`details[data-gmb-aba~="${aba}"]`).forEach(d => { d.open = true; gmbAbrirCartao(d); });
+}
 // depois de uma mudança: busca de novo, se o cartão ainda é do mesmo perfil e está aberto
 function gmbRecarregar(id, loc) {
   if (loc !== gmbPerfil()) return;
@@ -16966,35 +17087,97 @@ async function gmbPublishPost() {
   try { body = gmbBuildPostBody(); }
   catch(e) { showToast('warn','⚠️', escHtml(e.message)); return; }
   const loc = gmbPerfil(), ed = _gmbPostEditando, btn = document.getElementById('gmbPostPublicar');
+  const outros = ed ? [] : [...document.querySelectorAll('#gmbPostOutros input:checked')]
+    .map(c => _gmbLocations.find(l => l.name === c.value)).filter(l => l && l !== loc);
+  const quando = !ed && document.getElementById('gmbPostQuando').value;
+  if (quando) return gmbAgendarPost(body, [loc, ...outros], new Date(quando), btn);
   // ponytail: o Google não lista os campos do updateMask; vão os que o formulário mexe (oferta ignora o botão)
   const mask = ed && ({ OFFER: 'summary,event,offer', EVENT: 'summary,callToAction,event' }[ed.topicType] || 'summary,callToAction');
+  const novo = l => _gmbDemoMode
+    ? gmbDemoPosts(l).unshift({ ...body, name: 'demo-' + Date.now(), state: 'LIVE', createTime: new Date().toISOString() })
+    : gmbApi(`${gmbV4(l)}/localPosts`, { method: 'POST', body: JSON.stringify(body) });
+  const aviso = document.getElementById('gmbPostAviso');
+  aviso.hidden = true;
   btn.disabled = true; btn.textContent = ed ? 'Salvando post…' : 'Publicando post…';
   try {
-    if (_gmbDemoMode) {
-      if (ed) mask.split(',').forEach(k => { if (body[k]) ed[k] = body[k]; else delete ed[k]; });
-      else gmbDemoPosts(loc).unshift({ ...body, name: 'demo-' + Date.now(), state: 'LIVE', createTime: new Date().toISOString() });
-    } else if (ed) await gmbApi(`https://mybusiness.googleapis.com/v4/${ed.name}?updateMask=${mask}`, { method: 'PATCH', body: JSON.stringify(body) });
-    else await gmbApi(`${gmbV4(loc)}/localPosts`, { method: 'POST', body: JSON.stringify(body) });
-    gmbFeito(ed ? 'Post salvo no perfil do Google' : 'Post publicado no perfil do Google', ed ? 'Edição simulada' : 'Postagem simulada');
+    if (!ed) await novo(loc);
+    else if (_gmbDemoMode) mask.split(',').forEach(k => { if (body[k]) ed[k] = body[k]; else delete ed[k]; });
+    else await gmbApi(`https://mybusiness.googleapis.com/v4/${ed.name}?updateMask=${mask}`, { method: 'PATCH', body: JSON.stringify(body) });
+    // o do perfil aberto saiu; os outros vão um por um e o que falhar fica no aviso
+    const falhas = [];
+    for (const [i, l] of outros.entries()) {
+      btn.textContent = `Publicando ${i + 2} de ${outros.length + 1}…`;
+      try { await novo(l); } catch(e) { falhas.push(`${l.title || 'Perfil'} (${gmbErroTexto(e)})`); }
+    }
     _gmbPostsTodos = null;
-    if (_gmbPostEditando === ed) gmbResetPostForm();
+    if (falhas.length) {
+      showToast('warn','⚠️', `Saiu em ${gmbPlural(outros.length + 1 - falhas.length, 'perfil', 'perfis')} e não saiu em ${falhas.length}.`);
+      aviso.textContent = `Não saiu em: ${falhas.join('; ')}. O texto ficou no formulário. Pra publicar nesses, escolha cada um no topo da tela e toque em Publicar post.`;
+      aviso.hidden = false;
+      gmbPostOutros();
+    } else {
+      gmbFeito(ed ? 'Post salvo no perfil do Google' : outros.length ? `Post publicado em ${outros.length + 1} perfis do Google` : 'Post publicado no perfil do Google', ed ? 'Edição simulada' : 'Postagem simulada');
+      if (_gmbPostEditando === ed) gmbResetPostForm();
+    }
     gmbRecarregar('gmbCartaoPosts', loc);
   } catch(e) {
     gmbErroAcao(ed && _gmbEd.gmbCartaoPosts, e, ed && 'Esse post saiu do perfil. Feche e abra o cartão Posts publicados pra ver a lista atual.');
   } finally {
-    btn.disabled = false; btn.textContent = _gmbPostEditando ? 'Salvar post' : 'Publicar post';
+    btn.disabled = false; gmbPostBotao();
+  }
+}
+
+// texto do botão: editar, agendar ou publicar agora
+function gmbPostBotao() {
+  document.getElementById('gmbPostPublicar').textContent = _gmbPostEditando ? 'Salvar post'
+    : document.getElementById('gmbPostQuando').value ? 'Agendar post' : 'Publicar post';
+}
+// os outros perfis da conta, pra sair o mesmo post neles; troca de perfil redesenha e desmarca
+function gmbPostOutros() {
+  const box = document.getElementById('gmbPostOutros'), atual = gmbPerfil();
+  const outros = _gmbLocations.filter(l => l !== atual);
+  box.hidden = !outros.length;
+  box.querySelector('.gmb-post-outros-lista').innerHTML = outros.map(l =>
+    `<label class="gmb-ed-check"><input type="checkbox" value="${escHtml(l.name)}">${escHtml(l.title || 'Perfil')}</label>`).join('');
+}
+const gmbDiaHora = d => `${d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} às ${d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+const gmbDemoAgendados = loc => loc._demoAgendados || (loc._demoAgendados = []);
+// o agendado fica no Firestore e o robô da VPS (fg-gmb, a cada 30 min) publica quando passa da hora
+async function gmbAgendarPost(body, perfis, data, btn) {
+  if (!(data > Date.now())) { showToast('warn','⚠️','Escolha um dia e horário que ainda não passou.'); return; }
+  btn.disabled = true; btn.textContent = 'Agendando post…';
+  try {
+    if (_gmbDemoMode) perfis.forEach(l => gmbDemoAgendados(l).push({ body, quando: data, estado: 'agendado' }));
+    else {
+      const lote = _db.batch(), uid = _auth?.currentUser?.uid || _currentUser?.uid || null;
+      perfis.forEach(l => lote.set(_db.collection('gmb_posts_agendados').doc(), {
+        loc: l.name, account: l._account, titulo: l.title || 'Perfil', body, estado: 'agendado',
+        quando: firebase.firestore.Timestamp.fromDate(data), criadoPor: uid,
+        criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+      }));
+      await lote.commit();
+    }
+    gmbFeito(`Post agendado pra ${gmbDiaHora(data)}${perfis.length > 1 ? ` em ${perfis.length} perfis` : ''}. Ele sai até 30 minutos depois desse horário.`, 'Agendamento simulado');
+    gmbResetPostForm();
+    gmbRecarregar('gmbCartaoPosts', perfis[0]);
+  } catch(e) {
+    showToast('error','❌','O agendamento não foi salvo. Confira a internet e tente de novo.');
+  } finally {
+    btn.disabled = false; gmbPostBotao();
   }
 }
 
 const GMB_POST_CAMPOS = ['gmbPostText','gmbPostMedia','gmbPostEventTitle','gmbPostEventStart','gmbPostEventEnd',
   'gmbPostOfferTitle','gmbPostOfferStart','gmbPostOfferEnd','gmbPostOfferCoupon',
-  'gmbPostOfferRedeemUrl','gmbPostOfferTerms','gmbPostCta','gmbPostCtaUrl'];
+  'gmbPostOfferRedeemUrl','gmbPostOfferTerms','gmbPostCta','gmbPostCtaUrl','gmbPostQuando'];
 function gmbResetPostForm() {
   GMB_POST_CAMPOS.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  if (!_gmbPostEditando) return;
+  document.querySelectorAll('#gmbPostOutros input').forEach(c => { c.checked = false; });
+  document.getElementById('gmbPostAviso').hidden = true;
+  if (!_gmbPostEditando) return gmbPostBotao();
   _gmbPostEditando = null;
   gmbSelectPostType('STANDARD', document.querySelector('.gmb-post-type-btn[data-type="STANDARD"]'));
   document.querySelectorAll('.gmb-post-type-btn').forEach(b => { b.disabled = false; });
@@ -17048,18 +17231,45 @@ async function gmbCarregarPosts() {
   const id = 'gmbCartaoPosts', tk = _gmbEd[id] = { loc: gmbPerfil() };
   gmbCorpo(id).innerHTML = '<div class="gmb-empty">Buscando os posts no Google…</div>';
   try {
-    const posts = _gmbDemoMode ? [...gmbDemoPosts(tk.loc)]
-      : (await gmbApi(`${gmbV4(tk.loc)}/localPosts?pageSize=100`)).localPosts || []; // ponytail: só a 1ª página (100 posts)
+    const [posts, agendados] = await Promise.all([
+      _gmbDemoMode ? [...gmbDemoPosts(tk.loc)]
+        : gmbApi(`${gmbV4(tk.loc)}/localPosts?pageSize=100`).then(r => r.localPosts || []), // ponytail: só a 1ª página (100 posts)
+      _gmbDemoMode ? [...gmbDemoAgendados(tk.loc)]
+        : _db.collection('gmb_posts_agendados').where('loc', '==', tk.loc.name).get()
+          .then(s => s.docs.map(d => ({ ...d.data(), id: d.id, quando: d.get('quando')?.toDate() }))).catch(() => null),
+    ]);
     if (_gmbEd[id] !== tk) return;
     tk.posts = posts.sort((a, b) => String(b.createTime || '').localeCompare(String(a.createTime || '')));
+    tk.agendados = agendados && agendados.sort((a, b) => a.quando - b.quando);
     gmbDesenharPosts();
   } catch(e) { gmbErroCartao(id, tk, e); }
 }
 
+const GMB_AGENDADO = { agendado: 'Agendado', publicando: 'Saindo agora', falhou: 'Não saiu' };
+function gmbDesenharAgendados(ag) {
+  if (!ag) return '<p class="gmb-edit-nota gmb-post-fila">Os posts agendados não vieram agora. Feche e abra este cartão pra tentar de novo.</p>';
+  if (!ag.length) return '';
+  return '<div class="gmb-post-fila"><span class="gmb-ed-tit">Agendados</span><p class="gmb-edit-nota">Saem até 30 minutos depois do horário marcado.</p><div class="gmb-ed-lista">' + ag.map((a, i) => {
+    const p = a.body || {}, foto = p.media?.[0]?.sourceUrl;
+    return `<div class="gmb-ed-item">
+      ${gmbImgOk(foto) ? `<img class="gmb-ed-thumb" src="${escHtml(foto)}" alt="" loading="lazy">` : ''}
+      <div class="gmb-ed-info">
+        <div class="gmb-ed-topo"><b>${GMB_POST_TIPO[p.topicType] || 'Post'}</b>${a.quando ? ' · ' + gmbDiaHora(a.quando) : ''}<span class="gmb-ed-estado${a.estado === 'falhou' ? ' rejeitado' : ''}">${GMB_AGENDADO[a.estado] || escHtml(a.estado)}</span></div>
+        ${p.event?.title ? `<div class="gmb-ed-titulo">${escHtml(p.event.title)}</div>` : ''}
+        ${p.summary ? `<div class="gmb-ed-texto">${escHtml(p.summary)}</div>` : ''}
+        ${a.erro ? `<div class="gmb-ed-texto">O Google respondeu: ${escHtml(a.erro)}</div>` : ''}
+        <div class="gmb-ed-acoes">
+          <button type="button" class="gmb-ed-btn perigo" onclick="gmbCancelarAgendado(${i},this)">${a.estado === 'agendado' ? 'Cancelar agendamento' : 'Tirar da lista'}</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') + '</div></div>';
+}
+
 function gmbDesenharPosts() {
-  const tk = _gmbEd.gmbCartaoPosts, c = gmbCorpo('gmbCartaoPosts');
-  if (!tk.posts.length) { c.innerHTML = '<div class="gmb-empty">Nenhum post no perfil ainda. Publique o primeiro no cartão Criar postagem, logo acima.</div>'; return; }
-  c.innerHTML = '<div class="gmb-ed-lista">' + tk.posts.map((p, i) => {
+  const tk = _gmbEd.gmbCartaoPosts, c = gmbCorpo('gmbCartaoPosts'), fila = gmbDesenharAgendados(tk.agendados);
+  if (!tk.posts.length) { c.innerHTML = fila + '<div class="gmb-empty">Nenhum post no perfil ainda. Publique o primeiro no cartão Criar postagem, logo acima.</div>'; return; }
+  c.innerHTML = fila + (fila && tk.agendados?.length ? '<span class="gmb-ed-tit gmb-post-publicados">Publicados</span>' : '') + '<div class="gmb-ed-lista">' + tk.posts.map((p, i) => {
     const foto = p.media?.[0]?.googleUrl || p.media?.[0]?.sourceUrl, t = p.topicType, quando = gmbQuando(p), estado = GMB_POST_ESTADO[p.state];
     return `<div class="gmb-ed-item">
       ${gmbImgOk(foto) ? `<img class="gmb-ed-thumb" src="${escHtml(foto)}" alt="" loading="lazy">` : ''}
@@ -17091,6 +17301,22 @@ async function gmbApagarPost(i, btn) {
     gmbFeito('Post apagado do perfil', 'Post apagado');
     gmbRecarregar('gmbCartaoPosts', tk.loc);
   } catch(e) { gmbErroAcao(tk, e); }
+  finally { volta(); }
+}
+
+// ponytail: sem transação; cancelado no mesmo segundo em que o robô pega ainda sai
+async function gmbCancelarAgendado(i, btn) {
+  const tk = _gmbEd.gmbCartaoPosts, a = tk?.agendados?.[i];
+  if (!a) return;
+  const agendado = a.estado === 'agendado';
+  if (agendado && !confirm(`Cancelar o post agendado pra ${gmbDiaHora(a.quando)}? Ele não vai sair no perfil.`)) return;
+  const volta = gmbEspera(btn, agendado ? 'Cancelando…' : 'Tirando…');
+  try {
+    if (_gmbDemoMode) tk.loc._demoAgendados = gmbDemoAgendados(tk.loc).filter(x => x !== a);
+    else await _db.collection('gmb_posts_agendados').doc(a.id).delete();
+    gmbFeito(agendado ? 'Agendamento cancelado. O post não vai sair.' : 'Post tirado da lista', agendado ? 'Agendamento cancelado' : 'Post tirado da lista');
+    gmbRecarregar('gmbCartaoPosts', tk.loc);
+  } catch(e) { showToast('error','❌','Não deu pra tirar da lista. Confira a internet e tente de novo.'); }
   finally { volta(); }
 }
 
@@ -17642,6 +17868,7 @@ async function mtrOnGmbChange() {
   const loc = _gmbLocations[parseInt(idx)];
   if (!loc) return;
   sel.disabled = true;
+  if (!mtrCurrentAcc) document.getElementById('mtrBody').innerHTML = mtrSkeletonHtml();
   try {
     let reviews;
     if (_gmbDemoMode) {
@@ -17668,7 +17895,8 @@ async function mtrOnGmbChange() {
     let ate = document.getElementById('mtrMainUntil')?.value || ontem; if (ate > ontem) ate = ontem;
     let de = since || gmbMaisDias(ate, -7); if (de > ate) de = ate;
     const n = Math.round((new Date(ate + 'T12:00:00') - new Date(de + 'T12:00:00')) / 864e5) + 1;
-    const s = mtrLastSnapshot;
+    const cs = document.getElementById('mtrCompareSince')?.value, cu = document.getElementById('mtrCompareUntil')?.value;
+    const s = mtrLastSnapshot || { compare: document.getElementById('mtrCompare')?.checked, prev: cs && cu ? { since: cs, until: cu } : null };
     const p = s?.compare && s.prev?.since ? s.prev : { since: gmbMaisDias(de, -n), until: gmbMaisDias(de, -1) };
     try {
       // ponytail: uma chamada cobre os dois períodos; comparar com mais de 18 meses atrás estoura o limite do Google
@@ -17691,6 +17919,11 @@ async function mtrOnGmbChange() {
 }
 
 function mtrRefreshKpis() {
+  if (!mtrCurrentAcc) { // sem Instagram: só o perfil no Google
+    if (!window._mtrGmbData) { document.getElementById('mtrBody').innerHTML = '<div class="mtr-empty mtr-empty--pick"><span class="mtr-empty-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span><b>Escolha uma conta</b><span>Os números aparecem aqui depois que você escolher a conta do Instagram ou o perfil no Google.</span></div>'; return; }
+    if (!mtrUserKpis.some(id => id.startsWith('gmb_'))) mtrUserKpis.push(...MTR_CATALOG.filter(m => m.source === 'gmb').map(m => m.id));
+    return renderMetrics(null, null, null, null, { since: document.getElementById('mtrMainSince').value, until: document.getElementById('mtrMainUntil').value }, null, document.getElementById('mtrCompare').checked, [], [], null);
+  }
   if (!mtrLastSnapshot) return;
   const s = mtrLastSnapshot;
   renderMetrics(s.igCurr, s.igPrev, s.adsData, s.adsPrev, s.curr, s.prev, s.compare, s.warnings || [], s.campaigns, s.health);
@@ -20907,7 +21140,7 @@ function pjRenderNotifPanel() {
   const items = visible.map(n => {
     const time = pjNotifTime(n.ts);
     const isMention = n.type === 'mention';
-    const icon = fgIco(isMention ? 'at' : n.type === 'comment' ? 'msg' : n.type === 'due' ? 'clock' : n.type === 'gmb_review' ? 'star' : 'userplus');
+    const icon = fgIco(isMention ? 'at' : n.type === 'comment' ? 'msg' : n.type === 'due' ? 'clock' : n.type === 'gmb_review' ? 'star' : n.type === 'gmb_post' ? 'alert' : 'userplus');
     // Menção: trecho do comentário e nome da tarefa em linhas próprias.
     // As novas trazem excerpt/taskTitle; nas antigas sai do subtitle '"trecho…" em "tarefa"'.
     let sub = n.subtitle || '', task = n.taskTitle || '';
@@ -20949,7 +21182,8 @@ function pjOpenNotif(id) {
   // Persiste read=true no Firestore (pra não vir como unread em outros devices)
   try { pjC('pj_notifications').doc(id).update({ read: true }).catch(()=>{}); } catch(_) {}
   if (n.taskId) pjOpenTask(n.taskId);
-  else if (n.type === 'gmb_review') switchTab('gmb');
+  else if (n.type === 'gmb_review') { switchTab('gmb'); gmbAba('avaliacoes'); }
+  else if (n.type === 'gmb_post') { switchTab('gmb'); gmbAba('posts'); }
   pjCloseNotifPanel();
 }
 function pjMarkAllRead() {
@@ -22406,7 +22640,7 @@ function pjCelebrateAhead(t) {
     { emoji: '🔥', title: 'PEGANDO FOGO',        text: 'Adiantando entregas! Performance lá em cima.' },
     { emoji: '💎', title: 'CRISTALINO',          text: 'Foco impecável: tarefa fechada antes do prazo.' },
     { emoji: '🏆', title: 'PROFISSIONAL!',       text: 'Quem entrega antes do prazo é referência. Continue assim!' },
-    { emoji: '✨', title: 'BRILHOU!',            text: 'Adiantou o serviço! Vai dormir tranquilo(a) hoje.' },
+    { emoji: '💡', title: 'BRILHOU!',            text: 'Adiantou o serviço! Vai dormir tranquilo(a) hoje.' },
     { emoji: '🦾', title: 'MÁQUINA!',            text: 'Você está adiantando tudo! Que disciplina.' },
     { emoji: '🐆', title: 'NA VELOCIDADE DO LEOPARDO', text: 'Pegou e fechou bem antes do prazo. Esse é o ritmo!' },
     { emoji: '🧠', title: 'CABEÇA NO LUGAR',     text: 'Planejamento + execução = entrega antecipada. Show.' },
@@ -23021,7 +23255,7 @@ async function pjFabExtractWithAi() {
   if (!input || !btn) return;
   const text = (input.value || '').trim();
   if (!text || text.length < 4) {
-    if (typeof showToast === 'function') showToast('warn','✨','Digite ou dite algo primeiro.');
+    if (typeof showToast === 'function') showToast('warn','⚠️','Digite ou dite algo primeiro.');
     return;
   }
   const key = (typeof getClaudeKey === 'function' ? getClaudeKey() : '')
@@ -23093,7 +23327,7 @@ Se algo não tem certeza, retorne null. Não invente.`;
     if (m) jsonStr = m[0];
     const parsed = JSON.parse(jsonStr);
     pjFabApplyAiExtraction(parsed);
-    if (typeof showToast === 'function') showToast('success','✨','Campos preenchidos pela IA.');
+    if (typeof showToast === 'function') showToast('success','✅','Campos preenchidos pela IA.');
     if (typeof pjHaptic === 'function') pjHaptic('success');
   } catch (e) {
     console.warn('[ai-extract]', e);
@@ -31317,7 +31551,6 @@ const FG_FERR_ICO = {
   refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
   percent: '<line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
   timer: '<line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/>',
-  sparkles: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>',
   eyeoff: '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
   scale: '<path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>',
   megaphone: '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
@@ -31642,7 +31875,7 @@ window.bdAIBrief = function(c) {
   if (c.oqueNaoPostar) partes.push(`\n⚠️ NÃO postar: ${c.oqueNaoPostar}`);
   const txt = partes.join(' ');
   navigator.clipboard.writeText(txt).then(() => {
-    if (typeof showToast === 'function') showToast('ok','✨','Briefing copiado! Cole no Claude/ChatGPT.');
+    if (typeof showToast === 'function') showToast('ok','📋','Briefing copiado! Cole no Claude/ChatGPT.');
     else alert('Briefing copiado!');
   });
 };
@@ -33034,6 +33267,24 @@ window.bdUploadCustomImage = async function(cid, fid, input) {
 
 // ── PWA: Service Worker + install prompt ──────────────────────
 (function pjPWAInit() {
+  // Versão nova espera quem está escrevendo: o recarregar automático apagava uma
+  // resposta pela metade. Conta o que foi digitado e a caixa preenchida pelo app
+  // (sugestão da IA, modelo), enquanto estiver na tela e não vazio.
+  const digitado = new WeakSet();
+  document.addEventListener('input', e => digitado.add(e.target), true);
+  function temTextoNaTela() {
+    return [...document.querySelectorAll('textarea, input, [contenteditable]')].some(el => {
+      if (!el.getClientRects().length) return false;
+      if (el.isContentEditable) return digitado.has(el) && el.textContent.trim() !== '';
+      if (el.tagName === 'TEXTAREA') return el.value.trim() !== '' && (digitado.has(el) || el.value !== el.defaultValue);
+      return digitado.has(el) && ['text', 'email', 'tel', 'url', 'number'].includes(el.type) && el.value.trim() !== '';
+    });
+  }
+  function quandoLivre(fn) {
+    if (!temTextoNaTela()) return fn();
+    const t = setInterval(() => { if (!temTextoNaTela()) { clearInterval(t); fn(); } }, 5000);
+  }
+
   // Registra SW só em https/localhost (file:// não suporta)
   if ('serviceWorker' in navigator
       && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
@@ -33059,7 +33310,7 @@ window.bdUploadCustomImage = async function(cid, fid, input) {
           navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (_reloading) return;
             _reloading = true;
-            location.reload();
+            quandoLivre(() => location.reload());
           });
           // Poll de update a cada 2min — força o browser a rebuscar sw.js
           // mesmo com aba aberta o dia todo. Sem isso, updates ficam presos
@@ -33071,8 +33322,8 @@ window.bdUploadCustomImage = async function(cid, fid, input) {
         .catch(err => console.warn('[SW] registration failed:', err));
     });
     function applyUpdate(sw) {
-      // Manda o SW novo tomar controle imediatamente. controllerchange dispara reload.
-      try { sw.postMessage('SKIP_WAITING'); } catch(_){}
+      // Manda o SW novo tomar controle assim que ninguém estiver escrevendo. controllerchange dispara reload.
+      quandoLivre(() => { try { sw.postMessage('SKIP_WAITING'); } catch(_){} });
     }
   }
 
@@ -36242,7 +36493,7 @@ const POP = (() => {
       <button data-tab="entrada" onclick="switchTab('entrada');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>Criar post</button>
       <button data-tab="lives" onclick="switchTab('lives');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>Ao vivo</button>
       <button data-tab="pop" onclick="switchTab('pop');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>POPs</button>
-      <button data-tab="gmb" onclick="switchTab('gmb');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>Perfil no Google</button>
+      <button data-tab="gmb" onclick="switchTab('gmb');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>Google</button>
       <button data-tab="metricas" onclick="switchTab('metricas');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>Métricas</button>
       <button data-tab="base" onclick="switchTab('base');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>Clientes</button>
       <button data-tab="contratos" onclick="switchTab('contratos');fgMoreClose()" class="fg-more__b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></svg>Contratos</button>

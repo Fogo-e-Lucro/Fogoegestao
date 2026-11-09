@@ -2246,11 +2246,22 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .gmb-post-cta-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .gmb-post-actions { display:flex; gap:10px; flex-wrap:wrap; }
 @media (max-width:640px) { .gmb-post-row { grid-template-columns:auto 1fr; } .gmb-post-cta-row { grid-template-columns:1fr; } }
+.gmb-post-quando { display:grid; grid-template-columns:auto 1fr; gap:8px; align-items:center; }
+.gmb-post-form:has(#gmbPostCancelar:not([hidden])) .gmb-post-novo { display:none; } /* editar mexe só no post aberto */
+.gmb-post-outros { border:1px solid var(--border); border-radius:10px; padding:0 12px; }
+.gmb-post-outros > summary { padding:10px 0; font-size:13px; font-weight:600; color:var(--text); cursor:pointer; }
+.gmb-post-outros-lista { display:flex; flex-direction:column; gap:10px; padding:2px 0 12px; max-height:240px; overflow-y:auto; }
+.gmb-post-aviso { color:var(--danger); }
+.gmb-post-fila { margin:0 0 20px; }
+.gmb-post-fila .gmb-ed-lista { margin-top:12px; }
+.gmb-post-publicados { margin-bottom:12px; }
+@media (max-width:640px) { .gmb-post-quando { grid-template-columns:1fr; } }
 .gmb-reviews-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:8px; }
 .gmb-reviews-title { font-size:14px; font-weight:700; color:var(--text1); }
 .gmb-reviews-filter { display:flex; gap:6px; }
 .gmb-filter-btn { padding:5px 12px; border-radius:20px; border:1px solid var(--border); background:var(--bg2); color:var(--text2); font-size:11px; font-weight:600; cursor:pointer; font-family:var(--font); transition:all .15s; }
 .gmb-filter-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+.gmb-ver-mais { display:block; width:100%; margin-top:10px; }
 .gmb-review { border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; background:var(--bg2); }
 .gmb-review-head { display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; }
 .gmb-review-avatar { width:36px; height:36px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; flex-shrink:0; }
@@ -2272,6 +2283,18 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .gmb-empty { text-align:center; padding:32px; color:var(--text3); font-size:13px; }
 /* Editar o perfil: cartões que abrem e buscam no Google só quando abrem */
 #tab-gmb [hidden] { display:none !important; }
+/* Abas da tela do Google: o #tab-gmb guarda a aba em data-aba e o resto some */
+.gmb-abas { display:flex; gap:4px; margin:0 0 16px; box-shadow:inset 0 -1px 0 var(--border); overflow-x:auto; scrollbar-width:none; }
+.gmb-abas::-webkit-scrollbar { display:none; }
+.gmb-aba { flex:none; min-height:44px; padding:0 12px; border:0; background:none; color:var(--text2); font:600 14px var(--font); cursor:pointer; white-space:nowrap; }
+.gmb-aba:hover { color:var(--text); }
+.gmb-aba[aria-selected="true"] { color:var(--text); box-shadow:inset 0 -2px 0 var(--text); }
+.gmb-aba:focus-visible { outline:2px solid var(--text); outline-offset:-2px; border-radius:6px; }
+#tab-gmb[data-aba="avaliacoes"] [data-gmb-aba]:not([data-gmb-aba~="avaliacoes"]),
+#tab-gmb[data-aba="posts"] [data-gmb-aba]:not([data-gmb-aba~="posts"]),
+#tab-gmb[data-aba="fotos"] [data-gmb-aba]:not([data-gmb-aba~="fotos"]),
+#tab-gmb[data-aba="horario"] [data-gmb-aba]:not([data-gmb-aba~="horario"]),
+#tab-gmb[data-aba="numeros"] [data-gmb-aba]:not([data-gmb-aba~="numeros"]) { display:none !important; }
 .gmb-post-type-btn:disabled, .gmb-post-input:disabled { opacity:.5; cursor:not-allowed; }
 .gmb-edit-card { background:var(--card); border:1px solid var(--border); border-radius:14px; margin-bottom:16px; }
 .gmb-edit-card > summary { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 24px; cursor:pointer; list-style:none; color:var(--text); }
@@ -20131,6 +20154,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-gmb .gmb-rank-map-wrap:not(:has(.gm-style, #gmbRankLoading[style*="flex"])) { display: none; }
   body.at-gmb .gmb-demo-badge { background: var(--card); border: 1px solid var(--border); color: var(--text2); text-transform: none; letter-spacing: 0; }
   body.at-gmb .gmb-loc-bar { gap: 8px; margin-bottom: 12px; }
+  body.at-gmb .gmb-abas { margin-bottom: 12px; }
   body.at-gmb .gmb-loc-select { flex: 1 1 100%; min-width: 0; padding-right: 36px; font-weight: 500; }
   body.at-gmb .gmb-refresh-btn { flex: 1 1 100%; }
   body.at-gmb .gmb-loc-bar .fx-select-wrap { flex: 1 1 100%; }
@@ -20208,6 +20232,8 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   body.at-gmb .gmb-post-fields { padding: 0; background: none; border: 0; }
   body.at-gmb .gmb-post-label { font-size: 13px; text-transform: none; letter-spacing: 0; }
   body.at-gmb .gmb-post-actions > * { flex: 1 1 0; }
+  body.at-gmb .gmb-post-outros { border-radius: 12px; background: var(--card); }
+  body.at-gmb .gmb-post-outros > summary { padding: 12px 0; font-size: 15px; }
   body.at-gmb .gmb-filter-btn { min-height: 44px; padding: 0 14px; border-radius: 999px; background: var(--card); color: var(--text); font-size: 14px; }
   body.at-gmb .gmb-filter-btn.active { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
   body.at-gmb .gmb-review-avatar { background: var(--card); border: 1px solid var(--border); color: var(--text2); }
