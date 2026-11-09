@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.18">
+<link rel="stylesheet" href="styles.css?v=3.71.19">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -11469,20 +11469,16 @@ function mtrOnAccountChange() {
 }
 
 // Conta de anúncios lembrada por conta do Instagram: uma só pra todos ia de um cliente
-// pro outro (o Maracanaú abria com a conta da Fábrica de Cookies). A escolha antiga fica
-// com o Instagram que estava aberto junto, uma vez, ao abrir o app.
-try {
-  const ig = localStorage.getItem('mtrSelectedIg'), ad = localStorage.getItem('mtrSelectedAd');
-  if (ad && ig && localStorage.getItem('mtrAdPorIg') === null) localStorage.setItem('mtrAdPorIg', JSON.stringify({ [ig]: ad }));
-  localStorage.removeItem('mtrSelectedAd');
-} catch (_) {}
+// pro outro (o Maracanaú abria com a conta da Fábrica de Cookies). A escolha antiga não passa
+// pra nenhum Instagram: o par aberto junto era justamente o errado, e o mtrAdPorIg da 3.71.18 nasceu dele.
+try { localStorage.removeItem('mtrSelectedAd'); localStorage.removeItem('mtrAdPorIg'); } catch (_) {}
 function mtrAdsPorIg() {
-  try { return JSON.parse(localStorage.getItem('mtrAdPorIg') || '{}') || {}; } catch (_) { return {}; }
+  try { return JSON.parse(localStorage.getItem('mtrAdDoIg') || '{}') || {}; } catch (_) { return {}; }
 }
 function mtrGuardarAdDoIg(igId, adId) {
   const m = mtrAdsPorIg();
   if (adId) m[igId] = adId; else delete m[igId];
-  localStorage.setItem('mtrAdPorIg', JSON.stringify(m));
+  localStorage.setItem('mtrAdDoIg', JSON.stringify(m));
 }
 // Marca no seletor a conta de anúncios do Instagram aberto (ou nenhuma)
 function mtrAplicarAdDoIg() {
