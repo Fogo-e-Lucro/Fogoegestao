@@ -20095,6 +20095,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
     margin-bottom: 12px; padding: 16px; border: 1px solid var(--border); border-radius: 16px;
     background: var(--card); box-shadow: var(--sh-card); transform: none;
   }
+  body.at-gmb .gmb-posts-card { scroll-margin-top: 68px; } /* o Criar post da lista rola até aqui: 56 da barra do topo + 12 */
   body.at-gmb :is(.gmb-preanalise-header, .gmb-rank-header) { margin-bottom: 12px; }
   body.at-gmb :is(.gmb-preanalise-title, .gmb-connect-title, .gmb-rank-title, .gmb-posts-title, .gmb-reviews-title, .gmb-chart-title, .gmb-score-title) {
     margin-bottom: 2px; font-size: 15px; font-weight: 600; line-height: 20px; letter-spacing: 0; color: var(--text);

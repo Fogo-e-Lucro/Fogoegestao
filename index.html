@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.9">
+<link rel="stylesheet" href="styles.css?v=3.71.10">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -2480,13 +2480,14 @@ ufw allow 3000/tcp</pre>
         <select class="gmb-loc-select" id="gmbLocSelect" onchange="gmbOnLocationChange()">
           <option value="">Todos os perfis</option>
         </select>
-        <button class="gmb-refresh-btn" onclick="_gmbNumCache={};gmbLoadLocation()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>Atualizar</button>
+        <button class="gmb-refresh-btn" onclick="_gmbNumCache={};_gmbPostsTodos=null;gmbLoadLocation()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>Atualizar</button>
       </div>
 
       <!-- Multi-location overview -->
       <div id="gmbMultiGrid" style="display:none">
         <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:12px;">Todos os perfis</div>
         <div class="gmb-multi-grid" id="gmbLocCards"></div>
+        <div class="gmb-num-card" id="gmbPostsTodos"></div>
         <div class="gmb-num-card" id="gmbNumTodos"></div>
       </div>
 
@@ -2523,7 +2524,10 @@ ufw allow 3000/tcp</pre>
           </div>
           <div class="gmb-post-form">
             <textarea id="gmbPostText" class="gmb-post-textarea" placeholder="Texto do post (até 1500 caracteres)" maxlength="1500"></textarea>
-            <input type="url" id="gmbPostMedia" class="gmb-post-input" placeholder="URL da imagem (opcional, JPG ou PNG)">
+            <div class="gmb-ed-linha">
+              <input type="url" id="gmbPostMedia" class="gmb-post-input" placeholder="URL da imagem (opcional, JPG ou PNG)">
+              <button type="button" class="gmb-ed-btn" id="gmbPostFotoBtn" onclick="this.nextElementSibling.click()">Escolher foto</button><input type="file" accept="image/*" hidden onchange="gmbPostFoto(this)">
+            </div>
 
             <!-- EVENT-specific fields -->
             <div id="gmbPostEventFields" class="gmb-post-fields" style="display:none">
@@ -16195,7 +16199,7 @@ async function gmbRenderNumeros() {
     ${a.views ? `<div class="gmb-num-sub">Onde viram: pesquisa do Google ${gmbNumFmt(a.viewsSearch)} · Google Maps ${gmbNumFmt(a.viewsMaps)} · ${Math.round(a.mobile / a.views * 100)}% pelo celular</div>` : ''}
     <div id="gmbNumTermos"></div>`;
   gmbNumGrafico(_gmbNumMetrica);
-  gmbRenderTermos(loc, N);
+  return gmbRenderTermos(loc, N);
 }
 
 async function gmbNumGrafico(k) {
@@ -16312,6 +16316,7 @@ async function gmbLoadAccounts() {
 }
 
 function gmbPopulateSelector() {
+  _gmbPostsTodos = null;
   const sel = document.getElementById('gmbLocSelect');
   sel.innerHTML = '<option value="">Todos os perfis</option>' +
     _gmbLocations.map((l,i) => `<option value="${i}">${escHtml(l.title || l.name)}</option>`).join('');
@@ -16358,6 +16363,7 @@ function gmbShowMultiGrid() {
   document.getElementById('gmbReviewsWrap').style.display = '';
   gmbLoadAllReviews();
   gmbRenderNumerosTodos();
+  gmbRenderPostsTodos();
 }
 
 // Avaliações de todos os perfis: no demo junta as fictícias; no real lê gmb_reviews, que o fg-gmb da VPS grava
@@ -16389,7 +16395,7 @@ async function gmbLoadAllReviews() {
 
 function gmbSelectLocation(idx) {
   document.getElementById('gmbLocSelect').value = idx;
-  gmbOnLocationChange();
+  return gmbOnLocationChange();
 }
 
 async function gmbOnLocationChange() {
@@ -16402,7 +16408,7 @@ async function gmbOnLocationChange() {
   }
   _gmbCurrentLoc = _gmbLocations[parseInt(idx)];
   try { if (_gmbCurrentLoc && _gmbCurrentLoc.name) localStorage.setItem('fg_gmb_loc_id', _gmbCurrentLoc.name); } catch(e) {}
-  gmbLoadLocation();
+  return gmbLoadLocation();
 }
 
 async function gmbLoadLocation() {
@@ -16412,7 +16418,7 @@ async function gmbLoadLocation() {
   document.getElementById('gmbMultiGrid').style.display = 'none';
   document.getElementById('gmbReviewsWrap').style.display = '';
   document.getElementById('gmbReviewsTitle').textContent = 'Avaliações';
-  gmbRenderNumeros();
+  const numeros = gmbRenderNumeros(); // a tela só para de crescer quando os números e as buscas chegam
   gmbFecharCartoes();
 
   let reviewsOk = true;
@@ -16439,6 +16445,7 @@ async function gmbLoadLocation() {
   if (!_gmbDemoMode && reviewsOk) gmbSaveHistory();
   // Carrega histórico de scans de ranking
   gmbRankLoadHistory();
+  return numeros;
 }
 
 function gmbCalcScore(loc, reviews) {
@@ -16886,6 +16893,63 @@ const gmbDemoSite = loc => 'https://' + String(loc.websiteUri || 'exemplo.com.br
 const GMB_POST_TIPO = { STANDARD: 'Novidade', EVENT: 'Evento', OFFER: 'Oferta' };
 const GMB_POST_ESTADO = { LIVE: 'No ar', PROCESSING: 'Em análise', REJECTED: 'Recusado pelo Google' };
 
+// Posts de todos os perfis: quem está há mais tempo sem postar vem primeiro
+let _gmbPostsTodos = null; // a busca da lista; Atualizar, publicar, apagar e trocar de modo zeram
+async function gmbRenderPostsTodos() {
+  const box = document.getElementById('gmbPostsTodos');
+  if (!box || !_gmbLocations.length) return;
+  const head = '<div class="gmb-posts-head"><div class="gmb-posts-title">Posts de todos os perfis</div></div>';
+  // ponytail: um pedido por perfil, todos juntos, e só a 1ª página (100 posts); em lotes se a cota por minuto apertar
+  if (!_gmbPostsTodos) _gmbPostsTodos = Promise.all(_gmbLocations.map(async loc => {
+    try { return { loc, posts: _gmbDemoMode ? gmbDemoPosts(loc) : (await gmbApi(`${gmbV4(loc)}/localPosts?pageSize=100`)).localPosts || [] }; }
+    catch (e) { return { loc, erro: e }; }
+  }));
+  box.innerHTML = head + '<div class="gmb-empty">Buscando os posts no Google…</div>';
+  const p = _gmbPostsTodos, res = await p;
+  if (p !== _gmbPostsTodos || _gmbCurrentLoc || !box.isConnected) return;
+  const ok = res.filter(r => r.posts), falhas = res.filter(r => r.erro);
+  if (!ok.length) { box.innerHTML = head + '<div class="gmb-empty"></div>'; box.lastElementChild.textContent = 'Os posts não vieram. ' + gmbErroTexto(falhas[0].erro); return; }
+  const DIA = 864e5, agora = Date.now(), meiaNoite = new Date().setHours(0, 0, 0, 0);
+  const idade = t => { const d = Math.max(0, Math.ceil((meiaNoite - new Date(t)) / DIA)); return d === 0 ? 'hoje' : d === 1 ? 'ontem' : `há ${d} dias`; };
+  const linhas = ok.map(r => ({ ...r,
+    ultimo: r.posts.reduce((a, x) => String(x.createTime || '') > String(a?.createTime || '') ? x : a, null),
+    n30: r.posts.filter(x => agora - new Date(x.createTime) < 30 * DIA).length,
+  })).sort((a, b) => String(a.ultimo?.createTime || '').localeCompare(String(b.ultimo?.createTime || '')));
+  const item = ({ loc, ultimo: u, n30 }) => `<div class="gmb-ed-item">
+    <div class="gmb-ed-info">
+      <div class="gmb-ed-topo"><b>${escHtml(loc.title || 'Perfil')}</b></div>
+      <div class="gmb-ed-texto" style="display:block">${u ? `Último post ${idade(u.createTime)} (${GMB_POST_TIPO[u.topicType] || 'post'}${{ PROCESSING: ', em análise', REJECTED: ', recusado pelo Google' }[u.state] || ''}). ${gmbPlural(n30, 'post', 'posts')} nos últimos 30 dias.` : 'Nenhum post ainda.'}</div>
+    </div>
+    <button type="button" class="gmb-ed-btn" style="align-self:center" onclick="gmbPostarEm(${_gmbLocations.indexOf(loc)})">Criar post</button>
+  </div>`;
+  box.innerHTML = head + `<div class="gmb-num-nota">Quem está há mais tempo sem postar aparece primeiro.</div><div class="gmb-ed-lista">${linhas.map(item).join('')}</div>`
+    + (falhas.length ? `<div class="gmb-num-nota" style="margin:12px 0 0">Não vieram: ${falhas.map(r => escHtml(r.loc.title || 'Perfil')).join(', ')}. ${escHtml(gmbErroTexto(falhas[0].erro))}</div>` : '');
+}
+
+// "Criar post" na lista: abre o perfil e só rola até o formulário depois que a tela para de crescer
+async function gmbPostarEm(i) {
+  const loc = _gmbLocations[i];
+  await gmbSelectLocation(i);
+  if (_gmbCurrentLoc !== loc) return; // trocou de perfil enquanto carregava
+  document.getElementById('gmbCartaoPosts').open = true; // os posts do perfil aparecem embaixo do formulário
+  document.getElementById('gmbPostTitulo').closest('.gmb-posts-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('gmbPostText').focus({ preventScroll: true });
+}
+
+// a foto do post sobe pro Storage e o Google busca pelo link, igual às fotos do perfil
+async function gmbPostFoto(inp) {
+  const f = inp.files?.[0], loc = gmbPerfil();
+  inp.value = '';
+  if (!f || !loc) return;
+  const volta = gmbEspera(inp.previousElementSibling, 'Enviando foto…');
+  try {
+    const file = await gmbFotoPreparar(f, false);
+    document.getElementById('gmbPostMedia').value = _gmbDemoMode ? URL.createObjectURL(file) : await gmbSubirFoto(file, loc);
+    showToast('success', '✅', 'Foto pronta. Ela vai junto quando você publicar.');
+  } catch (e) { showToast('error', '❌', escHtml(e.message)); }
+  finally { volta(); }
+}
+
 async function gmbPublishPost() {
   if (!gmbPerfil()) { showToast('warn','⚠️','Selecione um perfil primeiro.'); return; }
   let body;
@@ -16902,6 +16966,7 @@ async function gmbPublishPost() {
     } else if (ed) await gmbApi(`https://mybusiness.googleapis.com/v4/${ed.name}?updateMask=${mask}`, { method: 'PATCH', body: JSON.stringify(body) });
     else await gmbApi(`${gmbV4(loc)}/localPosts`, { method: 'POST', body: JSON.stringify(body) });
     gmbFeito(ed ? 'Post salvo no perfil do Google' : 'Post publicado no perfil do Google', ed ? 'Edição simulada' : 'Postagem simulada');
+    _gmbPostsTodos = null;
     if (_gmbPostEditando === ed) gmbResetPostForm();
     gmbRecarregar('gmbCartaoPosts', loc);
   } catch(e) {
@@ -16925,6 +16990,7 @@ function gmbResetPostForm() {
   document.querySelectorAll('.gmb-post-type-btn').forEach(b => { b.disabled = false; });
   const media = document.getElementById('gmbPostMedia');
   media.disabled = false; media.placeholder = 'URL da imagem (opcional, JPG ou PNG)';
+  document.getElementById('gmbPostFotoBtn').disabled = false;
   document.getElementById('gmbPostPublicar').textContent = 'Publicar post';
   document.getElementById('gmbPostCancelar').hidden = true;
   document.getElementById('gmbPostTitulo').textContent = 'Criar postagem';
@@ -16960,6 +17026,7 @@ function gmbEditarPost(i) {
   }
   const media = document.getElementById('gmbPostMedia');
   media.disabled = true; media.placeholder = 'A foto fica a mesma ao editar';
+  document.getElementById('gmbPostFotoBtn').disabled = true;
   document.getElementById('gmbPostPublicar').textContent = 'Salvar post';
   document.getElementById('gmbPostCancelar').hidden = false;
   document.getElementById('gmbPostTitulo').textContent = 'Editar postagem';
@@ -17010,6 +17077,7 @@ async function gmbApagarPost(i, btn) {
     if (_gmbDemoMode) tk.loc._demoPosts = gmbDemoPosts(tk.loc).filter(x => x !== p);
     else await gmbApagar(`https://mybusiness.googleapis.com/v4/${p.name}`);
     if (_gmbPostEditando?.name === p.name) gmbResetPostForm();
+    _gmbPostsTodos = null;
     gmbFeito('Post apagado do perfil', 'Post apagado');
     gmbRecarregar('gmbCartaoPosts', tk.loc);
   } catch(e) { gmbErroAcao(tk, e); }
@@ -17021,15 +17089,16 @@ function gmbDemoPosts(loc) {
   const dia = n => { const d = new Date(); d.setDate(d.getDate() + n); return d; };
   const data = d => ({ year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate() });
   const sabado = dia(((6 - new Date().getDay() + 7) % 7) + 7);
+  const atraso = 12 * Math.max(0, _gmbLocations.indexOf(loc)); // cada perfil do demo com o último post numa idade, pra lista de todos ter ordem
   return loc._demoPosts = [
-    { name: 'demo-1', topicType: 'STANDARD', state: 'LIVE', createTime: dia(-2).toISOString(),
+    { name: 'demo-1', topicType: 'STANDARD', state: 'LIVE', createTime: dia(-2 - atraso).toISOString(),
       summary: 'Almoço executivo de segunda a sexta, das 11h às 15h. Prato, bebida e sobremesa.',
       callToAction: { actionType: 'BOOK', url: gmbDemoSite(loc) + '/reserva' } },
-    { name: 'demo-2', topicType: 'OFFER', state: 'LIVE', createTime: dia(-5).toISOString(),
+    { name: 'demo-2', topicType: 'OFFER', state: 'LIVE', createTime: dia(-5 - atraso).toISOString(),
       summary: 'Toda terça, o segundo prato sai pela metade do preço. Mostre o cupom no caixa.',
       event: { title: 'Terça em dobro', schedule: { startDate: data(dia(-5)), endDate: data(dia(25)) } },
       offer: { couponCode: 'TERCA50' } },
-    { name: 'demo-3', topicType: 'EVENT', state: 'PROCESSING', createTime: new Date().toISOString(),
+    { name: 'demo-3', topicType: 'EVENT', state: atraso ? 'LIVE' : 'PROCESSING', createTime: dia(-atraso).toISOString(),
       summary: 'Voz e violão das 19h às 23h. Entrada livre.',
       event: { title: 'Sábado com música ao vivo', schedule: { startDate: data(sabado), startTime: { hours: 19 }, endDate: data(sabado), endTime: { hours: 23 } } } },
   ];
@@ -17194,6 +17263,10 @@ function gmbDesenharFotos() {
   try { window.fxEnhanceSelects?.(c) } catch(_) {}
 }
 
+const gmbSubirFoto = (file, loc) => pjUploadToStorage(file, 'task_attachments/gmb-' + loc.name.split('/').pop()).catch(e => {
+  throw new Error(e?.code === 'storage/unauthorized' ? 'O Firebase recusou a foto. A pasta das fotos do Google precisa ser liberada nas regras do Storage.' : 'A foto não subiu. Confira a internet e tente de novo.');
+});
+
 async function gmbEnviarFoto(inp) {
   const f = inp.files?.[0], tk = _gmbEd.gmbCartaoFotos;
   inp.value = '';
@@ -17204,9 +17277,7 @@ async function gmbEnviarFoto(inp) {
     const file = await gmbFotoPreparar(f, livre);
     if (_gmbDemoMode) gmbDemoFotos(tk.loc).unshift({ name: 'demo-' + Date.now(), mediaFormat: 'PHOTO', locationAssociation: { category: cat }, googleUrl: URL.createObjectURL(file), insights: { viewCount: '0' } });
     else {
-      const url = await pjUploadToStorage(file, 'task_attachments/gmb-' + tk.loc.name.split('/').pop()).catch(e => {
-        throw new Error(e?.code === 'storage/unauthorized' ? 'O Firebase recusou a foto. A pasta das fotos do Google precisa ser liberada nas regras do Storage.' : 'A foto não subiu. Confira a internet e tente de novo.');
-      });
+      const url = await gmbSubirFoto(file, tk.loc);
       await gmbApi(`${gmbV4(tk.loc)}/media`, { method: 'POST', body: JSON.stringify({ mediaFormat: 'PHOTO', locationAssociation: { category: cat }, sourceUrl: url }) });
     }
     gmbFeito('Foto enviada pro perfil. O Google pode levar um tempo pra mostrar.', 'Foto enviada');
