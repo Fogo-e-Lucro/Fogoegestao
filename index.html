@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.16">
+<link rel="stylesheet" href="styles.css?v=3.71.17">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -35080,6 +35080,14 @@ document.addEventListener('input', (e) => {
         });
         select._fxValHooked = true;
       }
+      // Opções trocadas por innerHTML com <option selected> também mudam o valor sem 'change'
+      // (a conta de anúncios salva aparecia como "Conta de anúncios" com os números dela na tela)
+      const html = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+      Object.defineProperty(select, 'innerHTML', {
+        get() { return html.get.call(this); },
+        set(v) { html.set.call(this, v); applyState(); },
+        configurable: true,
+      });
     } catch(_){}
   }
 
