@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Fogo & Gestão — Sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.23">
+<title>Fogo & Gestão: sistema integrado de gestão de publicidade</title>
+<link rel="stylesheet" href="styles.css?v=3.71.24">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -156,13 +156,13 @@
   <div class="portal-app" id="portalApp" style="display:none">
     <header class="portal-header" id="portalHeader">
       <div class="portal-header-tag">Seu calendário de conteúdos</div>
-      <h1 class="portal-header-name" id="portalName">—</h1>
+      <h1 class="portal-header-name" id="portalName">-</h1>
       <div class="portal-header-sub" id="portalSub">Cuidado pela Fogo &amp; Lucro</div>
     </header>
 
     <div class="portal-cal-nav">
       <button type="button" class="portal-cal-nav-btn" onclick="portalCalNav(-1)" aria-label="Mês anterior">‹</button>
-      <div class="portal-cal-month-big" id="portalCalMonth">—</div>
+      <div class="portal-cal-month-big" id="portalCalMonth">-</div>
       <button type="button" class="portal-cal-nav-btn" onclick="portalCalNav(1)" aria-label="Próximo mês">›</button>
     </div>
 
@@ -715,7 +715,7 @@
             <b>2.</b> Menu ⋮ → <b>Dispositivos conectados</b> → <b>Vincular dispositivo</b><br>
             <b>3.</b> Aponta a câmera pro QR acima
           </div>
-          <div class="fg-wa-qr-expire">QR expira em ~40s — se expirar, clique em Reconectar de novo.</div>
+          <div class="fg-wa-qr-expire">QR expira em ~40s. Se expirar, clique em Reconectar de novo.</div>
         </div>
 
         <div id="fgWaEmpty" class="fg-wa-empty">
@@ -774,7 +774,7 @@
     <div class="modal-section">
       <label class="modal-label">Cliente <span>Qual restaurante você está configurando?</span></label>
       <select class="modal-textarea" id="aiClienteSelect" style="min-height:unset;padding:9px 12px;cursor:pointer;" onchange="loadAiConfigForClient(this.value)">
-        <option value="">— Selecione um cliente —</option>
+        <option value="">Selecione um cliente</option>
       </select>
       <div class="modal-hint" id="aiClienteHint" style="display:none;color:var(--success);">✓ Configuração carregada para este cliente</div>
     </div>
@@ -2687,10 +2687,10 @@ ufw allow 3000/tcp</pre>
 
         <!-- KPIs do scan -->
         <div class="gmb-rank-kpis" id="gmbRankKpis" style="display:none">
-          <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkAvg">—</div><div class="gmb-rank-kpi-lbl">Posição média</div></div>
-          <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkTop3">—</div><div class="gmb-rank-kpi-lbl">Top 3</div></div>
-          <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkTop10">—</div><div class="gmb-rank-kpi-lbl">Top 10</div></div>
-          <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkOut">—</div><div class="gmb-rank-kpi-lbl">Não rankeou</div></div>
+          <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkAvg">-</div><div class="gmb-rank-kpi-lbl">Posição média</div></div>
+          <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkTop3">-</div><div class="gmb-rank-kpi-lbl">Top 3</div></div>
+          <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkTop10">-</div><div class="gmb-rank-kpi-lbl">Top 10</div></div>
+          <div class="gmb-rank-kpi"><div class="gmb-rank-kpi-val" id="grkOut">-</div><div class="gmb-rank-kpi-lbl">Não rankeou</div></div>
         </div>
 
         <!-- Histórico -->
@@ -2961,9 +2961,9 @@ ufw allow 3000/tcp</pre>
     <div class="pj-task-modal" id="pjTaskModal">
       <div class="pj-modal-topbar" id="pjModalBreadcrumb">
         <button class="pj-icon-btn" onclick="pjCloseTaskModal()" style="font-size:16px;margin-right:4px;" title="Fechar" aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-        <span id="pjModalSpaceName">—</span>
+        <span id="pjModalSpaceName">-</span>
         <span class="sep">/</span>
-        <span id="pjModalListName">—</span>
+        <span id="pjModalListName">-</span>
         <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
           <span style="font-size:11px;color:var(--text3);">Salvo automaticamente</span>
           <button class="pj-icon-btn" title="Duplicar tarefa" aria-label="Duplicar tarefa" onclick="pjDuplicateTask(pjCurrentTaskId)" style="font-size:14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button>
@@ -3506,7 +3506,7 @@ function portalRenderKpis(cliente, doneTasks, upcoming) {
   const nextCount = upcoming.length;
   // Última atividade
   const lastActive = doneTasks[0]?.ts;
-  const lastActiveTxt = lastActive ? portalRelativeTime(lastActive) : '—';
+  const lastActiveTxt = lastActive ? portalRelativeTime(lastActive) : '-';
   // Dias com atividade na última semana (unique)
   const daysActive = new Set(doneTasks.map(t => new Date(t.ts).toDateString())).size;
   el.innerHTML = `
@@ -5285,11 +5285,11 @@ function _inviteHtml(name, email, authType, pwd, inviterName) {
 function _inviteText(name, email, authType, pwd, inviterName) {
   const firstName = (name||'').split(' ')[0] || 'colaborador';
   let t = '';
-  t += `🔥 FOGO & GESTÃO — Sistema integrado da Fogo & Lucro\n`;
+  t += `🔥 FOGO & GESTÃO: sistema integrado da Fogo & Lucro\n`;
   t += `═══════════════════════════════════════════\n\n`;
   t += `Olá, ${firstName}! 👋\n\n`;
   if (inviterName) t += `${inviterName} convidou você para fazer parte da equipe.\n\n`;
-  t += `Você foi adicionado(a) ao Fogo & Gestão — nossa plataforma integrada de gestão de projetos, clientes, métricas e conteúdo.\n\n`;
+  t += `Você foi adicionado(a) ao Fogo & Gestão, nossa plataforma integrada de gestão de projetos, clientes, métricas e conteúdo.\n\n`;
   t += `🔐 SEU ACESSO\n`;
   t += `─────────────────────────────────────────\n`;
   if (authType === 'google') {
@@ -5306,11 +5306,11 @@ function _inviteText(name, email, authType, pwd, inviterName) {
   t += `${FG_DOMAIN}\n\n`;
   t += `O QUE VOCÊ PODE FAZER:\n`;
   t += `─────────────────────────────────────────\n`;
-  t += `📋 Gestão Central — Kanban, listas e calendário\n`;
-  t += `🏪 Base de Dados — ficha completa dos clientes\n`;
-  t += `📊 Métricas — Meta Ads e indicadores\n`;
-  t += `📱 Social — roteiro e calendário editorial\n`;
-  t += `📍 Google — ranking GMB e SEO local\n`;
+  t += `📋 Gestão Central: Kanban, listas e calendário\n`;
+  t += `🏪 Base de Dados: ficha completa dos clientes\n`;
+  t += `📊 Métricas: Meta Ads e indicadores\n`;
+  t += `📱 Social: roteiro e calendário editorial\n`;
+  t += `📍 Google: ranking GMB e SEO local\n`;
   t += `💬 Colaboração em tempo real\n\n`;
   t += `📱 DICA: ao abrir no celular, toque em "Adicionar à tela inicial" para usar como app.\n\n`;
   t += `─────────────────────────────────────────\n`;
@@ -5320,7 +5320,7 @@ function _inviteText(name, email, authType, pwd, inviterName) {
 
 function _inviteWhatsAppText(name, email, authType, pwd) {
   const firstName = (name||'').split(' ')[0] || '';
-  let t = `🔥 *Fogo & Gestão* — Convite\n\n`;
+  let t = `🔥 Convite pro *Fogo & Gestão*\n\n`;
   t += `Olá${firstName ? ', '+firstName : ''}! 👋\n\n`;
   t += `Você foi adicionado(a) ao nosso sistema integrado de gestão.\n\n`;
   t += `*🔐 Seu acesso:*\n`;
@@ -7158,7 +7158,7 @@ function appMenuSync() {
     newPres.innerHTML = oldPres.innerHTML || '';
     newPres.style.display = oldPres.innerHTML && isAdmin ? '' : 'none';
     newPres.style.cursor = 'pointer';
-    newPres.title = 'Quem está online — clique pra ver horários';
+    newPres.title = 'Quem está online. Clique pra ver os horários';
     newPres.onclick = (ev) => {
       ev.stopPropagation();
       if (typeof appPresenceTogglePopover === 'function') appPresenceTogglePopover();
@@ -7790,7 +7790,7 @@ function fgWaShowGlobalAlert(state) {
     document.body.appendChild(el);
   }
   const msg = state === 'error'
-    ? { icon: '⚠️', title: 'WhatsApp da Central com erro', sub: 'Servidor Evolution pode estar fora — abre pra ver o log' }
+    ? { icon: '⚠️', title: 'WhatsApp da Central com erro', sub: 'Servidor Evolution pode estar fora. Abre pra ver o log' }
     : { icon: '🚨', title: 'WhatsApp da Central caiu', sub: 'Relatório 6h + alertas parados. Reconecta agora antes que rode a próxima cron.' };
   el.innerHTML = `
     <span class="fg-wa-global-icon">${msg.icon}</span>
@@ -7849,7 +7849,7 @@ async function fgWaReconnect() {
     if (!b64) { fgWaLog('Instância criada mas QR não veio ainda. Aguarde e recarregue o status.', 'error'); return; }
     fgWaShowQr(b64);
     fgWaSetBadge('connecting');
-    fgWaLog('QR gerado — escaneie no celular. Status atualiza automaticamente.', 'ok');
+    fgWaLog('QR gerado. Escaneie no celular e o status atualiza sozinho.', 'ok');
   } catch(e) {
     fgWaLog(`Falha: ${e.message}`, 'error');
     fgWaSetBadge('error');
@@ -7928,7 +7928,7 @@ function openAiConfig() {
   const sel = document.getElementById('aiClienteSelect');
   // Lista canônica vem do BD (clientes_base)
   const allNames = (typeof getCanonicalClientNames === 'function') ? getCanonicalClientNames() : [];
-  sel.innerHTML = '<option value="">— Selecione um cliente —</option>' +
+  sel.innerHTML = '<option value="">Selecione um cliente</option>' +
     allNames.map(n => `<option value="${escHtml(n)}">${escHtml(n)}</option>`).join('');
   // Pre-select if form has a restaurante
   const formRest = document.getElementById('restaurante')?.value.trim();
@@ -8202,16 +8202,16 @@ function aiGerarRoteiro() {
   const c = getPostContext();
   const system = `Você é roteirista de vídeos curtos (Reels) para restaurantes brasileiros. Crie roteiros de fala naturais, dinâmicos e que vendam. Máximo 60 segundos de fala (~150 palavras).
 
-FORMATO OBRIGATÓRIO (markdown — use exatamente estes 3 blocos):
+FORMATO OBRIGATÓRIO (markdown, use exatamente estes 3 blocos):
 
 ## 🎬 Abertura (0-3s)
 [Hook forte e curto pra prender atenção, 1-2 frases]
 
 ## 🔥 Desenvolvimento (3-45s)
-[Corpo do roteiro — descrição sensorial, benefícios, diferenciais. 2-4 frases curtas, fala natural]
+[Corpo do roteiro: descrição sensorial, benefícios, diferenciais. 2-4 frases curtas, fala natural]
 
 ## 📣 CTA (45-60s)
-[Chamada pra ação clara e direta — visite, peça pelo iFood, marque alguém, etc]
+[Chamada pra ação clara e direta: visite, peça pelo iFood, marque alguém, etc]
 
 Não inclua descrições de cena nem direções de câmera. Apenas o que será FALADO. Mantenha tom natural de pessoa falando.` + buildAiStyleBlock();
   const user = `Restaurante: ${c.restaurante||'Restaurante'}
@@ -9240,7 +9240,7 @@ function generateExportHTML(theme) {
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Calendário — ${escHtml(restaurante)}</title>
+<title>Calendário: ${escHtml(restaurante)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display:ital@0;1&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300&family=Inter:wght@300;400;500;600&family=Jost:wght@300;400;500;600&family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -9455,7 +9455,7 @@ img{max-width:100%;display:block;}
 </div>
 <div class="pos-wrap" id="pos-wrap">
   <div class="pos-row">
-    <span class="pos-text" id="pos-text">— de ${allP.length}</span>
+    <span class="pos-text" id="pos-text">${allP.length} post${allP.length===1?'':'s'}</span>
     <div class="pos-track"><div class="pos-fill" id="pos-fill"></div></div>
   </div>
 </div>
@@ -11922,12 +11922,12 @@ const MTR_CAMP_COLS = (() => {
     { id:'video_p100',group:'🎬 Vídeo', label:'Vídeo 100%', fmt:'num', getValue:c => videoP(c,100) },
     { id:'video_avg', group:'🎬 Vídeo', label:'Tempo médio (s)', fmt:'decimal', getValue:c => parseFloat((c.insights?.video_avg_time_watched_actions||[])[0]?.value || 0) },
     // Qualidade (ranking)
-    { id:'quality_ranking',    group:'🏆 Qualidade', label:'Qualidade',     fmt:'text', getValue:c => c.insights?.quality_ranking || '—' },
-    { id:'engagement_ranking', group:'🏆 Qualidade', label:'Engajamento',   fmt:'text', getValue:c => c.insights?.engagement_rate_ranking || '—' },
-    { id:'conversion_ranking', group:'🏆 Qualidade', label:'Taxa conversão',fmt:'text', getValue:c => c.insights?.conversion_rate_ranking || '—' },
+    { id:'quality_ranking',    group:'🏆 Qualidade', label:'Qualidade',     fmt:'text', getValue:c => c.insights?.quality_ranking || '-' },
+    { id:'engagement_ranking', group:'🏆 Qualidade', label:'Engajamento',   fmt:'text', getValue:c => c.insights?.engagement_rate_ranking || '-' },
+    { id:'conversion_ranking', group:'🏆 Qualidade', label:'Taxa conversão',fmt:'text', getValue:c => c.insights?.conversion_rate_ranking || '-' },
     // Configuração
-    { id:'objective',          group:'⚙️ Config',  label:'Objetivo',       fmt:'text', getValue:c => (c.objective||'—').replace('OUTCOME_','').replace('_',' ') },
-    { id:'effective_status',   group:'⚙️ Config',  label:'Status efetivo', fmt:'text', getValue:c => c.effective_status || c.status || '—' },
+    { id:'objective',          group:'⚙️ Config',  label:'Objetivo',       fmt:'text', getValue:c => (c.objective||'-').replace('OUTCOME_','').replace('_',' ') },
+    { id:'effective_status',   group:'⚙️ Config',  label:'Status efetivo', fmt:'text', getValue:c => c.effective_status || c.status || '-' },
     { id:'daily_budget',       group:'⚙️ Config',  label:'Orçamento diário', fmt:'currency', getValue:c => num(c.daily_budget)/100 },
     { id:'lifetime_budget',    group:'⚙️ Config',  label:'Orçamento total',  fmt:'currency', getValue:c => num(c.lifetime_budget)/100 }
   ];
@@ -11947,7 +11947,7 @@ let mtrCampCols = mtrLoadCampCols();
 
 function mtrFmtCampCell(col, c) {
   const v = col.getValue(c);
-  if (v === '—' || v === null || v === undefined || v === '' || Number.isNaN(v)) return 'Sem dado';
+  if (v === '-' || v === null || v === undefined || v === '' || Number.isNaN(v)) return 'Sem dado';
   if (col.fmt === 'text') return escHtml(String(v));
   if (typeof v === 'string') return escHtml(v);
   switch (col.fmt) {
@@ -12594,7 +12594,7 @@ function mtrPinnedCampShowRaw(campaignId) {
   }
   m.innerHTML = `<div class="mtr-funnel-modal-card" style="max-width:720px;">
     <button class="mtr-funnel-modal-close" onclick="document.getElementById('mtrRawModal').classList.remove('show')">×</button>
-    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">🔍 Dados crus — ${escHtml(c.name||'')}</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">🔍 Dados crus: ${escHtml(c.name||'')}</div>
     <div style="font-size:11px;color:var(--text2);margin-bottom:14px;">Use isso pra descobrir o <code>action_type</code> certo de cada métrica do Gerenciador de Anúncios.</div>
     <div style="font-size:13px;font-weight:700;margin:8px 0 4px;">📋 Campos diretos</div>
     ${flatKeys.length ? `<table style="width:100%;border-collapse:collapse;font-size:12px;">${flatKeys.map(r => `<tr style="border-bottom:1px solid var(--border);"><td style="padding:4px 8px;color:var(--text2);font-family:monospace;">${r.k}</td><td style="padding:4px 8px;text-align:right;font-weight:700;">${r.v}</td></tr>`).join('')}</table>` : '<div style="color:var(--text3);font-size:12px;">Vazio</div>'}
@@ -13384,7 +13384,7 @@ function mtrOpenAiHistory() {
       return `<div class="mtr-ai-history-item" onclick="mtrShowHistoryItem('${e.id}')">
         <div class="mtr-ai-history-meta">
           <span class="mtr-ai-history-date">${dStr}</span>
-          <span class="mtr-ai-history-tag">${e.kind === 'campaign' ? '🎯 ' : '📊 '}${escHtml(e.label || '—')}</span>
+          <span class="mtr-ai-history-tag">${e.kind === 'campaign' ? '🎯 ' : '📊 '}${escHtml(e.label || '-')}</span>
         </div>
         <div class="mtr-ai-history-snippet">${escHtml(snippet)}</div>
         <div class="mtr-ai-history-meta" style="margin-top:6px;font-size:10px;color:var(--text3);">${escHtml(e.period || '')}</div>
@@ -14187,14 +14187,14 @@ function mtrOpenCompare() {
   const camps = (mtrLastSnapshot.campaigns || []).filter(c => mtrCmpSelected.includes(c.id));
   const rows = [
     { label:'Status', fn: c => c.status },
-    { label:'Objetivo', fn: c => c.objective || '—' },
-    { label:'Gasto', fn: c => c.insights?.spend ? mtrFmtCurrency(c.insights.spend) : '—', metric: c => parseFloat(c.insights?.spend||0), invert:true },
-    { label:'Alcance', fn: c => c.insights?.reach ? mtrFmtNum(parseInt(c.insights.reach)) : '—', metric: c => parseInt(c.insights?.reach||0) },
-    { label:'Impressões', fn: c => c.insights?.impressions ? mtrFmtNum(parseInt(c.insights.impressions)) : '—', metric: c => parseInt(c.insights?.impressions||0) },
-    { label:'Cliques', fn: c => c.insights?.clicks ? mtrFmtNum(parseInt(c.insights.clicks)) : '—', metric: c => parseInt(c.insights?.clicks||0) },
-    { label:'CTR', fn: c => c.insights?.ctr ? parseFloat(c.insights.ctr).toFixed(2)+'%' : '—', metric: c => parseFloat(c.insights?.ctr||0) },
-    { label:'CPC', fn: c => c.insights?.cpc ? mtrFmtCurrency(c.insights.cpc) : '—', metric: c => parseFloat(c.insights?.cpc||0), invert:true },
-    { label:'CPM', fn: c => c.insights?.cpm ? mtrFmtCurrency(c.insights.cpm) : '—', metric: c => parseFloat(c.insights?.cpm||0), invert:true },
+    { label:'Objetivo', fn: c => c.objective || '-' },
+    { label:'Gasto', fn: c => c.insights?.spend ? mtrFmtCurrency(c.insights.spend) : '-', metric: c => parseFloat(c.insights?.spend||0), invert:true },
+    { label:'Alcance', fn: c => c.insights?.reach ? mtrFmtNum(parseInt(c.insights.reach)) : '-', metric: c => parseInt(c.insights?.reach||0) },
+    { label:'Impressões', fn: c => c.insights?.impressions ? mtrFmtNum(parseInt(c.insights.impressions)) : '-', metric: c => parseInt(c.insights?.impressions||0) },
+    { label:'Cliques', fn: c => c.insights?.clicks ? mtrFmtNum(parseInt(c.insights.clicks)) : '-', metric: c => parseInt(c.insights?.clicks||0) },
+    { label:'CTR', fn: c => c.insights?.ctr ? parseFloat(c.insights.ctr).toFixed(2)+'%' : '-', metric: c => parseFloat(c.insights?.ctr||0) },
+    { label:'CPC', fn: c => c.insights?.cpc ? mtrFmtCurrency(c.insights.cpc) : '-', metric: c => parseFloat(c.insights?.cpc||0), invert:true },
+    { label:'CPM', fn: c => c.insights?.cpm ? mtrFmtCurrency(c.insights.cpm) : '-', metric: c => parseFloat(c.insights?.cpm||0), invert:true },
   ];
   const cols = `1.4fr ` + camps.map(()=>'1fr').join(' ');
   const headRow = `<div class="mtr-cmp-row head" style="grid-template-columns:${cols};">
@@ -14239,7 +14239,7 @@ async function mtrFetchDemographics(igId, token) {
       const breakdownsArr = d.data?.[0]?.total_value?.breakdowns || [];
       // Cada breakdown tem results[]
       const results = breakdownsArr[0]?.results || [];
-      out[bk] = results.map(x => ({ key: x.dimension_values?.[0] || '—', value: x.value || 0 }))
+      out[bk] = results.map(x => ({ key: x.dimension_values?.[0] || '-', value: x.value || 0 }))
         .sort((a,b) => b.value - a.value).slice(0, 8);
     } catch(e){}
   }));
@@ -14899,8 +14899,8 @@ async function gmbPreAnalise() {
     _gmbPrePlaces = places;
     // Monta lista
     const listItems = places.map((p, i) => {
-      const name = p.displayName?.text || '—';
-      const addr = p.formattedAddress || '—';
+      const name = p.displayName?.text || '-';
+      const addr = p.formattedAddress || '-';
       // Extrai cidade e estado dos addressComponents
       let city = '', state = '';
       (p.addressComponents || []).forEach(c => {
@@ -14909,7 +14909,7 @@ async function gmbPreAnalise() {
       });
       const loc = [city, state].filter(Boolean).join(' · ') || addr.split(',').slice(-2).map(s=>s.trim()).join(', ');
       const cat = p.primaryTypeDisplayName?.text || '';
-      const rating = p.rating ? p.rating.toFixed(1) : '—';
+      const rating = p.rating ? p.rating.toFixed(1) : '-';
       const reviews = p.userRatingCount ? p.userRatingCount.toLocaleString('pt-BR') : '0';
       const isOpen = p.regularOpeningHours?.openNow;
       const openBadge = isOpen === true
@@ -14929,7 +14929,7 @@ async function gmbPreAnalise() {
             <div class="gmb-pre-list-loc">📍 ${escHtml(loc || addr)}</div>
           </div>
           <div class="gmb-pre-list-right">
-            ${rating !== '—' ? `<div class="gmb-pre-list-rating">⭐ ${rating}</div>` : '<div class="gmb-pre-list-rating">—</div>'}
+            ${rating !== '-' ? `<div class="gmb-pre-list-rating">⭐ ${rating}</div>` : '<div class="gmb-pre-list-rating">-</div>'}
             <div class="gmb-pre-list-reviews">${reviews} avaliações</div>
             ${openBadge}
           </div>
@@ -14963,10 +14963,10 @@ function gmbPreShowDetail(idx) {
   // Remove detalhe anterior se existir
   resultEl.querySelector('.gmb-pre-detail')?.remove();
 
-  const name = place.displayName?.text || '—';
-  const addr = place.formattedAddress || '—';
-  const rating = place.rating ? place.rating.toFixed(1) : '—';
-  const reviews = place.userRatingCount ? place.userRatingCount.toLocaleString('pt-BR') : '—';
+  const name = place.displayName?.text || '-';
+  const addr = place.formattedAddress || '-';
+  const rating = place.rating ? place.rating.toFixed(1) : '-';
+  const reviews = place.userRatingCount ? place.userRatingCount.toLocaleString('pt-BR') : '-';
   const cat = place.primaryTypeDisplayName?.text || '';
   const isOpen = place.regularOpeningHours?.openNow;
   const phone = place.nationalPhoneNumber || '';
@@ -14991,7 +14991,7 @@ function gmbPreShowDetail(idx) {
     const photoUrl = `https://places.googleapis.com/v1/${place.photos[0].name}/media?maxHeightPx=200&maxWidthPx=200&key=${key}`;
     photoHtml = `<img class="gmb-pre-photo" src="${photoUrl}" onerror="this.outerHTML='<div class=\\'gmb-pre-photo-placeholder\\'>🏪</div>'" alt="${escHtml(name)}">`;
   }
-  const starsHtml = rating !== '—' ? '⭐'.repeat(Math.min(5, Math.round(parseFloat(rating)))) : '';
+  const starsHtml = rating !== '-' ? '⭐'.repeat(Math.min(5, Math.round(parseFloat(rating)))) : '';
 
   // ── Health Score Calculation ──────────────────────────────
   const ratingNum = place.rating || 0;
@@ -15052,7 +15052,7 @@ function gmbPreShowDetail(idx) {
   const checks = [
     { icon:'⭐', text:'Nota ≥ 4.0', status: ratingNum >= 4.0 ? 'ok' : ratingNum > 0 ? 'warn' : 'bad', pts: `${scoreRating}/20` },
     { icon:'💬', text:`Volume de avaliações (${reviewCount})`, status: reviewCount >= 100 ? 'ok' : reviewCount >= 20 ? 'warn' : 'bad', pts: `${scoreReviews}/15` },
-    { icon:'📸', text:`Fotos suficientes (${photoCount} — mín. 10)`, status: photoCount >= 10 ? 'ok' : photoCount >= 5 ? 'warn' : 'bad', pts: `${scorePhotos}/15` },
+    { icon:'📸', text:`Fotos suficientes (${photoCount}, mín. 10)`, status: photoCount >= 10 ? 'ok' : photoCount >= 5 ? 'warn' : 'bad', pts: `${scorePhotos}/15` },
     { icon:'🕐', text:'Horário cadastrado', status: hasHours ? 'ok' : 'bad', pts: `${scoreHours}/10` },
     { icon:'📝', text:'Descrição do negócio', status: hasDesc ? 'ok' : 'bad', pts: `${scoreDesc}/10` },
     { icon:'📞', text:'Telefone cadastrado', status: hasPhone ? 'ok' : 'bad', pts: `${scorePhone}/8` },
@@ -15095,7 +15095,7 @@ function gmbPreShowDetail(idx) {
           <div class="gmb-pre-kpi"><div class="gmb-pre-kpi-val">${rating}</div><div class="gmb-pre-kpi-lbl">Nota</div></div>
           <div class="gmb-pre-kpi"><div class="gmb-pre-kpi-val">${reviews}</div><div class="gmb-pre-kpi-lbl">Avaliações</div></div>
           <div class="gmb-pre-kpi"><div class="gmb-pre-kpi-val">${place.photos?.length || 0}</div><div class="gmb-pre-kpi-lbl">Fotos</div></div>
-          <div class="gmb-pre-kpi"><div class="gmb-pre-kpi-val">${isOpen === true ? '✅' : isOpen === false ? '❌' : '—'}</div><div class="gmb-pre-kpi-lbl">Status</div></div>
+          <div class="gmb-pre-kpi"><div class="gmb-pre-kpi-val">${isOpen === true ? '✅' : isOpen === false ? '❌' : '-'}</div><div class="gmb-pre-kpi-lbl">Status</div></div>
         </div>
         <!-- Health Score -->
         <div class="gmb-health-title">🏥 Health Score do Perfil</div>
@@ -15628,7 +15628,7 @@ async function gmbRankFetchPos(keyword, businessName, lat, lng) {
     // Retorna posição + top 5 nomes para o popup de clique
     const top5 = mapItems.slice(0, 5).map(it => ({
       pos: it.rank_absolute,
-      name: it.title || '—',
+      name: it.title || '-',
       rating: it.rating?.value || null,
       reviews: it.rating?.votes_count || null,
       isTarget: (it.title || '').toLowerCase().includes(bn.split(' ')[0].toLowerCase())
@@ -15734,7 +15734,7 @@ function gmbRankDrawCircles(results, centerLat, centerLng) {
 
   results.forEach(pt => {
     const color = gmbRankColor(pt.pos);
-    const label = pt.pos && pt.pos <= 20 ? String(pt.pos) : '—';
+    const label = pt.pos && pt.pos <= 20 ? String(pt.pos) : '-';
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44">
         <circle cx="22" cy="22" r="20" fill="${color}" opacity="0.92"/>
@@ -15785,10 +15785,10 @@ function gmbRankDrawCircles(results, centerLat, centerLng) {
 function gmbRankShowKpis(results) {
   const valid = results.filter(r => r.pos && r.pos > 0 && r.pos <= 20);
   const out = results.filter(r => !r.pos || r.pos > 20).length;
-  const avg = valid.length ? (valid.reduce((s, r) => s + r.pos, 0) / valid.length).toFixed(1) : '—';
+  const avg = valid.length ? (valid.reduce((s, r) => s + r.pos, 0) / valid.length).toFixed(1) : '-';
   const top3  = valid.filter(r => r.pos <= 3).length;
   const top10 = valid.filter(r => r.pos <= 10).length;
-  const pct = n => valid.length ? Math.round(n / results.length * 100) + '%' : '—';
+  const pct = n => valid.length ? Math.round(n / results.length * 100) + '%' : '-';
   document.getElementById('grkAvg').textContent  = avg;
   document.getElementById('grkTop3').textContent  = pct(top3);
   document.getElementById('grkTop10').textContent = pct(top10);
@@ -17967,7 +17967,7 @@ function createShareLink() {
   _shareLinks.push({ id, name, tabs, url });
   localStorage.setItem('shareLinks', JSON.stringify(_shareLinks));
   renderShareLinks();
-  navigator.clipboard.writeText(url).then(() => showToast('success','✅','Link copiado para a área de transferência!')).catch(() => showToast('info','🔗','Link gerado — copie abaixo.'));
+  navigator.clipboard.writeText(url).then(() => showToast('success','✅','Link copiado para a área de transferência!')).catch(() => showToast('info','🔗','Link gerado. Copie abaixo.'));
   document.getElementById('shareName').value = '';
   document.getElementById('sharePwd').value  = '';
 }
@@ -18446,7 +18446,7 @@ window.pjDebugAvatares = function() {
   const rows = pjMembers.map(m => ({
     nome: m.name || '', email: m.email || '', uid: m.uid || '',
     tem_foto: !!m.photoUrl,
-    fonte: m.photoUrl ? (m.photoUrl.includes('googleusercontent') ? 'google-auth' : 'upload/outro') : '—',
+    fonte: m.photoUrl ? (m.photoUrl.includes('googleusercontent') ? 'google-auth' : 'upload/outro') : '-',
     url_curta: (m.photoUrl || '').slice(0, 60)
   }));
   console.table(rows);
@@ -18957,7 +18957,7 @@ function pjLoadDemo() {
       T('ls_traf_a1', 'Lançar campanha de Dia das Mães', 'inprog', [uid], dShift(-1), 'urgent', 'Criar 3 variações de criativo, copy de teste A/B, segmentação por raio de 5km do restaurante.'),
       T('ls_traf_a1', 'Revisar pixel da Meta no site', 'todo', [uid,'m_ana'], dShift(0), 'high', 'Verificar se o Pixel está disparando todos os eventos: PageView, ViewContent, Contact, Lead.'),
       T('ls_traf_a1', 'Pausar criativo com baixo CTR', 'review', ['m_ana'], dShift(2), 'normal', 'Criativo "Burger Combo" com CTR <0.8%. Análise de Q3.'),
-      T('ls_traf_a1', 'Relatório semanal — envio cliente', 'done', [uid], dShift(-3), 'normal', ''),
+      T('ls_traf_a1', 'Relatório semanal: envio pro cliente', 'done', [uid], dShift(-3), 'normal', ''),
       T('ls_traf_a1', 'Briefing nova campanha junho', 'todo', [uid], dShift(5), 'normal', ''),
     ],
     ls_traf_a2: [
@@ -18989,9 +18989,9 @@ function pjLoadDemo() {
       T('ls_gmb_2', 'Resposta avaliação 4★ - Carlos S.', 'todo', [uid], dShift(0), 'high', ''),
     ],
     ls_crm_1: [
-      T('ls_crm_1', 'Lead: Empresa ABC — evento corporativo', 'inprog', [uid], dShift(1), 'urgent', '50 pessoas, dia 15/06, orçamento ~R$ 8k.'),
-      T('ls_crm_1', 'Lead: Maria F. — aniversário', 'todo', ['m_ana'], dShift(2), 'high', ''),
-      T('ls_crm_1', 'Lead: Restaurante XYZ — parceria', 'review', [uid], dShift(5), 'normal', ''),
+      T('ls_crm_1', 'Lead: Empresa ABC, evento corporativo', 'inprog', [uid], dShift(1), 'urgent', '50 pessoas, dia 15/06, orçamento ~R$ 8k.'),
+      T('ls_crm_1', 'Lead: Maria F., aniversário', 'todo', ['m_ana'], dShift(2), 'high', ''),
+      T('ls_crm_1', 'Lead: Restaurante XYZ, parceria', 'review', [uid], dShift(5), 'normal', ''),
       T('ls_crm_1', 'Lead: Casamento Junho', 'done', [uid], dShift(-7), 'high', ''),
     ],
   };
@@ -19646,7 +19646,7 @@ function pjGetTaskClient(t) {
 }
 function pjGetTaskAssigneeNames(t) {
   const uids = t.assignees || [];
-  if (!uids.length) return '— sem responsável';
+  if (!uids.length) return 'Sem responsável';
   return uids.map(uid => {
     const m = pjMembers.find(mm => mm.uid === uid);
     return m?.name || (m?.email ? m.email.split('@')[0] : '?');
@@ -20229,10 +20229,10 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
   const dueLabel = due ? (t.dueTime ? `${due.label} ${t.dueTime}` : due.label) : null;
   const assigneeHtml = (t.assignees||[]).length
     ? (t.assignees||[]).slice(0,3).map(uid=>pjAvatarHtml(uid)).join('')
-    : `<span class="pj-cell-empty">—</span>`;
+    : `<span class="pj-cell-empty">-</span>`;
   const prio = t.priority && t.priority !== 'low'
     ? `<span class="pj-priority ${t.priority}">${PJ_PRIORITIES.find(p=>p.id===t.priority)?.label||''}</span>`
-    : `<span class="pj-cell-empty">—</span>`;
+    : `<span class="pj-cell-empty">-</span>`;
   const recur = t.recurrence?.pattern ? `<span class="pj-recur-badge" title="${pjRecurrenceLabel(t.recurrence)}" aria-label="Recorrente">${fgIco('repeat', 14)}</span>` : '';
 
   const selected = pjSelected.has(t.id);
@@ -20259,7 +20259,7 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
       ${pjStalePillHtml(t)}
     </div>`,
     assignee: `<div class="pj-list-cell assignee">${assigneeHtml}</div>`,
-    due:      `<div class="pj-list-cell">${dueLabel?`<span class="pj-task-due ${due.cls}">${dueLabel}</span>`:`<span class="pj-cell-empty">—</span>`}</div>`,
+    due:      `<div class="pj-list-cell">${dueLabel?`<span class="pj-task-due ${due.cls}">${dueLabel}</span>`:`<span class="pj-cell-empty">-</span>`}</div>`,
     priority: `<div class="pj-list-cell">${prio}</div>`,
     client:   `<div class="pj-list-cell">${clientCellInner}</div>`,
     status:   `<div class="pj-list-cell"><button type="button" class="pj-status-pill" style="--c:${st.color}" onclick="event.stopPropagation();pjOpenStatusMenu(event,'${t.id}')" title="Clique pra trocar"><span class="pj-status-pill-dot"></span><span class="pj-status-pill-label">${escHtml(st.name)}</span><svg viewBox="0 0 12 12" width="10" height="10" class="pj-status-pill-arrow" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5l3 3 3-3"/></svg></button></div>`,
@@ -20268,10 +20268,10 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
     if (cellMap[c.id]) return cellMap[c.id];
     if (c.id.startsWith('cf:') && c.field) {
       const v = t.customFieldValues?.[c.field.id] || '';
-      const inner = v ? pjRenderCellValue(String(v), c.field) : '<span class="pj-cell-empty">—</span>';
+      const inner = v ? pjRenderCellValue(String(v), c.field) : '<span class="pj-cell-empty">-</span>';
       return `<div class="pj-list-cell">${inner}</div>`;
     }
-    return `<div class="pj-list-cell"><span class="pj-cell-empty">—</span></div>`;
+    return `<div class="pj-list-cell"><span class="pj-cell-empty">-</span></div>`;
   }).join('');
 
   return `<div class="pj-list-tr ${done?'done-row':''} ${selected?'selected':''}" data-priority="${t.priority||'low'}" data-task-id="${t.id}"
@@ -22700,7 +22700,7 @@ function pjCelebrateOverdue(t, daysLate) {
     { emoji: '⏰', title: 'RELÓGIO QUEBRADO?',   text: 'Faltou olhar a data. Lembre-se: prazo existe por algum motivo.' },
     { emoji: '😴', title: 'CHEGOU SONOLENTO(A)', text: 'Tá vivo(a)! Só fechou bem depois do combinado.' },
     { emoji: '🚂', title: 'TREM ATRASADO',       text: 'Pelo menos saiu da estação. Da próxima, agiliza.' },
-    { emoji: '🐌', title: 'VELOCIDADE LESMA',    text: 'Atrasou — mas chegou. Não tem comemoração: é o mínimo.' },
+    { emoji: '🐌', title: 'VELOCIDADE LESMA',    text: 'Atrasou, mas chegou. Não tem comemoração: é o mínimo.' },
     { emoji: '🚧', title: 'EM OBRAS HÁ DIAS',    text: 'Finalmente concluída. Tente entregar no prazo na próxima.' },
     { emoji: '⌛', title: 'AMPULHETA TRAVADA',   text: 'Vamos prestar mais atenção nos vencimentos? É o básico.' },
     { emoji: '🦕', title: 'ERA JURÁSSICA',       text: 'Essa tarefa virou fóssil… Bem fora do prazo combinado.' },
@@ -22716,9 +22716,9 @@ function pjCelebrateOverdue(t, daysLate) {
     { emoji: '🦦', title: 'SEM RUMO',            text: 'Falta foco. Falta direção. Sobra atraso.' },
     { emoji: '⛺', title: 'ACAMPOU NO MEIO',     text: 'Quem para na metade não cumpre prazo. Andou pouco.' },
     { emoji: '🏝️', title: 'FÉRIAS NÃO COMBINADAS', text: 'Voltou da pausa imaginária. Prazo é prazo, gente.' },
-    { emoji: '📞', title: 'CLIENTE LIGOU 3X',    text: 'Saiu — mas depois de muito follow-up. Sai antes na próxima.' },
+    { emoji: '📞', title: 'CLIENTE LIGOU 3X',    text: 'Saiu, mas depois de muito follow-up. Sai antes na próxima.' },
     { emoji: '🌚', title: 'VIROU A NOITE',       text: 'Era pra fechar com luz do sol. Atrasou. Sem desculpa.' },
-    { emoji: '🪨', title: 'EMPACOU FEIO',        text: 'Atrasou e doeu. Identifica o que travou — e tira do caminho.' },
+    { emoji: '🪨', title: 'EMPACOU FEIO',        text: 'Atrasou e doeu. Identifica o que travou e tira do caminho.' },
     { emoji: '📮', title: 'CHEGOU PELO CORREIO', text: 'Veio com selo de "atrasado". Da próxima, manda por SEDEX.' },
     { emoji: '🥱', title: 'SEM ENERGIA',         text: 'Bocejo não cumpre prazo. Recarrega e atua.' },
     { emoji: '🪫', title: 'DESCARREGADO(A)',     text: 'Sem energia = sem entrega no tempo. Resolve isso.' },
@@ -22759,7 +22759,7 @@ function pjCelebrateSimple(t) {
     { emoji: '🚀', title: 'DECOLOU!',       text: 'Bora pras próximas!' },
     { emoji: '💪', title: 'FORÇA TOTAL!',   text: 'Continue nessa pegada!' },
     { emoji: '⭐', title: 'TOP!',           text: 'Mais uma na conta!' },
-    { emoji: '🔥', title: 'MANDOU BRASA!',  text: 'Tarefa concluída — bora pra próxima!' },
+    { emoji: '🔥', title: 'MANDOU BRASA!',  text: 'Tarefa concluída. Bora pra próxima!' },
     { emoji: '👊', title: 'NA VEIA!',       text: 'Fechou! Quem tá vencendo é você.' },
     { emoji: '🎯', title: 'ACERTOU!',       text: 'Mais uma na conta. Foco impecável!' },
     { emoji: '🏁', title: 'CHEGOU À LINHA!',text: 'Riscou da lista. Próxima já tá esperando.' },
@@ -22876,7 +22876,7 @@ function pjCelebrateAllDone(total) {
     { emoji: '🌟', title: 'ESTRELA DO DIA!',        text: 'Performance lá em cima!' },
     { emoji: '🚀', title: 'DECOLOU LONGE!',         text: 'Você arrasou hoje! Pode comemorar.' },
     { emoji: '🏅', title: 'MEDALHA DE OURO!',       text: 'Foco, disciplina e entrega. Top!' },
-    { emoji: '🎆', title: 'FOGOS NO CÉU!',          text: 'Lista zerada — show de competência!' },
+    { emoji: '🎆', title: 'FOGOS NO CÉU!',          text: 'Lista zerada. Show de competência!' },
     { emoji: '🦁', title: 'REI DA SELVA!',          text: 'Dominou o dia inteiro. Que feração!' },
     { emoji: '🥂', title: 'CHEERS!',                text: 'Levanta esse copo: dia 100% concluído!' },
     { emoji: '🛡️', title: 'CAVALEIRO IMPECÁVEL!',   text: 'Nenhuma tarefa escapou da sua lança. Brilhou!' },
@@ -22887,7 +22887,7 @@ function pjCelebrateAllDone(total) {
     { emoji: '🎬', title: 'CORTA, GRAVOU!',         text: 'Cena perfeita do dia. Pode aplaudir.' },
     { emoji: '🧘', title: 'PAZ INTERIOR',           text: 'Lista zerada, mente leve. Aproveite.' },
     { emoji: '🚴', title: 'PERNADA COMPLETA',       text: 'Pedalou o dia inteiro e chegou. Top!' },
-    { emoji: '🪩', title: 'BOLA DE DISCO!',         text: 'Dia 100% — agora é só dançar.' },
+    { emoji: '🪩', title: 'BOLA DE DISCO!',         text: 'Dia 100%. Agora é só dançar.' },
   ];
   const msg = messages[Math.floor(Math.random() * messages.length)];
   card.innerHTML = `
@@ -23298,7 +23298,7 @@ async function pjFabExtractWithAi() {
   const sysPrompt = `Você extrai metadados estruturados de uma frase em português brasileiro descrevendo uma tarefa.
 Retorne APENAS JSON válido (sem markdown, sem comentários) com este shape:
 {
-  "title": string (frase limpa, sem datas/menções a pessoas/cliente — só a ação),
+  "title": string (frase limpa, sem datas/menções a pessoas/cliente, só a ação),
   "listId": string|null (id da lista mais provável, do conjunto fornecido),
   "priority": "urgent"|"high"|"normal"|"low"|null,
   "dueDate": string|null (formato YYYY-MM-DD, calculado a partir de hoje=${todayStr}),
@@ -23794,7 +23794,7 @@ async function pjExecAutomationAction(action, ctx) {
     if (!targetUid) {
       console.warn('[automation] membro encontrado mas SEM uid (provavelmente nunca logou):', member);
       if (typeof showToast === 'function') {
-        showToast('warn','⚠️',`${member.name||member.email} ainda não logou — não pode receber notificação automática.`);
+        showToast('warn','⚠️',`${member.name||member.email} ainda não logou e não pode receber notificação automática.`);
       }
       return;
     }
@@ -25661,7 +25661,7 @@ Quando der números, indique o período de referência. Para relatórios, use ta
 O snapshot inclui tarefas ABERTAS e CONCLUÍDAS de TODOS os espaços (Tráfego, Marketing, Sucesso do Cliente, GMB, CRM, etc). Filtre por \`cliente\` (nome do restaurante), \`assignees\` (lista de NOMES dos responsáveis, já resolvidos) e \`completedAt\`/\`dueDate\` (ISO YYYY-MM-DD) para relatórios de "o que foi feito" por período/cliente/pessoa. \`done: true\` = concluída. Cada tarefa também tem \`space\` (área da agência), \`list\` e \`folder\` (pasta, que muitas vezes carrega o nome do cliente no formato "Cliente: X"). Quando o usuário pedir um resumo de um cliente, VARRA todos os espaços, não só Tráfego/Performance.
 Cada tarefa carrega até 3 comentários mais recentes em \`comments: [{author, at, text, isAutomation?}]\`. Comentários históricos (copiados de recorrência anterior) já são filtrados no lado do app, então cada comentário é único da tarefa. Cite trechos literais quando o usuário perguntar "o que foi comentado", "o que o cliente disse" ou "o que ficou combinado". Se \`commentCount\` for maior que \`comments.length\`, avise que há mais comentários não mostrados e sugira abrir a tarefa. Comentários com \`isAutomation: true\` são do sistema, não são fala humana.
 
-Se o usuário pedir "todas as tarefas" ou "resumo/relatório do cliente/pessoa/período", seja EXAUSTIVO: liste TODAS as tarefas do snapshot que satisfazem o critério, não só as principais. Tarefas recorrentes podem aparecer múltiplas vezes com o mesmo título — trate cada ocorrência como distinta (diferenciada por \`completedAt\`/\`dueDate\`), a menos que o usuário peça pra agrupar.
+Se o usuário pedir "todas as tarefas" ou "resumo/relatório do cliente/pessoa/período", seja EXAUSTIVO: liste TODAS as tarefas do snapshot que satisfazem o critério, não só as principais. Tarefas recorrentes podem aparecer múltiplas vezes com o mesmo título: trate cada ocorrência como distinta (diferenciada por \`completedAt\`/\`dueDate\`), a menos que o usuário peça pra agrupar.
 Sobre "quem fez": não existe campo de executor. \`assignees\` mostra quem estava atribuído. Se perguntarem "quem fez X", combine assignees + done + completedAt e deixe claro que é a atribuição vigente na conclusão.
 
 Hoje é ${ctx.today}. ${me ? `O usuário é "${me}".` : ''}
@@ -25680,7 +25680,7 @@ AÇÕES EXECUTÁVEIS (opcional): Quando fizer sentido, ao FINAL da resposta, adi
   {"label":"Filtrar Tio Pirilampo","type":"navigate","view":"all","filter":{"clienteName":"Tio Pirilampo"}},
   {"label":"Abrir tarefa: Criar arte","type":"open_task","taskId":"<id>"}
 ]
-Tipos suportados: "navigate" (view: dashboard|inbox|all|workload|byclient|timeline|archived; com filter.clienteName opcional) e "open_task" (taskId obrigatório, da lista de tarefas no contexto). Máx 4 ações. NÃO invente IDs nem nomes — use só IDs/nomes reais do JSON. Se não couber ação útil, omita o bloco.
+Tipos suportados: "navigate" (view: dashboard|inbox|all|workload|byclient|timeline|archived; com filter.clienteName opcional) e "open_task" (taskId obrigatório, da lista de tarefas no contexto). Máx 4 ações. NÃO invente IDs nem nomes. Use só IDs/nomes reais do JSON. Se não couber ação útil, omita o bloco.
 
 DADOS (JSON):
 ${JSON.stringify(ctx)}`;
@@ -27998,7 +27998,7 @@ async function pjSpawnNextRecurrence(t) {
     if (oldComments.length) {
       // Cabeçalho marcando início do histórico importado
       const [_yy, mm, dd] = t.dueDate.split('-');
-      const headerText = `📋 **Histórico da ocorrência anterior (${dd}/${mm})** — ${oldComments.length} mensagem${oldComments.length!==1?'s':''} importada${oldComments.length!==1?'s':''} abaixo.`;
+      const headerText = `📋 **Histórico da ocorrência anterior (${dd}/${mm})**: ${oldComments.length} mensagem${oldComments.length!==1?'s':''} importada${oldComments.length!==1?'s':''} abaixo.`;
       const headerDoc = {
         taskId: id,
         text: headerText,
@@ -28388,7 +28388,7 @@ function pjRenderUrlPill(s, opts) {
   const compact = opts && opts.compact;
   if (compact) {
     // Só bolinha com favicon — economiza espaço na célula
-    return `<a class="pj-url-dot" href="${safeUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="${escHtml(host)} — clique para abrir">
+    return `<a class="pj-url-dot" href="${safeUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Abrir ${escHtml(host)}">
       <img src="${fav}" alt="${escHtml(host)}" onerror="this.parentElement.classList.add('no-favicon');this.style.display='none'">
       <span class="pj-url-dot-fallback">🔗</span>
     </a>`;
@@ -28407,7 +28407,7 @@ function pjRenderUrlPill(s, opts) {
 // - Texto longo → trunca com ellipsis e tooltip
 function pjRenderCellValue(value, field) {
   const v = String(value || '').trim();
-  if (!v) return '<span class="pj-cell-empty">—</span>';
+  if (!v) return '<span class="pj-cell-empty">-</span>';
   const ftype = field?.type || '';
   // URL na célula da list view → SEMPRE bolinha compacta (favicon-only)
   if (ftype === 'url' || pjIsUrl(v)) return pjRenderUrlPill(v, { compact: true });
@@ -28443,7 +28443,7 @@ function _pjTriggerDl(href, filename, isObjUrl) {
 async function pjDownloadFile(src, filename) {
   if (!src) {
     console.warn('[pj-dl] src vazio', { filename });
-    if (typeof showToast === 'function') showToast('error','⚠️','Anexo sem URL — provavelmente corrompido.');
+    if (typeof showToast === 'function') showToast('error','⚠️','Anexo sem URL, provavelmente corrompido.');
     return;
   }
   // Decoda entidades HTML que possam ter sido double-escaped no template
@@ -28548,7 +28548,7 @@ async function pjDownloadFile(src, filename) {
   // 5. Último fallback: nova aba
   console.warn('[pj-dl] todas estratégias falharam — abrindo em nova aba. URL:', src);
   if (typeof showToast === 'function') {
-    showToast('warn','⚠️','Download direto bloqueado — abrindo em nova aba (botão direito → "Salvar como").');
+    showToast('warn','⚠️','Download direto bloqueado. Abrindo em nova aba (botão direito → "Salvar como").');
   }
   window.open(src, '_blank');
 }
@@ -29463,7 +29463,7 @@ async function pjCommentPaste(ev) {
     await pjCommentFileChosen({ target: { files: [named], value: '' } });
     // Se chegou aqui sem erro, o upload completou e pjPendingAttachment foi setado
     if (window.pjPendingAttachment) {
-      if (typeof showToast === 'function') showToast('success', '✅', 'Print anexado — clica Enviar.');
+      if (typeof showToast === 'function') showToast('success', '✅', 'Print anexado. Clica em Enviar.');
     } else {
       if (typeof showToast === 'function') showToast('warn', '⚠️', 'Print não foi anexado. Verifique o Console (F12) ou tente o botão 📎.');
     }
@@ -30194,7 +30194,7 @@ function pjAddrInput(ev, taskId, fieldId) {
           if (!label) return '';
           return `<div class="pj-addr-sugg-item" onmousedown="event.preventDefault();pjAddrSelect('${input.id}','${taskId}','${fieldId}',\`${label.replace(/`/g,"'")}\`)">
             <span class="pj-addr-sugg-icon">📍</span>
-            <span><strong>${escHtml(main)}</strong>${sec ? `<span style="color:var(--text3);font-size:11px;"> — ${escHtml(sec)}</span>` : ''}</span>
+            <span><strong>${escHtml(main)}</strong>${sec ? `<span style="color:var(--text3);font-size:11px;">, ${escHtml(sec)}</span>` : ''}</span>
           </div>`;
         }).filter(Boolean).join('');
       } else {
@@ -30927,7 +30927,7 @@ function pjOpenStatusEditor(listId) {
       <option value="active"  ${current==='active' ?'selected':''}>● Ativo</option>
       <option value="closed"  ${current==='closed' ?'selected':''}>● Fechado</option>
     </select>`;
-  let html = `<h3>🏷️ Editar Status — ${escHtml(list.name)}</h3>
+  let html = `<h3>🏷️ Editar Status: ${escHtml(list.name)}</h3>
     <p class="pj-status-hint">A <b>categoria</b> define se a tarefa conta como pendente, ativa ou fechada (afeta dashboard, KPIs e swipe).</p>
     <div class="pj-status-list" id="pjStatusEditList">
     ${statuses.map((s,i)=>`
@@ -31078,7 +31078,7 @@ function pjRenderAutomationRow(a, idx, list) {
   const action = (a.actions && a.actions[0]) || { type:'notify_user', userId:'' };
   const statusOpts = `<option value="any" ${tr.statusId==='any'?'selected':''}>qualquer status</option>` +
     statuses.map(s => `<option value="${s.id}" ${tr.statusId===s.id?'selected':''}>${escHtml(s.name)}</option>`).join('');
-  const memberOpts = `<option value="">— escolher pessoa —</option>` + pjMembers
+  const memberOpts = `<option value="">Escolher pessoa</option>` + pjMembers
     .filter(m => m.uid)
     .map(m => `<option value="${m.uid}" ${action.userId===m.uid?'selected':''}>${escHtml(m.name||m.email||'?')}</option>`).join('');
   const enabled = a.enabled !== false;
@@ -31141,7 +31141,7 @@ function pjRenderAutomationRow(a, idx, list) {
           </div>
           <select class="pj-auto-input pj-auto-wa-group" data-key="actions.0.waGroupJid"
                   style="display:${(action.type==='send_whatsapp' && (action.waDestType||'group')==='group')?'':'none'};margin-top:8px;">
-            <option value="">— carregando grupos... —</option>
+            <option value="">Carregando grupos…</option>
             ${action.waGroupJid ? `<option value="${escHtml(action.waGroupJid)}" selected>${escHtml(action.waGroupName || action.waGroupJid)}</option>` : ''}
           </select>
           <input type="hidden" data-key="actions.0.waGroupName" value="${escHtml(action.waGroupName||'')}">
@@ -31150,7 +31150,7 @@ function pjRenderAutomationRow(a, idx, list) {
                  value="${escHtml(action.waNumber||'')}"
                  style="display:${(action.type==='send_whatsapp' && action.waDestType==='number')?'':'none'};margin-top:8px;">
           <input class="pj-auto-input pj-auto-msg" data-key="actions.0.message"
-                 placeholder="Mensagem (opcional) — use {title}, {status}, {list}"
+                 placeholder="Mensagem (opcional): use {title}, {status}, {list}"
                  value="${escHtml(action.message||'')}"
                  style="display:${(action.type==='add_comment'||action.type==='notify_user'||action.type==='send_whatsapp')?'':'none'};margin-top:8px;">
         </div>
@@ -31194,17 +31194,17 @@ async function pjLoadWhatsappGroups(selectEl) {
   try {
     const cfg = (typeof fgWaGetConfig === 'function') ? fgWaGetConfig() : null;
     if (!cfg || !cfg.key || !cfg.url || !cfg.instance) {
-      selectEl.innerHTML = '<option value="">— WhatsApp Central não configurado —</option>';
+      selectEl.innerHTML = '<option value="">WhatsApp Central não configurado</option>';
       return;
     }
     if (!_pjWaGroupsCache) {
       const r = await fetch(`${cfg.url}/group/fetchAllGroups/${encodeURIComponent(cfg.instance)}?getParticipants=false`, { headers: { apikey: cfg.key } });
-      if (!r.ok) { selectEl.innerHTML = '<option value="">— erro ao carregar grupos —</option>'; return; }
+      if (!r.ok) { selectEl.innerHTML = '<option value="">Erro ao carregar grupos</option>'; return; }
       const data = await r.json();
       _pjWaGroupsCache = Array.isArray(data) ? data : (data.data || []);
     }
     const currentVal = selectEl.value;
-    const opts = ['<option value="">— escolher grupo —</option>'].concat(
+    const opts = ['<option value="">Escolher grupo</option>'].concat(
       _pjWaGroupsCache
         .filter(g => g.id && g.id.endsWith('@g.us'))
         .sort((a,b) => (a.subject||'').localeCompare(b.subject||'', 'pt-BR'))
@@ -31218,7 +31218,7 @@ async function pjLoadWhatsappGroups(selectEl) {
     }, { once: true });
   } catch(e) {
     console.warn('[pjLoadWhatsappGroups] erro:', e);
-    selectEl.innerHTML = '<option value="">— erro: ' + (e.message || 'sem rede') + ' —</option>';
+    selectEl.innerHTML = '<option value="">Erro: ' + (e.message || 'sem rede') + '</option>';
   }
 }
 
@@ -31357,7 +31357,7 @@ async function pjDeleteStatus(listId, statusId) {
     (groups[b] || groups.active).push(s);
   });
   const items = [];
-  items.push({ header:true, label:`${affected.length} tarefa(s) usam este status — mover pra:` });
+  items.push({ header:true, label:`${affected.length} tarefa(s) usam este status. Mover pra:` });
   ['pending','active','closed'].forEach(b => {
     if (!groups[b].length) return;
     items.push({ divider: true });
@@ -31434,7 +31434,7 @@ async function pjInviteMember() {
   // Store as pending invite by email
   const id = pjId();
   await pjC('pj_members').doc(id).set({uid:null, email, role, pending:true, invitedAt:pjNow()});
-  showToast('success','✅','Convite registrado — o membro verá ao fazer login');
+  showToast('success','✅','Convite registrado. O membro verá ao fazer login');
   pjCloseFormModal();
 }
 
@@ -31632,7 +31632,7 @@ async function bdInit() {
       _bdUnsub = null; // permite retry
       if (err.code === 'permission-denied' || String(err).includes('permission')) {
         if (typeof showToast === 'function') {
-          showToast('error', '🔒', 'Sessão expirada — faça login de novo pra ver os clientes.');
+          showToast('error', '🔒', 'Sessão expirada. Faça login de novo pra ver os clientes.');
         }
         // Re-check auth: força signout/signin flow
         try {
@@ -31802,7 +31802,7 @@ function bdOpenPortalDialog(clienteId) {
         </div>
         <div class="bd-portal-url" onclick="this.select&&this.select()">${_bdEsc(url)}</div>
         <div class="bd-portal-actions">
-          <button class="bd-portal-btn primary" onclick="navigator.clipboard.writeText('${url}').then(()=>{showToast('ok','✓','Link copiado — cola no WhatsApp do cliente');});">
+          <button class="bd-portal-btn primary" onclick="navigator.clipboard.writeText('${url}').then(()=>{showToast('ok','✓','Link copiado. Cola no WhatsApp do cliente');});">
             📋 Copiar link
           </button>
           ${waHref ? `<a class="bd-portal-btn" href="${waHref}" target="_blank" onclick="setTimeout(()=>this.closest('.bd-portal-modal-bg')?.remove(), 200)">
@@ -32486,7 +32486,7 @@ function _bdSectionAprendizados(c) {
     <div class="bd-aprendizado-date">${a.data?new Date(a.data).toLocaleDateString('pt-BR'):''}</div>
     <div class="bd-aprendizado-x" onclick="bdAprDel('${c.id}',${i})">✕</div>
   </div>`).join('');
-  return _bdSec('💡 Histórico — O que funcionou', `
+  return _bdSec('💡 Histórico: o que funcionou', `
     ${rows||'<div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Nenhum aprendizado ainda. Registre o que funciona com este cliente.</div>'}
     <div style="display:flex;gap:6px;margin-top:10px;">
       <input id="bdAprIn-${c.id}" class="bd-field-input" placeholder="Ex: Posts de feijoada na quarta sempre bombam" style="flex:1;">
@@ -32815,7 +32815,7 @@ async function cwIntegLoad() {
       : `<span style="color:#dc2626;font-weight:600;">Não conectado</span>`;
 
     const linhas = (dados.lojas || []).map(l => {
-      const opts = ['<option value="">— sem vínculo —</option>']
+      const opts = ['<option value="">Sem vínculo</option>']
         .concat(clientes.map(c =>
           `<option value="${_bdEsc(c.id)}" ${c.id === l.clienteId ? 'selected' : ''}>${_bdEsc(c.nome)}</option>`))
         .join('');
@@ -33098,7 +33098,7 @@ window.bdAddFieldPrompt = function() {
         <textarea id="bdNewFieldOpts" style="width:100%;height:80px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:13px;" placeholder="Opção 1&#10;Opção 2&#10;Opção 3"></textarea>
       </div>
       <div style="margin-bottom:16px;">
-        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">SEÇÃO (opcional — agrupa campos visualmente)</div>
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">SEÇÃO (opcional, agrupa campos visualmente)</div>
         <input id="bdNewFieldSection" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:14px;" placeholder="Ex: Informações extras, Dados internos...">
       </div>
     </div>
@@ -33423,12 +33423,12 @@ window.bdUploadCustomImage = async function(cid, fid, input) {
   }
   window.addEventListener('online', () => {
     update(true);
-    if (typeof showToast === 'function') showToast('success','📶','Voltou online — sincronizando...');
+    if (typeof showToast === 'function') showToast('success','📶','Voltou online. Sincronizando…');
     if (wasOnline === false) wasOnline = true;
   });
   window.addEventListener('offline', () => {
     update(false);
-    if (typeof showToast === 'function') showToast('warning','📵','Sem conexão — você pode continuar trabalhando, sincroniza ao voltar.');
+    if (typeof showToast === 'function') showToast('warning','📵','Sem conexão. Você pode continuar trabalhando, sincroniza ao voltar.');
     wasOnline = false;
   });
   // Estado inicial
@@ -34748,7 +34748,7 @@ window.appRecorder = (() => {
       });
     } catch(e) {
       cam = null;
-      try { showToast('warn','⚠️','Webcam/mic não autorizados — gravando só tela.'); }catch(_){}
+      try { showToast('warn','⚠️','Webcam/mic não autorizados. Gravando só a tela.'); }catch(_){}
     }
 
     // 3) Fecha modal de configurações + para a prévia (vamos usar o stream novo da gravação)
@@ -34928,8 +34928,8 @@ window.appRecorder = (() => {
     const ext = isMp4 ? 'mp4' : 'webm';
     const fname = `gravacao-fogo-${ts.toISOString().replace(/[:.]/g,'-').slice(0,19)}.${ext}`;
     const compatBadge = isMp4
-      ? '<span style="background:rgba(34,197,94,.15);color:#16a34a;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;">✓ MP4 — compatível com WhatsApp/iOS</span>'
-      : '<span style="background:rgba(245,158,11,.15);color:#d97706;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;" title="WhatsApp não toca .webm inline. Pra mandar no WhatsApp, converta pra MP4.">⚠ WEBM — WhatsApp não reproduz como vídeo</span>';
+      ? '<span style="background:rgba(34,197,94,.15);color:#16a34a;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;">✓ MP4, compatível com WhatsApp/iOS</span>'
+      : '<span style="background:rgba(245,158,11,.15);color:#d97706;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;" title="WhatsApp não toca .webm inline. Pra mandar no WhatsApp, converta pra MP4.">⚠ WEBM: o WhatsApp não reproduz como vídeo</span>';
     let durTxt = '';
 
     const ov = document.createElement('div');
@@ -34958,7 +34958,7 @@ window.appRecorder = (() => {
           </div>
           <div style="background:var(--bg2);border-radius:10px;padding:10px;">
             <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:3px;">Duração</div>
-            <div style="font-size:14px;font-weight:700;color:var(--text1);" id="recResultDur">—</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text1);" id="recResultDur">-</div>
           </div>
           <div style="background:var(--bg2);border-radius:10px;padding:10px;">
             <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:3px;">Formato</div>
@@ -36582,7 +36582,7 @@ const POP = (() => {
     } catch(_){ return ''; }
   }
   const fmtDate = (ts) => {
-    if (!ts) return '—';
+    if (!ts) return '-';
     const d = ts.toDate ? ts.toDate() : new Date(ts);
     return d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
   };
@@ -36649,7 +36649,7 @@ const POP = (() => {
           <div class="ctr-card-title">${escHtml(r.title||'Sem título')}</div>
           <div class="ctr-card-client">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            ${escHtml(r.clientName||r.clientEmail||'—')}
+            ${escHtml(r.clientName||r.clientEmail||'-')}
           </div>
           <div class="ctr-card-date">${fmtDate(r.createdAt)}</div>
         </div>
@@ -36905,8 +36905,8 @@ const POP = (() => {
     if (!lbl) return;
     const n = _ctrSigFields.length;
     lbl.textContent = n === 0 ? 'Posicionar assinaturas no PDF (opcional)'
-      : n === 1 ? '1 assinatura posicionada — editar'
-      : `${n} assinaturas posicionadas — editar`;
+      : n === 1 ? 'Editar 1 assinatura posicionada'
+      : `Editar ${n} assinaturas posicionadas`;
   }
   window.ctrWizardStep = function(n){
     // Se saindo do step 3, garante câmera desligada
@@ -37220,7 +37220,7 @@ const POP = (() => {
               <div class="csign-summary-grid">
                 <div><b>Documento</b><span id="csignSumTitle">${escHtml(c.title||'')}</span></div>
                 <div><b>Signatário</b><span id="csignSumName">${escHtml(c.clientName||'')}</span></div>
-                <div><b>Enviado por</b><span>${escHtml(c.createdByName || c.createdBy || '—')}</span></div>
+                <div><b>Enviado por</b><span>${escHtml(c.createdByName || c.createdBy || '-')}</span></div>
                 <div><b>Data/hora</b><span>${new Date().toLocaleString('pt-BR', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</span></div>
               </div>
             </div>
@@ -37324,7 +37324,7 @@ const POP = (() => {
       next.disabled = !(okName && okSelfie && cpfOk);
       hint.textContent = !okName ? 'Digite seu nome completo'
         : !okSelfie ? 'Tire uma selfie pra confirmar identidade'
-        : !cpfOk ? 'CPF inválido — corrija ou apague'
+        : !cpfOk ? 'CPF inválido. Corrija ou apague'
         : 'Tudo pronto, siga pro final';
     } else {
       const agree = document.getElementById('ctrSignAgree')?.checked;
@@ -37693,7 +37693,7 @@ const POP = (() => {
       y -= 20;
       party.forEach(([k, v]) => {
         page.drawText(k, { x: 40, y, size: 10, font: bold });
-        String(v || '—').match(/.{1,60}(\s|$)/g)?.forEach(seg => { page.drawText(seg, { x: 160, y, size: 10, font }); y -= 14; });
+        String(v || '-').match(/.{1,60}(\s|$)/g)?.forEach(seg => { page.drawText(seg, { x: 160, y, size: 10, font }); y -= 14; });
       });
       return y;
     }
@@ -37715,10 +37715,10 @@ const POP = (() => {
     if (c.internalSig) {
       sy = await drawParty(sig, 'CONTRATADO', [
         ['Nome:', c.internalSig.name],
-        ['CPF:', c.internalSig.cpf || '—'],
-        ['E-mail:', c.internalSig.email || '—'],
+        ['CPF:', c.internalSig.cpf || '-'],
+        ['E-mail:', c.internalSig.email || '-'],
         ['Data/hora:', fmtDate(c.internalSig.signedAt)],
-        ['Endereço IP:', c.internalSig.ip || '—'],
+        ['Endereço IP:', c.internalSig.ip || '-'],
       ], sy);
       sy = await drawSelfie(sig, c.internalSig.selfieDataUrl, sy - 4);
       sy -= 20;
@@ -37726,10 +37726,10 @@ const POP = (() => {
     // 2) Contratante (cliente que assinou pelo link — recebe o serviço)
     sy = await drawParty(sig, 'CONTRATANTE', [
       ['Nome:', c.signatureText || c.clientName],
-      ['CPF:', c.signCpf || '—'],
-      ['E-mail:', c.clientEmail || '—'],
+      ['CPF:', c.signCpf || '-'],
+      ['E-mail:', c.clientEmail || '-'],
       ['Data/hora:', fmtDate(c.signedAt)],
-      ['Endereço IP:', c.signIp || '—'],
+      ['Endereço IP:', c.signIp || '-'],
       ['User-Agent:', (c.signUserAgent || '').slice(0,80)],
     ], sy);
     sy = await drawSelfie(sig, c.selfieDataUrl, sy - 4);
