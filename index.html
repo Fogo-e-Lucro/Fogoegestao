@@ -5180,7 +5180,7 @@ async function addMember() {
         const apiTok = cfg.token || (typeof getApiKey === 'function' ? getApiKey('live_token') : '') || '';
         const r = await fetch(apiUrl + '/auth/create-user', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiTok },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiTok, 'X-Id-Token': await firebase.auth().currentUser.getIdToken() },
           body: JSON.stringify({ email, password: pwd, displayName: name }),
         });
         if (r.ok) {
@@ -5753,7 +5753,7 @@ async function removeMember(email) {
       const apiTok = cfg.token || (typeof getApiKey === 'function' ? getApiKey('live_token') : '') || '';
       await fetch(apiUrl + '/auth/delete-user?email=' + encodeURIComponent(email), {
         method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + apiTok },
+        headers: { 'Authorization': 'Bearer ' + apiTok, 'X-Id-Token': await firebase.auth().currentUser.getIdToken() },
       });
     } catch(e) { console.warn('[removeMember] backend delete falhou:', e.message); }
     const docId = btoa(email).replace(/[^a-zA-Z0-9]/g,'_');
