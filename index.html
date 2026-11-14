@@ -23,6 +23,19 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script>
+  // Servidor trocado (Contabo pra Hostinger, 11/2026): navegador que salvou o
+  // endereço antigo passa pro novo sozinho. Pode sair uns meses depois que a Contabo for cancelada.
+  try {
+    const velho = /^https?:\/\/[^/]*89[-.]116[-.]30[-.]126[^/]*/;
+    const evo = localStorage.getItem('fg_evolution_url');
+    if (evo && velho.test(evo)) localStorage.setItem('fg_evolution_url', evo.replace(velho, 'https://evo.187-53-101-166.nip.io'));
+    const live = JSON.parse(localStorage.getItem('fg_live_backend') || 'null');
+    if (live && velho.test(live.url || '')) {
+      live.url = live.url.replace(velho, 'https://fg-live.187-53-101-166.nip.io');
+      localStorage.setItem('fg_live_backend', JSON.stringify(live));
+    }
+  } catch(_) {}
+
   // ── Lazy loaders (audit 2026-09) ───────────────────────
   // Chart.js, FB SDK, firebase-messaging e firebase-storage são carregados
   // sob demanda em vez de bloquear o parse do <head>. Ganho tipico: 400-500KB
@@ -738,7 +751,7 @@
         <summary>Configuração avançada (URL, API Key, instância)</summary>
         <div class="fg-wa-cfg-body">
           <label>URL do servidor Evolution</label>
-          <input type="text" id="fgWaUrl" class="app-settings-input" placeholder="https://evo.89-116-30-126.nip.io">
+          <input type="text" id="fgWaUrl" class="app-settings-input" placeholder="https://evo.187-53-101-166.nip.io">
           <label>API Key (fica salva só no seu browser)</label>
           <div style="display:flex;gap:6px;">
             <input type="password" id="fgWaKey" class="app-settings-input" placeholder="b71dea7c..." style="flex:1;">
@@ -1831,10 +1844,10 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             <!-- URL -->
             <div style="margin-bottom:18px;">
               <label class="lvs-label" style="display:block;font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">URL do backend</label>
-              <input type="text" id="liveBackendUrl" class="lvs-input" placeholder="http://89.116.30.126:3000"
+              <input type="text" id="liveBackendUrl" class="lvs-input" placeholder="https://fg-live.187-53-101-166.nip.io"
                      style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 14px;font-size:13px;color:#0f172a;font-family:ui-monospace,SFMono-Regular,monospace;box-sizing:border-box;outline:none;transition:border-color .15s;"
                      onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-              <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Endereço da VPS com a porta. Ex: <code style="background:#f1f5f9;padding:1px 5px;border-radius:3px;">http://89.116.30.126:3000</code></div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Endereço do servidor. Ex: <code style="background:#f1f5f9;padding:1px 5px;border-radius:3px;">https://fg-live.187-53-101-166.nip.io</code></div>
             </div>
 
             <!-- Token -->
@@ -5151,7 +5164,7 @@ async function addMember() {
     if (authType === 'password' && pwd) {
       try {
         const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
-        const apiUrl = (cfg.url || 'https://89-116-30-126.sslip.io').replace(/\/+$/,'');
+        const apiUrl = (cfg.url || 'https://fg-live.187-53-101-166.nip.io').replace(/\/+$/,'');
         const apiTok = cfg.token || '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
         const r = await fetch(apiUrl + '/auth/create-user', {
           method: 'POST',
@@ -5724,7 +5737,7 @@ async function removeMember(email) {
     // NOVO: deleta tambem do Firebase Auth via backend
     try {
       const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
-      const apiUrl = (cfg.url || 'https://89-116-30-126.sslip.io').replace(/\/+$/,'');
+      const apiUrl = (cfg.url || 'https://fg-live.187-53-101-166.nip.io').replace(/\/+$/,'');
       const apiTok = cfg.token || '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
       await fetch(apiUrl + '/auth/delete-user?email=' + encodeURIComponent(email), {
         method: 'DELETE',
@@ -7647,9 +7660,9 @@ function appSettingsToggleVisible(inputId, btn) {
 // Chama a Evolution direto do browser (CORS liberado pelo Caddy).
 // APIKEY da Evolution self-hosted da agencia. Nao afeta cobranca (VPS
 // propria) e o CORS restringe origin pra fogoegestao.com.br. Se vazar,
-// rotaciona no Contabo e atualiza aqui.
+// rotaciona na Evolution do servidor e atualiza aqui.
 const FG_WA_DEFAULTS = {
-  url: 'https://evo.89-116-30-126.nip.io',
+  url: 'https://evo.187-53-101-166.nip.io',
   key: 'b71dea7c1a2ccac856f85311d69a219a43956dfbb75a060c',
   instance: 'fogogestao',
 };
@@ -9648,7 +9661,7 @@ let spQueue = JSON.parse(localStorage.getItem('spQueue') || '[]');
 const SP_APP_ID     = '1972040954188233';
 // App Secret NÃO mora mais no client. Exchange rodando no VPS (endpoint
 // abaixo) — o secret é env var no servidor, blindado. Audit 2026-09.
-const SP_OAUTH_EXCHANGE_URL = 'https://fg-oauth.89-116-30-126.sslip.io/exchange';
+const SP_OAUTH_EXCHANGE_URL = 'https://fg-oauth.187-53-101-166.nip.io/exchange';
 const SP_SCOPES     = 'instagram_basic,instagram_manage_insights,instagram_content_publish,pages_read_engagement,pages_show_list,ads_read,business_management';
 
 function getSpToken() { return localStorage.getItem('metaAccessToken') || getApiKey('meta_token') || ''; }
@@ -30356,7 +30369,7 @@ async function fgNotifyWhatsAppTaskAssigned(uid, task) {
       dueDate = `${d}/${mo}/${y}`;
     }
     const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
-    const apiUrl = (cfg.url || 'https://89-116-30-126.sslip.io').replace(/\/+$/,'');
+    const apiUrl = (cfg.url || 'https://fg-live.187-53-101-166.nip.io').replace(/\/+$/,'');
     const apiTok = cfg.token || '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
     const res = await fetch(apiUrl + '/notify/task-assigned', {
       method: 'POST',
@@ -30415,7 +30428,7 @@ async function fgNotifyWhatsAppTaskAnalysis(task, newSt, list) {
     const me = pjMembers.find(x => x.uid === myUid);
     const senderName = me?.name || me?.email?.split('@')[0] || 'Alguém';
     const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
-    const apiUrl = (cfg.url || 'https://89-116-30-126.sslip.io').replace(/\/+$/,'');
+    const apiUrl = (cfg.url || 'https://fg-live.187-53-101-166.nip.io').replace(/\/+$/,'');
     const apiTok = cfg.token || '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
     const res = await fetch(apiUrl + '/notify/task-analysis', {
       method: 'POST',
@@ -33624,7 +33637,7 @@ function pjOpenTaskFromUrl() {
    /upload, /preview/:id (novo, backend precisa upgrade).
    ============================================================ */
 const LIV = (() => {
-  const DEFAULT_API = 'https://89-116-30-126.sslip.io';
+  const DEFAULT_API = 'https://fg-live.187-53-101-166.nip.io';
   const DEFAULT_TOKEN = '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
   const POLL_MS = 4000;
   const PREVIEW_MS = 4000;
