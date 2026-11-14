@@ -36,6 +36,18 @@
     }
   } catch(_) {}
 
+  // 2026-11: chave da Evolution e token do fg-live saíram do HTML público e
+  // passam a vir do app_config. Limpa o que ficou salvo com o valor antigo,
+  // pra não usar credencial velha depois da troca no servidor. Roda uma vez.
+  try {
+    if (!localStorage.getItem('fg_secrets_limpos_2026_11')) {
+      localStorage.removeItem('fg_evolution_key');
+      const lb = JSON.parse(localStorage.getItem('fg_live_backend') || 'null');
+      if (lb && lb.token) { delete lb.token; localStorage.setItem('fg_live_backend', JSON.stringify(lb)); }
+      localStorage.setItem('fg_secrets_limpos_2026_11', '1');
+    }
+  } catch(_) {}
+
   // ── Lazy loaders (audit 2026-09) ───────────────────────
   // Chart.js, FB SDK, firebase-messaging e firebase-storage são carregados
   // sob demanda em vez de bloquear o parse do <head>. Ganho tipico: 400-500KB
@@ -5165,7 +5177,7 @@ async function addMember() {
       try {
         const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
         const apiUrl = (cfg.url || 'https://fg-live.187-53-101-166.nip.io').replace(/\/+$/,'');
-        const apiTok = cfg.token || '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
+        const apiTok = cfg.token || (typeof getApiKey === 'function' ? getApiKey('live_token') : '') || '';
         const r = await fetch(apiUrl + '/auth/create-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiTok },
@@ -5738,7 +5750,7 @@ async function removeMember(email) {
     try {
       const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
       const apiUrl = (cfg.url || 'https://fg-live.187-53-101-166.nip.io').replace(/\/+$/,'');
-      const apiTok = cfg.token || '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
+      const apiTok = cfg.token || (typeof getApiKey === 'function' ? getApiKey('live_token') : '') || '';
       await fetch(apiUrl + '/auth/delete-user?email=' + encodeURIComponent(email), {
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + apiTok },
@@ -7658,12 +7670,11 @@ function appSettingsToggleVisible(inputId, btn) {
 // Gerencia a instancia "fogogestao" na Evolution API direto do painel.
 // Config vive em localStorage: fg_evolution_url/key/instance.
 // Chama a Evolution direto do browser (CORS liberado pelo Caddy).
-// APIKEY da Evolution self-hosted da agencia. Nao afeta cobranca (VPS
-// propria) e o CORS restringe origin pra fogoegestao.com.br. Se vazar,
-// rotaciona na Evolution do servidor e atualiza aqui.
+// A chave NAO fica no HTML (pagina publica). Vem do app_config
+// (getApiKey('evolution_key'), so equipe logada) ou do localStorage.
 const FG_WA_DEFAULTS = {
   url: 'https://evo.187-53-101-166.nip.io',
-  key: 'b71dea7c1a2ccac856f85311d69a219a43956dfbb75a060c',
+  key: '',
   instance: 'fogogestao',
 };
 let _fgWaStatusTimer = null;
@@ -7671,7 +7682,7 @@ let _fgWaStatusTimer = null;
 function fgWaGetConfig() {
   return {
     url:      (localStorage.getItem('fg_evolution_url')      || FG_WA_DEFAULTS.url).replace(/\/+$/, ''),
-    key:      (localStorage.getItem('fg_evolution_key')      || FG_WA_DEFAULTS.key),
+    key:      (localStorage.getItem('fg_evolution_key') || (typeof getApiKey === 'function' ? getApiKey('evolution_key') : '') || ''),
     instance: (localStorage.getItem('fg_evolution_instance') || FG_WA_DEFAULTS.instance),
   };
 }
@@ -7843,23 +7854,25 @@ async function fgWaReconnect() {
   if (!c.key) { fgWaLog('Sem API Key configurada.', 'error'); return; }
   const btn = event?.currentTarget;
   if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
-  fgWaLog('Deletando instância atual…');
+  fgWaLog('Gerando QR pra vincular…');
   try {
-    await fetch(`${c.url}/instance/delete/${encodeURIComponent(c.instance)}`, { method:'DELETE', headers:{ apikey:c.key } }).catch(()=>{});
-    await new Promise(r => setTimeout(r, 2500));
-    fgWaLog('Criando instância nova + gerando QR…');
-    const r = await fetch(`${c.url}/instance/create`, {
-      method:'POST',
-      headers:{ apikey:c.key, 'Content-Type':'application/json' },
-      body: JSON.stringify({ instanceName:c.instance, integration:'WHATSAPP-BAILEYS', qrcode:true })
+    // /instance/connect gera o QR sem apagar a instância. Com chave de
+    // instância (não a geral), apagar+criar falharia e sumiria o WhatsApp.
+    const r = await fetch(`${c.url}/instance/connect/${encodeURIComponent(c.instance)}`, {
+      headers:{ apikey:c.key }
     });
     if (!r.ok) {
       const err = await r.json().catch(()=>({}));
       throw new Error(err.response?.message?.[0] || err.message || `HTTP ${r.status}`);
     }
     const d = await r.json();
-    const b64 = d?.qrcode?.base64;
-    if (!b64) { fgWaLog('Instância criada mas QR não veio ainda. Aguarde e recarregue o status.', 'error'); return; }
+    if (d?.instance?.state === 'open') {
+      fgWaSetBadge('open');
+      fgWaLog('WhatsApp já está conectado.', 'ok');
+      return;
+    }
+    const b64 = d?.base64;
+    if (!b64) { fgWaLog('QR não veio ainda. Aguarde e recarregue o status.', 'error'); return; }
     fgWaShowQr(b64);
     fgWaSetBadge('connecting');
     fgWaLog('QR gerado. Escaneie no celular e o status atualiza sozinho.', 'ok');
@@ -30370,7 +30383,7 @@ async function fgNotifyWhatsAppTaskAssigned(uid, task) {
     }
     const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
     const apiUrl = (cfg.url || 'https://fg-live.187-53-101-166.nip.io').replace(/\/+$/,'');
-    const apiTok = cfg.token || '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
+    const apiTok = cfg.token || (typeof getApiKey === 'function' ? getApiKey('live_token') : '') || '';
     const res = await fetch(apiUrl + '/notify/task-assigned', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiTok },
@@ -30429,7 +30442,7 @@ async function fgNotifyWhatsAppTaskAnalysis(task, newSt, list) {
     const senderName = me?.name || me?.email?.split('@')[0] || 'Alguém';
     const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
     const apiUrl = (cfg.url || 'https://fg-live.187-53-101-166.nip.io').replace(/\/+$/,'');
-    const apiTok = cfg.token || '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
+    const apiTok = cfg.token || (typeof getApiKey === 'function' ? getApiKey('live_token') : '') || '';
     const res = await fetch(apiUrl + '/notify/task-analysis', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiTok },
@@ -33638,7 +33651,7 @@ function pjOpenTaskFromUrl() {
    ============================================================ */
 const LIV = (() => {
   const DEFAULT_API = 'https://fg-live.187-53-101-166.nip.io';
-  const DEFAULT_TOKEN = '8e00212e4f0e0bc53d02f10a34ff9289cb10d69c5bec7ada';
+  const DEFAULT_TOKEN = '';
   const POLL_MS = 4000;
   const PREVIEW_MS = 4000;
   const TICK_MS = 1000;
@@ -33665,8 +33678,8 @@ const LIV = (() => {
   function token() {
     try {
       const cfg = JSON.parse(localStorage.getItem('fg_live_backend') || '{}');
-      return cfg.token || DEFAULT_TOKEN;
-    } catch(_) { return DEFAULT_TOKEN; }
+      return cfg.token || (typeof getApiKey === 'function' ? getApiKey('live_token') : '') || '';
+    } catch(_) { return (typeof getApiKey === 'function' ? getApiKey('live_token') : '') || ''; }
   }
   function authHeaders(extra = {}) {
     const h = { ...extra };
