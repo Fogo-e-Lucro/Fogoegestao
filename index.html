@@ -3868,6 +3868,8 @@ function _setupPermissionsListener() {
       try { localStorage.setItem('pj_permissions', JSON.stringify(_permissions)); } catch(e){}
       try { applyTabVisibility(); } catch(_) {}
       try { if (typeof renderMemberList === 'function') renderMemberList(); } catch(_) {}
+      // espaços e tarefas visíveis saem daqui: redesenha sem a pessoa ter que fechar o app
+      try { if (typeof pjScheduleSidebar === 'function') { pjScheduleSidebar(); pjScheduleRender(); } } catch(_) {}
     }
   }, ()=>{});
 }
@@ -5744,7 +5746,7 @@ async function acessoUploadAvatar(el, targetEmail) {
 }
 
 async function removeMember(email) {
-  if (!confirm(`Remover acesso de ${email}?`)) return;
+  if (!confirm(`Remover acesso de ${email}?\n\nA conta de login também é apagada. Se a pessoa voltar, entra com uma conta nova e as tarefas dela não voltam sozinhas.`)) return;
   try {
     // NOVO: deleta tambem do Firebase Auth via backend
     try {
