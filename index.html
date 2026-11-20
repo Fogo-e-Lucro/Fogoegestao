@@ -3879,6 +3879,9 @@ try {
       else if (err.code === 'unimplemented') console.warn('[Firestore] persistence não suportada neste browser');
     });
 } catch(e) { console.warn('[Firestore] persistence:', e?.message); }
+// Quando uma aba apaga a cópia local (pjLoadAll), o Firestore das outras desliga sem avisar: recarregam junto.
+const _fgCacheCanal = 'BroadcastChannel' in window ? new BroadcastChannel('fg-cache') : null;
+if (_fgCacheCanal) _fgCacheCanal.onmessage = () => location.reload();
 const _ADMIN = 'assessoria@fogoelucro.com.br';
 let _currentUser = null;
 let _syncTimer = null;
@@ -18279,6 +18282,19 @@ async function pjLoadAll() {
     pjC('pj_members').get(),
     pjC('pj_tags').get().catch(() => null),
   ]);
+  // Cópia local do Firestore quebrada no navegador: listas sem nenhum espaço e sem erro
+  // (Eduardo no Chrome em 20/11; no Safari do mesmo Mac vinha certo). Apaga só a cópia,
+  // o login fica, e recarrega uma vez por aba. As outras abas recarregam pelo _fgCacheCanal.
+  if (!sSnap.size && lSnap.size && navigator.onLine && !sessionStorage.getItem('fg_cache_limpo')) {
+    sessionStorage.setItem('fg_cache_limpo', '1');
+    fgDiag('cache quebrado ' + (sSnap.metadata.fromCache ? 'cache' : 'servidor'));
+    await Promise.race([_db.waitForPendingWrites(), new Promise(r => setTimeout(r, 3000))]);
+    await _db.terminate();
+    try { await _db.clearPersistence(); _fgCacheCanal?.postMessage('recarregar'); }
+    catch (e) { fgDiag('limpar cache ' + e.code); }
+    location.reload();
+    return new Promise(() => {}); // Firestore parado: nada mais roda até recarregar
+  }
   pjSpaces  = sSnap.docs.map(d => ({id:d.id,...d.data()}));
   pjFolders = fSnap.docs.map(d => ({id:d.id,...d.data()}));
   pjLists   = lSnap.docs.map(d => ({id:d.id,...d.data()}));
