@@ -932,7 +932,7 @@ Quando foi a última vez que você saiu sem querer voltar?"></textarea>
             <button class="pj-nav-btn fg-sub" id="pjBtnInbox" data-nav="v:inbox" onclick="fgGoView('inbox')">Caixa de entrada <span class="pj-badge" id="pjInboxCount" style="display:none">0</span></button>
             <button class="pj-nav-btn fg-sub" id="pjBtnAll" data-nav="v:all" onclick="fgGoView('all')">Todas as tarefas</button>
             <button class="pj-nav-btn fg-sub" id="pjBtnArchived" data-nav="v:archived" onclick="fgGoView('archived')">Arquivadas</button>
-            <!-- Espaços: fechado por padrão (fg_nav_esp); numa lista mostra só o espaço dela -->
+            <!-- Espaços: fechado por padrão pro admin, aberto pra equipe (fg_nav_esp); numa lista mostra só o espaço dela -->
             <button class="pj-nav-btn fg-sub fg-esp-btn" id="fgEspBtn" onclick="fgEspToggle()" aria-expanded="false">Espaços <svg class="fg-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
             <div class="fg-esp" id="fgEsp">
               <div id="pjSpacesList"></div>
@@ -4923,6 +4923,9 @@ function signInWithGoogle() {
   fgLoginErro('');
   fgLoginInfo('');
   const provider = new firebase.auth.GoogleAuthProvider();
+  // Sempre pergunta a conta: sem isso o Google entra direto com a que já está aberta no navegador
+  // (às vezes a pessoal) e o app barra com "não tem acesso".
+  provider.setCustomParameters({ prompt: 'select_account' });
   pjMarkFreshLogin();
   fgLoginBusy('loginGoogle', true, 'Abrindo o Google');
   _auth.signInWithPopup(provider).catch(e => {
@@ -18842,10 +18845,11 @@ function fgNoProjetos(fn) {
   Promise.resolve(window._pjInitP).then(() => { pronto = true; if (document.body.dataset.activeTab === 'projetos') fn(); });
   setTimeout(() => { if (!pronto) showToast('info', pjlIco('info', 18), 'Carregando as tarefas, já abre'); }, 250);
 }
-// Espaços dentro da Gestão Central: fechado por padrão, a setinha lembra (fg_nav_esp).
+// Espaços dentro da Gestão Central: fechado por padrão pro admin e aberto pra equipe, que com ele
+// fechado não acha as próprias listas (navegador limpo = sem fg_nav_esp). A setinha lembra.
 // Fechado e numa lista, mostra só o espaço dessa lista (fgEspFocus devolve o id dele).
 var _fgEspFocus = '';
-function fgEspOpen() { return lsRaw('fg_nav_esp', '0') === '1'; }
+function fgEspOpen() { return lsRaw('fg_nav_esp', userIsAdmin() ? '0' : '1') === '1'; }
 function fgEspFocus() {
   const v = pjCurrentView;
   if (fgEspOpen() || document.body.dataset.activeTab !== 'projetos' || !v?.id || !/^(list|kanban)$/.test(v.type)) return '';
