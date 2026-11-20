@@ -3819,12 +3819,58 @@ function portalRenderStoryCard(p, i) {
 function portalEsc(s) {
   return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
+// Caixa preta da abertura (caso Eduardo, 20/11/2026): erros que os listeners engoliam e o estado
+// da tela vão pra app_diag/{uid}_{boot} por REST, que grava mesmo com o Firestore travado.
+// ponytail: temporária, tirar quando o caso fechar.
+const _fgDiag = { boot: Date.now(), ev: [], env: {} };
+function fgDiag(ev) {
+  if (_fgDiag.ev.length >= 80) return;
+  _fgDiag.ev.push(Math.round(performance.now()) + 'ms ' + String(ev).slice(0, 200));
+  clearTimeout(_fgDiag.t);
+  _fgDiag.t = setTimeout(fgDiagSend, 2000);
+}
+function fgDiagEstado() {
+  const v = f => { try { return f(); } catch (e) { return 'x ' + e.message; } };
+  return {
+    ua: navigator.userAgent, tela: innerWidth + 'x' + innerHeight, pwa: matchMedia('(display-mode: standalone)').matches,
+    online: navigator.onLine, vis: document.visibilityState, nav: v(() => performance.getEntriesByType('navigation')[0].type),
+    sw: !!navigator.serviceWorker?.controller, css: v(() => document.querySelector('link[href*="styles.css"]').href.split('?')[1]),
+    aba: v(() => localStorage.getItem('fg_active_tab')), loginTela: v(() => !document.getElementById('loginScreen').classList.contains('hidden')),
+    perms: v(() => getUserPerms(_auth.currentUser.email)), pjInit: v(() => pjInitialized), carregou: !!window._pjLoadedOnce,
+    view: v(() => pjCurrentView.type + ':' + pjCurrentView.id), espacos: v(() => pjSpaces.length), listas: v(() => pjLists.length),
+    tarefas: v(() => pjAllTasks.length), visiveis: v(() => pjVisibleTasks().length),
+    linhas: v(() => document.querySelectorAll('#pjSpacesList .pj-space-row').length + '/' + document.querySelectorAll('#pjSpacesList .pj-list-row').length),
+    ..._fgDiag.env,
+  };
+}
+async function fgDiagSend(keepalive) {
+  const u = _auth.currentUser; if (!u) return;
+  try {
+    const token = keepalive === true ? (_fgDiag.token || _appPresenceIdToken) : (_fgDiag.token = await u.getIdToken());
+    if (!token) return;
+    fetch(`https://firestore.googleapis.com/v1/projects/${firebase.app().options.projectId}/databases/(default)/documents/app_diag/${u.uid}_${_fgDiag.boot}`, {
+      method: 'PATCH', keepalive: true,
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ fields: {
+        uid: { stringValue: u.uid },
+        em: { timestampValue: new Date().toISOString() },
+        j: { stringValue: JSON.stringify({ ev: _fgDiag.ev, estado: fgDiagEstado() }) },
+      } }),
+    }).catch(() => {});
+  } catch (_) {}
+}
+window.addEventListener('error', e => fgDiag('erro ' + e.message + ' @' + e.lineno));
+window.addEventListener('unhandledrejection', e => fgDiag('rejeição ' + (e.reason?.code || '') + ' ' + (e.reason?.message || e.reason)));
+document.addEventListener('visibilitychange', () => fgDiag('tela ' + document.visibilityState));
+window.addEventListener('pagehide', () => { fgDiag('saiu'); fgDiagSend(true); });
+navigator.storage?.estimate?.().then(s => { _fgDiag.env.quotaMB = Math.round(s.quota / 1e6); _fgDiag.env.usoMB = Math.round(s.usage / 1e6); }).catch(() => {});
 // Persistência offline IndexedDB (multi-tab). Mutations são enfileiradas
 // e sincronizadas automaticamente quando voltar a conexão.
 try {
   _db.enablePersistence({ synchronizeTabs: true })
-    .then(() => console.log('[Firestore] persistence offline ativada'))
+    .then(() => { console.log('[Firestore] persistence offline ativada'); fgDiag('persistência ok'); })
     .catch(err => {
+      fgDiag('persistência ' + err.code);
       if (err.code === 'failed-precondition') console.warn('[Firestore] múltiplas abas — persistence só na primeira');
       else if (err.code === 'unimplemented') console.warn('[Firestore] persistence não suportada neste browser');
     });
@@ -6066,6 +6112,7 @@ _auth.onAuthStateChanged(async user => {
     }
   } catch(_){}
   _currentUser = user;
+  fgDiag('login'); setTimeout(() => fgDiag('15 s'), 15000); setTimeout(() => fgDiag('60 s'), 60000);
   // Sincroniza foto/nome do Google pra Firestore (uma vez por sessão se mudou)
   // Assim quem entra pelo Gmail já aparece com foto na Equipe, presença e
   // avatar de tarefa sem precisar subir manualmente.
@@ -18181,9 +18228,12 @@ async function pjInit() {
   if (pjInitialized) { pjRenderSidebar(); return; }
   pjInitialized = true;
   try {
+    fgDiag('pjInit');
     await pjLoadAll();
+    fgDiag('pjLoadAll ' + pjSpaces.length + ' espaços ' + pjLists.length + ' listas');
     pjSetupRealtime();
   } catch(e) {
+    fgDiag('pjInit ' + e.code + ' ' + e.message);
     console.warn('[Projetos] Firestore indisponível, modo offline:', e.message);
     if (!pjUnsubs?.length) window._pjLoadedOnce = true; // sem listener não vem retrato: mostra o que tiver
   }
@@ -18580,23 +18630,23 @@ function pjSetupRealtime() {
     if (pjCurrentView && (pjCurrentView.type === 'list' || pjCurrentView.type === 'kanban')) {
       pjScheduleRender();
     }
-  }, ()=>{});
+  }, e => fgDiag('pj_members ' + e.code));
   pjUnsubs.push(unsubMembers);
   // Listen for spaces/folders/lists changes too
   const unsubSpaces = pjC('pj_spaces').orderBy('order').onSnapshot(snap => {
     pjSpaces = snap.docs.map(d => ({id:d.id,...d.data()}));
     pjScheduleSidebar();
-  }, ()=>{});
+  }, e => fgDiag('pj_spaces ' + e.code));
   pjUnsubs.push(unsubSpaces);
   const unsubFolders = pjC('pj_folders').onSnapshot(snap => {
     pjFolders = snap.docs.map(d => ({id:d.id,...d.data()}));
     pjScheduleSidebar();
-  }, ()=>{});
+  }, e => fgDiag('pj_folders ' + e.code));
   pjUnsubs.push(unsubFolders);
   const unsubLists = pjC('pj_lists').onSnapshot(snap => {
     pjLists = snap.docs.map(d => ({id:d.id,...d.data()}));
     pjScheduleSidebar();
-  }, ()=>{});
+  }, e => fgDiag('pj_lists ' + e.code));
   pjUnsubs.push(unsubLists);
   // Listen for task changes across all lists (patch incremental via docChanges)
   // Avisos só de mudança feita depois que o app abriu: com o cache do Firestore o 1º retrato
@@ -18607,6 +18657,7 @@ function pjSetupRealtime() {
   let primeiroRetrato = true;
   const unsub = pjC('pj_tasks').onSnapshot(snap => {
     const isFirstLoad = primeiroRetrato || pjAllTasks.length === 0;
+    if (isFirstLoad) fgDiag('pj_tasks ' + snap.size + (snap.metadata.fromCache ? ' cache' : ''));
     primeiroRetrato = false;
     window._pjLoadedOnce = true;
     const changes = snap.docChanges();
@@ -18663,7 +18714,7 @@ function pjSetupRealtime() {
       || v.type === 'workload' || v.type === 'byclient' || v.type === 'timeline'
       || ((v.type === 'list' || v.type === 'kanban') && affectedListIds.has(v.id));
     if (viewAffected) pjScheduleRender();
-  }, ()=>{});
+  }, e => fgDiag('pj_tasks ' + e.code));
   pjUnsubs.push(unsub);
 }
 
