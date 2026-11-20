@@ -3840,6 +3840,10 @@ function fgDiagEstado() {
     view: v(() => pjCurrentView.type + ':' + pjCurrentView.id), espacos: v(() => pjSpaces.length), listas: v(() => pjLists.length),
     tarefas: v(() => pjAllTasks.length), visiveis: v(() => pjVisibleTasks().length),
     linhas: v(() => document.querySelectorAll('#pjSpacesList .pj-space-row').length + '/' + document.querySelectorAll('#pjSpacesList .pj-list-row').length),
+    // o que está à vista: barra (esquerda,largura), altura das listas, grupo aberto, Espaços aberto, zoom
+    corpo: document.body.dataset.activeTab, grupo: v(() => _fgNavOpen), esp: v(() => fgEspOpen()), zoom: devicePixelRatio,
+    barra: v(() => { const r = document.getElementById('pjSidebar').getBoundingClientRect(); return Math.round(r.left) + ',' + Math.round(r.width); }),
+    listasPx: v(() => Math.round(document.getElementById('pjSpacesList').getBoundingClientRect().height)),
     ..._fgDiag.env,
   };
 }
@@ -7254,6 +7258,7 @@ document.addEventListener('click', function(e) {
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && _appMenuOpen) appMenuClose(); });
 
 function switchTab(tab, btn) {
+  fgDiag('aba ' + tab);
   closeTabMoreMenu();
   // Bloqueio de permissão: não-admin só pode entrar em abas autorizadas
   if (!userCanSeeTab(tab) && tab !== 'acesso') {
@@ -8620,6 +8625,7 @@ function showToast(type, icon, msg) {
     console.warn('[showToast] mensagem indefinida — type:', type, '| caller:', new Error().stack);
     return; // silently drop malformed toasts instead of showing "undefined"
   }
+  fgDiag('aviso ' + type + ' ' + String(msg).slice(0, 60));
   const c = document.getElementById('toastContainer');
   if (!c) { console.warn('[showToast]', type, icon, msg); return; }
   while (c.children.length >= 3) c.firstElementChild?.remove();
@@ -19116,6 +19122,7 @@ function pjExitDemo() {
 
 // ── Navigation ─────────────────────────────────────────
 function pjNavigate(type, id = null) {
+  fgDiag('vista ' + type + (id ? ' ' + id : ''));
   try { pjClosePopups(); } catch(_){} // menu aberto não fica por cima da tela nova
   // Bloqueia navegação para listas de espaços não permitidos
   if ((type === 'list' || type === 'kanban') && id && typeof userIsAdmin === 'function' && !userIsAdmin()) {
