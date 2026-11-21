@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão: sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.24">
+<link rel="stylesheet" href="styles.css?v=3.71.34">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -448,6 +448,20 @@
           <a href="https://console.anthropic.com/settings/keys" target="_blank" class="app-settings-link">Obter chave →</a>
           <button class="app-settings-btn-test" onclick="appSettingsTestClaude()">Testar</button>
           <span class="app-settings-test-result" id="cfgClaudeResult"></span>
+        </div>
+      </div>
+
+      <div class="app-settings-section">
+        <div class="app-settings-row-label">Gemini API Key <span class="app-settings-hint">para o Revisor das artes nas tarefas</span></div>
+        <div class="app-settings-row">
+          <input type="password" class="app-settings-input" id="cfgGemini" autocomplete="off" placeholder="Cole a chave do Google AI Studio">
+          <button class="app-settings-btn-sec" onclick="appSettingsToggleVisible('cfgGemini',this)" aria-label="Mostrar ou ocultar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg></button>
+          <button class="app-settings-btn" onclick="appSettingsSave('gemini','cfgGemini')">Salvar</button>
+        </div>
+        <div class="app-settings-action-row">
+          <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="app-settings-link">Obter chave →</a>
+          <button class="app-settings-btn-test" onclick="appSettingsTestGemini()">Testar</button>
+          <span class="app-settings-test-result" id="cfgGeminiResult"></span>
         </div>
       </div>
 
@@ -3046,6 +3060,10 @@ ufw allow 3000/tcp</pre>
               <svg class="pj-attach-header-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
               <span class="pj-attach-header-title">Anexos</span>
               <span class="pj-attach-count" id="pjAttachCount"></span>
+              <button class="pj-attach-add-btn pj-attach-revisor-btn" id="pjRevisorBtn" type="button" hidden onclick="event.stopPropagation();pjRevisar()" title="Revisar o texto das artes com o Gemini">
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 15 5-11 5 11"/><path d="M6 11h6"/><path d="m14 19 3 3 5-6"/></svg>
+                <span>Revisor</span>
+              </button>
               <button class="pj-attach-add-btn" type="button" onclick="event.stopPropagation();document.getElementById('pjTaskAttachFile').click()" title="Adicionar arquivo">
                 <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 1v12M1 7h12"/></svg>
                 <span>Adicionar</span>
@@ -7670,6 +7688,7 @@ function openAppSettings() {
   const cfg = window._appConfig || {};
   const fill = (id, val) => { const el = document.getElementById(id); if (el) el.value = val||''; };
   fill('cfgClaude', cfg.claude);
+  fill('cfgGemini', cfg.gemini);
   fill('cfgImgbb', cfg.imagebb || localStorage.getItem('imgbbKey') || '');
   fill('cfgMetaToken', cfg.meta_token || localStorage.getItem('metaAccessToken') || '');
   fill('cfgGooglePlaces', cfg.google_places);
@@ -7976,6 +7995,20 @@ async function appSettingsTestClaude() {
   } catch(e) {
     if (result) { result.textContent = '✗ ' + (e.message||e); result.className='app-settings-test-result err'; }
   }
+}
+// Lista um modelo só: confere a chave sem gastar a cota do dia.
+async function appSettingsTestGemini() {
+  const result = document.getElementById('cfgGeminiResult');
+  const key = (document.getElementById('cfgGemini')?.value || '').trim();
+  const show = (t, cls) => { if (result) { result.textContent = t; result.className = 'app-settings-test-result' + (cls ? ' ' + cls : ''); } };
+  if (!key) return show('⚠ chave vazia', 'err');
+  show('Testando');
+  try {
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1', { headers: { 'x-goog-api-key': key } });
+    if (r.ok) return show('✓ Chave funcionando', 'ok');
+    const j = await r.json().catch(() => ({}));
+    show('✗ ' + pjRevErro(r.status, j), 'err');
+  } catch (e) { show('✗ ' + pjRevErro(0, null, e), 'err'); }
 }
 async function appSettingsTestUazapi() {
   const result = document.getElementById('cfgUazapiResult');
@@ -8612,8 +8645,8 @@ document.getElementById('confirmDeleteBtn').onclick = () => {
 /* ═══════════════════════════════════════════════════════
    TOAST
 ═══════════════════════════════════════════════════════ */
-function showToast(type, icon, msg) {
-  // Permite chamadas flexíveis: showToast(msg), showToast(type, msg), showToast(type, icon, msg)
+function showToast(type, icon, msg, ms) {
+  // Permite chamadas flexíveis: showToast(msg), showToast(type, msg), showToast(type, icon, msg); ms = quanto tempo fica (padrão 3 s)
   // e também showToast(msg, type), que muita chamada usa (sem isso o aviso saía só "info"/"warn")
   const TIPOS = ['success', 'ok', 'warn', 'warning', 'error', 'info', 'danger'];
   if (msg === undefined && TIPOS.includes(icon) && !TIPOS.includes(type)) { msg = type; type = icon; icon = undefined; }
@@ -8641,7 +8674,7 @@ function showToast(type, icon, msg) {
   msg = String(msg).replace(/^(?:\p{Extended_Pictographic}|[ℹ✅❌✔✓️‍\s])+/u, '');
   t.innerHTML = `<span class="toast-icon">${ico}</span><span>${msg}</span>`;
   c.appendChild(t);
-  setTimeout(()=>{ t.classList.add('toast-out'); setTimeout(()=>t.remove(),280); }, 3000);
+  setTimeout(()=>{ t.classList.add('toast-out'); setTimeout(()=>t.remove(),280); }, ms || 3000);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -28687,6 +28720,7 @@ function pjRenderTaskAttachments(taskId) {
   const task = pjAllTasks.find(t => t.id === taskId);
   const items = Array.isArray(task?.attachments) ? task.attachments : [];
   if (countEl) countEl.textContent = items.length ? items.length : '';
+  pjRevBotao(taskId, items);
   if (!items.length) {
     grid.innerHTML = '';
     return;
@@ -29286,7 +29320,8 @@ async function pjAttachDrop(e) {
 }
 function pjRenderActivityComment(c, isReply) {
   const m = pjMembers.find(m => m.uid === c.userId);
-  const name = m?.name || m?.email || 'Alguém';
+  const rev = !!c.revisor; // comentário do Revisor das artes: userId é quem pediu
+  const name = rev ? 'Revisor' : (m?.name || m?.email || 'Alguém');
   const time = c.createdAt?.toDate ? pjRelTime(c.createdAt.toDate()) : (c.createdAt?.toMillis ? pjRelTime(new Date(c.createdAt.toMillis())) : '');
   const _me = _auth?.currentUser?.uid || _currentUser?.uid;
   // Autor ou admin podem apagar; id 'c_' é o otimista ainda não salvo
@@ -29317,9 +29352,9 @@ function pjRenderActivityComment(c, isReply) {
   const histClass = c.historical ? ' pj-historical' : '';
   const histStyle = c.historical ? 'style="opacity:0.78;border-left:2px solid var(--border);padding-left:10px;margin-left:-12px;"' : '';
   return `<div class="pj-activity-item ${isReply?'reply':''}${histClass}" ${histStyle}>
-    ${pjAvatarHtml(c.userId)}
+    ${rev ? PJ_REV_AVATAR : pjAvatarHtml(c.userId)}
     <div style="flex:1;min-width:0;">
-      <div class="pj-activity-text"><strong>${escHtml(name)}</strong>${c.historical?' <span class="pj-hist-pill" style="font-size:11px;color:var(--text2);font-weight:600;background:var(--card);border:1px solid var(--border);padding:0 6px;border-radius:999px;margin-left:4px;">histórico</span>':''} <span class="pj-md">${pjMd(c.text||'')}</span></div>
+      <div class="pj-activity-text"><strong>${escHtml(name)}</strong>${rev ? `<span class="pj-rev-por">pedido por ${escHtml(m?.name || m?.email || 'alguém')}</span><br>` : ''}${c.historical?' <span class="pj-hist-pill" style="font-size:11px;color:var(--text2);font-weight:600;background:var(--card);border:1px solid var(--border);padding:0 6px;border-radius:999px;margin-left:4px;">histórico</span>':''} <span class="pj-md">${pjMd(c.text||'')}</span></div>
       ${attachHtml}
       ${reacHtml}
       <div class="pj-comment-actions">
@@ -29680,6 +29715,228 @@ async function pjSendComment() {
   const task = pjAllTasks.find(t => t.id === pjCurrentTaskId);
   if (task) pjFireWebhook('comment.added', { ...pjTaskPayload(task), comment: { text: text||'', author: senderName } });
   try { await pjC('pj_comments').add(data); } catch(e){}
+}
+
+/* Revisor das artes: manda as artes anexadas pro Gemini e grava o que achou como comentário */
+const PJ_REV_MODELOS = ['gemini-4-hydrogen', 'gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
+const PJ_REV_OK = ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'];
+const PJ_REV_TIPOS = { ortografia:'Ortografia', acento:'Acento', gramatica:'Gramática', pontuacao:'Pontuação', digitacao:'Digitação', crase:'Crase', valor:'Preço ou valor', data:'Data', contato:'Contato', nome:'Nome', tarefa:'Diferente da tarefa', cortado:'Texto cortado', legibilidade:'Leitura difícil', outro:'Outro' };
+const PJ_REV_DIAS = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
+const PJ_REV_DIAS_TXT = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+const PJ_REV_AVATAR = '<div class="pj-avatar pj-avatar-rev" title="Revisor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 15 5-11 5 11"/><path d="M6 11h6"/><path d="m14 19 3 3 5-6"/></svg></div>';
+var pjRevRodando = null; // id da tarefa com revisão em andamento
+const PJ_REV_SYS = `Você é revisor de artes de uma agência de marketing de restaurantes no Brasil. Recebe as artes de uma tarefa (imagens e PDFs) e procura erros no texto escrito nelas antes de irem pro ar.
+
+Procure:
+- ortografia, acento, crase, concordância, pontuação, letra trocada ou faltando, palavra repetida, espaço duplo;
+- preço: R$ com vírgula nos centavos (R$ 29,90), "de/por" coerente, conta de desconto ou de combo que não fecha, preço do mesmo produto diferente entre as artes;
+- data e hora impossíveis (31/11, 25h) e horário de funcionamento incoerente;
+- telefone com número de dígitos errado (celular do Brasil: DDD + 9 dígitos), @ e site escritos de jeito diferente entre as artes;
+- nome do restaurante, dos pratos e das marcas escrito diferente entre as artes ou diferente da tarefa;
+- texto que contradiz o título ou a descrição da tarefa (preço, data, sabor, quantidade);
+- texto cortado, coberto por imagem ou difícil de ler.
+
+Não aponte:
+- gíria e informalidade de propósito (pra, tá, vc, bora, tô);
+- grafia oficial de marca (iFood, McDonald's, Coca-Cola);
+- palavras em inglês comuns em comida (burger, smash, delivery, combo, drink, crispy, cheddar, bacon);
+- tudo em maiúsculas, título sem ponto final, emoji;
+- gosto de design (cor, fonte, layout).
+
+Regras:
+- "trecho" é a cópia exata do texto da arte, com o erro.
+- "correcao" é o trecho já corrigido; vazio se não der pra corrigir só no texto.
+- Use certeza "media" quando não tiver certeza.
+- Não invente erro e não repita o mesmo erro.
+- Não julgue dia da semana. Liste em "datas" toda data escrita na arte, com o dia da semana escrito junto ("nenhum" se não tiver).
+- Se não conseguir ver um arquivo, conseguiuLer=false.
+- "explicacao" curta, até 12 palavras, em português.`;
+const PJ_REV_SCHEMA = { type:'OBJECT', properties:{ arquivos:{ type:'ARRAY', items:{ type:'OBJECT', properties:{
+  numero:{type:'INTEGER'}, conseguiuLer:{type:'BOOLEAN'},
+  problemas:{type:'ARRAY', items:{type:'OBJECT', properties:{ tipo:{type:'STRING', enum:Object.keys(PJ_REV_TIPOS)}, trecho:{type:'STRING'}, correcao:{type:'STRING'}, explicacao:{type:'STRING'}, certeza:{type:'STRING', enum:['alta','media']} }, required:['tipo','trecho','correcao','explicacao','certeza']}},
+  datas:{type:'ARRAY', items:{type:'OBJECT', properties:{ texto:{type:'STRING'}, dia:{type:'INTEGER'}, mes:{type:'INTEGER'}, ano:{type:'INTEGER'}, diaSemana:{type:'STRING', enum:[...PJ_REV_DIAS,'nenhum']} }, required:['texto','dia','mes','diaSemana']}}
+}, required:['numero','conseguiuLer','problemas','datas'] } } }, required:['arquivos'] };
+
+function pjRevMime(a) {
+  let t = String(a?.type || '').toLowerCase().split(';')[0].trim();
+  if (!t || t === 'application/octet-stream') {
+    const ext = String(a?.name || '').toLowerCase().split('.').pop();
+    t = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', pdf:'application/pdf', gif:'image/gif', heic:'image/heic' }[ext] || t;
+  }
+  return t === 'image/jpg' ? 'image/jpeg' : t;
+}
+function pjRevBotao(taskId, items) {
+  const b = document.getElementById('pjRevisorBtn');
+  if (!b) return;
+  b.hidden = !items.some(a => PJ_REV_OK.includes(pjRevMime(a)));
+  const rodando = pjRevRodando === taskId;
+  b.classList.toggle('carregando', rodando);
+  b.setAttribute('aria-busy', rodando ? 'true' : 'false');
+  b.lastElementChild.textContent = rodando ? 'Revisando' : 'Revisor';
+}
+function pjRevErro(status, j, e) {
+  if (e) return e.name === 'AbortError' ? 'O Gemini demorou demais. Tente com menos arquivos.' : 'Sem conexão com o Gemini. Confira a internet e tente de novo.';
+  const err = j?.error || {}; const tudo = JSON.stringify(err); const msg = String(err.message || '');
+  if ((status === 400 || status === 401) && /API_KEY_INVALID|API key not valid/i.test(tudo)) return 'A chave do Gemini está errada. Confira em Configurações › APIs.';
+  if (status === 403) return /VERIFICATION/i.test(tudo) ? 'O Google pede pra verificar a conta da chave no AI Studio.' : 'A chave não tem permissão: ' + msg.slice(0, 120);
+  if (status === 429) return /PerDay/i.test(tudo) ? 'Acabou o limite grátis de hoje. Libera de novo de madrugada (por volta das 5h), ou ative o pagamento no AI Studio.' : 'Muitos pedidos seguidos. Tente de novo em 1 minuto.';
+  if (status === 402) return 'Acabou o crédito do Gemini. Coloque mais no AI Studio.';
+  if (status >= 500) return 'O Gemini está fora do ar agora. Tente de novo em alguns minutos.';
+  return `Erro ${status} do Gemini: ${msg.slice(0, 140)}`;
+}
+// Tenta os modelos em ordem: modelo que não existe mais (404), limite (429) ou queda (500/503) passa pro próximo
+async function pjRevGerar(key, parts) {
+  let ultimo;
+  for (const modelo of PJ_REV_MODELOS) {
+    const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 150000);
+    let r, j;
+    try {
+      r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, { method:'POST', signal:ctl.signal, headers:{ 'content-type':'application/json', 'x-goog-api-key':key },
+        body: JSON.stringify({ systemInstruction:{ parts:[{ text:PJ_REV_SYS }] }, contents:[{ role:'user', parts }], generationConfig:{ responseMimeType:'application/json', responseSchema:PJ_REV_SCHEMA } }) });
+      j = await r.json().catch(() => ({}));
+    } catch (e) { throw new Error(pjRevErro(0, null, e)); } finally { clearTimeout(timer); }
+    if (r.ok) {
+      const c = j.candidates?.[0];
+      const texto = (c?.content?.parts || []).filter(p => !p.thought && p.text).map(p => p.text).join('');
+      if (!texto) throw new Error(c?.finishReason === 'SAFETY' || j.promptFeedback?.blockReason ? 'O Gemini recusou revisar estas artes.' : 'O Gemini voltou sem resposta. Tente de novo.');
+      let res; try { res = JSON.parse(texto); } catch (_) { throw new Error('O Gemini voltou uma resposta quebrada. Tente de novo.'); }
+      return { res, modelo, uso: j.usageMetadata || {} };
+    }
+    ultimo = Object.assign(new Error(pjRevErro(r.status, j)), { status: r.status, j });
+    if (![404, 429, 500, 503].includes(r.status)) throw ultimo;
+  }
+  throw ultimo;
+}
+// Confere se o Gemini viu mesmo as artes (link que ele não abre volta sem imagem)
+function pjRevViu(out) {
+  const det = out.uso?.promptTokensDetails;
+  if (Array.isArray(det) && det.length) return det.some(d => /IMAGE|DOCUMENT|VIDEO/.test(d.modality) && d.tokenCount > 0);
+  const arqs = out.res?.arquivos || [];
+  return !arqs.length || arqs.some(a => a.conseguiuLer !== false);
+}
+// ponytail: só funciona com o CORS do Storage liberado; sem ele o fetch dá erro e o Revisor avisa
+async function pjRevBaixar(f) {
+  const r = await fetch(f.a.url, { cache:'no-store' });
+  if (!r.ok) throw new Error('download ' + r.status);
+  let blob = await r.blob(), mime = f.mime;
+  if (mime.startsWith('image/')) {
+    try {
+      const bmp = await createImageBitmap(blob);
+      const s = Math.min(1, 2048 / Math.max(bmp.width, bmp.height));
+      const cv = document.createElement('canvas'); cv.width = Math.round(bmp.width * s); cv.height = Math.round(bmp.height * s);
+      const cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(bmp, 0, 0, cv.width, cv.height);
+      blob = await new Promise(ok => cv.toBlob(ok, 'image/jpeg', 0.9)); mime = 'image/jpeg';
+    } catch (_) { /* HEIC no Chrome: vai como veio */ }
+  }
+  const data = await new Promise((ok, erro) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(',')[1]); fr.onerror = erro; fr.readAsDataURL(blob); });
+  return { mime_type: mime, data };
+}
+async function pjRevRodar(key, task, enviar) {
+  const lista = (typeof pjLists !== 'undefined' ? pjLists : []).find(l => l.id === task.listId);
+  const cab = [`Tarefa: ${task.title || ''}`, lista?.name ? `Lista: ${lista.name}` : '', task.description ? `Descrição: ${String(task.description).slice(0, 1500)}` : '', `Hoje é ${new Date().toLocaleDateString('pt-BR')}.`, `São ${enviar.length} arquivos, na ordem abaixo.`].filter(Boolean).join('\n');
+  const montar = async inline => {
+    const parts = [{ text: cab }];
+    for (const [k, f] of enviar.entries()) {
+      parts.push({ text: `Arquivo ${k + 1}: ${f.nome}` });
+      if (!f.a.url) parts.push({ inline_data: { mime_type: f.mime, data: String(f.a.dataUrl).split(',')[1] } });
+      else if (inline) parts.push({ inline_data: await pjRevBaixar(f) });
+      else parts.push({ file_data: { mime_type: f.mime, file_uri: f.a.url } });
+    }
+    return parts;
+  };
+  // 1º pelo link (rápido, sem baixar nada); se o Gemini não abrir o link, baixa e manda o arquivo junto
+  let detalhe = '', inline = false;
+  try { inline = localStorage.getItem('fg_rev_modo') === 'inline'; } catch (_) {}
+  if (!inline) {
+    try { const out = await pjRevGerar(key, await montar(false)); if (pjRevViu(out)) return out; }
+    catch (e) {
+      if ((e.status !== 400 && e.status !== 404) || /API_KEY_INVALID|API key not valid/i.test(JSON.stringify(e.j?.error || {}))) throw e;
+      detalhe = String(e.j?.error?.message || '').slice(0, 100);
+    }
+  }
+  let parts;
+  try { parts = await montar(true); }
+  catch (_) { throw new Error('O Gemini não conseguiu abrir as artes pelo link. Falta liberar o acesso aos anexos no Firebase.' + (detalhe ? ' Detalhe: ' + detalhe : '')); }
+  const out = await pjRevGerar(key, parts);
+  try { localStorage.setItem('fg_rev_modo', 'inline'); } catch (_) {}
+  return out;
+}
+// O Gemini só lê a data; o dia da semana certo é conta, fica aqui
+function pjRevChecaData(d, hoje = new Date()) {
+  if (!d || !d.dia || !d.mes) return null;
+  let ano = d.ano || 0;
+  if (ano > 0 && ano < 100) ano += 2000;
+  if (ano < 2000) { ano = hoje.getFullYear(); if (new Date(ano, d.mes - 1, d.dia) < new Date(ano, hoje.getMonth(), hoje.getDate() - 30)) ano++; }
+  const dt = new Date(ano, d.mes - 1, d.dia);
+  const dd = String(d.dia).padStart(2, '0') + '/' + String(d.mes).padStart(2, '0');
+  const trecho = d.texto || dd;
+  if (dt.getMonth() !== d.mes - 1 || dt.getDate() !== d.dia) return { tipo:'data', trecho, correcao:'', explicacao: dd + ' não existe', certeza:'alta' };
+  const idx = PJ_REV_DIAS.indexOf(d.diaSemana); const certo = dt.getDay();
+  if (idx < 0 || idx === certo) return null;
+  return { tipo:'data', trecho, correcao:'', explicacao: `${dd}/${ano} cai ${certo === 0 || certo === 6 ? 'num' : 'numa'} ${PJ_REV_DIAS_TXT[certo]}`, certeza:'alta' };
+}
+function pjRevProblemas(arq) {
+  const vistos = new Set();
+  const soTexto = ['ortografia', 'acento', 'gramatica', 'pontuacao', 'digitacao', 'crase'];
+  return [...(arq.problemas || []), ...(arq.datas || []).map(d => pjRevChecaData(d)).filter(Boolean)]
+    .filter(p => !(soTexto.includes(p.tipo) && p.correcao && String(p.correcao).trim() === String(p.trecho || '').trim())) // "erro" com a correção igual ao texto
+    .filter(p => { const k = p.tipo + '|' + String(p.trecho || '').trim().toLowerCase(); if (vistos.has(k)) return false; vistos.add(k); return true; })
+    .slice(0, 25);
+}
+function pjRevTexto(arquivos, enviar, pulados) {
+  const limpa = s => String(s || '').replace(/\*/g, '＊').replace(/`/g, "'").replace(/\]\(/g, '] (').replace(/\s+/g, ' ').trim();
+  const porNum = new Map((arquivos || []).map(a => [a.numero, a]));
+  const secoes = [], semErro = []; let total = 0, comErro = 0, lidos = 0;
+  enviar.forEach((f, k) => {
+    const nome = `${f.i + 1}. ${limpa(f.nome)}`; const arq = porNum.get(k + 1);
+    if (!arq || arq.conseguiuLer === false) { secoes.push(`**${nome}**\n- Não consegui ler esta arte.`); return; }
+    lidos++; const ps = pjRevProblemas(arq);
+    if (!ps.length) { semErro.push(nome); return; }
+    total += ps.length; comErro++;
+    secoes.push(`**${nome}**\n` + ps.map(p => { const t = limpa(p.trecho), c = limpa(p.correcao), e = limpa(p.explicacao);
+      const det = [e, p.certeza === 'media' ? 'conferir' : ''].filter(Boolean).join(', ');
+      return `- ${PJ_REV_TIPOS[p.tipo] || 'Outro'}: "${t}"${c && c !== t ? ` → "${c}"` : ''}${det ? ` (${det})` : ''}`; }).join('\n'));
+  });
+  const n = enviar.length;
+  const resumo = total ? `**${total} ${total === 1 ? 'ponto' : 'pontos'} pra corrigir** em ${comErro} de ${n} ${n === 1 ? 'arte' : 'artes'}.`
+    : !lidos ? '**Não consegui ler nenhuma arte.**' : lidos < n ? '**Nenhum erro encontrado** nas artes que consegui ler.'
+    : `**Nenhum erro encontrado** ${n === 1 ? 'na arte' : `nas ${n} artes`}.`;
+  const texto = [resumo + (secoes.length ? '\n\n' + secoes.join('\n') : ''),
+    secoes.length && semErro.length ? `Sem erro: ${semErro.join(', ')}.` : '',
+    pulados.length ? `Não revisei: ${pulados.map(limpa).join('; ')}.` : '',
+    '*Revisão feita pelo Gemini. Confira antes de mexer na arte.*'].filter(Boolean).join('\n');
+  return { texto, total };
+}
+async function pjRevisar() {
+  const taskId = pjCurrentTaskId; const task = pjAllTasks.find(t => t.id === taskId);
+  if (!task) return;
+  if (pjRevRodando) return showToast('warn', '', pjRevRodando === taskId ? 'A revisão desta tarefa já está rodando.' : 'Espere a revisão da outra tarefa terminar.', 5000);
+  const key = getApiKey('gemini');
+  if (!key) return showToast('warn', '', userIsAdmin() ? 'Cole a chave do Gemini em Configurações › APIs.' : 'Peça pro administrador colocar a chave do Gemini em Configurações.', 6000);
+  const items = Array.isArray(task.attachments) ? task.attachments : [];
+  const enviar = [], pulados = [];
+  items.forEach((a, i) => {
+    const mime = pjRevMime(a); let motivo = '';
+    if (!PJ_REV_OK.includes(mime)) motivo = mime.startsWith('image/') ? 'formato que o Revisor não lê, salve em PNG ou JPG' : 'só leio imagem e PDF';
+    else if (!a.url && !a.dataUrl) motivo = 'sem link';
+    else if ((a.size || 0) > 15 * 1024 * 1024) motivo = 'passa de 15 MB';
+    else if (enviar.length >= 20) motivo = 'limite de 20 por revisão';
+    if (motivo) pulados.push(`${i + 1}. ${a.name || 'arquivo'} (${motivo})`); else enviar.push({ a, i, mime, nome: a.name || 'arquivo' });
+  });
+  if (!enviar.length) return showToast('warn', '', 'Nenhuma arte em imagem ou PDF pra revisar.', 5000);
+  pjRevRodando = taskId; pjRenderTaskAttachments(taskId);
+  showToast('info', '', `Revisando ${enviar.length} ${enviar.length === 1 ? 'arte' : 'artes'}. Leva até 1 minuto.`, 5000);
+  try {
+    const out = await pjRevRodar(key, task, enviar);
+    const { texto, total } = pjRevTexto(out.res?.arquivos, enviar, pulados);
+    const uid = _auth?.currentUser?.uid || _currentUser?.uid; const u = out.uso || {};
+    const data = { taskId, userId: uid, text: texto, type: 'comment', createdAt: pjNow(), revisor: { modelo: out.modelo, arquivos: enviar.length, entrada: u.promptTokenCount || 0, saida: (u.candidatesTokenCount || 0) + (u.thoughtsTokenCount || 0) } };
+    if (pjCurrentTaskId === taskId) { pjComments.push({ ...data, id: 'c_' + Date.now(), createdAt: { toDate: () => new Date(), toMillis: () => Date.now() } }); pjRenderActivity(); }
+    try { await pjC('pj_comments').add(data); }
+    catch (e) { return showToast('error', '', 'Não consegui salvar a revisão nos comentários: ' + escHtml(e.message || e), 8000); }
+    showToast('success', '', total ? `Revisão pronta nos comentários: ${total} ${total === 1 ? 'ponto' : 'pontos'} pra corrigir.` : 'Revisão pronta: nenhum erro encontrado.', 5000);
+  } catch (e) { showToast('error', '', escHtml(e.message || String(e)), 8000); }
+  finally { pjRevRodando = null; if (pjCurrentTaskId === taskId) pjRenderTaskAttachments(taskId); }
 }
 
 function pjProcessMentionNotifs(text, senderName, senderUid) {

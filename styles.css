@@ -21914,3 +21914,15 @@ body.fg-menu .pj-drawer-backdrop { -webkit-backdrop-filter: none !important; bac
   body.fg-menu .fg-chev { opacity: 1; color: var(--text3); }
   body.fg-menu .pj-nav-btn.active .fg-chev, body.fg-menu .fg-grp-head:has(> .pj-nav-btn.active) .fg-chev { color: var(--on-ink); }
 }
+
+/* Revisor das artes (Gemini) */
+.pj-attach-revisor-btn[hidden] { display:none; }
+.pj-attach-revisor-btn:not([hidden]) + .pj-attach-add-btn { margin-left:0; }
+.pj-attach-revisor-btn:hover { background:var(--text); color:var(--card); border-color:var(--text); box-shadow:none; }
+.pj-attach-revisor-btn.carregando { cursor:progress; }
+.pj-attach-revisor-btn.carregando svg { animation:spin 1s linear infinite; }
+.pj-avatar-rev { background:var(--text); color:var(--card); }
+.pj-avatar-rev svg { width:58%; height:58%; }
+.pj-rev-por { font-weight:500; color:var(--text3); font-size:12px; margin-left:6px; }
+@media (max-width:768px) { .pj-attach-revisor-btn span { display:inline-block; } }
+@media (max-width:640px) { #pjTaskModal .pj-attach-revisor-btn { width:auto; padding:0 14px; } }
