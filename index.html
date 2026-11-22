@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão: sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.36">
+<link rel="stylesheet" href="styles.css?v=3.71.37">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -8667,7 +8667,7 @@ function showToast(type, icon, msg, ms) {
   fgDiag('aviso ' + type + ' ' + String(msg).slice(0, 60));
   const c = document.getElementById('toastContainer');
   if (!c) { console.warn('[showToast]', type, icon, msg); return; }
-  while (c.children.length >= 3) c.firstElementChild?.remove();
+  [...c.querySelectorAll('.toast:not(.pj-rev-aviso)')].slice(0, -2).forEach(x => x.remove()); // até 3 avisos comuns; o do Revisor só sai quando a pessoa fecha
   const t = document.createElement('div');
   t.className = `toast ${type || 'info'}`;
   // Ícone de traço pelo tipo (emoji não é ícone de interface); o emoji do começo do texto sai
@@ -29361,7 +29361,7 @@ function pjRenderActivityComment(c, isReply) {
   // Estilo sutil pra mensagens históricas (importadas de ocorrência anterior)
   const histClass = c.historical ? ' pj-historical' : '';
   const histStyle = c.historical ? 'style="opacity:0.78;border-left:2px solid var(--border);padding-left:10px;margin-left:-12px;"' : '';
-  return `<div class="pj-activity-item ${isReply?'reply':''}${histClass}" ${histStyle}>
+  return `<div class="pj-activity-item ${isReply?'reply':''}${histClass}${rev ? ' pj-rev' : ''}" ${histStyle}>
     ${rev ? PJ_REV_AVATAR : pjAvatarHtml(c.userId)}
     <div style="flex:1;min-width:0;">
       <div class="pj-activity-text"><strong>${escHtml(name)}</strong>${rev ? `<span class="pj-rev-por">pedido por ${escHtml(m?.name || m?.email || 'alguém')}</span><br>` : ''}${c.historical?' <span class="pj-hist-pill" style="font-size:11px;color:var(--text2);font-weight:600;background:var(--card);border:1px solid var(--border);padding:0 6px;border-radius:999px;margin-left:4px;">histórico</span>':''} <span class="pj-md">${pjMd(c.text||'')}</span></div>
@@ -29799,7 +29799,7 @@ function pjRevBotao(taskId, items) {
   b.lastElementChild.textContent = rodando ? 'Revisando' : 'Revisor';
 }
 function pjRevErro(status, j, e) {
-  if (e) return e.name === 'AbortError' ? 'O Gemini demorou demais. Tente com menos arquivos.' : 'Sem conexão com o Gemini. Confira a internet e tente de novo.';
+  if (e) return e.name === 'AbortError' ? 'O Gemini demorou demais pra responder. Tente de novo em alguns minutos.' : 'Sem conexão com o Gemini. Confira a internet e tente de novo.';
   const err = j?.error || {}; const tudo = JSON.stringify(err); const msg = String(err.message || '');
   if ((status === 400 || status === 401) && /API_KEY_INVALID|API key not valid/i.test(tudo)) return 'A chave do Gemini está errada. Confira em Configurações › APIs.';
   if (status === 403) return /VERIFICATION/i.test(tudo) ? 'O Google pede pra verificar a conta da chave no AI Studio.' : 'A chave não tem permissão: ' + msg.slice(0, 120);
@@ -29872,11 +29872,9 @@ function pjRevPedido(task, comentarios = [], fez = []) {
     coms.length ? `Comentários, do mais antigo pro mais novo:\n${coms.join('\n')}` : 'Sem comentários.',
     `Hoje é ${new Date().toLocaleDateString('pt-BR')}.`].filter(Boolean).join('\n\n');
 }
-// fora = arquivos da tarefa que não vieram nesta revisão (a automática só manda as artes novas)
-async function pjRevRodar(key, task, enviar, comentarios = [], fora = 0) {
-  const fez = [...new Set(enviar.map(f => f.a.uploadedBy).filter(Boolean))];
-  const cab = pjRevPedido(task, comentarios, fez) + `\n\nSão ${enviar.length} arquivos, na ordem abaixo.`
-    + (fora ? ` A tarefa tem mais ${fora} ${fora === 1 ? 'arquivo que não veio' : 'arquivos que não vieram'} nesta revisão: use certeza "media" em "faltando".` : '');
+const PJ_REV_LOTE = 3; // artes por chamada: 6 numa chamada só passaram dos 150 s do pjRevGerar
+// Uma chamada com as artes da lista: 1º pelo link (rápido, sem baixar nada); se o Gemini não abrir o link, baixa e manda o arquivo junto
+async function pjRevLote(key, cab, enviar) {
   const montar = async inline => {
     const parts = [{ text: cab }];
     for (const [k, f] of enviar.entries()) {
@@ -29887,7 +29885,6 @@ async function pjRevRodar(key, task, enviar, comentarios = [], fora = 0) {
     }
     return parts;
   };
-  // 1º pelo link (rápido, sem baixar nada); se o Gemini não abrir o link, baixa e manda o arquivo junto
   let detalhe = '', inline = false;
   try { inline = localStorage.getItem('fg_rev_modo') === 'inline'; } catch (_) {}
   if (!inline) {
@@ -29903,6 +29900,42 @@ async function pjRevRodar(key, task, enviar, comentarios = [], fora = 0) {
   const out = await pjRevGerar(key, parts);
   try { localStorage.setItem('fg_rev_modo', 'inline'); } catch (_) {}
   return out;
+}
+// fora = arquivos da tarefa que não vieram nesta revisão (a automática só manda as artes novas)
+// Mais de PJ_REV_LOTE artes: vai em partes, 3 partes de cada vez (limite por minuto da chave grátis),
+// e no fim uma chamada só de texto confere o que falta do pedido olhando o texto de todas as artes juntas.
+// ponytail: diferença entre artes de partes diferentes (preço ou @ escrito diferente) escapa; juntar se aparecer caso real
+async function pjRevRodar(key, task, enviar, comentarios = [], fora = 0) {
+  const fez = [...new Set(enviar.map(f => f.a.uploadedBy).filter(Boolean))];
+  const pedido = pjRevPedido(task, comentarios, fez);
+  const nota = n => n ? ` A tarefa tem mais ${n} ${n === 1 ? 'arquivo que não veio' : 'arquivos que não vieram'} nesta revisão: use certeza "media" em "faltando".` : '';
+  const motivo = e => String(e?.message || e).replace(/[.;:]+$/, '');
+  if (enviar.length <= PJ_REV_LOTE) return pjRevLote(key, pedido + `\n\nSão ${enviar.length} arquivos, na ordem abaixo.` + nota(fora), enviar);
+  const lotes = [], res = [];
+  for (let k = 0; k < enviar.length; k += PJ_REV_LOTE) lotes.push(enviar.slice(k, k + PJ_REV_LOTE));
+  for (let k = 0; k < lotes.length; k += 3) res.push(...await Promise.allSettled(lotes.slice(k, k + 3).map((l, j) => pjRevLote(key,
+    pedido + `\n\nSão ${l.length} arquivos, na ordem abaixo. Esta é a parte ${k + j + 1} de ${lotes.length} das artes da tarefa: deixe "faltando" vazio.`, l))));
+  const ok = [], arquivos = [], pulados = [], modelos = new Set(), uso = { promptTokenCount: 0, candidatesTokenCount: 0, thoughtsTokenCount: 0 };
+  const soma = u => Object.keys(uso).forEach(c => { uso[c] += u?.[c] || 0; });
+  let erro = null, falhou = 0;
+  res.forEach((r, p) => {
+    const l = lotes[p];
+    if (r.status === 'rejected') { erro = erro || r.reason; falhou += l.length; pulados.push(`${l.map(f => `${f.i + 1}. ${f.nome}`).join(', ')} (${motivo(r.reason)})`); return; }
+    (r.value.res?.arquivos || []).filter(a => a.numero >= 1 && a.numero <= l.length).forEach(a => arquivos.push({ ...a, numero: ok.length + a.numero }));
+    ok.push(...l); modelos.add(r.value.modelo); soma(r.value.uso);
+  });
+  if (!ok.length) throw erro;
+  let faltando = [];
+  if (arquivos.some(a => a.conseguiuLer !== false)) {
+    const textos = ok.map((f, k) => { const a = arquivos.find(x => x.numero === k + 1);
+      return `Arquivo ${k + 1}: ${f.nome}\n${!a || a.conseguiuLer === false ? '(não consegui ler)' : a.texto || '(sem texto)'}`; });
+    try {
+      const v = await pjRevGerar(key, [{ text: pedido + `\n\nAs ${ok.length} artes já foram revisadas em partes. Abaixo está o texto copiado de cada uma. Deixe "arquivos" vazio e preencha só "faltando", comparando o pedido com o texto de todas as artes juntas.`
+        + nota(fora + falhou) + '\n\n' + textos.join('\n\n') }]);
+      faltando = v.res?.faltando || []; modelos.add(v.modelo); soma(v.uso);
+    } catch (e) { pulados.push(`conferência do que falta do pedido (${motivo(e)})`); }
+  }
+  return { res: { arquivos, faltando }, modelo: [...modelos].join(', '), uso, enviar: ok, pulados };
 }
 // O Gemini só lê a data; o dia da semana certo é conta, fica aqui
 function pjRevChecaData(d, hoje = new Date()) {
@@ -29926,7 +29959,7 @@ function pjRevProblemas(arq) {
     .filter(p => { const k = p.tipo + '|' + String(p.trecho || '').trim().toLowerCase(); if (vistos.has(k)) return false; vistos.add(k); return true; })
     .slice(0, 25);
 }
-function pjRevTexto(res, enviar, pulados, auto) {
+function pjRevTexto(res, enviar, pulados, auto, refs = 0) {
   const limpa = s => String(s || '').replace(/\*/g, '＊').replace(/`/g, "'").replace(/\]\(/g, '] (').replace(/\s+/g, ' ').trim();
   const solto = s => limpa(s).replace(/[.;:]+$/, ''); // explicação dentro do parêntese sem ponto final
   const porNum = new Map((res?.arquivos || []).map(a => [a.numero, a]));
@@ -29956,6 +29989,7 @@ function pjRevTexto(res, enviar, pulados, auto) {
   const texto = [resumo + (secoes.length ? '\n\n' + secoes.join('\n') : ''),
     secoes.length && semErro.length ? `Sem erro: ${semErro.join(', ')}.` : '',
     pulados.length ? `Não revisei: ${pulados.map(limpa).join('; ')}.` : '',
+    refs ? `Fora da revisão: ${refs} ${refs === 1 ? 'arquivo' : 'arquivos'} de referência, de quem não é responsável pela tarefa.` : '',
     `*Revisão ${auto ? 'automática ' : ''}feita pelo Gemini. Confira antes de mexer na arte.*`].filter(Boolean).join('\n');
   return { texto, total: pts };
 }
@@ -29969,9 +30003,14 @@ async function pjRevisar(taskId = pjCurrentTaskId, so = null) {
   const key = getApiKey('gemini');
   if (!key) { if (!auto) showToast('warn', '', userIsAdmin() ? 'Cole a chave do Gemini em Configurações › APIs.' : 'Peça pro administrador colocar a chave do Gemini em Configurações.', 6000); return; }
   const items = Array.isArray(task.attachments) ? task.attachments : [];
-  const enviar = [], pulados = [];
+  // No manual, se quem é responsável já subiu arte, só ela vai: referência dos outros (ex.: o David) fica fora.
+  // Anexo antigo sem uploadedBy vai junto, na dúvida
+  const resp = task.assignees || [];
+  const soResp = !auto && items.some(a => resp.includes(a.uploadedBy) && PJ_REV_OK.includes(pjRevMime(a)));
+  const enviar = [], pulados = []; let refs = 0;
   items.forEach((a, i) => {
     if (auto && !so.includes(a.url)) return;
+    if (soResp && a.uploadedBy && !resp.includes(a.uploadedBy)) { refs++; return; }
     const mime = pjRevMime(a); let motivo = '';
     if (!PJ_REV_OK.includes(mime)) motivo = mime.startsWith('image/') ? 'formato que o Revisor não lê, salve em PNG ou JPG' : 'só leio imagem e PDF';
     else if (!a.url && !a.dataUrl) motivo = 'sem link';
@@ -29982,23 +30021,52 @@ async function pjRevisar(taskId = pjCurrentTaskId, so = null) {
   if (!enviar.length) { if (!auto) showToast('warn', '', 'Nenhuma arte em imagem ou PDF pra revisar.', 5000); return; }
   pjRevRodando = taskId; if (pjCurrentTaskId === taskId) pjRenderTaskAttachments(taskId);
   const qtd = `${enviar.length} ${enviar.length === 1 ? 'arte' : 'artes'}`;
-  showToast('info', '', auto ? `Revisor automático: revisando ${qtd}. Deixe o app aberto até terminar.` : `Revisando ${qtd}. Leva até 1 minuto.`, auto ? 7000 : 5000);
-  const ante = auto ? 'Revisor automático: ' : '';
+  const nome = escHtml(task.title || 'Tarefa'), ante = auto ? 'Revisão automática' : 'Revisão';
+  const tempo = enviar.length <= PJ_REV_LOTE ? '1 a 2 minutos' : `uns ${Math.ceil(enviar.length / 9) * 2} minutos`;
+  pjRevAviso(taskId, 'rodando', `${auto ? 'Revisor automático: revisando' : 'Revisando'} ${qtd}`, nome, `Leva ${tempo}. Deixe o app aberto, eu aviso aqui quando terminar.`);
   try {
     let comentarios = [];
     try { comentarios = (await pjC('pj_comments').where('taskId', '==', taskId).get()).docs.map(d => d.data()); }
     catch (_) { if (pjCurrentTaskId === taskId) comentarios = pjComments; }
-    const out = await pjRevRodar(key, task, enviar, comentarios, items.length - enviar.length - pulados.length);
-    const { texto, total } = pjRevTexto(out.res, enviar, pulados, auto);
+    const out = await pjRevRodar(key, task, enviar, comentarios, items.length - enviar.length - pulados.length - refs);
+    const feitos = out.enviar || enviar; // em partes, as que falharam saem daqui e vão pro "Não revisei"
+    const { texto, total } = pjRevTexto(out.res, feitos, [...pulados, ...(out.pulados || [])], auto, refs);
     const uid = _auth?.currentUser?.uid || _currentUser?.uid; const u = out.uso || {};
-    const data = { taskId, userId: uid, text: texto, type: 'comment', createdAt: pjNow(), revisor: { modelo: out.modelo, arquivos: enviar.length, entrada: u.promptTokenCount || 0, saida: (u.candidatesTokenCount || 0) + (u.thoughtsTokenCount || 0), ...(auto ? { auto: true } : {}) } };
+    const data = { taskId, userId: uid, text: texto, type: 'comment', createdAt: pjNow(), revisor: { modelo: out.modelo, arquivos: feitos.length, entrada: u.promptTokenCount || 0, saida: (u.candidatesTokenCount || 0) + (u.thoughtsTokenCount || 0), ...(auto ? { auto: true } : {}) } };
     if (pjCurrentTaskId === taskId) { pjComments.push({ ...data, id: 'c_' + Date.now(), createdAt: { toDate: () => new Date(), toMillis: () => Date.now() } }); pjRenderActivity(); }
     try { await pjC('pj_comments').add(data); }
-    catch (e) { return showToast('error', '', ante + 'Não consegui salvar a revisão nos comentários: ' + escHtml(e.message || e), 8000); }
-    const pronto = auto ? 'Revisão automática pronta' : 'Revisão pronta';
-    showToast('success', '', total ? `${pronto} nos comentários: ${total} ${total === 1 ? 'ponto' : 'pontos'} pra corrigir.` : `${pronto}: nenhum erro encontrado.`, 5000);
-  } catch (e) { showToast('error', '', ante + escHtml(e.message || String(e)), 8000); }
+    catch (e) { return pjRevAviso(taskId, 'erro', `${ante} não terminou`, nome, 'Não consegui salvar a revisão nos comentários: ' + escHtml(e.message || e)); }
+    const faltou = enviar.length - feitos.length;
+    pjRevAviso(taskId, 'pronto', `${ante} pronta: ${total ? `${total} ${total === 1 ? 'ponto' : 'pontos'} pra corrigir` : 'nenhum erro encontrado'}`, nome,
+      faltou ? `${faltou} ${faltou === 1 ? 'arte ficou' : 'artes ficaram'} sem revisão, o motivo está no comentário.` : '');
+  } catch (e) { pjRevAviso(taskId, 'erro', `${ante} não terminou`, nome, escHtml(e.message || String(e))); }
   finally { pjRevRodando = null; if (pjCurrentTaskId === taskId) pjRenderTaskAttachments(taskId); }
+}
+// Aviso do Revisor que fica na tela até a pessoa fechar ou abrir o comentário (o showToast some em segundos); um por tarefa
+function pjRevAviso(taskId, estado, titulo, tarefa, msg = '') {
+  fgDiag('aviso Revisor ' + estado + ': ' + String(titulo).slice(0, 50));
+  const c = document.getElementById('toastContainer'); if (!c) return;
+  let t = [...c.children].find(x => x.dataset.revTask === taskId && !x.classList.contains('toast-out'));
+  if (!t) { t = document.createElement('div'); t.dataset.revTask = taskId; c.appendChild(t); }
+  t.className = 'toast pj-rev-aviso ' + estado; t.setAttribute('role', estado === 'erro' ? 'alert' : 'status');
+  t.innerHTML = PJ_REV_AVATAR + `<div class="pj-rev-aviso-txt"><b>${titulo}</b><span class="pj-rev-aviso-tarefa">${tarefa}</span>${msg ? `<span>${msg}</span>` : ''}`
+    + (estado === 'pronto' ? `<button type="button" class="pj-rev-aviso-ver" onclick="pjRevVer('${taskId}')">Ver comentário</button>` : '')
+    + `</div><button type="button" class="pj-rev-aviso-x" aria-label="Fechar aviso" onclick="pjRevAvisoFechar('${taskId}')">×</button>`;
+}
+function pjRevAvisoFechar(taskId) {
+  const t = [...(document.getElementById('toastContainer')?.children || [])].find(x => x.dataset.revTask === taskId);
+  if (t) { t.classList.add('toast-out'); setTimeout(() => t.remove(), 280); }
+}
+// "Ver comentário": abre a tarefa (de qualquer tela), vai pra Atividade e pisca o comentário do Revisor
+async function pjRevVer(taskId) {
+  pjRevAvisoFechar(taskId);
+  if (pjCurrentTaskId !== taskId || !document.getElementById('pjTaskOverlay')?.classList.contains('open')) await pjOpenTaskFromPush(taskId);
+  pjModalMobileTab('chat');
+  for (let k = 0; k < 20; k++) {
+    await new Promise(ok => setTimeout(ok, 250)); // espera os comentários chegarem e passa do rAF do pjModalMobileTab, que rola até o fim
+    const el = [...document.querySelectorAll('#pjActivityList .pj-rev')].pop();
+    if (el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.classList.remove('pj-rev-pisca'); void el.offsetWidth; el.classList.add('pj-rev-pisca'); return; }
+  }
 }
 // Revisão automática (Configurações › APIs › Gemini): roda no aparelho de quem subiu a arte, numa tarefa em que é responsável
 // ponytail: só olha as artes que acabaram de subir; carrossel dividido em duas subidas pode acusar "falta" à toa (sai como "conferir")

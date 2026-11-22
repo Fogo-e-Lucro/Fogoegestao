@@ -21951,3 +21951,54 @@ body.fg-menu .pj-drawer-backdrop { -webkit-backdrop-filter: none !important; bac
 .pj-rev-por { font-weight:500; color:var(--text3); font-size:12px; margin-left:6px; }
 @media (max-width:768px) { .pj-attach-revisor-btn span { display:inline-block; } }
 @media (max-width:640px) { #pjTaskModal .pj-attach-revisor-btn { width:auto; padding:0 14px; } }
+
+/* Comentário do Revisor em balão azul-escuro (cor diferente dos outros) e o aviso dele, que fica na tela até a
+   pessoa fechar. "> div >" pega só o texto do próprio Revisor, não as respostas que ficam embaixo dele. */
+#pjActivityList .pj-activity-item.pj-rev > div > .pj-activity-text {
+  background:linear-gradient(135deg, #0f172a 55%, #1c3157); color:#e2e8f0;
+  border:1px solid #0f172a; border-radius:12px; padding:10px 12px;
+}
+html.fg-noturno #pjActivityList .pj-activity-item.pj-rev > div > .pj-activity-text { background:#1c3157; border-color:#3a6199; }
+#pjActivityList .pj-rev > div > .pj-activity-text :is(strong, h4) { color:#fff; }
+#pjActivityList .pj-rev > div > .pj-activity-text :is(.pj-rev-por, em) { color:#94a3b8; }
+#pjActivityList .pj-rev > div > .pj-activity-text code { background:rgba(255,255,255,.1); color:#fff; }
+#pjActivityList .pj-rev > div > .pj-activity-text a { color:#93c5fd; }
+#pjActivityList .pj-rev > div > .pj-activity-text .pj-mention { color:#fff; background:rgba(255,255,255,.12); padding:0 4px; }
+.pj-rev-pisca > div > .pj-activity-text { animation:pjRevPisca 1s ease-out 2; }
+@keyframes pjRevPisca { from { box-shadow:0 0 0 0 rgba(96,165,250,.7); } to { box-shadow:0 0 0 10px rgba(96,165,250,0); } }
+
+/* Aviso do Revisor (pjRevAviso): mesmo azul do botão. O body .toast do celular (bloco 11) usa !important */
+body .toast.pj-rev-aviso {
+  background:#0f172a !important; color:#e2e8f0 !important;
+  border:1px solid rgba(148,163,184,.3) !important; border-radius:14px !important;
+  box-shadow:0 14px 34px -10px rgba(15,23,42,.7), 0 2px 8px rgba(15,23,42,.25) !important;
+  width:360px; max-width:calc(100vw - 48px); padding:14px 8px 14px 14px; gap:12px; align-items:flex-start;
+}
+html.fg-noturno body .toast.pj-rev-aviso:not(.erro) { border-color:#3a6199 !important; }
+body .toast.pj-rev-aviso.pronto:not(.toast-out) { background:linear-gradient(135deg, #0f172a 40%, #3a6199) !important; animation:pjRevPronto .4s ease-out; }
+body .toast.pj-rev-aviso.rodando:not(.toast-out) {
+  background:linear-gradient(90deg, #0f172a 0%, #3a6199 25%, #0f172a 50%, #3a6199 75%, #0f172a 100%) 0 0 / 200% 100% !important;
+  animation:toastInStudio .22s ease-out, pjRevCorre 4s linear infinite;
+}
+body .toast.pj-rev-aviso.erro { border-color:rgba(248,113,113,.6) !important; }
+@keyframes pjRevPronto { 0% { transform:scale(.96); } 60% { transform:scale(1.02); } 100% { transform:none; } }
+.pj-rev-aviso .pj-avatar-rev, .pj-rev-aviso .pj-avatar-rev:hover { width:32px; height:32px; background:#fff; color:#0f172a; border:0; box-shadow:none; transform:none; }
+.pj-rev-aviso.rodando .pj-avatar-rev svg path:last-child { stroke-dasharray:13; animation:pjRevRisca .9s ease-in-out infinite alternate; }
+.pj-rev-aviso-txt { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; font-size:13px; line-height:18px; }
+.pj-rev-aviso-txt b { color:#fff; font-size:14px; font-weight:700; }
+.pj-rev-aviso-tarefa { color:#94a3b8; font-size:12px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.pj-rev-aviso-ver { align-self:flex-start; margin-top:8px; height:32px; padding:0 14px; border:0; border-radius:8px; background:#fff; color:#0f172a; font:inherit; font-weight:700; cursor:pointer; }
+.pj-rev-aviso-x { flex-shrink:0; width:36px; height:36px; margin-top:-6px; border:0; border-radius:8px; background:transparent; color:#94a3b8; font-size:22px; line-height:1; cursor:pointer; }
+.pj-rev-aviso :is(.pj-rev-aviso-ver, .pj-rev-aviso-x):focus-visible { outline:2px solid #60a5fa; outline-offset:2px; }
+@media (hover:hover) {
+  .pj-rev-aviso-ver:hover { background:#e2e8f0; }
+  .pj-rev-aviso-x:hover { background:rgba(255,255,255,.08); color:#fff; }
+}
+@media (max-width:640px) {
+  body .toast.pj-rev-aviso { width:100%; max-width:100%; }
+  .pj-rev-aviso-ver { height:40px; }
+  .pj-rev-aviso-x { width:40px; height:40px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  body .toast.pj-rev-aviso, .pj-rev-aviso svg path, .pj-rev-pisca > div > .pj-activity-text { animation:none !important; }
+}
