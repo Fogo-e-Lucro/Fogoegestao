@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão: sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.35">
+<link rel="stylesheet" href="styles.css?v=3.71.36">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -463,6 +463,8 @@
           <button class="app-settings-btn-test" onclick="appSettingsTestGemini()">Testar</button>
           <span class="app-settings-test-result" id="cfgGeminiResult"></span>
         </div>
+        <div class="app-settings-row-label app-settings-auto-label">Revisão automática <span class="app-settings-hint">quando a pessoa marcada sobe arte numa tarefa em que é responsável, o Revisor roda sozinho no aparelho dela</span></div>
+        <div class="app-settings-auto" id="cfgGeminiAuto"></div>
       </div>
 
       <div class="app-settings-section">
@@ -7689,6 +7691,7 @@ function openAppSettings() {
   const fill = (id, val) => { const el = document.getElementById(id); if (el) el.value = val||''; };
   fill('cfgClaude', cfg.claude);
   fill('cfgGemini', cfg.gemini);
+  if (isAdmin) pjRevAutoLista();
   fill('cfgImgbb', cfg.imagebb || localStorage.getItem('imgbbKey') || '');
   fill('cfgMetaToken', cfg.meta_token || localStorage.getItem('metaAccessToken') || '');
   fill('cfgGooglePlaces', cfg.google_places);
@@ -28806,7 +28809,13 @@ function pjRenderTaskAttachments(taskId) {
 async function pjTaskAttachFileChosen(ev) {
   const files = [...(ev.target.files || [])];
   ev.target.value = ''; // permite re-selecionar mesmo arquivo
-  for (const f of files) await pjAddTaskAttachment(f);
+  await pjAnexarArquivos(files);
+}
+// Sobe os arquivos um por um e no fim chama a revisão automática das artes novas
+async function pjAnexarArquivos(files) {
+  const novos = [];
+  for (const f of files) { const r = await pjAddTaskAttachment(f); if (r) novos.push(r); }
+  if (novos.length) pjRevAuto(novos);
 }
 
 // Comprime imagem grande antes do upload. Reduz 5-10x em tamanho sem
@@ -29274,6 +29283,7 @@ async function pjAddTaskAttachment(file) {
     pjLogActivity(taskId, { type:'attach', action:'add', name:file.name });
   }
   if (typeof showToast === 'function') showToast('success','📎','Anexo adicionado.');
+  return { taskId, att };
 }
 
 async function pjRemoveTaskAttachment(idx) {
@@ -29316,7 +29326,7 @@ async function pjAttachDrop(e) {
   e.preventDefault();
   e.currentTarget.classList.remove('drag-over');
   const files = [...(e.dataTransfer?.files || [])];
-  for (const f of files) await pjAddTaskAttachment(f);
+  await pjAnexarArquivos(files);
 }
 function pjRenderActivityComment(c, isReply) {
   const m = pjMembers.find(m => m.uid === c.userId);
@@ -29720,21 +29730,30 @@ async function pjSendComment() {
 /* Revisor das artes: manda as artes anexadas pro Gemini e grava o que achou como comentário */
 const PJ_REV_MODELOS = ['gemini-4-hydrogen', 'gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
 const PJ_REV_OK = ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'];
-const PJ_REV_TIPOS = { ortografia:'Ortografia', acento:'Acento', gramatica:'Gramática', pontuacao:'Pontuação', digitacao:'Digitação', crase:'Crase', valor:'Preço ou valor', data:'Data', contato:'Contato', nome:'Nome', tarefa:'Diferente da tarefa', cortado:'Texto cortado', legibilidade:'Leitura difícil', outro:'Outro' };
+const PJ_REV_TIPOS = { ortografia:'Ortografia', acento:'Acento', gramatica:'Gramática', pontuacao:'Pontuação', digitacao:'Digitação', crase:'Crase', valor:'Preço ou valor', data:'Data', contato:'Contato', nome:'Nome', tarefa:'Diferente do pedido', cortado:'Texto cortado', legibilidade:'Leitura difícil', outro:'Outro' };
 const PJ_REV_DIAS = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
 const PJ_REV_DIAS_TXT = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
 const PJ_REV_AVATAR = '<div class="pj-avatar pj-avatar-rev" title="Revisor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 15 5-11 5 11"/><path d="M6 11h6"/><path d="m14 19 3 3 5-6"/></svg></div>';
 var pjRevRodando = null; // id da tarefa com revisão em andamento
-const PJ_REV_SYS = `Você é revisor de artes de uma agência de marketing de restaurantes no Brasil. Recebe as artes de uma tarefa (imagens e PDFs) e procura erros no texto escrito nelas antes de irem pro ar.
+const PJ_REV_SYS = `Você é revisor de artes de uma agência de marketing de restaurantes no Brasil. Recebe o pedido de uma tarefa (título, descrição e comentários) e as artes que a equipe fez (imagens e PDFs). Procura erros no texto escrito nas artes e confere se elas seguem o pedido, antes de irem pro ar.
 
 Procure:
 - ortografia, acento, crase, concordância, pontuação, letra trocada ou faltando, palavra repetida, espaço duplo;
 - preço: R$ com vírgula nos centavos (R$ 29,90), "de/por" coerente, conta de desconto ou de combo que não fecha, preço do mesmo produto diferente entre as artes;
 - data e hora impossíveis (31/11, 25h) e horário de funcionamento incoerente;
 - telefone com número de dígitos errado (celular do Brasil: DDD + 9 dígitos), @ e site escritos de jeito diferente entre as artes;
-- nome do restaurante, dos pratos e das marcas escrito diferente entre as artes ou diferente da tarefa;
-- texto que contradiz o título ou a descrição da tarefa (preço, data, sabor, quantidade);
+- nome do restaurante, dos pratos e das marcas escrito diferente entre as artes ou diferente do pedido;
 - texto cortado, coberto por imagem ou difícil de ler.
+
+Compare com o pedido:
+- Vale o que pediu quem encomendou a arte. Comentário de quem fez a arte só explica o que foi feito.
+- Comentário mais novo vale mais que o antigo: se trocaram preço, data ou texto, vale a troca.
+- Confira cada informação de texto pedida: preço, data, horário, produto, sabor, quantidade, @, telefone, endereço, chamada e frase pedida.
+- O que está na arte e contradiz o pedido é problema tipo "tarefa", com "correcao" do jeito que foi pedido.
+- O que foi pedido e não aparece em nenhuma arte vai em "faltando".
+- Não cobre legenda do post, hashtag, roteiro de vídeo, recado pra equipe nem pedido de design (cor, foto, fonte, layout, referência).
+- Se a arte corrige um erro de português do pedido, não aponte.
+- Sem pedido escrito, deixe "faltando" vazio.
 
 Não aponte:
 - gíria e informalidade de propósito (pra, tá, vc, bora, tô);
@@ -29744,18 +29763,23 @@ Não aponte:
 - gosto de design (cor, fonte, layout).
 
 Regras:
+- Primeiro copie em "texto" todo o texto da arte, letra por letra, do jeito que está escrito, sem corrigir nada. Depois leia palavra por palavra procurando erro.
 - "trecho" é a cópia exata do texto da arte, com o erro.
 - "correcao" é o trecho já corrigido; vazio se não der pra corrigir só no texto.
 - Use certeza "media" quando não tiver certeza.
 - Não invente erro e não repita o mesmo erro.
-- Não julgue dia da semana. Liste em "datas" toda data escrita na arte, com o dia da semana escrito junto ("nenhum" se não tiver).
+- Não confira se a data cai no dia da semana escrito (isso é feito depois). Liste em "datas" toda data escrita na arte, com o dia da semana escrito junto ("nenhum" se não tiver).
 - Se não conseguir ver um arquivo, conseguiuLer=false.
-- "explicacao" curta, até 12 palavras, em português.`;
-const PJ_REV_SCHEMA = { type:'OBJECT', properties:{ arquivos:{ type:'ARRAY', items:{ type:'OBJECT', properties:{
-  numero:{type:'INTEGER'}, conseguiuLer:{type:'BOOLEAN'},
-  problemas:{type:'ARRAY', items:{type:'OBJECT', properties:{ tipo:{type:'STRING', enum:Object.keys(PJ_REV_TIPOS)}, trecho:{type:'STRING'}, correcao:{type:'STRING'}, explicacao:{type:'STRING'}, certeza:{type:'STRING', enum:['alta','media']} }, required:['tipo','trecho','correcao','explicacao','certeza']}},
-  datas:{type:'ARRAY', items:{type:'OBJECT', properties:{ texto:{type:'STRING'}, dia:{type:'INTEGER'}, mes:{type:'INTEGER'}, ano:{type:'INTEGER'}, diaSemana:{type:'STRING', enum:[...PJ_REV_DIAS,'nenhum']} }, required:['texto','dia','mes','diaSemana']}}
-}, required:['numero','conseguiuLer','problemas','datas'] } } }, required:['arquivos'] };
+- "explicacao" curta, até 12 palavras, em português.
+- Em "faltando", "pedido" é a informação pedida com o valor (ex.: preço R$ 29,90 do combo) e "onde" diz onde foi pedido (descrição, ou comentário de quem, com a data).`;
+const PJ_REV_SCHEMA = { type:'OBJECT', properties:{
+  arquivos:{ type:'ARRAY', items:{ type:'OBJECT', properties:{
+    numero:{type:'INTEGER'}, conseguiuLer:{type:'BOOLEAN'}, texto:{type:'STRING'},
+    datas:{type:'ARRAY', items:{type:'OBJECT', properties:{ texto:{type:'STRING'}, dia:{type:'INTEGER'}, mes:{type:'INTEGER'}, ano:{type:'INTEGER'}, diaSemana:{type:'STRING', enum:[...PJ_REV_DIAS,'nenhum']} }, required:['texto','dia','mes','diaSemana'], propertyOrdering:['texto','dia','mes','ano','diaSemana']}},
+    problemas:{type:'ARRAY', items:{type:'OBJECT', properties:{ tipo:{type:'STRING', enum:Object.keys(PJ_REV_TIPOS)}, trecho:{type:'STRING'}, correcao:{type:'STRING'}, explicacao:{type:'STRING'}, certeza:{type:'STRING', enum:['alta','media']} }, required:['tipo','trecho','correcao','explicacao','certeza'], propertyOrdering:['tipo','trecho','correcao','explicacao','certeza']}}
+  }, required:['numero','conseguiuLer','texto','datas','problemas'], propertyOrdering:['numero','conseguiuLer','texto','datas','problemas'] } },
+  faltando:{ type:'ARRAY', items:{ type:'OBJECT', properties:{ pedido:{type:'STRING'}, onde:{type:'STRING'}, certeza:{type:'STRING', enum:['alta','media']} }, required:['pedido','onde','certeza'], propertyOrdering:['pedido','onde','certeza'] } }
+}, required:['arquivos','faltando'], propertyOrdering:['arquivos','faltando'] };
 
 function pjRevMime(a) {
   let t = String(a?.type || '').toLowerCase().split(';')[0].trim();
@@ -29803,6 +29827,7 @@ async function pjRevGerar(key, parts) {
       return { res, modelo, uso: j.usageMetadata || {} };
     }
     ultimo = Object.assign(new Error(pjRevErro(r.status, j)), { status: r.status, j });
+    if (r.status === 404 && /provided URL|fetch content/i.test(String(j?.error?.message || ''))) throw ultimo; // link que o Gemini não abre: trocar de modelo não adianta
     if (![404, 429, 500, 503].includes(r.status)) throw ultimo;
   }
   throw ultimo;
@@ -29831,13 +29856,31 @@ async function pjRevBaixar(f) {
   const data = await new Promise((ok, erro) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(',')[1]); fr.onerror = erro; fr.readAsDataURL(blob); });
   return { mime_type: mime, data };
 }
-async function pjRevRodar(key, task, enviar) {
-  const lista = (typeof pjLists !== 'undefined' ? pjLists : []).find(l => l.id === task.listId);
-  const cab = [`Tarefa: ${task.title || ''}`, lista?.name ? `Lista: ${lista.name}` : '', task.description ? `Descrição: ${String(task.description).slice(0, 1500)}` : '', `Hoje é ${new Date().toLocaleDateString('pt-BR')}.`, `São ${enviar.length} arquivos, na ordem abaixo.`].filter(Boolean).join('\n');
+const pjRevMs = v => v?.toMillis ? v.toMillis() : v?.toDate ? +v.toDate() : typeof v === 'number' ? v : (v?.seconds || 0) * 1000;
+const pjRevQuando = v => new Date(pjRevMs(v) || Date.now()).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+// O que foi pedido: título, descrição e comentários das pessoas em ordem, com quem escreveu e quando
+function pjRevPedido(task, comentarios = [], fez = []) {
+  const nome = uid => String(pjMembers.find(m => m.uid === uid)?.name || 'Alguém').split(' ')[0];
+  const papel = uid => (uid && uid === task.createdBy ? ' (criou a tarefa)' : '') + (fez.includes(uid) ? ' (fez a arte)' : '');
+  const lista = pjLists.find(l => l.id === task.listId);
+  const coms = comentarios.filter(c => !c.revisor && String(c.text || '').trim())
+    .sort((a, b) => (pjRevMs(a.createdAt) || Date.now()) - (pjRevMs(b.createdAt) || Date.now()))
+    .map(c => `- [${pjRevQuando(c.createdAt)}] ${nome(c.userId)}${papel(c.userId)}: ${String(c.text).replace(/\s+/g, ' ').trim().slice(0, 800)}${c.attachment ? ' [com anexo]' : ''}`);
+  while (coms.length > 1 && coms.join('\n').length > 6000) coms.shift(); // passou do tamanho: fica com os mais novos
+  return [`Tarefa: ${task.title || ''}`, lista?.name ? `Lista: ${lista.name}` : '', task.createdBy ? `Criada por: ${nome(task.createdBy)}` : '',
+    task.description ? `Descrição (pedido):\n${String(task.description).slice(0, 4000)}` : 'Sem descrição.',
+    coms.length ? `Comentários, do mais antigo pro mais novo:\n${coms.join('\n')}` : 'Sem comentários.',
+    `Hoje é ${new Date().toLocaleDateString('pt-BR')}.`].filter(Boolean).join('\n\n');
+}
+// fora = arquivos da tarefa que não vieram nesta revisão (a automática só manda as artes novas)
+async function pjRevRodar(key, task, enviar, comentarios = [], fora = 0) {
+  const fez = [...new Set(enviar.map(f => f.a.uploadedBy).filter(Boolean))];
+  const cab = pjRevPedido(task, comentarios, fez) + `\n\nSão ${enviar.length} arquivos, na ordem abaixo.`
+    + (fora ? ` A tarefa tem mais ${fora} ${fora === 1 ? 'arquivo que não veio' : 'arquivos que não vieram'} nesta revisão: use certeza "media" em "faltando".` : '');
   const montar = async inline => {
     const parts = [{ text: cab }];
     for (const [k, f] of enviar.entries()) {
-      parts.push({ text: `Arquivo ${k + 1}: ${f.nome}` });
+      parts.push({ text: `Arquivo ${k + 1}: ${f.nome}${f.a.uploadedAt ? ` (subiu ${pjRevQuando(f.a.uploadedAt)})` : ''}` });
       if (!f.a.url) parts.push({ inline_data: { mime_type: f.mime, data: String(f.a.dataUrl).split(',')[1] } });
       else if (inline) parts.push({ inline_data: await pjRevBaixar(f) });
       else parts.push({ file_data: { mime_type: f.mime, file_uri: f.a.url } });
@@ -29883,9 +29926,10 @@ function pjRevProblemas(arq) {
     .filter(p => { const k = p.tipo + '|' + String(p.trecho || '').trim().toLowerCase(); if (vistos.has(k)) return false; vistos.add(k); return true; })
     .slice(0, 25);
 }
-function pjRevTexto(arquivos, enviar, pulados) {
+function pjRevTexto(res, enviar, pulados, auto) {
   const limpa = s => String(s || '').replace(/\*/g, '＊').replace(/`/g, "'").replace(/\]\(/g, '] (').replace(/\s+/g, ' ').trim();
-  const porNum = new Map((arquivos || []).map(a => [a.numero, a]));
+  const solto = s => limpa(s).replace(/[.;:]+$/, ''); // explicação dentro do parêntese sem ponto final
+  const porNum = new Map((res?.arquivos || []).map(a => [a.numero, a]));
   const secoes = [], semErro = []; let total = 0, comErro = 0, lidos = 0;
   enviar.forEach((f, k) => {
     const nome = `${f.i + 1}. ${limpa(f.nome)}`; const arq = porNum.get(k + 1);
@@ -29893,29 +29937,41 @@ function pjRevTexto(arquivos, enviar, pulados) {
     lidos++; const ps = pjRevProblemas(arq);
     if (!ps.length) { semErro.push(nome); return; }
     total += ps.length; comErro++;
-    secoes.push(`**${nome}**\n` + ps.map(p => { const t = limpa(p.trecho), c = limpa(p.correcao), e = limpa(p.explicacao);
+    secoes.push(`**${nome}**\n` + ps.map(p => { const t = limpa(p.trecho), c = limpa(p.correcao), e = solto(p.explicacao);
       const det = [e, p.certeza === 'media' ? 'conferir' : ''].filter(Boolean).join(', ');
       return `- ${PJ_REV_TIPOS[p.tipo] || 'Outro'}: "${t}"${c && c !== t ? ` → "${c}"` : ''}${det ? ` (${det})` : ''}`; }).join('\n'));
   });
   const n = enviar.length;
-  const resumo = total ? `**${total} ${total === 1 ? 'ponto' : 'pontos'} pra corrigir** em ${comErro} de ${n} ${n === 1 ? 'arte' : 'artes'}.`
+  const falta = lidos ? (res?.faltando || []).filter(f => String(f?.pedido || '').trim()).slice(0, 10) : [];
+  const pts = total + falta.length;
+  const resumo = pts ? `**${pts} ${pts === 1 ? 'ponto' : 'pontos'} pra corrigir**` + (
+      total && falta.length ? `: ${total} nas artes e ${falta.length} do pedido que ${falta.length === 1 ? 'falta' : 'faltam'}.`
+      : falta.length ? `: ${falta.length === 1 ? 'falta 1 coisa' : `faltam ${falta.length} coisas`} do pedido.`
+      : ` em ${comErro} de ${n} ${n === 1 ? 'arte' : 'artes'}.`)
     : !lidos ? '**Não consegui ler nenhuma arte.**' : lidos < n ? '**Nenhum erro encontrado** nas artes que consegui ler.'
     : `**Nenhum erro encontrado** ${n === 1 ? 'na arte' : `nas ${n} artes`}.`;
+  if (falta.length) secoes.unshift('**Pedido na tarefa e não achei nas artes**\n' + falta.map(f => {
+    const det = [solto(f.onde), f.certeza === 'media' ? 'conferir' : ''].filter(Boolean).join(', ');
+    return `- ${limpa(f.pedido)}${det ? ` (${det})` : ''}`; }).join('\n'));
   const texto = [resumo + (secoes.length ? '\n\n' + secoes.join('\n') : ''),
     secoes.length && semErro.length ? `Sem erro: ${semErro.join(', ')}.` : '',
     pulados.length ? `Não revisei: ${pulados.map(limpa).join('; ')}.` : '',
-    '*Revisão feita pelo Gemini. Confira antes de mexer na arte.*'].filter(Boolean).join('\n');
-  return { texto, total };
+    `*Revisão ${auto ? 'automática ' : ''}feita pelo Gemini. Confira antes de mexer na arte.*`].filter(Boolean).join('\n');
+  return { texto, total: pts };
 }
-async function pjRevisar() {
-  const taskId = pjCurrentTaskId; const task = pjAllTasks.find(t => t.id === taskId);
+// Manual pelo botão, ou automática com "so" = links das artes que acabaram de subir
+async function pjRevisar(taskId = pjCurrentTaskId, so = null) {
+  const auto = Array.isArray(so);
+  if (pjRevRodando && !auto) return showToast('warn', '', pjRevRodando === taskId ? 'A revisão desta tarefa já está rodando.' : 'Espere a revisão da outra tarefa terminar.', 5000);
+  while (pjRevRodando) await new Promise(ok => setTimeout(ok, 2000)); // a automática espera a vez; daqui até marcar o pjRevRodando não pode ter await
+  const task = pjAllTasks.find(t => t.id === taskId);
   if (!task) return;
-  if (pjRevRodando) return showToast('warn', '', pjRevRodando === taskId ? 'A revisão desta tarefa já está rodando.' : 'Espere a revisão da outra tarefa terminar.', 5000);
   const key = getApiKey('gemini');
-  if (!key) return showToast('warn', '', userIsAdmin() ? 'Cole a chave do Gemini em Configurações › APIs.' : 'Peça pro administrador colocar a chave do Gemini em Configurações.', 6000);
+  if (!key) { if (!auto) showToast('warn', '', userIsAdmin() ? 'Cole a chave do Gemini em Configurações › APIs.' : 'Peça pro administrador colocar a chave do Gemini em Configurações.', 6000); return; }
   const items = Array.isArray(task.attachments) ? task.attachments : [];
   const enviar = [], pulados = [];
   items.forEach((a, i) => {
+    if (auto && !so.includes(a.url)) return;
     const mime = pjRevMime(a); let motivo = '';
     if (!PJ_REV_OK.includes(mime)) motivo = mime.startsWith('image/') ? 'formato que o Revisor não lê, salve em PNG ou JPG' : 'só leio imagem e PDF';
     else if (!a.url && !a.dataUrl) motivo = 'sem link';
@@ -29923,20 +29979,65 @@ async function pjRevisar() {
     else if (enviar.length >= 20) motivo = 'limite de 20 por revisão';
     if (motivo) pulados.push(`${i + 1}. ${a.name || 'arquivo'} (${motivo})`); else enviar.push({ a, i, mime, nome: a.name || 'arquivo' });
   });
-  if (!enviar.length) return showToast('warn', '', 'Nenhuma arte em imagem ou PDF pra revisar.', 5000);
-  pjRevRodando = taskId; pjRenderTaskAttachments(taskId);
-  showToast('info', '', `Revisando ${enviar.length} ${enviar.length === 1 ? 'arte' : 'artes'}. Leva até 1 minuto.`, 5000);
+  if (!enviar.length) { if (!auto) showToast('warn', '', 'Nenhuma arte em imagem ou PDF pra revisar.', 5000); return; }
+  pjRevRodando = taskId; if (pjCurrentTaskId === taskId) pjRenderTaskAttachments(taskId);
+  const qtd = `${enviar.length} ${enviar.length === 1 ? 'arte' : 'artes'}`;
+  showToast('info', '', auto ? `Revisor automático: revisando ${qtd}. Deixe o app aberto até terminar.` : `Revisando ${qtd}. Leva até 1 minuto.`, auto ? 7000 : 5000);
+  const ante = auto ? 'Revisor automático: ' : '';
   try {
-    const out = await pjRevRodar(key, task, enviar);
-    const { texto, total } = pjRevTexto(out.res?.arquivos, enviar, pulados);
+    let comentarios = [];
+    try { comentarios = (await pjC('pj_comments').where('taskId', '==', taskId).get()).docs.map(d => d.data()); }
+    catch (_) { if (pjCurrentTaskId === taskId) comentarios = pjComments; }
+    const out = await pjRevRodar(key, task, enviar, comentarios, items.length - enviar.length - pulados.length);
+    const { texto, total } = pjRevTexto(out.res, enviar, pulados, auto);
     const uid = _auth?.currentUser?.uid || _currentUser?.uid; const u = out.uso || {};
-    const data = { taskId, userId: uid, text: texto, type: 'comment', createdAt: pjNow(), revisor: { modelo: out.modelo, arquivos: enviar.length, entrada: u.promptTokenCount || 0, saida: (u.candidatesTokenCount || 0) + (u.thoughtsTokenCount || 0) } };
+    const data = { taskId, userId: uid, text: texto, type: 'comment', createdAt: pjNow(), revisor: { modelo: out.modelo, arquivos: enviar.length, entrada: u.promptTokenCount || 0, saida: (u.candidatesTokenCount || 0) + (u.thoughtsTokenCount || 0), ...(auto ? { auto: true } : {}) } };
     if (pjCurrentTaskId === taskId) { pjComments.push({ ...data, id: 'c_' + Date.now(), createdAt: { toDate: () => new Date(), toMillis: () => Date.now() } }); pjRenderActivity(); }
     try { await pjC('pj_comments').add(data); }
-    catch (e) { return showToast('error', '', 'Não consegui salvar a revisão nos comentários: ' + escHtml(e.message || e), 8000); }
-    showToast('success', '', total ? `Revisão pronta nos comentários: ${total} ${total === 1 ? 'ponto' : 'pontos'} pra corrigir.` : 'Revisão pronta: nenhum erro encontrado.', 5000);
-  } catch (e) { showToast('error', '', escHtml(e.message || String(e)), 8000); }
+    catch (e) { return showToast('error', '', ante + 'Não consegui salvar a revisão nos comentários: ' + escHtml(e.message || e), 8000); }
+    const pronto = auto ? 'Revisão automática pronta' : 'Revisão pronta';
+    showToast('success', '', total ? `${pronto} nos comentários: ${total} ${total === 1 ? 'ponto' : 'pontos'} pra corrigir.` : `${pronto}: nenhum erro encontrado.`, 5000);
+  } catch (e) { showToast('error', '', ante + escHtml(e.message || String(e)), 8000); }
   finally { pjRevRodando = null; if (pjCurrentTaskId === taskId) pjRenderTaskAttachments(taskId); }
+}
+// Revisão automática (Configurações › APIs › Gemini): roda no aparelho de quem subiu a arte, numa tarefa em que é responsável
+// ponytail: só olha as artes que acabaram de subir; carrossel dividido em duas subidas pode acusar "falta" à toa (sai como "conferir")
+function pjRevAuto(novos) {
+  const uid = _auth?.currentUser?.uid || _currentUser?.uid;
+  const ligados = window._appConfig?.gemini_auto;
+  if (!uid || !Array.isArray(ligados) || !ligados.includes(uid) || !getApiKey('gemini')) return;
+  const porTarefa = {};
+  novos.forEach(({ taskId, att }) => {
+    const t = pjAllTasks.find(x => x.id === taskId);
+    if (!t || !(t.assignees || []).includes(uid) || !att.url || !PJ_REV_OK.includes(pjRevMime(att))) return;
+    (porTarefa[taskId] = porTarefa[taskId] || []).push(att.url);
+  });
+  Object.entries(porTarefa).forEach(([id, urls]) => pjRevisar(id, urls));
+}
+// Caixinhas da revisão automática em Configurações › APIs › Gemini (gemini_auto = uids ligados)
+async function pjRevAutoLista() {
+  const el = document.getElementById('cfgGeminiAuto');
+  if (!el) return;
+  let membros = pjMembers.filter(m => m.uid);
+  if (!membros.length) {
+    el.innerHTML = '<span class="app-settings-hint">Carregando a equipe</span>';
+    try { membros = (await pjC('pj_members').get()).docs.map(d => d.data()).filter(m => m.uid); } catch (_) {}
+  }
+  membros = [...new Map(membros.map(m => [m.uid, m])).values()]
+    .sort((a, b) => String(a.name || a.email || '').localeCompare(String(b.name || b.email || ''), 'pt-BR'));
+  const ligados = window._appConfig?.gemini_auto || [];
+  el.innerHTML = membros.length ? membros.map(m => `<label class="app-settings-auto-item"><input type="checkbox" value="${escHtml(m.uid)}"${ligados.includes(m.uid) ? ' checked' : ''} onchange="pjRevAutoMarcar(this)"><span>${escHtml(m.name || m.email || 'Sem nome')}</span></label>`).join('')
+    : '<span class="app-settings-hint">Não achei a equipe. Abra Projetos uma vez e volte aqui.</span>';
+}
+async function pjRevAutoMarcar(cb) {
+  const nome = cb.nextElementSibling?.textContent || 'a pessoa';
+  const atual = new Set(window._appConfig?.gemini_auto || []);
+  cb.checked ? atual.add(cb.value) : atual.delete(cb.value);
+  cb.disabled = true;
+  const ok = await appConfigSave({ gemini_auto: [...atual] });
+  cb.disabled = false;
+  if (!ok) { cb.checked = !cb.checked; return; }
+  showToast('success', '', cb.checked ? `Revisão automática ligada pra ${nome}.` : `Revisão automática desligada pra ${nome}.`, 4000);
 }
 
 function pjProcessMentionNotifs(text, senderName, senderUid) {

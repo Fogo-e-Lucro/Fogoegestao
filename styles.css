@@ -1168,6 +1168,12 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 .app-settings-test-result{font-size:11px;color:var(--text3);}
 .app-settings-test-result.ok{color:#22c55e;}
 .app-settings-test-result.err{color:#ef4444;}
+.app-settings-auto-label{margin-top:14px;}
+.app-settings-auto{display:flex;flex-wrap:wrap;gap:6px;}
+.app-settings-auto-item{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);font-size:12px;color:var(--text2);cursor:pointer;user-select:none;}
+.app-settings-auto-item:has(input:checked){border-color:var(--text);color:var(--text);font-weight:600;}
+.app-settings-auto-item input{accent-color:var(--text);width:14px;height:14px;margin:0;cursor:pointer;}
+.app-settings-auto-item:has(input:disabled){opacity:.6;cursor:progress;}
 .app-settings-info-block{font-size:12px;color:var(--text2);line-height:1.6;}
 .app-settings-info-block code{background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:11px;color:var(--accent);}
 .app-settings-pre{background:var(--bg3);padding:10px 12px;border-radius:6px;font-size:11px;color:var(--text2);overflow-x:auto;margin-top:6px;font-family:Menlo,monospace;line-height:1.5;}
@@ -21770,6 +21776,7 @@ html:not(.fg-noturno) body .sp2-btn-pick { background: var(--text); color: var(-
   #appSettingsModal .app-settings-btn { min-height: 44px; padding: 0 16px; border-radius: 12px; background: var(--fg-acao) !important; color: var(--on-ink) !important; font-size: 15px; filter: none !important; }
   #appSettingsModal :is(.app-settings-btn-sec, .app-settings-btn-test) { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text) !important; font-size: 14px !important; }
   #appSettingsModal .app-settings-btn-sec.is-on { border-color: var(--text) !important; }
+  #appSettingsModal .app-settings-auto-item { min-height: 44px; padding: 0 12px; border-radius: 12px; font-size: 15px; }
   #appSettingsModal .app-settings-link { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
   #appSettingsModal :is(.acesso-role-badge, .acesso-auth-badge) { padding: 2px 8px; border: 1px solid var(--border); background: var(--card) !important; color: var(--text2) !important; font-size: 11px; font-weight: 600; letter-spacing: 0; text-transform: none; }
   #appSettingsModal :is(.acesso-photo-edit, .acesso-photo-remove) { display: inline-flex; align-items: center; justify-content: center; background: var(--card) !important; border: 1px solid var(--border) !important; color: var(--text2) !important; transform: none !important; }
