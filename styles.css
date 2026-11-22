@@ -21966,6 +21966,18 @@ html.fg-noturno #pjActivityList .pj-activity-item.pj-rev > div > .pj-activity-te
 #pjActivityList .pj-rev > div > .pj-activity-text a { color:#93c5fd; }
 #pjActivityList .pj-rev > div > .pj-activity-text .pj-mention { color:#fff; background:rgba(255,255,255,.12); padding:0 4px; }
 .pj-rev-pisca > div > .pj-activity-text { animation:pjRevPisca 1s ease-out 2; }
+/* Revisor 3.71.39: bolinha no botão (arte sem revisão), selo "Revisado" e caixinha em cada ponto do comentário */
+#pjTaskModal #pjRevisorBtn { position:relative; }
+.pj-rev-ponto { position:absolute; top:-3px; right:-3px; width:10px; height:10px; border-radius:50%; background:#ef4444; box-shadow:0 0 0 2px var(--card); }
+.pj-rev-ponto[hidden] { display:none; }
+.pj-rev-selo { display:inline-flex; align-items:center; gap:3px; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:9px; background:#0f172a; color:#fff; white-space:nowrap; }
+html.fg-noturno .pj-rev-selo { background:#3a6199; }
+body.at-projetos .pj-kanban .pj-rev-selo { height:26px; padding:0 10px; border-radius:999px; font-size:12px; gap:4px; }
+.pj-rev .pj-md ul { list-style:none; padding:0; margin:4px 0; }
+.pj-rev-li { display:flex; gap:8px; align-items:flex-start; }
+.pj-rev-check { width:16px; height:16px; margin:1px 0 0; flex-shrink:0; accent-color:#fff; cursor:pointer; }
+.pj-rev-li.ok > span { text-decoration:line-through; color:#94a3b8; }
+@media (max-width:640px) { .pj-rev-check { width:20px; height:20px; } }
 @keyframes pjRevPisca { from { box-shadow:0 0 0 0 rgba(96,165,250,.7); } to { box-shadow:0 0 0 10px rgba(96,165,250,0); } }
 
 /* Aviso do Revisor (pjRevAviso): mesmo azul do botão. O body .toast do celular (bloco 11) usa !important */
