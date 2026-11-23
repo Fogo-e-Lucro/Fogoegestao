@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão: sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.42">
+<link rel="stylesheet" href="styles.css?v=3.71.43">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -430,6 +430,7 @@
 
     <div class="app-settings-tabs">
       <button class="app-settings-tab active pj-admin-only" data-tab="apis" onclick="appSettingsTab('apis')">APIs</button>
+      <button class="app-settings-tab pj-admin-only" data-tab="ia" onclick="appSettingsTab('ia')">Custos da IA</button>
       <button class="app-settings-tab pj-admin-only" data-tab="integ" onclick="appSettingsTab('integ')">Integrações</button>
       <button class="app-settings-tab" data-tab="rec" onclick="appSettingsTab('rec')">Gravador</button>
       <button class="app-settings-tab pj-admin-only" data-tab="equipe" onclick="appSettingsTab('equipe')">Equipe</button>
@@ -506,6 +507,8 @@
         </div>
       </div>
     </div>
+
+    <div class="app-settings-pane" data-pane="ia" style="display:none;"><div id="fgIaCustos"></div></div>
 
     <div class="app-settings-pane" data-pane="integ" style="display:none;">
       <div class="app-settings-section">
@@ -7666,7 +7669,7 @@ function closeAppSettings() {
   m.style.display = 'none';
 }
 function appSettingsTab(tab) {
-  const adminOnlyTabs = ['apis','integ','equipe','wa'];
+  const adminOnlyTabs = ['apis','ia','integ','equipe','wa'];
   const isAdmin = (typeof userIsAdmin === 'function') && userIsAdmin();
   if (!isAdmin && adminOnlyTabs.includes(tab)) {
     if (typeof showToast === 'function') showToast('warn','🔒','Essa aba é só pra admin');
@@ -7680,6 +7683,56 @@ function appSettingsTab(tab) {
   if (tab === 'integ') {
     if (typeof cwIntegLoad === 'function') cwIntegLoad();
   }
+  if (tab === 'ia') fgIaCustos();
+}
+
+/* ─── Custos da IA ─── soma do mês em pj_ia_custos/AAAA-MM: o Revisor grava o dele no servidor (com o dólar do dia), o resto do app grava aqui */
+const FG_IA_ORIGENS = { revisor: 'Revisor das artes', conteudo: 'Ganchos, legendas e roteiros', metricas: 'Métricas', google: 'Google Meu Negócio', tarefa: 'Tarefa rápida com IA', pergunte: 'Pergunte à IA' };
+const FG_IA_MODELOS = { 'gemini-4-hydrogen': 'Gemini 4 Hydrogen', 'gemini-3_8-flash': 'Gemini 3.8 Flash', 'gemini-3_5-flash-lite': 'Gemini 3.5 Flash Lite', 'gemini-3_1-flash-lite': 'Gemini 3.1 Flash Lite', 'claude-haiku-4-5-20251001': 'Claude Haiku 4.5' };
+const fgIaMes = (d = new Date()) => [`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, String(d.getDate()).padStart(2, '0')];
+// Claude Haiku 4.5: US$ 1 por 1 milhão de tokens de entrada e US$ 5 de saída. Falhar aqui não atrapalha a resposta da IA
+function fgIaCusto(origem, d) {
+  const u = d?.usage || {}, v = ((u.input_tokens || 0) + (u.output_tokens || 0) * 5) / 1e6;
+  if (!(v > 0)) return;
+  const [mes, dia] = fgIaMes(), FV = firebase.firestore.FieldValue, inc = n => FV.increment(n);
+  pjC('pj_ia_custos').doc(mes).set({ usd: inc(v), chamadas: inc(1), dias: { [dia]: inc(v) }, por: { [origem]: { usd: inc(v), chamadas: inc(1) } },
+    modelos: { [String(d.model || 'claude').replace(/\./g, '_')]: { usd: inc(v), chamadas: inc(1), entrada: inc(u.input_tokens || 0), saida: inc(u.output_tokens || 0) } }, em: FV.serverTimestamp() }, { merge: true })
+    .catch(e => console.warn('[ia] gasto não gravou:', e?.message));
+}
+async function fgIaCustos() {
+  const el = document.getElementById('fgIaCustos');
+  if (!el) return;
+  el.innerHTML = '<div class="app-settings-section"><span class="app-settings-hint">Carregando os gastos</span></div>';
+  let meses;
+  try { meses = (await pjC('pj_ia_custos').get()).docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => b.id.localeCompare(a.id)); }
+  catch (e) { el.innerHTML = `<div class="app-settings-section"><span class="app-settings-hint">Não consegui carregar: ${escHtml(e?.message || String(e))}</span></div>`; return; }
+  const [mesId, hoje] = fgIaMes(), mes = meses.find(m => m.id === mesId) || { id: mesId }, ultimo = meses.find(m => m.cotacao)?.cotacao || 0;
+  const real = (v, c) => { const r = v * c; return r > 0 && r < 0.01 ? 'menos de R$ 0,01' : r.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); };
+  const dolar = v => 'US$ ' + (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const valor = (v, c) => c ? real(v || 0, c) : dolar(v); // sem cotação ainda, mostra em dólar
+  const usos = n => `${n || 0} ${n === 1 ? 'uso' : 'usos'}`;
+  const cot = mes.cotacao || ultimo, [ano, m] = mesId.split('-').map(Number), noMes = new Date(ano, m, 0).getDate();
+  const nomeMes = (id, ano = true) => { const [a, b] = id.split('-').map(Number), t = new Date(a, b - 1, 1).toLocaleDateString('pt-BR', ano ? { month: 'long', year: 'numeric' } : { month: 'long' }); return t[0].toUpperCase() + t.slice(1); };
+  const lista = (obj, nomes, c) => { const it = Object.entries(obj || {}).filter(([, x]) => x?.usd > 0).sort((a, b) => b[1].usd - a[1].usd), max = it[0]?.[1].usd || 1;
+    return it.map(([k, x]) => `<div class="fg-ia-linha"><span>${escHtml(nomes[k] || k.replace(/_/g, '.'))} <em>${usos(x.chamadas)}</em></span><b>${valor(x.usd, c)}</b><span class="fg-ia-barra" aria-hidden="true"><i style="width:${Math.max(2, x.usd / max * 100).toFixed(1)}%"></i></span></div>`).join(''); };
+  const dias = mes.dias || {}, comUso = Object.keys(dias).map(Number).filter(n => dias[String(n).padStart(2, '0')] > 0), desde = comUso.length ? Math.min(...comUso) : 0;
+  const maxDia = Math.max(...Object.values(dias), 0) || 1, contados = desde ? +hoje - desde + 1 : 0;
+  const barras = Array.from({ length: noMes }, (_, i) => { const k = String(i + 1).padStart(2, '0'), v = dias[k] || 0;
+    return `<span class="fg-ia-dia"${v ? ` title="${k}/${String(m).padStart(2, '0')}: ${valor(v, cot)}"` : ''}>${v ? `<i style="height:${Math.max(4, v / maxDia * 100).toFixed(1)}%"></i>` : ''}</span>`; }).join('');
+  const antes = meses.filter(x => x.id < mesId && x.usd > 0), primeiro = meses[meses.length - 1], diaIni = primeiro?.dias ? Math.min(...Object.keys(primeiro.dias).map(Number)) : 0;
+  el.innerHTML = `<div class="app-settings-section">
+      <div class="app-settings-row-label">${nomeMes(mesId, false)} até agora</div>
+      <div class="fg-ia-total">${mes.usd > 0 ? (cot ? '≈ ' : '') + valor(mes.usd, cot) : (cot ? 'R$ 0,00' : 'US$ 0,00')}</div>
+      <div class="fg-ia-sub">${mes.usd > 0 && cot ? dolar(mes.usd) + ' · ' : ''}${usos(mes.chamadas)}${cot ? ` · dólar a ${cot.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : ''}</div>
+      ${contados >= 3 ? `<div class="fg-ia-prev">No ritmo de agora, o mês fecha perto de <b>${valor(mes.usd / contados * noMes, cot)}</b>.</div>` : ''}
+      <div class="fg-ia-dias" role="img" aria-label="Gasto por dia em ${nomeMes(mesId, false).toLowerCase()}">${barras}</div>
+      <div class="fg-ia-eixo"><span>01/${String(m).padStart(2, '0')}</span><span>${noMes}/${String(m).padStart(2, '0')}</span></div>
+    </div>
+    ${mes.usd > 0 ? `<div class="app-settings-section"><div class="app-settings-row-label">Onde gastou</div>${lista(mes.por, FG_IA_ORIGENS, cot)}</div>
+    <div class="app-settings-section"><div class="app-settings-row-label">Por modelo de IA</div>${lista(mes.modelos, FG_IA_MODELOS, cot)}</div>`
+    : '<div class="app-settings-section"><span class="app-settings-hint">Nenhum uso da IA neste mês ainda.</span></div>'}
+    ${antes.length ? `<div class="app-settings-section"><div class="app-settings-row-label">Meses anteriores</div>${antes.map(x => `<div class="fg-ia-linha"><span>${nomeMes(x.id)} <em>${usos(x.chamadas)}</em></span><b>${valor(x.usd, x.cotacao || ultimo)}</b></div>`).join('')}</div>` : ''}
+    <div class="app-settings-hint fg-ia-nota">${diaIni ? `A conta começou em ${String(diaIni).padStart(2, '0')}/${primeiro.id.slice(5)}/${primeiro.id.slice(0, 4)}. Antes disso o Gemini era grátis e o gasto do Claude não era anotado. ` : ''}Valores estimados pela tabela de preço do Google e da Anthropic. A cobrança de verdade aparece no AI Studio (Gemini) e no Console da Anthropic (Claude).</div>`;
 }
 function appSettingsToggleVisible(inputId, btn) {
   const el = document.getElementById(inputId);
@@ -8152,6 +8205,7 @@ async function callClaude(systemPrompt, userPrompt, btnId, resultBoxId) {
       throw new Error(err.error?.message || `Erro ${res.status}`);
     }
     const data = await res.json();
+    fgIaCusto('conteudo', data);
     const text = data.content?.[0]?.text || '';
     // Guarda raw em dataset pra o "Usar" extrair texto puro
     box.dataset.rawText = text;
@@ -13078,6 +13132,7 @@ Seja direto, evite jargão desnecessário, use números específicos dos dados, 
       throw new Error(err.error?.message || `Erro ${res.status}`);
     }
     const dj = await res.json();
+    fgIaCusto('metricas', dj);
     const fullText = dj.content?.[0]?.text || '';
     // Extrai bloco <ACTIONS>...</ACTIONS> antes de renderizar
     const { textOnly, actions } = mtrSplitActions(fullText);
@@ -13555,6 +13610,7 @@ Use benchmarks: CTR Meta ~1-2%, ROAS saudável >2x, CPM Brasil ~R$15-30.${traini
     });
     if (!res.ok) { const err = await res.json().catch(()=>({})); throw new Error(err.error?.message || `Erro ${res.status}`); }
     const dj = await res.json();
+    fgIaCusto('metricas', dj);
     const text = dj.content?.[0]?.text || '';
     if (!mtrDrillState[campId]) mtrDrillState[campId] = {};
     mtrDrillState[campId].aiResult = mtrMarkdown(text);
@@ -13615,6 +13671,7 @@ ${JSON.stringify(data)}${training ? '\n\nCONTEXTO DO NEGÓCIO:\n'+training : ''}
     });
     if (!res.ok) { const err = await res.json().catch(()=>({})); throw new Error(err.error?.message || `Erro ${res.status}`); }
     const dj = await res.json();
+    fgIaCusto('metricas', dj);
     const text = dj.content?.[0]?.text || '';
     // Remove o "pensando" e adiciona a resposta
     mtrAiChatHistory = mtrAiChatHistory.filter(m => !m.pending);
@@ -16859,6 +16916,7 @@ Retorne APENAS o texto da resposta, sem explicações.`;
       body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 300, messages: [{ role: 'user', content: prompt }] })
     });
     const d = await res.json();
+    fgIaCusto('google', d);
     const reply = d.content?.[0]?.text?.trim() || '';
     if (reply) {
       txt.value = reply;
@@ -16946,6 +17004,7 @@ Retorne APENAS o texto do post, sem aspas nem explicações.`;
       body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, messages: [{ role:'user', content: prompt }] })
     });
     const d = await res.json();
+    fgIaCusto('google', d);
     txt.value = d.content?.[0]?.text?.trim() || '';
   } catch(e) {
     txt.value = '';
@@ -23404,6 +23463,7 @@ Se algo não tem certeza, retorne null. Não invente.`;
       throw new Error(err.error?.message || `Erro ${res.status}`);
     }
     const data = await res.json();
+    fgIaCusto('tarefa', data);
     const raw = (data.content?.[0]?.text || '').trim();
     // Extrai JSON (tolerante a ```json ... ``` wrappers)
     let jsonStr = raw;
@@ -25811,6 +25871,7 @@ ${JSON.stringify(ctx)}`;
       throw e;
     }
     const dj = await res.json();
+    fgIaCusto('pergunte', dj);
     const text = dj.content?.[0]?.text || '(sem resposta)';
     window.pjAskAiHistory = window.pjAskAiHistory.filter(m => !m.pending);
     window.pjAskAiHistory.push({ role:'bot', text });
