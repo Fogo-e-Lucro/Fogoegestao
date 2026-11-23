@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão: sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.40">
+<link rel="stylesheet" href="styles.css?v=3.71.41">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -29740,8 +29740,8 @@ function pjRevAplicar(taskId, d, primeiro) {
   else if (p.estado === 'espera') pjRevAviso(taskId, 'espera', `O Revisor vai revisar ${qtd}`, nome, escHtml(p.msg || 'Começa em alguns segundos.'));
   else if (p.estado === 'rodando') pjRevAviso(taskId, 'rodando', `Revisando ${qtd}`, nome, 'Leva 1 a 2 minutos. Pode fechar o app, o comentário aparece aqui na tarefa.');
   else if (p.estado === 'pronto') pjRevAviso(taskId, 'pronto',
-    p.igual ? 'Não revisei de novo' : `${ante} pronta: ${p.total ? `${p.total} ${p.total === 1 ? 'ponto' : 'pontos'} pra corrigir` : 'nenhum erro encontrado'}`, nome,
-    p.igual ? 'As artes são iguais às que já foram revisadas.' : [p.volta ? `A tarefa voltou pra ${escHtml(p.volta)}.` : '', p.faltou ? `${p.faltou} ${p.faltou === 1 ? 'arte ficou' : 'artes ficaram'} sem revisão, o motivo está no comentário.` : ''].filter(Boolean).join(' '));
+    p.igual ? 'Não revisei de novo' : `${ante} pronta: ${p.total ? `${p.total} ${p.total === 1 ? 'erro' : 'erros'} pra corrigir` : 'nenhum erro encontrado'}`, nome,
+    p.igual ? 'As artes são iguais às que já foram revisadas.' : [p.volta ? `A tarefa voltou pra ${escHtml(p.volta)}.` : '', p.faltou ? `${p.faltou} ${p.faltou === 1 ? 'arte ficou' : 'artes ficaram'} sem revisão.` : ''].filter(Boolean).join(' '));
   else if (p.estado === 'erro') pjRevAviso(taskId, 'erro', `${ante} não terminou`, nome, escHtml(p.msg || 'Tente de novo em alguns minutos.'));
   else if (p.estado === 'pulado') pjRevAvisoFechar(taskId);
 }

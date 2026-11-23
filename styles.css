@@ -21962,9 +21962,12 @@ body.fg-menu .pj-drawer-backdrop { -webkit-backdrop-filter: none !important; bac
 html.fg-noturno #pjActivityList .pj-activity-item.pj-rev > div > .pj-activity-text { background:#1c3157; border-color:#3a6199; }
 #pjActivityList .pj-rev > div > .pj-activity-text :is(strong, h4) { color:#fff; }
 #pjActivityList .pj-rev > div > .pj-activity-text :is(.pj-rev-por, em) { color:#94a3b8; }
-#pjActivityList .pj-rev > div > .pj-activity-text code { background:rgba(255,255,255,.1); color:#fff; }
+/* trecho errado que o Revisor aponta: etiqueta vermelha forte; resolvido fica cinza */
+#pjActivityList .pj-rev > div > .pj-activity-text code { background:#dc2626; color:#fff; font:inherit; font-weight:700; padding:1px 6px; border-radius:5px; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
 #pjActivityList .pj-rev > div > .pj-activity-text a { color:#93c5fd; }
 #pjActivityList .pj-rev > div > .pj-activity-text .pj-mention { color:#fff; background:rgba(255,255,255,.12); padding:0 4px; }
+/* @ do Instagram escrito na arte fica dentro da etiqueta, sem virar menção */
+#pjActivityList .pj-rev > div > .pj-activity-text code .pj-mention { color:inherit; background:none; padding:0; }
 .pj-rev-pisca > div > .pj-activity-text { animation:pjRevPisca 1s ease-out 2; }
 /* Revisor 3.71.39: bolinha no botão (arte sem revisão), selo "Revisado" e caixinha em cada ponto do comentário */
 #pjTaskModal #pjRevisorBtn { position:relative; }
@@ -21977,6 +21980,8 @@ body.at-projetos .pj-kanban .pj-rev-selo { height:26px; padding:0 10px; border-r
 .pj-rev-li { display:flex; gap:8px; align-items:flex-start; }
 .pj-rev-check { width:16px; height:16px; margin:1px 0 0; flex-shrink:0; accent-color:#fff; cursor:pointer; }
 .pj-rev-li.ok > span { text-decoration:line-through; color:#94a3b8; }
+#pjActivityList .pj-rev .pj-rev-li.ok :is(strong, code) { color:#94a3b8; }
+#pjActivityList .pj-rev .pj-rev-li.ok code { background:#334155; }
 @media (max-width:640px) { .pj-rev-check { width:20px; height:20px; } }
 @keyframes pjRevPisca { from { box-shadow:0 0 0 0 rgba(96,165,250,.7); } to { box-shadow:0 0 0 10px rgba(96,165,250,0); } }
 
