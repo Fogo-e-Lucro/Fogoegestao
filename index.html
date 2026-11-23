@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão: sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.41">
+<link rel="stylesheet" href="styles.css?v=3.71.42">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -28671,9 +28671,11 @@ function pjRenderTaskAttachments(taskId) {
     const uploaderName = uploader?.name || uploader?.email?.split('@')[0] || '';
     const meta = [size, dt, uploaderName].filter(Boolean).join(' · ');
     const nameEsc = escHtml(a.name||'');
+    // Número da arte: é o mesmo "Arte N" do comentário do Revisor (posição na lista de anexos)
+    const num = items.length > 1 ? `<span class="pj-attach-num" role="img" aria-label="Arte ${i + 1}" title="Arte ${i + 1}">${i + 1}</span>` : '';
 
     if (isImg) {
-      return `<div class="pj-attach-item pj-attach-img" data-attach-idx="${i}" data-action="lightbox" title="Clique para ampliar">
+      return `<div class="pj-attach-item pj-attach-img" data-attach-idx="${i}" data-action="lightbox" title="Clique para ampliar">${num}
         <div class="pj-attach-img-wrap"><img src="${escHtml(src)}" alt="${nameEsc}" loading="lazy" referrerpolicy="no-referrer"></div>
         <div class="pj-attach-meta">
           <span class="pj-attach-name" title="${nameEsc}">${nameEsc || 'imagem'}</span>
@@ -28690,7 +28692,7 @@ function pjRenderTaskAttachments(taskId) {
       </div>`;
     }
     const ic = pjAttachIconFor(a.name, a.type);
-    return `<div class="pj-attach-item pj-attach-doc">
+    return `<div class="pj-attach-item pj-attach-doc">${num}
       <button class="pj-attach-doc-link" type="button" data-attach-idx="${i}" data-action="download" title="Baixar ${nameEsc || 'arquivo'}">
         <span class="pj-attach-doc-icon ${ic.cls}">${ic.icon}</span>
         <div class="pj-attach-info">

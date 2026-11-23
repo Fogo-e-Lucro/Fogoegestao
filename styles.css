@@ -6895,6 +6895,15 @@ body.pj-task-open .pj-fab { display:none !important; }
 .pj-attach-item:hover .pj-attach-actions {
   opacity:1; transform:translateY(0);
 }
+/* Número da arte, igual ao "Arte N" do comentário do Revisor. Cor invertida do tema, com anel da cor do card pra aparecer em qualquer foto */
+.pj-attach-num {
+  position:absolute; top:6px; left:6px; z-index:2;
+  min-width:22px; height:22px; padding:0 6px; box-sizing:border-box;
+  display:inline-flex; align-items:center; justify-content:center;
+  border-radius:11px; background:var(--text); color:var(--card);
+  box-shadow:0 0 0 2px var(--card);
+  font-size:12px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums;
+}
 /* Touch (mobile/tablet): sempre visível, e maior pra clicar com o dedo */
 @media (pointer:coarse) {
   .pj-attach-actions { opacity:1 !important; transform:none !important; }
