@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão: sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.39">
+<link rel="stylesheet" href="styles.css?v=3.71.40">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -453,7 +453,7 @@
 
       <div class="app-settings-section">
         <div class="app-settings-row-label">Revisor das artes <span class="app-settings-hint">A chave do Gemini fica guardada no servidor. Ninguém da equipe vê.</span></div>
-        <div class="app-settings-row-label app-settings-auto-label">Revisão automática <span class="app-settings-hint">quando a pessoa marcada sobe arte numa tarefa em que é responsável, o Revisor revisa sozinho no servidor, mesmo com o app fechado</span></div>
+        <div class="app-settings-row-label app-settings-auto-label">Revisão automática <span class="app-settings-hint">quando a tarefa em que a pessoa marcada é responsável vai pra Análise, o Revisor revisa sozinho as artes novas dela, mesmo com o app fechado. Se achar erro, a tarefa volta pra Em Andamento</span></div>
         <div class="app-settings-auto" id="cfgGeminiAuto"></div>
       </div>
 
@@ -29391,7 +29391,7 @@ async function _pjDeleteCommentDocs(list) {
 function pjRenderActivityLogItem(a) {
   if (!a) return '';
   const m = pjMembers.find(x => x.uid === a.by);
-  const who = m?.name || m?.email || 'Alguém';
+  const who = a.by === 'revisor' ? 'Revisor' : (m?.name || m?.email || 'Alguém');
   const time = a.ts ? pjRelTime(new Date(a.ts)) : '';
   const PRIO_LABEL = { urgent:'Urgente', high:'Alta', medium:'Média', low:'Baixa' };
 
@@ -29729,7 +29729,7 @@ function pjRevAplicar(taskId, d, primeiro) {
   if (taskId === pjCurrentTaskId) pjRevBotao(taskId);
   const p = d?.pedido, eu = _auth?.currentUser?.uid || _currentUser?.uid;
   if (!p || !eu || p.uid !== eu) return;
-  const chave = p.estado + '|' + pjRevMs(p.criadoEm) + '|' + (p.qtd || 0);
+  const chave = p.estado + '|' + pjRevMs(p.criadoEm) + '|' + (p.qtd || 0) + '|' + (p.tentativa || 0);
   if (pjRevVisto.get(taskId) === chave) return;
   pjRevVisto.set(taskId, chave);
   if (primeiro && !['novo', 'fila', 'rodando', 'espera'].includes(p.estado)) return;
@@ -29737,11 +29737,11 @@ function pjRevAplicar(taskId, d, primeiro) {
   const qtd = p.qtd ? `${p.qtd} ${p.qtd === 1 ? 'arte' : 'artes'}` : 'as artes', ante = p.tipo === 'auto' ? 'Revisão automática' : 'Revisão';
   if (p.estado === 'novo') pjRevAviso(taskId, 'rodando', 'Pedindo a revisão', nome);
   else if (p.estado === 'fila') pjRevAviso(taskId, 'rodando', 'Na fila do Revisor', nome, 'Ele começa assim que terminar a revisão anterior.');
-  else if (p.estado === 'espera') pjRevAviso(taskId, 'espera', `O Revisor vai revisar ${qtd}`, nome, 'Ele espera um pouco pra juntar as artes que ainda vão subir. Pra começar agora, toque em Revisor na tarefa.');
+  else if (p.estado === 'espera') pjRevAviso(taskId, 'espera', `O Revisor vai revisar ${qtd}`, nome, escHtml(p.msg || 'Começa em alguns segundos.'));
   else if (p.estado === 'rodando') pjRevAviso(taskId, 'rodando', `Revisando ${qtd}`, nome, 'Leva 1 a 2 minutos. Pode fechar o app, o comentário aparece aqui na tarefa.');
   else if (p.estado === 'pronto') pjRevAviso(taskId, 'pronto',
     p.igual ? 'Não revisei de novo' : `${ante} pronta: ${p.total ? `${p.total} ${p.total === 1 ? 'ponto' : 'pontos'} pra corrigir` : 'nenhum erro encontrado'}`, nome,
-    p.igual ? 'As artes são iguais às que já foram revisadas.' : p.faltou ? `${p.faltou} ${p.faltou === 1 ? 'arte ficou' : 'artes ficaram'} sem revisão, o motivo está no comentário.` : '');
+    p.igual ? 'As artes são iguais às que já foram revisadas.' : [p.volta ? `A tarefa voltou pra ${escHtml(p.volta)}.` : '', p.faltou ? `${p.faltou} ${p.faltou === 1 ? 'arte ficou' : 'artes ficaram'} sem revisão, o motivo está no comentário.` : ''].filter(Boolean).join(' '));
   else if (p.estado === 'erro') pjRevAviso(taskId, 'erro', `${ante} não terminou`, nome, escHtml(p.msg || 'Tente de novo em alguns minutos.'));
   else if (p.estado === 'pulado') pjRevAvisoFechar(taskId);
 }
