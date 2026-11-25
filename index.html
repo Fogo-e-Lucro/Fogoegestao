@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão: sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.44">
+<link rel="stylesheet" href="styles.css?v=3.71.45">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -29727,7 +29727,7 @@ async function pjSendComment() {
 
 /* Revisor das artes: o app grava o pedido em pj_revisor/{tarefa}; o servidor (pm2 fg-revisor na VPS) baixa as artes, revisa com o Gemini e comenta na tarefa */
 const PJ_REV_OK = ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'];
-const PJ_REV_AVATAR = '<div class="pj-avatar pj-avatar-rev" title="Max" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 15 5-11 5 11"/><path d="M6 11h6"/><path d="m14 19 3 3 5-6"/></svg></div>';
+const PJ_REV_AVATAR = '<div class="pj-avatar pj-avatar-rev" title="Max" aria-hidden="true"></div>';
 const pjRevDocs = new Map(), pjRevVisto = new Map();
 let pjRevDesde = 0;
 function pjRevMime(a) {
