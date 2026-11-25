@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão: sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.43">
+<link rel="stylesheet" href="styles.css?v=3.71.44">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -453,8 +453,8 @@
       </div>
 
       <div class="app-settings-section">
-        <div class="app-settings-row-label">Revisor das artes <span class="app-settings-hint">A chave do Gemini fica guardada no servidor. Ninguém da equipe vê.</span></div>
-        <div class="app-settings-row-label app-settings-auto-label">Revisão automática <span class="app-settings-hint">quando a tarefa em que a pessoa marcada é responsável vai pra Análise, o Revisor revisa sozinho as artes novas dela, mesmo com o app fechado. Se achar erro, a tarefa volta pra Em Andamento</span></div>
+        <div class="app-settings-row-label">Max, o revisor das artes <span class="app-settings-hint">A chave do Gemini fica guardada no servidor. Ninguém da equipe vê.</span></div>
+        <div class="app-settings-row-label app-settings-auto-label">Revisão automática <span class="app-settings-hint">quando a tarefa em que a pessoa marcada é responsável vai pra Análise, o Max revisa sozinho as artes novas dela, mesmo com o app fechado. Se achar erro, a tarefa volta pra Em Andamento</span></div>
         <div class="app-settings-auto" id="cfgGeminiAuto"></div>
       </div>
 
@@ -3000,9 +3000,9 @@ ufw allow 3000/tcp</pre>
         <span id="pjModalListName">-</span>
         <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
           <span style="font-size:11px;color:var(--text3);">Salvo automaticamente</span>
-          <button id="pjRevisorBtn" type="button" hidden onclick="pjRevisar()" title="Revisar o texto das artes">
+          <button id="pjRevisorBtn" type="button" hidden onclick="pjRevisar()" title="O Max revisa o texto das artes">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 15 5-11 5 11"/><path d="M6 11h6"/><path d="m14 19 3 3 5-6"/></svg>
-            <span>Revisor</span>
+            <span>Chamar o Max</span>
             <i class="pj-rev-ponto" hidden aria-hidden="true"></i>
           </button>
           <button class="pj-icon-btn" title="Duplicar tarefa" aria-label="Duplicar tarefa" onclick="pjDuplicateTask(pjCurrentTaskId)" style="font-size:14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button>
@@ -7687,7 +7687,7 @@ function appSettingsTab(tab) {
 }
 
 /* ─── Custos da IA ─── soma do mês em pj_ia_custos/AAAA-MM: o Revisor grava o dele no servidor (com o dólar do dia), o resto do app grava aqui */
-const FG_IA_ORIGENS = { revisor: 'Revisor das artes', conteudo: 'Ganchos, legendas e roteiros', metricas: 'Métricas', google: 'Google Meu Negócio', tarefa: 'Tarefa rápida com IA', pergunte: 'Pergunte à IA' };
+const FG_IA_ORIGENS = { revisor: 'Max, revisor das artes', conteudo: 'Ganchos, legendas e roteiros', metricas: 'Métricas', google: 'Google Meu Negócio', tarefa: 'Tarefa rápida com IA', pergunte: 'Pergunte à IA' };
 const FG_IA_MODELOS = { 'gemini-4-hydrogen': 'Gemini 4 Hydrogen', 'gemini-3_8-flash': 'Gemini 3.8 Flash', 'gemini-3_5-flash-lite': 'Gemini 3.5 Flash Lite', 'gemini-3_1-flash-lite': 'Gemini 3.1 Flash Lite', 'claude-haiku-4-5-20251001': 'Claude Haiku 4.5' };
 const fgIaMes = (d = new Date()) => [`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, String(d.getDate()).padStart(2, '0')];
 // Claude Haiku 4.5: US$ 1 por 1 milhão de tokens de entrada e US$ 5 de saída. Falhar aqui não atrapalha a resposta da IA
@@ -28804,7 +28804,7 @@ async function pjTaskAttachFileChosen(ev) {
 async function pjAnexarArquivos(files) {
   for (const f of files) {
     if (PJ_REV_OK.includes(pjRevMime(f)) && f.size > 15 * 1024 * 1024)
-      showToast('warn', '', `A arte ${escHtml(f.name)} tem ${pjFmtBytes(f.size)}. O Revisor só lê até 15 MB: exporte mais leve pra ele conferir.`, 9000);
+      showToast('warn', '', `A arte ${escHtml(f.name)} tem ${pjFmtBytes(f.size)}. O Max só lê até 15 MB: exporte mais leve pra ele conferir.`, 9000);
     await pjAddTaskAttachment(f);
   }
 }
@@ -29322,13 +29322,13 @@ async function pjAttachDrop(e) {
 function pjRenderActivityComment(c, isReply) {
   const m = pjMembers.find(m => m.uid === c.userId);
   const rev = !!c.revisor; // comentário do Revisor das artes: userId é quem pediu
-  let revHtml = pjMd(c.text || '');
+  let revHtml = pjMd((rev ? String(c.text || '').replace(/\n\*Revisão [^*\n]*Gemini[^*\n]*\*\s*$/, '') : c.text) || ''); // tira a linha do Gemini das revisões antigas
   if (rev && !String(c.id).startsWith('c_')) {
     let i = 0; const feitos = c.revisor.resolvidos || [];
     revHtml = revHtml.replace(/<li>([\s\S]*?)<\/li>/g, (m, x) => { const k = i++, ok = feitos.includes(k);
       return `<li class="pj-rev-li${ok ? ' ok' : ''}"><input type="checkbox" class="pj-rev-check"${ok ? ' checked' : ''} onchange="pjRevResolver(this,'${c.id}',${k})" aria-label="Marcar como resolvido"><span>${x}</span></li>`; });
   }
-  const name = rev ? 'Revisor' : (m?.name || m?.email || 'Alguém');
+  const name = rev ? 'Max' : (m?.name || m?.email || 'Alguém');
   const time = c.createdAt?.toDate ? pjRelTime(c.createdAt.toDate()) : (c.createdAt?.toMillis ? pjRelTime(new Date(c.createdAt.toMillis())) : '');
   const _me = _auth?.currentUser?.uid || _currentUser?.uid;
   // Autor ou admin podem apagar; id 'c_' é o otimista ainda não salvo
@@ -29454,7 +29454,7 @@ async function _pjDeleteCommentDocs(list) {
 function pjRenderActivityLogItem(a) {
   if (!a) return '';
   const m = pjMembers.find(x => x.uid === a.by);
-  const who = a.by === 'revisor' ? 'Revisor' : (m?.name || m?.email || 'Alguém');
+  const who = a.by === 'revisor' ? 'Max' : (m?.name || m?.email || 'Alguém');
   const time = a.ts ? pjRelTime(new Date(a.ts)) : '';
   const PRIO_LABEL = { urgent:'Urgente', high:'Alta', medium:'Média', low:'Baixa' };
 
@@ -29718,7 +29718,7 @@ async function pjSendComment() {
   pjClearAttach();
   // Detectar @menções e criar notificações
   if (text) pjProcessMentionNotifs(text, senderName, uid);
-  if (text && /(^|\s)@revisor\b/i.test(text)) pjRevisar(data.taskId, 'mencao', text.slice(0, 500));
+  if (text && /(^|\s)@(max|revisor)\b/i.test(text)) pjRevisar(data.taskId, 'mencao', text.slice(0, 500));
   // Webhook de comentário
   const task = pjAllTasks.find(t => t.id === pjCurrentTaskId);
   if (task) pjFireWebhook('comment.added', { ...pjTaskPayload(task), comment: { text: text||'', author: senderName } });
@@ -29727,7 +29727,7 @@ async function pjSendComment() {
 
 /* Revisor das artes: o app grava o pedido em pj_revisor/{tarefa}; o servidor (pm2 fg-revisor na VPS) baixa as artes, revisa com o Gemini e comenta na tarefa */
 const PJ_REV_OK = ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'];
-const PJ_REV_AVATAR = '<div class="pj-avatar pj-avatar-rev" title="Revisor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 15 5-11 5 11"/><path d="M6 11h6"/><path d="m14 19 3 3 5-6"/></svg></div>';
+const PJ_REV_AVATAR = '<div class="pj-avatar pj-avatar-rev" title="Max" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 15 5-11 5 11"/><path d="M6 11h6"/><path d="m14 19 3 3 5-6"/></svg></div>';
 const pjRevDocs = new Map(), pjRevVisto = new Map();
 let pjRevDesde = 0;
 function pjRevMime(a) {
@@ -29759,7 +29759,7 @@ function pjRevFalta(task) {
 function pjRevSeloHtml(task) {
   const s = pjRevSel(task);
   return pjRevDocs.get(task.id)?.artes?.length && s.boas.length && !s.novas.length
-    ? `<span class="pj-rev-selo" title="As artes desta tarefa já passaram pelo Revisor">${pjlIco('checksq', 12)}Revisado</span>` : '';
+    ? `<span class="pj-rev-selo" title="As artes desta tarefa já passaram pelo Max">${pjlIco('checksq', 12)}Revisado</span>` : '';
 }
 function pjRevBotao(taskId) {
   const b = document.getElementById('pjRevisorBtn');
@@ -29769,7 +29769,7 @@ function pjRevBotao(taskId) {
   b.classList.toggle('carregando', ativo);
   b.setAttribute('aria-busy', ativo ? 'true' : 'false');
   b.querySelector('span').textContent = p?.estado === 'rodando' ? 'Revisando' : ativo ? 'Na fila'
-    : d?.artes?.length && s.boas.length && !s.novas.length ? 'Revisar de novo' : 'Revisor';
+    : d?.artes?.length && s.boas.length && !s.novas.length ? 'Revisar de novo' : 'Chamar o Max';
   const ponto = b.querySelector('.pj-rev-ponto');
   if (ponto) ponto.hidden = ativo || !pjRevFalta(task);
 }
@@ -29799,8 +29799,8 @@ function pjRevAplicar(taskId, d, primeiro) {
   const task = pjAllTasks.find(t => t.id === taskId), nome = escHtml(task?.title || 'Tarefa');
   const qtd = p.qtd ? `${p.qtd} ${p.qtd === 1 ? 'arte' : 'artes'}` : 'as artes', ante = p.tipo === 'auto' ? 'Revisão automática' : 'Revisão';
   if (p.estado === 'novo') pjRevAviso(taskId, 'rodando', 'Pedindo a revisão', nome);
-  else if (p.estado === 'fila') pjRevAviso(taskId, 'rodando', 'Na fila do Revisor', nome, 'Ele começa assim que terminar a revisão anterior.');
-  else if (p.estado === 'espera') pjRevAviso(taskId, 'espera', `O Revisor vai revisar ${qtd}`, nome, escHtml(p.msg || 'Começa em alguns segundos.'));
+  else if (p.estado === 'fila') pjRevAviso(taskId, 'rodando', 'Na fila do Max', nome, 'Ele começa assim que terminar a revisão anterior.');
+  else if (p.estado === 'espera') pjRevAviso(taskId, 'espera', `O Max vai revisar ${qtd}`, nome, escHtml(p.msg || 'Começa em alguns segundos.'));
   else if (p.estado === 'rodando') pjRevAviso(taskId, 'rodando', `Revisando ${qtd}`, nome, 'Leva 1 a 2 minutos. Pode fechar o app, o comentário aparece aqui na tarefa.');
   else if (p.estado === 'pronto') pjRevAviso(taskId, 'pronto',
     p.igual ? 'Não revisei de novo' : `${ante} pronta: ${p.total ? `${p.total} ${p.total === 1 ? 'erro' : 'erros'} pra corrigir` : 'nenhum erro encontrado'}`, nome,
@@ -29812,13 +29812,13 @@ function pjRevAplicar(taskId, d, primeiro) {
 async function pjRevisar(taskId = pjCurrentTaskId, tipo = 'manual', texto = '') {
   if (!taskId) return;
   const antes = pjRevDocs.get(taskId), task = pjAllTasks.find(t => t.id === taskId), nome = escHtml(task?.title || 'Tarefa');
-  if (pjRevAtivo(antes?.pedido)) { showToast('warn', '', tipo === 'mencao' ? 'O Revisor já está revisando esta tarefa. Chame de novo quando ele terminar.' : 'A revisão desta tarefa já está na fila.', 5000); return; }
+  if (pjRevAtivo(antes?.pedido)) { showToast('warn', '', tipo === 'mencao' ? 'O Max já está revisando esta tarefa. Chame de novo quando ele terminar.' : 'A revisão desta tarefa já está na fila.', 5000); return; }
   if (!pjRevSel(task).itens.length) { showToast('warn', '', 'Nenhuma arte em imagem ou PDF pra revisar.', 5000); return; }
   const uid = _auth?.currentUser?.uid || _currentUser?.uid;
   const pedido = { uid, tipo, estado: 'novo', criadoEm: pjNow(), ...(texto ? { texto } : {}) };
   pjRevAplicar(taskId, { ...(antes || {}), pedido: { ...pedido, criadoEm: Date.now() } }, false);
   setTimeout(() => { const p = pjRevDocs.get(taskId)?.pedido;
-    if (p?.estado === 'novo' && p.uid === uid) pjRevAviso(taskId, 'espera', 'O Revisor ainda não pegou o pedido', nome, 'Assim que ele voltar, revisa e comenta aqui.'); }, 45000);
+    if (p?.estado === 'novo' && p.uid === uid) pjRevAviso(taskId, 'espera', 'O Max ainda não pegou o pedido', nome, 'Assim que ele voltar, revisa e comenta aqui.'); }, 45000);
   // atualizado com a hora do aparelho: hora do servidor pendente não entra no where('atualizado','>=') local
   try { await pjC('pj_revisor').doc(taskId).set({ pedido, atualizado: new Date() }, { mergeFields: ['pedido', 'atualizado'] }); }
   catch (e) {
@@ -30279,7 +30279,7 @@ function pjMentionCheck(ta) {
 }
 function pjMentionRender() {
   const { ta, query } = pjMentionState;
-  const rev = ta?.id === 'pjCommentInput' && 'revisor'.startsWith(query);
+  const rev = ta?.id === 'pjCommentInput' && ('max'.startsWith(query) || 'revisor'.startsWith(query));
   const matches = pjMembers.filter(m => {
     const n = ((m.name||'') + ' ' + (m.email||'')).toLowerCase();
     return n.includes(query);
@@ -30298,7 +30298,7 @@ function pjMentionRender() {
     return `<div class="pj-mention-item ${i===0?'active':''}" data-key="${escHtml(key)}" onclick="pjMentionInsert('${escHtml(key)}')">
       ${pjAvatarHtml(m.uid || m.id || m.email)}<span>${escHtml(m.name||m.email||'')}${roleTag}${pendingTag}</span>
     </div>`;
-  }).join('') + (rev ? `<div class="pj-mention-item ${matches.length?'':'active'}" data-key="__revisor" onclick="pjMentionInsert('__revisor')">${PJ_REV_AVATAR}<span>Revisor</span></div>` : '');
+  }).join('') + (rev ? `<div class="pj-mention-item ${matches.length?'':'active'}" data-key="__revisor" onclick="pjMentionInsert('__revisor')">${PJ_REV_AVATAR}<span>Max</span></div>` : '');
   // Posiciona perto do caret — se não couber abaixo, mostra acima.
   // Render primeiro pra medir altura real, depois ajusta.
   pop.style.display = 'block';
@@ -30338,7 +30338,7 @@ function pjInsertMention() {
 }
 
 function pjMentionInsert(key) {
-  const m = key === '__revisor' ? { name: 'Revisor' } : (pjMembers.find(x => x.uid === key) || pjMembers.find(x => x.id === key) || pjMembers.find(x => x.email === key));
+  const m = key === '__revisor' ? { name: 'Max' } : (pjMembers.find(x => x.uid === key) || pjMembers.find(x => x.id === key) || pjMembers.find(x => x.email === key));
   if (!m) return;
   const { ta, anchor } = pjMentionState;
   if (!ta) return;
