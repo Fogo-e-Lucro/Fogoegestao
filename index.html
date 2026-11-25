@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão: sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.45">
+<link rel="stylesheet" href="styles.css?v=3.71.46">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -29328,7 +29328,7 @@ function pjRenderActivityComment(c, isReply) {
     revHtml = revHtml.replace(/<li>([\s\S]*?)<\/li>/g, (m, x) => { const k = i++, ok = feitos.includes(k);
       return `<li class="pj-rev-li${ok ? ' ok' : ''}"><input type="checkbox" class="pj-rev-check"${ok ? ' checked' : ''} onchange="pjRevResolver(this,'${c.id}',${k})" aria-label="Marcar como resolvido"><span>${x}</span></li>`; });
   }
-  const name = rev ? 'Max' : (m?.name || m?.email || 'Alguém');
+  const name = rev ? 'Max revisou' : (m?.name || m?.email || 'Alguém');
   const time = c.createdAt?.toDate ? pjRelTime(c.createdAt.toDate()) : (c.createdAt?.toMillis ? pjRelTime(new Date(c.createdAt.toMillis())) : '');
   const _me = _auth?.currentUser?.uid || _currentUser?.uid;
   // Autor ou admin podem apagar; id 'c_' é o otimista ainda não salvo
@@ -29361,7 +29361,7 @@ function pjRenderActivityComment(c, isReply) {
   return `<div class="pj-activity-item ${isReply?'reply':''}${histClass}${rev ? ' pj-rev' : ''}" ${histStyle}>
     ${rev ? PJ_REV_AVATAR : pjAvatarHtml(c.userId)}
     <div style="flex:1;min-width:0;">
-      <div class="pj-activity-text"><strong>${escHtml(name)}</strong>${rev ? `<span class="pj-rev-por">${c.revisor?.auto ? 'revisão automática' : 'pedido por ' + escHtml(m?.name || m?.email || 'alguém')}</span><br>` : ''}${c.historical?' <span class="pj-hist-pill" style="font-size:11px;color:var(--text2);font-weight:600;background:var(--card);border:1px solid var(--border);padding:0 6px;border-radius:999px;margin-left:4px;">histórico</span>':''} <span class="pj-md">${revHtml}</span></div>
+      <div class="pj-activity-text"><strong${rev ? ' class="pj-rev-nome"' : ''}>${escHtml(name)}</strong>${rev ? `<span class="pj-rev-por">${c.revisor?.auto ? 'automaticamente' : 'a pedido de ' + escHtml(m?.name || m?.email || 'alguém')}</span><br>` : ''}${c.historical?' <span class="pj-hist-pill" style="font-size:11px;color:var(--text2);font-weight:600;background:var(--card);border:1px solid var(--border);padding:0 6px;border-radius:999px;margin-left:4px;">histórico</span>':''} <span class="pj-md">${revHtml}</span></div>
       ${attachHtml}
       ${reacHtml}
       <div class="pj-comment-actions">
