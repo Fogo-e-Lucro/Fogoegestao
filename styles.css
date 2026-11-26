@@ -22002,8 +22002,7 @@ html.fg-noturno #pjActivityList .pj-activity-item.pj-rev > div > .pj-activity-te
 #pjTaskModal #pjRevisorBtn { position:relative; }
 .pj-rev-ponto { position:absolute; top:-3px; right:-3px; width:10px; height:10px; border-radius:50%; background:#ef4444; box-shadow:0 0 0 2px var(--card); }
 .pj-rev-ponto[hidden] { display:none; }
-.pj-rev-selo { display:inline-flex; align-items:center; gap:3px; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:9px; background:#0f172a; color:#fff; white-space:nowrap; }
-html.fg-noturno .pj-rev-selo { background:#3a6199; }
+.pj-rev-selo { display:inline-flex; align-items:center; gap:3px; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:9px; background:#15803d; color:#fff; white-space:nowrap; }
 body.at-projetos .pj-kanban .pj-rev-selo { height:26px; padding:0 10px; border-radius:999px; font-size:12px; gap:4px; }
 .pj-rev .pj-md ul { list-style:none; padding:0; margin:4px 0; }
 .pj-rev-li { display:flex; gap:8px; align-items:flex-start; }
@@ -22094,14 +22093,18 @@ body .toast.pj-rev-aviso.erro { border-color:rgba(248,113,113,.6) !important; }
   html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-th-cell[data-col-id="title"] { padding-left: 24px; }
   html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-th-cell.drop-before::before, html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-th-cell.drop-after::after { box-shadow: none; }
 
-  /* grupo: seta na coluna do concluir, bolinha e nome na linha dos títulos */
+  /* grupo: seta na coluna do concluir, nome com a cor do status na linha dos títulos */
   html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-header { margin-top: 24px !important; padding: 8px 16px 8px 19px; gap: 0; border: 0; border-radius: 0; background: var(--bg); box-shadow: none; filter: none; }
   html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-th-row + .pj-status-group-header { margin-top: 2px !important; }
   html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-header:hover { filter: none; }
   html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-header::before, html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-header::after { content: none; }
   html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-chev { margin-right: 29px; color: var(--text3); }
-  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-dot { width: 8px; height: 8px; margin-right: 11px; background: var(--c, #9ca3af); box-shadow: none; }
-  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-name { font-size: 14px; font-weight: 600; letter-spacing: 0; color: var(--text); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-dot { display: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-name { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; background: var(--c, #64748b); color: #fff; font-size: 13px; font-weight: 600; letter-spacing: 0; }
+  /* cor muito clara escurece até o branco ler bem; navegador antigo fica com a cor do jeito que está */
+  @supports (color: oklch(from red l c h)) {
+    html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-name { background: oklch(from var(--c, #64748b) min(l, 0.55) c h); }
+  }
   html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-count { margin-left: 8px; padding: 0 8px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--text2); font-size: 12px; font-weight: 600; line-height: 20px; }
 
   /* caixa do grupo e linhas */
