@@ -1671,7 +1671,10 @@ input[type="file"]:hover { border-color: var(--accent); background: rgba(124,58,
 #loginScreen .login-painel { position: relative; display: flex; flex-direction: column; justify-content: center; padding: 48px 64px; }
 #loginScreen .login-box { width: 100%; max-width: 380px; margin: 0 auto; }
 #loginScreen .login-marca { display: flex; align-items: center; gap: 12px; }
-#loginScreen .login-marca strong { font-size: 19px; font-weight: 800; letter-spacing: -.015em; color: var(--lg-tinta); animation: fgLoginSobe .7s var(--lg-sobe) .15s both; }
+/* Logo nova (25/11/2026): nome em Montserrat 800 com o "&" em brasa, igual à folha da marca */
+@font-face { font-family: "Montserrat"; font-weight: 800; font-display: swap; src: url("montserrat-800.woff2") format("woff2"); }
+#loginScreen .login-marca strong { font-family: "Montserrat", var(--font); font-size: 20px; font-weight: 800; letter-spacing: -.03em; color: var(--lg-tinta); animation: fgLoginSobe .7s var(--lg-sobe) .15s both; }
+#loginScreen .login-marca strong span { color: #f5330b; }
 #loginScreen .login-chama { position: relative; display: grid; place-items: center; flex: none; width: 52px; height: 52px; animation: fgChamaEntra .9s cubic-bezier(.34,1.56,.64,1) .05s both; }
 #loginScreen .login-chama img {
   position: relative; z-index: 1; width: 38px; height: auto; transform-origin: 50% 92%;

@@ -1,3 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <image href="logo-gold.png" x="56" y="56" width="400" height="400"/>
+  <defs>
+    <linearGradient id="brasa" gradientUnits="userSpaceOnUse" x1="0" y1="60" x2="0" y2="470">
+      <stop offset="0" stop-color="#f5200a"/>
+      <stop offset=".45" stop-color="#f83a0c"/>
+      <stop offset="1" stop-color="#ff8a14"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="#1a1d23"/>
+  <path transform="translate(87 87) scale(.66)" fill="url(#brasa)" d="M66 422V330C66 266 132 308 146 222C164 270 174 264 174 330V422A34 34 0 0 1 140 456H100A34 34 0 0 1 66 422ZM202 422V206C202 116 266 172 282 48C304 118 310 116 310 206V422A34 34 0 0 1 276 456H236A34 34 0 0 1 202 422ZM338 422V276C338 202 404 250 418 150C438 206 446 200 446 276V422A34 34 0 0 1 412 456H372A34 34 0 0 1 338 422Z"/>
 </svg>
