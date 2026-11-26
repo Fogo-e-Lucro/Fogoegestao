@@ -4890,6 +4890,10 @@ body.mtr-presenting .mtr-present-exit { display:inline-flex;align-items:center;g
 @media (min-width: 641px) {
   .fg-push-nudge { left:auto; right:24px; bottom:24px; width:340px; }
 }
+/* Na tela de entrar o cartão mora no alto da foto (pjNudgePlace) e rola junto: nunca cobre o formulário */
+#loginScreen .fg-push-nudge { position:absolute; z-index:5; top:calc(12px + env(safe-area-inset-top, 0px)); bottom:auto; left:12px; right:12px; }
+@media (min-width: 641px) { #loginScreen .fg-push-nudge { top:24px; left:auto; right:24px; } }
+@media (min-width: 1024px) { #loginScreen .fg-push-nudge { left:24px; right:auto; } } /* foto na metade da esquerda */
 .pj-notif-mention-banner {
   background:rgba(168,85,247,.12);
   border-bottom:1px solid rgba(168,85,247,.25);

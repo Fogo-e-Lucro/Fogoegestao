@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão: sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.48">
+<link rel="stylesheet" href="styles.css?v=3.71.49">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -33872,8 +33872,8 @@ function pjPushNudgeShow(kind) {
     el.id = 'fgPushNudge';
     el.className = 'fg-push-nudge';
     el.setAttribute('role', 'dialog');
-    document.body.appendChild(el);
   }
+  pjNudgePlace(el);
   el.setAttribute('aria-label', title);
   el.dataset.kind = kind;
   el.innerHTML = `<b>${title}</b><span>${text}</span>
@@ -33889,6 +33889,16 @@ function pjPushNudgeHide() {
   try { sessionStorage.setItem(app ? 'fg_app_nudge' : 'fg_push_nudge', '1'); } catch(_) {}
   if (app && _currentUser) pjPushNudge(); // dispensou o instalar: oferece os avisos (Android dá no navegador)
 }
+// Na tela de entrar o cartão fica no alto da foto e rola junto, sem cobrir o formulário (no iPad cobria o Entrar).
+// Fora dela, no rodapé. O login abre e fecha só pela classe .hidden, então basta olhar a classe.
+function pjNudgePlace(el) {
+  const host = document.querySelector('#loginScreen:not(.hidden) .login-hero') || document.body;
+  if (el && el.parentElement !== host) host.appendChild(el);
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const ls = document.getElementById('loginScreen');
+  if (ls) new MutationObserver(() => pjNudgePlace(document.getElementById('fgPushNudge'))).observe(ls, { attributes: true, attributeFilter: ['class'] });
+});
 // Linha no sino enquanto os avisos não funcionam neste aparelho
 function pjPushRow() {
   const st = pjPushState();
