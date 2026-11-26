@@ -22144,3 +22144,37 @@ body .toast.pj-rev-aviso.erro { border-color:rgba(248,113,113,.6) !important; }
   html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-client-pill.empty { padding: 0 10px; border-style: dashed; background: none; }
   html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-client-pill :is(.pj-list-client-logo, .pj-list-client-dot) { width: 18px !important; height: 18px !important; min-width: 18px !important; min-height: 18px !important; max-width: 18px !important; max-height: 18px !important; }
 }
+
+
+/* ─── Movimento da lista (amostra motion 1, 2 e 3) ─── */
+@media (min-width: 901px) and (prefers-reduced-motion: no-preference) {
+  #pjMain .pj-status-group-count .pj-n { display: inline-block; }
+  #pjMain .pj-list-tr.pj-mov-concluindo .pj-task-check { animation: pj-check-pop .28s cubic-bezier(.2,.8,.2,1); }
+  #pjMain .pj-list-tr.pj-mov-concluindo .pj-task-check svg { display: block; width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 16; stroke-dashoffset: 16; animation: pj-check-traco .24s .04s cubic-bezier(.2,.8,.2,1) forwards; }
+  #pjMain .pj-list-tr.pj-mov-concluindo .pj-list-title-text { background: linear-gradient(currentColor, currentColor) no-repeat 0 55% / 0 1.5px; animation: pj-risco .26s .06s cubic-bezier(.2,.8,.2,1) forwards; }
+  @keyframes pj-check-pop { 50% { transform: scale(1.18); } }
+  @keyframes pj-check-traco { to { stroke-dashoffset: 0; } }
+  @keyframes pj-risco { to { background-size: 100% 1.5px; } }
+  html.pj-mov::view-transition-group(*) { animation-duration: .38s; animation-timing-function: cubic-bezier(.2,.8,.2,1); }
+  html.pj-mov::view-transition-old(root), html.pj-mov::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+  html.pj-mov::view-transition-old(*.pj-cab):not(:only-child) { animation: none; opacity: 0; }
+  html.pj-mov::view-transition-new(*.pj-cab):not(:only-child) { animation: none; }
+  html.pj-mov::view-transition-group(*.pj-voa) { z-index: 100; background: var(--card, #fff); border-radius: 10px; box-shadow: 0 0 0 1px rgba(16,24,40,.08), 0 8px 20px -8px rgba(16,24,40,.25); }
+  html.pj-mov::view-transition-old(*.pj-zona), html.pj-mov::view-transition-new(*.pj-zona) { height: 100%; }
+  html.pj-mov::view-transition-old(*.pj-fecha) { animation: pj-zona-fecha .38s cubic-bezier(.2,.8,.2,1) both; }
+  html.pj-mov::view-transition-new(*.pj-abre) { animation: pj-zona-abre .38s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes pj-zona-fecha { to { clip-path: inset(0 0 100% 0); } }
+  @keyframes pj-zona-abre { from { clip-path: inset(0 0 100% 0); } }
+  html.pj-mov::view-transition-group(*.pj-placar) { overflow: hidden; }
+  html.pj-mov::view-transition-old(*.pj-placar) { animation: pj-placar-sai .38s cubic-bezier(.2,.8,.2,1) both; mix-blend-mode: normal; }
+  html.pj-mov::view-transition-new(*.pj-placar) { animation: pj-placar-entra .38s cubic-bezier(.2,.8,.2,1) both; mix-blend-mode: normal; }
+  @keyframes pj-placar-sai { to { transform: translateY(-110%); } }
+  @keyframes pj-placar-entra { from { transform: translateY(110%); } }
+  /* Botão + e avisos ficam por cima da lista que desliza, parados. */
+  html.pj-mov #pjFab { view-transition-name: pj-fab; view-transition-class: pj-fixo; }
+  html.pj-mov #toastContainer { view-transition-name: pj-toasts; view-transition-class: pj-fixo; }
+  html.pj-mov .app-undo-toast { view-transition-name: pj-desfazer; view-transition-class: pj-fixo; }
+  html.pj-mov::view-transition-group(*.pj-fixo) { z-index: 200; animation: none; }
+  html.pj-mov::view-transition-old(*.pj-fixo) { display: none; }
+  html.pj-mov::view-transition-new(*.pj-fixo) { animation: none; }
+}

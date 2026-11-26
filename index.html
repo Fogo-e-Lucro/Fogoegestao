@@ -19284,6 +19284,7 @@ function pjScheduleRender() {
   _pjRenderTimer = setTimeout(() => {
     _pjRenderTimer = null;
     requestAnimationFrame(() => {
+      if (window._pjMovRodando) { window._pjMovDepois = true; return; }
       try { pjRenderMain(); } catch(_){}
       try { _pjViewerRefreshDebounced(); } catch(_){}
       // Enhance de <select> substituindo o MO global (audit 2026-09)
@@ -20327,7 +20328,7 @@ function pjBuildListPage(listId) {
       <svg class="pj-status-chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 8 10 13 15 8"/></svg>
       <span class="pj-status-group-dot" style="--c:${st.color}"></span>
       <span class="pj-status-group-name">${escHtml(st.name)}</span>
-      <span class="pj-status-group-count">${stTasks.length}</span>
+      <span class="pj-status-group-count"><span class="pj-n">${stTasks.length}</span></span>
     </div>
     <div class="pj-status-zone ${collapsed?'collapsed':''}" data-list-id="${listId}" data-status-id="${st.id}"
          ondragover="pjListDragOver(event)" ondragleave="pjListDragLeave(event)" ondrop="pjListDrop(event,'${listId}','${st.id}')">`;
@@ -20401,7 +20402,7 @@ function pjTaskColumnRowHtml(t, cols, gridTpl) {
        ondragstart="pjListDragStart(event,'${t.id}')"
        ondragend="pjListDragEnd(event)"
        style="grid-template-columns:${gridTpl}" onclick="document.body.classList.contains('pj-sel-mode')?pjToggleSelect('${t.id}',event):pjOpenTask('${t.id}')">
-    <div class="pj-task-check ${done?'done':''}" onclick="event.stopPropagation();pjToggleTaskDone('${t.id}')" title="${done?'Reabrir':'Concluir'}">${done?'✓':''}</div>
+    <div class="pj-task-check ${done?'done':''}" onclick="event.stopPropagation();pjConcluirComMovimento('${t.id}')" title="${done?'Reabrir':'Concluir'}">${done?'✓':''}</div>
     ${cellsHtml}
   </div>`;
 }
@@ -22223,8 +22224,8 @@ function pjToggleStatusCollapse(listId, statusId, ev) {
   const zone = document.querySelector(`.pj-status-zone[data-list-id="${listId}"][data-status-id="${statusId}"]`);
   if (!header || !zone) return;
   const willCollapse = !header.classList.contains('collapsed');
-  header.classList.toggle('collapsed', willCollapse);
-  zone.classList.toggle('collapsed', willCollapse);
+  const aplica = () => { header.classList.toggle('collapsed', willCollapse); zone.classList.toggle('collapsed', willCollapse); };
+  if (header.closest('#pjMain .pj-list-table')) pjMovimento(aplica, { zona: statusId, fecha: willCollapse }); else aplica();
   const key = `pjStatusCollapsed:${listId}:${statusId}`;
   const isDone = statusId === 'done';
   try {
@@ -22609,6 +22610,7 @@ function pjPlayCelebrationSound() {
 }
 
 function pjConfettiBurst(originX, originY) {
+  if (window._pjMovFesta) { window._pjMovFesta.push(() => pjConfettiBurst(originX, originY)); return; }
   // Cria canvas overlay full-screen
   let canvas = document.getElementById('pjConfettiCanvas');
   if (!canvas) {
@@ -22691,6 +22693,7 @@ function pjConfettiBurst(originX, originY) {
 let _pjCelebTimer = null;
 function pjOnTaskClosed(t) {
   if (!t) return;
+  if (window._pjMovFesta) { window._pjMovFesta.push(() => pjOnTaskClosed(t)); return; }
   const uid = (typeof _currentUser !== 'undefined' && _currentUser && _currentUser.uid) || null;
   if (!uid) return;
 
@@ -24410,6 +24413,142 @@ async function pjTagPickerToggle(taskId, tagId, rowEl) {
   if (rowEl) rowEl.classList.toggle('on', !has);
 }
 
+// ─── Movimento da lista (amostra motion 1, 2 e 3) ───
+// Transição do próprio navegador em volta do redesenho que a AÇÃO da pessoa dispara.
+// Redesenho que chega do banco (pjScheduleRender) espera o movimento acabar.
+// Sem suporte, com "menos movimento", no celular ou com a aba escondida: troca na hora.
+let _pjMovSeq = 0;
+function pjMovimentoPode() {
+  return typeof document.startViewTransition === 'function'
+    && !!window.CSS?.supports?.('view-transition-class', 'x')
+    && !matchMedia('(prefers-reduced-motion: reduce)').matches
+    && innerWidth > 900 && !document.hidden
+    && !!document.querySelector('#pjMain .pj-list-table');
+}
+// Parte da lista que aparece: a tela cortada por cada caixa com rolagem em volta da tabela.
+function _pjMovArea() {
+  const tab = document.querySelector('#pjMain .pj-list-table');
+  const a = { top: 0, bottom: innerHeight };
+  for (let p = tab && tab.parentElement; p && p !== document.body; p = p.parentElement) {
+    if (getComputedStyle(p).overflowY === 'visible') continue;
+    const r = p.getBoundingClientRect();
+    a.top = Math.max(a.top, r.top); a.bottom = Math.min(a.bottom, r.bottom);
+  }
+  // Abaixo da tela não há o que cobrir: mais uma tela de linhas ganha nome pra entrar e sair deslizando.
+  a.fundo = a.bottom >= innerHeight - 1 ? a.bottom + innerHeight : a.bottom;
+  return a;
+}
+// Dá nome só ao que está à vista. Foto com nome ignora o corte da rolagem, então nada que passe do topo.
+function _pjMovNomear(area, opts, contagens, velho) {
+  const tab = document.querySelector('#pjMain .pj-list-table');
+  const els = [], usados = new Set();
+  if (!tab) return els;
+  const cabe = el => { const r = el.getBoundingClientRect(); return r.height > 0 && r.top >= area.top - 1 && r.top < area.fundo && (r.bottom <= area.bottom + 1 || area.fundo > area.bottom); };
+  const dar = (el, nome, classe) => {
+    nome = nome.replace(/[^a-zA-Z0-9_-]/g, '_');
+    if (usados.has(nome)) return;
+    usados.add(nome); els.push(el);
+    el.style.viewTransitionName = nome;
+    if (classe) el.style.viewTransitionClass = classe;
+  };
+  tab.querySelectorAll('.pj-status-group-header').forEach(h => {
+    const st = h.dataset.statusId; if (!cabe(h)) return;
+    dar(h, 'pj-h-' + st, 'pj-cab');
+    const n = h.querySelector('.pj-n'); if (!n) return;
+    if (velho) contagens[st] = n.textContent;
+    dar(n, 'pj-n-' + st, (!velho && st in contagens && contagens[st] !== n.textContent) ? 'pj-placar' : '');
+  });
+  tab.querySelectorAll('.pj-status-zone:not(.collapsed)').forEach(z => {
+    const st = z.dataset.statusId, daVez = opts.zona === st;
+    if (cabe(z)) dar(z, 'pj-z-' + st, daVez ? (opts.fecha ? 'pj-fecha' : 'pj-abre') : 'pj-zona');
+    if (daVez) return;
+    z.querySelectorAll(':scope > .pj-list-tr[data-task-id]').forEach(r => { if (cabe(r)) dar(r, 'pj-t-' + r.dataset.taskId, r.dataset.taskId === opts.tarefa ? 'pj-voa' : ''); });
+    const add = z.querySelector(':scope > .pj-add-task-row');
+    if (add && cabe(add)) dar(add, 'pj-a-' + st);
+  });
+  return els;
+}
+function pjMovimento(acao, opts = {}) {
+  // Movimento anterior ainda rodando: fecha ele agora, antes de fotografar de novo.
+  if (window._pjMovFim) { try { window._pjMovVt?.skipTransition(); } catch (_) {} window._pjMovFim(); }
+  if (!pjMovimentoPode()) return Promise.resolve(acao());
+  const area = _pjMovArea();
+  if (opts.zona) {
+    const h = document.querySelector(`#pjMain .pj-list-table .pj-status-group-header[data-status-id="${CSS.escape(opts.zona)}"]`);
+    if (!h || h.getBoundingClientRect().top <= area.top + 1) return Promise.resolve(acao()); // grupo grudado no topo: troca na hora
+  }
+  const eu = ++_pjMovSeq, contagens = {};
+  const velhos = _pjMovNomear(area, opts, contagens, true); let novos = [];
+  const sel = id => document.querySelector(`#pjMain .pj-list-tr[data-task-id="${CSS.escape(id)}"]`);
+  const linhaVelha = opts.tarefa && sel(opts.tarefa);
+  const nomeVelho = linhaVelha ? linhaVelha.style.viewTransitionName : '';
+  const rVelha = nomeVelho ? linhaVelha.getBoundingClientRect() : null;
+  const limpar = els => els.forEach(el => { el.style.viewTransitionName = ''; el.style.viewTransitionClass = ''; });
+  const rolaveis = () => { const m = document.getElementById('pjMain'); return [document.scrollingElement, m, m && m.querySelector('.pj-view-body')]; };
+  const rolagem = rolaveis().map(el => el ? [el.scrollTop, el.scrollLeft] : null);
+  let feito = false, res, acabou = false, sai = null, vt = null, trava = 0;
+  const roda = () => { if (feito) return; feito = true; try { res = acao(); } catch (e) { console.warn('[pjMovimento]', e); } };
+  const fim = () => {
+    if (acabou) return; acabou = true;
+    clearTimeout(trava); roda(); limpar(velhos); limpar(novos);
+    if (window._pjMovFim === fim) window._pjMovFim = null;
+    if (eu !== _pjMovSeq) return;
+    window._pjMovVt = null;
+    document.documentElement.classList.remove('pj-mov');
+    window._pjMovRodando = false;
+    const festa = window._pjMovFesta || []; window._pjMovFesta = null;
+    if (window._pjMovDepois) { window._pjMovDepois = false; pjScheduleRender(); }
+    festa.forEach(f => { try { f(); } catch (_) {} });
+  };
+  window._pjMovRodando = true;
+  window._pjMovFesta = window._pjMovFesta || [];
+  window._pjMovFim = fim;
+  document.documentElement.classList.add('pj-mov');
+  trava = setTimeout(() => { try { vt?.skipTransition(); } catch (_) {} fim(); }, 1500);
+  vt = document.startViewTransition(() => {
+    roda(); limpar(velhos);
+    if (acabou) return;
+    // O redesenho troca a caixa que rola: volta a rolagem pro lugar antes de fotografar o depois.
+    rolaveis().forEach((el, i) => { const r = rolagem[i]; if (!el || !r) return; if (el.scrollTop !== r[0]) el.scrollTop = r[0]; if (el.scrollLeft !== r[1]) el.scrollLeft = r[1]; });
+    const a = _pjMovArea();
+    novos = _pjMovNomear(a, opts, contagens, false);
+    if (rVelha) {
+      const nova = sel(opts.tarefa);
+      if (!nova || !nova.style.viewTransitionName) {
+        // Destino fora da vista ou grupo fechado: a linha desliza até o nome do grupo e some.
+        const st = nova?.closest('.pj-status-zone')?.dataset.statusId;
+        const h = st && document.querySelector(`#pjMain .pj-list-table .pj-status-group-header[data-status-id="${CSS.escape(st)}"]`);
+        const rh = h && h.getBoundingClientRect();
+        const cy = rVelha.top + rVelha.height / 2;
+        const alvo = rh && rh.height && rh.top >= a.top - 1 && rh.bottom <= a.bottom + 1 ? rh.top + rh.height / 2
+          : rh && rh.height ? (rh.top > cy ? a.bottom : a.top) : cy + 40;
+        sai = { nome: nomeVelho, dy: alvo - cy };
+      }
+    }
+  });
+  window._pjMovVt = vt;
+  vt.ready.then(() => {
+    if (sai) document.documentElement.animate([{ translate: '0 0', opacity: 1 }, { translate: `0 ${sai.dy}px`, opacity: 0 }],
+      { duration: 380, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards', pseudoElement: `::view-transition-group(${sai.nome})` });
+  }).catch(() => {});
+  vt.finished.finally(fim).catch(() => {});
+  return vt.updateCallbackDone.then(() => res, () => res);
+}
+// 1. Concluir: o check se desenha e o risco corre no nome; aí a linha desliza pro grupo novo.
+function pjConcluirComMovimento(taskId) {
+  const t = pjAllTasks.find(x => x.id === taskId);
+  const linha = document.querySelector(`#pjMain .pj-list-tr[data-task-id="${CSS.escape(taskId)}"]`);
+  if (!t || !linha || !pjMovimentoPode() || (!pjIsDone(t) && !pjTaskHasClient(t))) return pjToggleTaskDone(taskId);
+  if (linha.classList.contains('pj-mov-concluindo')) return;
+  if (pjIsDone(t)) return pjMovimento(() => pjToggleTaskDone(taskId), { tarefa: taskId });
+  linha.classList.add('pj-mov-concluindo');
+  const check = linha.querySelector('.pj-task-check');
+  if (check) { check.classList.add('done'); check.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>'; }
+  setTimeout(() => {
+    const t2 = pjAllTasks.find(x => x.id === taskId);
+    if (t2 && !pjIsDone(t2)) pjMovimento(() => pjToggleTaskDone(taskId), { tarefa: taskId });
+  }, 280);
+}
 async function pjToggleTaskDone(taskId) {
   const t = pjAllTasks.find(x => x.id === taskId);
   if (!t) return;
@@ -27573,6 +27712,7 @@ function pjOpenRecurrenceMenu(ev, taskId) {
 
 function pjOpenStatusMenu(ev, taskId) {
   if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+  const daLista = !!ev?.currentTarget?.closest?.('#pjMain .pj-list-table');
   const t = pjAllTasks.find(x => x.id === taskId);
   if (!t) return;
   const list = pjLists.find(l => l.id === t.listId);
@@ -27601,7 +27741,7 @@ function pjOpenStatusMenu(ev, taskId) {
   }
   pjShowPopupMenu(ev, items, cur, async (id) => {
     if (id === '__edit__') { if (list) pjOpenStatusEditor(list.id); return; }
-    await pjChangeTaskStatus(taskId, id);
+    await (daLista ? pjMovimento(() => pjChangeTaskStatus(taskId, id), { tarefa: taskId }) : pjChangeTaskStatus(taskId, id));
     const t2 = pjAllTasks.find(x => x.id === taskId);
     if (t2 && pjCurrentTaskId === taskId) pjRenderTaskModal({ ...t2 });
   });
