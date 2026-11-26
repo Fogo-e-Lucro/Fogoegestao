@@ -22049,7 +22049,7 @@ body .toast.pj-rev-aviso.erro { border-color:rgba(248,113,113,.6) !important; }
   body .toast.pj-rev-aviso, .pj-rev-aviso svg path, .pj-rev-pisca > div > .pj-activity-text { animation:none !important; }
 }
 
-/* ─── Computador v2: lista de tarefas (amostra) ─── */
+/* ─── Computador v2: lista de tarefas ─── */
 @media (min-width: 901px) {
   html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] :is(.pj-view-header, .pj-filter-bar, .pj-bulk-bar, .pj-list-table) { --accent: #1a1d23; --accent2: #1a1d23; --accent3: #5a6272; --accent-glow: rgba(26,29,35,.06); --accentGlow: rgba(26,29,35,.06); --text3: #6b7280; }
 
