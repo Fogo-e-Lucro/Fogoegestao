@@ -22048,3 +22048,95 @@ body .toast.pj-rev-aviso.erro { border-color:rgba(248,113,113,.6) !important; }
 @media (prefers-reduced-motion:reduce) {
   body .toast.pj-rev-aviso, .pj-rev-aviso svg path, .pj-rev-pisca > div > .pj-activity-text { animation:none !important; }
 }
+
+/* ─── Computador v2: lista de tarefas (amostra) ─── */
+@media (min-width: 901px) {
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] :is(.pj-view-header, .pj-filter-bar, .pj-bulk-bar, .pj-list-table) { --accent: #1a1d23; --accent2: #1a1d23; --accent3: #5a6272; --accent-glow: rgba(26,29,35,.06); --accentGlow: rgba(26,29,35,.06); --text3: #6b7280; }
+
+  /* topo: tudo com 36 de altura */
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-view-header { padding: 16px 24px 12px; gap: 8px; background: var(--bg); border-bottom: 0; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-view-header::after { content: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-view-title { font-size: 18px; font-weight: 600; gap: 8px; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-view-title .breadcrumb-parent { font-size: 14px; font-weight: 500; color: var(--text2); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-view-title .breadcrumb-sep { margin: 0; font-size: 14px; font-weight: 500; color: var(--text3); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-view-toggle { padding: 3px; gap: 2px; border: 0; border-radius: 10px; background: var(--bg2); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-view-toggle button { height: 30px; padding: 0 12px; border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--text2); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-view-toggle button.active { background: #1a1d23; color: #fff; font-weight: 600; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-icon-btn-lg { width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; color: var(--text2); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-icon-btn-lg:hover { background: var(--bg2); color: var(--text); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-theme-toggle, html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-theme-toggle:hover { filter: none; transform: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-btn-primary { height: 36px; padding: 0 16px !important; font-size: 13px !important; font-weight: 600 !important; border-radius: 10px; background: #1a1d23; color: #fff; border: 1px solid #1a1d23; box-shadow: none; text-shadow: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-btn-primary:hover { background: #2c3037; border-color: #2c3037; box-shadow: none; transform: none; }
+  html:not(.fg-noturno) body.at-projetos:has(#pjMain[data-view="list"]) .pj-fab { background: #1a1d23; border: 0; box-shadow: 0 4px 14px rgba(16,24,40,.18); }
+  html:not(.fg-noturno) body.at-projetos:has(#pjMain[data-view="list"]) .pj-fab:hover { background: #2c3037; box-shadow: 0 4px 14px rgba(16,24,40,.18); transform: none; }
+
+  /* filtros */
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-filter-bar { padding: 0 24px 16px; gap: 8px; background: var(--bg); border-bottom: 0; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-filter-search { height: 36px; padding: 0 12px; border-radius: 10px; font-size: 13px; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-filter-search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accentGlow); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-filter-btn { height: 36px; padding: 0 12px; border-radius: 10px; font-size: 13px; font-weight: 500; color: var(--text); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-filter-btn svg { color: var(--text2); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-filter-btn:hover { background: var(--bg2); border-color: var(--border); color: var(--text); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-filter-btn.pj-filter-active-btn { background: #1a1d23 !important; border-color: #1a1d23 !important; color: #fff !important; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-filter-active-btn svg { color: #fff; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-filter-active-btn .pj-filter-badge { background: #fff; color: #1a1d23; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-filter-btn-danger, html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-filter-btn-danger svg { color: #c9353a; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-bulk-bar { padding: 8px 24px; background: var(--bg2); border-bottom: 0; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-bulk-count { background: #1a1d23; color: #fff; }
+
+  /* corpo e nomes das colunas */
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-view-body:has(> .pj-list-table) { padding: 0 24px 40px !important; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table { min-width: min-content; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-th-row { margin: 0; padding: 0 17px 6px; border-bottom: 0; font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--text3); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-th-cell { padding: 2px 0; gap: 4px; border-radius: 0; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-th-cell:hover { background: none; color: var(--text); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-th-cell .pj-th-grip { order: 1; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-th-cell[data-col-id="title"] { padding-left: 24px; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-th-cell.drop-before::before, html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-th-cell.drop-after::after { box-shadow: none; }
+
+  /* grupo: seta na coluna do concluir, bolinha e nome na linha dos títulos */
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-header { margin-top: 24px !important; padding: 8px 16px 8px 19px; gap: 0; border: 0; border-radius: 0; background: var(--bg); box-shadow: none; filter: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-th-row + .pj-status-group-header { margin-top: 2px !important; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-header:hover { filter: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-header::before, html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-header::after { content: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-chev { margin-right: 29px; color: var(--text3); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-dot { width: 8px; height: 8px; margin-right: 11px; background: var(--c, #9ca3af); box-shadow: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-name { font-size: 14px; font-weight: 600; letter-spacing: 0; color: var(--text); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-group-count { margin-left: 8px; padding: 0 8px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--text2); font-size: 12px; font-weight: 600; line-height: 20px; }
+
+  /* caixa do grupo e linhas */
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-zone { padding: 0; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-zone::before, html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-zone::after { content: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-zone.drag-over { background: var(--bg2); border-radius: 12px; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-tr { margin: 0; padding: 10px 16px; border: 0; border-bottom: 1px solid var(--bg2); border-radius: 0; background: none; box-shadow: none; animation: none; transition: background-color .12s; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-zone > .pj-list-tr:first-child { border-radius: 11px 11px 0 0; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-tr::before { content: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-tr:hover { background: var(--bg); border-color: var(--bg2); box-shadow: none; transform: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-tr.selected { background: var(--bg2); border-color: var(--bg2); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-cell.title { font-size: 14px; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-task-check { border: 1.5px solid #9ca3af; border-radius: 50%; background: var(--card); color: #fff; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-task-check:hover { border-color: #1a1d23; background: var(--card); transform: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-task-check.done { border-color: #1a1d23; background: #1a1d23; box-shadow: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-tr .pj-sel-circle { border: 1.5px solid #9ca3af; border-radius: 5px; background: var(--card); }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-tr .pj-sel-circle.checked { border-color: #1a1d23; background: #1a1d23; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-cell.assignee .pj-avatar { width: 28px; height: 28px; font-size: 11px; box-shadow: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-add-task-row { min-height: 44px; margin: 0; padding: 0 16px 0 57px; border: 0; border-radius: 0 0 11px 11px; color: var(--text2); font-size: 13px; font-weight: 500; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-zone > .pj-add-task-row:first-child { border-radius: 11px; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-add-task-row:hover { background: var(--bg); color: var(--text); border-color: transparent; }
+
+  /* etiquetas: sem pastel; prazo e prioridade viram bolinha + texto */
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table :is(.pj-priority, .pj-task-due) { display: inline-flex; align-items: center; gap: 6px; height: auto; padding: 0; border: 0; border-radius: 0; background: none; color: var(--text2); font-size: 13px; font-weight: 500; letter-spacing: 0; text-transform: none; box-shadow: none; text-shadow: none; animation: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table :is(.pj-priority, .pj-task-due, .pj-stale-pill)::before { content: ''; width: 8px; height: 8px; flex-shrink: 0; border-radius: 50%; background: #9ca3af; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table :is(.pj-priority.urgent, .pj-priority.high, .pj-task-due.overdue, .pj-task-due.today) { color: var(--text); font-weight: 600; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table :is(.pj-priority.urgent, .pj-task-due.overdue, .pj-stale-pill.severe)::before { background: #c9353a; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table :is(.pj-priority.high, .pj-task-due.today, .pj-stale-pill.moderate)::before { background: #d97706; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table :is(.pj-stale-pill, .pj-tag-pill) { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 8px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--text); font-size: 12px; font-weight: 500; box-shadow: none; animation: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-pill { height: 26px; gap: 6px; padding: 0 8px 0 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--text); font-size: 12px; font-weight: 500; box-shadow: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-pill:hover { background: var(--bg); border-color: #9ca3af; transform: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-pill::before { content: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-status-pill-dot { box-shadow: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-client-pill { height: 26px; gap: 6px; padding: 0 10px 0 4px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--text); font-size: 12px; font-weight: 500; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-client-pill:hover { background: var(--bg); border-color: #9ca3af; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-client-pill.empty { padding: 0 10px; border-style: dashed; background: none; }
+  html:not(.fg-noturno) body.at-projetos #pjMain[data-view="list"] .pj-list-table .pj-list-client-pill :is(.pj-list-client-logo, .pj-list-client-dot) { width: 18px !important; height: 18px !important; min-width: 18px !important; min-height: 18px !important; max-width: 18px !important; max-height: 18px !important; }
+}
