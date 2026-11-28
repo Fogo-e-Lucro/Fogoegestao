@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fogo & Gestão: sistema integrado de gestão de publicidade</title>
-<link rel="stylesheet" href="styles.css?v=3.71.49">
+<link rel="stylesheet" href="styles.css?v=3.71.50">
 <!-- Inline kill-switch para a barra global Cliente (caso CSS antigo esteja em cache) -->
 <style id="killRestBar">.rest-bar,#restBar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;}</style>
 <!-- PWA -->
@@ -7798,12 +7798,14 @@ function fgWaOnOpen() {
   fgWaCheckStatus();
   clearInterval(_fgWaStatusTimer);
   _fgWaStatusTimer = setInterval(() => {
-    const pane = document.querySelector('.app-settings-pane[data-pane="wa"]');
-    const modal = document.getElementById('appSettingsModal');
-    const visible = pane && pane.style.display !== 'none' && modal && modal.style.display !== 'none';
-    if (!visible) { clearInterval(_fgWaStatusTimer); _fgWaStatusTimer = null; return; }
+    // Fechou a aba: para de olhar a cada 5 s, mas confere uma última vez pra o aviso grande voltar se ainda estiver caído
+    if (!fgWaPaneVisible()) { clearInterval(_fgWaStatusTimer); _fgWaStatusTimer = null; }
     fgWaCheckStatus(true);
   }, 5000);
+}
+function fgWaPaneVisible() {
+  const p = document.querySelector('.app-settings-pane[data-pane="wa"]');
+  return !!(p && p.getClientRects().length);
 }
 
 function fgWaShowEmpty(icon, title, sub) {
@@ -7860,10 +7862,11 @@ async function fgWaCheckStatus(silent) {
     } else {
       // Close, connecting ou unknown: auto-gera QR se nao tem um na tela.
       // Assim quando o David abre a aba e o WA caiu, ja aparece o QR
-      // sem precisar clicar em nada.
+      // sem precisar clicar em nada. Só com a aba aberta: a checagem de
+      // fundo gerando QR mudava o estado pra "connecting" e o aviso sumia.
       const qr = document.getElementById('fgWaQrBox');
       if (!qr || qr.style.display === 'none') {
-        if (!window._fgWaAutoReconnected) {
+        if (!window._fgWaAutoReconnected && fgWaPaneVisible()) {
           window._fgWaAutoReconnected = true;
           fgWaShowEmpty('⏳','Gerando QR pra vincular','Aguarde uns segundos.');
           fgWaReconnect();
@@ -7872,15 +7875,25 @@ async function fgWaCheckStatus(silent) {
     }
   } catch(e) {
     fgWaSetBadge('error');
+    fgWaShowGlobalAlert(navigator.onLine ? 'error' : 'unknown'); // sem internet aqui não é culpa do WhatsApp
     fgWaShowEmpty('⚠️','Falha ao consultar', e.message);
   }
 }
-/* Banner global de alerta — só admin vê. Fica fixo no topo quando disconnect. */
+/* Aviso grande no topo quando o WhatsApp da Central cai. Só admin vê.
+   "close" aparece na hora. Erro na consulta e "connecting" só depois de 45 s
+   seguidos, pra não piscar quando o WhatsApp se reconecta sozinho ou o
+   computador acaba de acordar sem rede. */
+let _fgWaNotOpenSince = 0, _fgWaHideUntil = 0;
 function fgWaShowGlobalAlert(state) {
-  const admin = (typeof userIsAdmin === 'function') && userIsAdmin();
+  const now = Date.now();
+  if (state === 'open') { _fgWaNotOpenSince = 0; _fgWaHideUntil = 0; }
+  else if (state !== 'unknown' && !_fgWaNotOpenSince) _fgWaNotOpenSince = now;
+  const caiu = state === 'close' || ((state === 'connecting' || state === 'error') && now - _fgWaNotOpenSince > 45000);
   let el = document.getElementById('fgWaGlobalAlert');
-  const bad = state !== 'open' && state !== 'connecting' && state !== 'unknown';
-  if (!admin || !bad) { if (el) el.remove(); return; }
+  // Com a aba do WhatsApp aberta o aviso sai da frente do QR
+  if (!caiu || !userIsAdmin() || now < _fgWaHideUntil || fgWaPaneVisible()) { if (el) el.remove(); return; }
+  const kind = state === 'error' ? 'error' : 'close';
+  if (el && el.dataset.kind === kind) return; // não redesenha a cada minuto (leitor de tela repetiria)
   if (!el) {
     el = document.createElement('div');
     el.id = 'fgWaGlobalAlert';
@@ -7888,40 +7901,45 @@ function fgWaShowGlobalAlert(state) {
     el.setAttribute('role', 'alert');
     document.body.appendChild(el);
   }
-  const msg = state === 'error'
-    ? { icon: '⚠️', title: 'WhatsApp da Central com erro', sub: 'Servidor Evolution pode estar fora. Abre pra ver o log' }
-    : { icon: '🚨', title: 'WhatsApp da Central caiu', sub: 'Relatório 6h + alertas parados. Reconecta agora antes que rode a próxima cron.' };
+  el.dataset.kind = kind;
+  const msg = kind === 'error'
+    ? { title: 'Não deu pra conferir o WhatsApp', sub: 'Se ele tiver caído, o relatório das 6h e os avisos de tarefa vencendo não chegam no grupo.', cta: 'Ver o WhatsApp' }
+    : { title: 'WhatsApp desconectado', sub: 'O relatório das 6h e os avisos de tarefa vencendo não chegam no grupo até você conectar de novo.', cta: 'Conectar agora' };
   el.innerHTML = `
-    <span class="fg-wa-global-icon">${msg.icon}</span>
+    <span class="fg-wa-global-icon" aria-hidden="true">${fgIco('alert', 44, 2.4)}</span>
     <div class="fg-wa-global-text">
       <strong>${msg.title}</strong>
       <span>${msg.sub}</span>
     </div>
-    <button type="button" class="fg-wa-global-cta" onclick="fgWaOpenFromAlert()">Reconectar agora</button>
-    <button type="button" class="fg-wa-global-close" onclick="document.getElementById('fgWaGlobalAlert')?.remove()" title="Dispensar">✕</button>
+    <div class="fg-wa-global-acoes">
+      <button type="button" class="fg-wa-global-cta" onclick="fgWaOpenFromAlert()">${msg.cta}</button>
+      <button type="button" class="fg-wa-global-depois" onclick="fgWaSnooze()">Lembrar em 10 min</button>
+    </div>
   `;
 }
+function fgWaSnooze() {
+  _fgWaHideUntil = Date.now() + 600000;
+  document.getElementById('fgWaGlobalAlert')?.remove();
+}
 function fgWaOpenFromAlert() {
-  const modal = document.getElementById('appSettingsModal');
-  if (modal) modal.style.display = 'flex';
-  // Ativa a aba WhatsApp
-  document.querySelectorAll('.app-settings-tab').forEach(t => t.classList.toggle('active', t.dataset.pane === 'wa'));
-  document.querySelectorAll('.app-settings-pane').forEach(p => p.style.display = p.dataset.pane === 'wa' ? '' : 'none');
-  if (typeof fgWaOnOpen === 'function') fgWaOnOpen();
+  openAppSettings();
+  appSettingsTab('wa');
+  fgWaOnOpen();
 }
 
-/* Polling global — só pra admin, roda a cada 60s enquanto logado.
-   Detecta disconnect antes do David abrir o modal. */
+/* Checagem global: só admin, a cada 60 s, a cada troca de login e na hora
+   em que a aba do navegador volta a aparecer. */
 let _fgWaGlobalPollTimer = null;
+function fgWaGlobalTick() {
+  if (document.hidden) return; // perf: não gasta rede/CPU com aba escondida
+  if (!userIsAdmin()) { document.getElementById('fgWaGlobalAlert')?.remove(); return; } // saiu da conta
+  fgWaCheckStatus(true);
+}
 function fgWaStartGlobalPoll() {
+  fgWaGlobalTick();
   if (_fgWaGlobalPollTimer) return;
-  const tick = () => {
-    if (document.hidden) return; // perf: não gasta rede/CPU com aba escondida
-    if (!(typeof userIsAdmin === 'function') || !userIsAdmin()) return;
-    if (typeof fgWaCheckStatus === 'function') fgWaCheckStatus(true);
-  };
-  tick(); // primeiro check imediato
-  _fgWaGlobalPollTimer = setInterval(tick, 60000);
+  _fgWaGlobalPollTimer = setInterval(fgWaGlobalTick, 60000);
+  document.addEventListener('visibilitychange', fgWaGlobalTick);
 }
 
 async function fgWaReconnect() {

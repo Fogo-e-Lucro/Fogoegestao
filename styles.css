@@ -13952,70 +13952,51 @@ html, body {
   display: none !important;
 }
 
-/* Banner global de alerta do WhatsApp da Central — só admin vê */
+/* Aviso grande do WhatsApp da Central (só admin vê): faixa vermelha cheia no topo */
 .fg-wa-global-alert {
-  position: fixed;
-  top: max(12px, env(safe-area-inset-top, 12px));
-  left: 50%;
-  transform: translateX(-50%);
+  position: fixed; top: 0; left: 0; right: 0;
   z-index: 10001;
-  display: flex; align-items: center; gap: 14px;
-  padding: 14px 18px;
-  min-width: 340px;
-  max-width: min(640px, calc(100vw - 24px));
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  display: flex; align-items: center; gap: 20px;
+  padding: calc(22px + env(safe-area-inset-top, 0px)) 32px 22px;
+  background: #C81E1E;
   color: #fff;
-  border-radius: 14px;
-  box-shadow: 0 20px 50px rgba(220,38,38,.4), 0 4px 14px rgba(0,0,0,.25);
-  animation: fgWaAlertIn .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 12px 32px rgba(0,0,0,.3);
   font-family: var(--font);
+  animation: fgWaAlertIn .28s ease-out;
 }
-.fg-wa-global-icon { font-size: 24px; flex-shrink: 0; }
-.fg-wa-global-text { display: flex; flex-direction: column; line-height: 1.25; flex: 1; min-width: 0; }
-.fg-wa-global-text strong { font-size: 14px; font-weight: 700; }
-.fg-wa-global-text span { font-size: 12px; opacity: .92; margin-top: 2px; }
+.fg-wa-global-icon { display: grid; flex-shrink: 0; }
+.fg-wa-global-text { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+.fg-wa-global-text strong { font-size: 28px; font-weight: 800; line-height: 1.1; letter-spacing: -.01em; text-wrap: balance; }
+.fg-wa-global-text span { font-size: 16px; line-height: 1.4; max-width: 64ch; }
+.fg-wa-global-acoes { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .fg-wa-global-cta {
-  background: #fff; color: #b91c1c;
-  border: none; border-radius: 8px;
-  padding: 9px 14px;
-  font-family: var(--font); font-size: 12.5px; font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: transform .1s, box-shadow .15s;
+  background: #fff; color: #B42318;
+  border: 0; border-radius: 10px;
+  padding: 15px 28px;
+  font: 800 17px/1.1 var(--font);
+  cursor: pointer; white-space: nowrap;
 }
-.fg-wa-global-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
-.fg-wa-global-close {
-  background: rgba(255,255,255,.2);
-  color: #fff;
-  border: none; border-radius: 50%;
-  width: 26px; height: 26px;
-  cursor: pointer;
-  font-size: 12px;
-  display: grid; place-items: center;
-  flex-shrink: 0;
-  transition: background .15s;
+.fg-wa-global-cta:hover { background: #FFF1F0; }
+.fg-wa-global-depois {
+  background: transparent; color: #fff;
+  border: 2px solid rgba(255,255,255,.65); border-radius: 10px;
+  padding: 13px 18px;
+  font: 700 15px/1.1 var(--font);
+  cursor: pointer; white-space: nowrap;
 }
-.fg-wa-global-close:hover { background: rgba(255,255,255,.35); }
-@keyframes fgWaAlertIn {
-  from { opacity: 0; transform: translate(-50%, -20px); }
-  to   { opacity: 1; transform: translate(-50%, 0); }
-}
+.fg-wa-global-depois:hover { border-color: #fff; background: rgba(255,255,255,.12); }
+.fg-wa-global-alert button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+@keyframes fgWaAlertIn { from { transform: translateY(-100%); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .fg-wa-global-alert { animation: none; } }
 @media (max-width: 640px) {
-  .fg-wa-global-alert {
-    left: 8px; right: 8px; transform: none;
-    min-width: 0; max-width: none;
-    padding: 12px 14px;
-    flex-wrap: wrap;
-  }
-  .fg-wa-global-text { flex-basis: 100%; order: 1; }
-  .fg-wa-global-icon { order: 0; }
-  .fg-wa-global-cta { order: 2; flex: 1; }
-  .fg-wa-global-close { order: 3; }
-  @keyframes fgWaAlertIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  .fg-wa-global-alert { flex-wrap: wrap; gap: 14px; padding: calc(18px + env(safe-area-inset-top, 0px)) 16px 16px; }
+  .fg-wa-global-icon svg { width: 36px; height: 36px; }
+  .fg-wa-global-text { flex-basis: calc(100% - 50px); }
+  .fg-wa-global-text strong { font-size: 24px; }
+  .fg-wa-global-text span { font-size: 15px; }
+  .fg-wa-global-acoes { flex-basis: 100%; flex-direction: column; align-items: stretch; gap: 4px; }
+  .fg-wa-global-cta { padding: 16px; }
+  .fg-wa-global-depois { border: 0; padding: 12px; }
 }
 
 .sp2-app {
